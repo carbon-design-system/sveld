@@ -1,9 +1,12 @@
 import { existsSync, readFileSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
 import { asSvelteEntryPoint, type SvelteEntryPoint } from "./brands";
-import { parsePackageJson } from "./validate";
+import { type ParsedPackageJson, parsePackageJson } from "./validate";
 
 export type { SvelteEntryPoint };
+
+export const UNRESOLVED_ENTRY_MESSAGE =
+  'sveld: could not resolve a Svelte entry point. Set package.json#svelte, or pass the "entry" option.';
 
 /**
  * The entry point, or why there isn't one. `configured` is false when
@@ -11,7 +14,7 @@ export type { SvelteEntryPoint };
  * case where the CLI may fall back to `src/index.js`; a configured entry
  * that doesn't exist is always an error.
  */
-export type SvelteEntryResolution = { entry: SvelteEntryPoint } | { entry: null; configured: boolean; message: string };
+type SvelteEntryResolution = { entry: SvelteEntryPoint } | { entry: null; configured: boolean; message: string };
 
 function fromCwd(path: string): string {
   return isAbsolute(path) ? path : join(process.cwd(), path);
@@ -38,7 +41,7 @@ export function resolveSvelteEntry(entryPoint?: string): SvelteEntryResolution {
     };
   }
 
-  let pkg: ReturnType<typeof parsePackageJson>;
+  let pkg: ParsedPackageJson;
   try {
     pkg = parsePackageJson(JSON.parse(readFileSync(pkg_path, "utf-8")));
   } catch (error) {

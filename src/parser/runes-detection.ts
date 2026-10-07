@@ -1,15 +1,11 @@
-import type { AST, Pattern } from "sveast";
+import type { AST, Program } from "sveast";
 import { isReference, SKIP, STOP, walk } from "sveast/walk";
 import type { SyntaxMode } from "../model";
 import type { ParserContext } from "./context";
 import { collectPatternIdentifiers, isScopeOwner } from "./scopes";
 import { isTypeOnlySubtree } from "./walk";
 
-/**
- * Bare rune identifiers as they appear in `scope.references` keys. Dotted forms like `$state.raw`
- * or `$derived.by` never occur as an `Identifier.name` - they're a `MemberExpression` whose
- * `.object` is the bare identifier, which `isReference` counts as a reference.
- */
+/** Dotted forms (`$state.raw`) are a `MemberExpression` whose object is one of these, a reference too. */
 const RUNE_NAMES = new Set(["$state", "$derived", "$effect", "$props", "$bindable", "$inspect", "$host"]);
 
 const RUNE_NAME_LIST = Array.from(RUNE_NAMES);
@@ -26,10 +22,9 @@ function isAsciiIdentifierChar(code: number): boolean {
 }
 
 /**
- * Cheap textual pre-check: false only when no rune name appears in `source`
- * as a standalone token (not glued to other ASCII identifier characters, as
- * in `$$props`), and no `\u` escape could be spelling one. Any other case,
- * including a rune name inside a string or comment, falls back to the walk.
+ * Textual pre-check: false only when no rune name appears as a standalone
+ * token and no `\u` escape could spell one. A false positive (a rune name in
+ * a string or comment) just falls back to the walk.
  */
 function mayContainRuneReference(source: string): boolean {
   if (source.includes("\\u")) return true;
@@ -58,7 +53,7 @@ function isShadowed(name: string, scopeStack: ScopeStack): boolean {
   return false;
 }
 
-/** Declares the identifiers a scope-owning node introduces directly (not through nested scopes). */
+/** The identifiers a scope-owning node introduces directly (not through nested scopes). */
 function collectScopeOwnerNames(node: AST.SvelteNode): Set<string> {
   const names = new Set<string>();
   switch (node.type) {
@@ -86,55 +81,35 @@ function collectScopeOwnerNames(node: AST.SvelteNode): Set<string> {
   return names;
 }
 
-/** Declares top-level `import`/`var`/`function`/`class` bindings directly within a statement list. */
-function collectDirectBlockNames(body: unknown, names: Set<string>) {
-  if (!Array.isArray(body)) return;
-
-  for (const statement of body) {
-    if (!statement || typeof statement !== "object" || !("type" in statement)) continue;
-
-    switch (String(statement.type)) {
+/** Top-level `import`/`var`/`function`/`class` bindings directly within a statement list. */
+function collectDirectBlockNames(body: Program["body"] | undefined, names: Set<string>) {
+  for (const statement of body ?? []) {
+    switch (statement.type) {
       case "ImportDeclaration":
-        for (const specifier of (statement as { specifiers?: Array<{ local?: { name?: string } }> }).specifiers ?? []) {
-          if (specifier.local?.name) names.add(specifier.local.name);
-        }
+        for (const specifier of statement.specifiers) names.add(specifier.local.name);
         break;
       case "VariableDeclaration":
-        for (const declarator of (statement as { declarations?: Array<{ id?: Pattern }> }).declarations ?? []) {
-          collectPatternIdentifiers(declarator.id, names);
-        }
+        for (const declarator of statement.declarations) collectPatternIdentifiers(declarator.id, names);
         break;
       case "FunctionDeclaration":
-      case "ClassDeclaration": {
-        const name = (statement as { id?: { name?: string } }).id?.name;
-        if (name) names.add(name);
+      case "ClassDeclaration":
+        if (statement.id?.name) names.add(statement.id.name);
         break;
-      }
-      case "ExportNamedDeclaration": {
-        const declaration = (statement as { declaration?: unknown }).declaration;
-        if (declaration && typeof declaration === "object" && "type" in declaration) {
-          collectDirectBlockNames([declaration], names);
-        }
+      case "ExportNamedDeclaration":
+        if (statement.declaration) collectDirectBlockNames([statement.declaration], names);
         break;
-      }
     }
   }
 }
 
-/**
- * True if `root`'s subtree contains an unshadowed reference to a rune name.
- * The first one ends the walk, which for a runes component is usually within
- * the first few statements.
- */
+/** True if `root` contains an unshadowed rune reference; the first one ends the walk. */
 function scanForRuneReference(root: AST.SvelteNode | undefined, baseScope: ScopeStack): boolean {
   if (!root) return false;
   const scopeStack = [...baseScope];
   let found = false;
   walk(root, {
     enter(node, parent) {
-      // Type-level TS subtrees hold no value references (svelte strips them
-      // before its own analysis; every identifier under one has a TS parent,
-      // which the check below rejects anyway), so don't descend into them.
+      // Type-level TS subtrees hold no value references.
       if (isTypeOnlySubtree(node.type)) return SKIP;
       if (isScopeOwner(node)) scopeStack.push(collectScopeOwnerNames(node));
       if (
@@ -155,14 +130,9 @@ function scanForRuneReference(root: AST.SvelteNode | undefined, baseScope: Scope
 }
 
 /**
- * Determines a component's syntax mode without running the svelte compiler's analyze phase.
- *
- * Mirrors `analyze_component`'s own logic (`node_modules/svelte/src/compiler/phases/2-analyze/index.js`):
- * an explicit `<svelte:options runes={...} />` always wins; otherwise the component is in runes
- * mode if any rune name is referenced - and not shadowed by a local declaration of the same name -
- * anywhere in the module script, instance script, or template.
- *
- * Mirrors svelte analyze runes detection. Omitted: top-level `await` forces runes (no fixture).
+ * Mirrors svelte's `analyze_component`: `<svelte:options runes={...} />` wins;
+ * otherwise runes mode if any rune name is referenced unshadowed in the module
+ * script, instance script, or template. Omitted: top-level `await` forcing runes.
  */
 export function detectSyntaxMode(ctx: ParserContext): SyntaxMode {
   if (ctx.runesOptionOverride !== undefined) {
@@ -172,11 +142,7 @@ export function detectSyntaxMode(ctx: ParserContext): SyntaxMode {
   const root = ctx.parsed;
   if (!root) return "legacy";
 
-  // An `Identifier` named `$state` etc. can only come from that text in the
-  // source, so a component whose text has no rune name can't be in runes
-  // mode. Skips three full AST walks for every legacy component. (A `\u`
-  // escape could spell a rune name without the literal substring, so fall
-  // back to the walk when one is present.)
+  // Skips three full AST walks for most legacy components.
   if (ctx.source !== undefined && !mayContainRuneReference(ctx.source)) return "legacy";
 
   const moduleScope = new Set<string>();

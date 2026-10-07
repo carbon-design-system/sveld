@@ -1,5 +1,5 @@
 import { lstatSync, readFileSync, realpathSync, statSync } from "node:fs";
-import { basename, dirname, isAbsolute, join, parse, relative, resolve } from "node:path";
+import { dirname, isAbsolute, join, parse, relative, resolve } from "node:path";
 import { asRelativeSourcePath } from "./brands";
 import type { ResolveComponentFilePath } from "./bundle";
 import type { ModuleGraph } from "./module-graph";
@@ -12,11 +12,9 @@ const INVALID_MODULE_NAME_CHAR_REGEX = /[^A-Za-z0-9_$]/g;
 const LEADING_DIGIT_REGEX = /^[0-9]/;
 
 /**
- * Sanitizes a `moduleName` derived from a file name into a valid identifier:
- * strips characters `.d.ts` can't emit in a declaration name (e.g. the `.`
- * in `my.component.svelte`) and prefixes `_` when the result would start
- * with a digit (e.g. `3d-model.svelte`). Warns when it had to rename,
- * once per name when given a `warned` set.
+ * Makes a file-derived name a valid `.d.ts` identifier: strips invalid
+ * characters (`my.component.svelte`) and prefixes `_` before a leading digit
+ * (`3d-model.svelte`). Warns on rename, once per name when given `warned`.
  */
 function sanitizeModuleName(rawModuleName: string, warned?: Set<string>): string {
   const stripped = rawModuleName.replace(INVALID_MODULE_NAME_CHAR_REGEX, "");
@@ -28,41 +26,40 @@ function sanitizeModuleName(rawModuleName: string, warned?: Set<string>): string
   return sanitized;
 }
 
+/** `my-button.svelte` -> `mybutton`. */
+function moduleNameFromFile(file: string, warned?: Set<string>): string {
+  return sanitizeModuleName(parse(file).name.replace(HYPHEN_REGEX, ""), warned);
+}
+
+export type ComponentEntry = [string, ParsedExports[string]];
+
 /**
- * Discovered component sources for an entry point, before parsing.
- *
- * `exports` holds explicitly exported components for JSON/Markdown.
- * `allComponentEntries` is a flat list that also includes glob-discovered
- * components for `.d.ts` generation. A map keyed by `moduleName` would drop
- * one of two `.svelte` files that share a basename. `resolveComponentFilePath`
- * maps a component `source` to its absolute path on disk.
+ * `exports` holds the barrel's exported components (JSON/Markdown);
+ * `allComponentEntries` adds glob-discovered ones (`.d.ts`). It's a list, not
+ * a map keyed by `moduleName`, so two files sharing a basename both survive.
  */
 export interface CollectedComponents {
   exports: ParsedExports;
-  allComponentEntries: Array<[string, ParsedExports[string]]>;
+  allComponentEntries: ComponentEntry[];
   rootDir: string;
   resolveComponentFilePath: ResolveComponentFilePath;
 }
 
-/** A `.svelte` file discovered on disk, before it's merged into `exports`/`allComponentEntries`. */
 interface GlobbedComponentSource {
   moduleName: string;
   source: ReturnType<typeof asRelativeSourcePath>;
 }
 
 /**
- * Recursively collects absolute paths of every `.svelte` file under `dir`.
- *
- * Skips dotfiles/dot-directories and follows symlinked directories, guarding
- * against symlink cycles via a set of visited real paths. Tolerates a
- * missing `dir` (returns no matches) instead of throwing.
+ * Every `.svelte` file under `dir`, skipping dot-entries. Follows symlinked
+ * directories, guarding against cycles by real path. A missing `dir` yields
+ * no matches.
  */
 function findSvelteFiles(
   graph: ModuleGraph,
   dir: string,
   results: string[] = [],
   visited = new Set<string>(),
-  /** `dir`'s real path when the caller already knows it (see the recursion below). */
   knownRealDir?: string,
 ): string[] {
   let real: string;
@@ -84,9 +81,7 @@ function findSvelteFiles(
     if (!stat) continue; // Broken symlink.
 
     if (stat.isDirectory()) {
-      // A non-symlink child of a directory whose real path is `real` has real
-      // path `real/name`: no `realpathSync` syscall needed. Only symlinked
-      // directories can point elsewhere and must be resolved.
+      // A non-symlink child's real path is `real/name`, saving a `realpathSync`.
       findSvelteFiles(graph, entryPath, results, visited, isSymbolicLink ? undefined : join(real, entry.name));
     } else if (stat.isFile() && entry.name.endsWith(".svelte")) {
       results.push(entryPath);
@@ -96,20 +91,13 @@ function findSvelteFiles(
   return results;
 }
 
-/**
- * Globs every `.svelte` file under `rootDir`, resolving each to its module name and source path.
- *
- * Sorted by `source` so walk order does not depend on `readdirSync`, which
- * varies by OS.
- */
+/** Sorted by `source`, since `readdirSync` order varies by OS. */
 function globComponentSources(graph: ModuleGraph, rootDir: string): GlobbedComponentSource[] {
   return findSvelteFiles(graph, rootDir)
-    .map((file) => {
-      // Every hit ends in `.svelte` and is not a dotfile, so this is `parse(file).name`.
-      const moduleName = sanitizeModuleName(basename(file, ".svelte").replace(HYPHEN_REGEX, ""));
-      const source = asRelativeSourcePath(normalizeSeparators(`./${relative(rootDir, file)}`));
-      return { moduleName, source };
-    })
+    .map((file) => ({
+      moduleName: moduleNameFromFile(file),
+      source: asRelativeSourcePath(normalizeSeparators(`./${relative(rootDir, file)}`)),
+    }))
     .sort((a, b) => compareText(a.source, b.source));
 }
 
@@ -124,11 +112,7 @@ function isWithinSourceDir(dirSource: string, candidateSource: string): boolean 
   return candidateSource.startsWith(dir);
 }
 
-/**
- * State shared across {@link mergeGlobbedComponents} calls. Dedupes by
- * resolved path, and warns once per colliding basename. Watch mode keeps
- * one instance across re-globs; a one-shot build creates one and drops it.
- */
+/** Shared across {@link mergeGlobbedComponents} calls; watch mode keeps one across re-globs. */
 export interface GlobMergeState {
   seenPaths: Set<string>;
   seenModuleNamePaths: Map<string, string>;
@@ -136,7 +120,7 @@ export interface GlobMergeState {
 }
 
 export function createGlobMergeState(
-  entries: Array<[string, ParsedExports[string]]>,
+  entries: ComponentEntry[],
   resolveComponentFilePath: ResolveComponentFilePath,
 ): GlobMergeState {
   return {
@@ -149,25 +133,17 @@ export function createGlobMergeState(
 }
 
 /**
- * Merges every glob-discovered `.svelte` file under `rootDir` into `exports`
- * and `allComponentEntries`.
- *
- * When a barrel export still points at a directory, like
- * `export { Button } from "./button"`, match it to the glob hit under that
- * directory with the same basename.
- *
- * Other glob hits each get their own `allComponentEntries` row, tracked in
- * `state` by resolved file path. Files that share a basename both stay in
- * `.d.ts` output. A colliding basename is logged once.
- *
- * Safe to call again with the same `state`. Watch mode re-globs on every
- * edit and skips paths already seen.
+ * Merges every `.svelte` file under `rootDir` into `exports` and
+ * `allComponentEntries`. A barrel export still pointing at a directory
+ * (`export { Button } from "./button"`) is matched to the same-basename hit
+ * under it; every other unseen hit gets its own `allComponentEntries` row.
+ * Idempotent for a given `state`.
  */
 export function mergeGlobbedComponents(
   graph: ModuleGraph,
   rootDir: string,
   exports: ParsedExports,
-  allComponentEntries: Array<[string, ParsedExports[string]]>,
+  allComponentEntries: ComponentEntry[],
   resolveComponentFilePath: ResolveComponentFilePath,
   state: GlobMergeState,
 ): void {
@@ -207,14 +183,9 @@ export function mergeGlobbedComponents(
 /**
  * Discovers component sources for an entry point without parsing them.
  *
- * Parses the entry's exports (when `input` is a file) and, when `glob` is set,
- * augments the set with every `.svelte` file under the entry directory.
- *
- * @param documentExports - When `true`, log and continue if the entry file fails
- *   the component-export parse, which reads it as JavaScript (TypeScript-only
- *   syntax is common).
- * @param graph - Lists directories for the glob walk and resolves the
- *   barrel's re-exports.
+ * @param documentExports - When `true`, warn instead of throwing if the
+ *   component-export parse (which reads the entry as JavaScript) fails on
+ *   TypeScript-only syntax.
  */
 export function collectComponents(
   input: string,
@@ -225,8 +196,7 @@ export function collectComponents(
   const isFile = lstatSync(input).isFile();
   const dir = isFile ? dirname(input) : input;
   const rootDir = resolve(dir);
-  // Memoized: the same `source` is resolved several times per run (glob
-  // merge, file-path collection, per-component processing, cache lookup).
+  // Memoized: the same `source` is resolved several times per run.
   const resolvedPaths = new Map<string, string>();
   const resolveComponentFilePath: ResolveComponentFilePath = (filePath) => {
     let resolved = resolvedPaths.get(filePath);
@@ -237,34 +207,26 @@ export function collectComponents(
     return resolved;
   };
 
-  /**
-   * Only parse exports if input is a file.
-   * Directory inputs don't have a single entry point to parse exports from.
-   */
   let exports: ParsedExports = {};
   if (isFile) {
     const entry = readFileSync(input, "utf-8");
     try {
       exports = parseExports(entry, rootDir, graph, new Set([resolve(input)]));
     } catch (error) {
-      // Without documentExports, throw. With it, warn and continue.
       if (!documentExports) throw error;
       const message = error instanceof Error ? error.message : String(error);
       console.warn(`Warning: Failed to parse component exports from ${input}: ${message}`);
     }
   }
 
-  const allComponentEntries: Array<[string, ParsedExports[string]]> = Object.entries(exports);
+  const allComponentEntries: ComponentEntry[] = Object.entries(exports);
 
   if (glob) {
     const state = createGlobMergeState(allComponentEntries, resolveComponentFilePath);
     mergeGlobbedComponents(graph, rootDir, exports, allComponentEntries, resolveComponentFilePath, state);
 
-    // A directory entry has no barrel to parse exports from (`exports` is
-    // still `{}` at this point), so without this every globbed component
-    // would be missing from JSON/Markdown output and the generated index
-    // `.d.ts`, even though a per-component `.d.ts` is still produced for
-    // each of them via `allComponentEntries`.
+    // A directory entry has no barrel, so every globbed component is exported
+    // (JSON/Markdown and the index `.d.ts` read `exports`).
     if (!isFile) {
       exports = Object.fromEntries(
         allComponentEntries.map(([moduleName, entry]) => [moduleName, { ...entry, default: true }]),
@@ -275,11 +237,7 @@ export function collectComponents(
   return { exports, allComponentEntries, rootDir, resolveComponentFilePath };
 }
 
-/**
- * The `moduleName` of an entry: its export name, except that the lone
- * `default` export of a list of `entryCount` entries is named after its
- * file, like a `--glob` component: `my-button.svelte` is `mybutton`.
- */
+/** The export name, except a lone `default` entry is named after its file, like a `--glob` component. */
 export function componentModuleName(
   exportName: string,
   source: string,
@@ -287,5 +245,5 @@ export function componentModuleName(
   warned?: Set<string>,
 ): string {
   if (entryCount !== 1 || exportName !== "default") return exportName;
-  return sanitizeModuleName(parse(source).name.replace(HYPHEN_REGEX, ""), warned);
+  return moduleNameFromFile(source, warned);
 }

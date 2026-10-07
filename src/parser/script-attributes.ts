@@ -27,28 +27,16 @@ export function resolveScriptLanguage(parsed: {
       continue;
     }
 
-    const language = getStaticAttributeValue(langAttribute)?.toLowerCase();
-    if (language === "ts") {
-      return "ts";
-    }
+    if (getStaticAttributeValue(langAttribute)?.toLowerCase() === "ts") return "ts";
   }
 
   return hasPlainScript ? "js" : undefined;
 }
 
-/**
- * Reads the `generics` attribute off the instance script (Svelte only allows
- * it there, and only alongside `lang="ts"`). Returns the raw value for later
- * precedence resolution against `@generics`/`@template` JSDoc tags, or
- * `undefined` if absent. Records a `syntax-skipped` diagnostic and returns
- * `undefined` if the attribute is present without `lang="ts"`, since sveld
- * can't safely guess how to parse it as plain JavaScript.
- */
+/** The instance script's `generics` attribute, which is only valid alongside `lang="ts"`. */
 export function resolveScriptGenericsAttribute(
   ctx: ParserContext,
-  parsed: {
-    instance?: AST.Script;
-  },
+  parsed: { instance?: AST.Script },
 ): { value: string; source?: SourceRange } | undefined {
   const genericsAttribute = parsed.instance?.attributes.find((attribute) => attribute.name === "generics");
   if (!genericsAttribute) return undefined;

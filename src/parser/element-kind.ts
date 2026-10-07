@@ -1,8 +1,4 @@
-/**
- * Modern AST types that used to collapse to `InlineComponent` or `Element`
- * in the legacy tree. Shared so `ComponentParser` and `rest-props` agree.
- */
-
+/** AST node types sveld treats as `InlineComponent` or `Element`. */
 const COMPONENT_LIKE_TYPES = new Set(["Component", "SvelteComponent", "SvelteSelf"]);
 const ELEMENT_LIKE_TYPES = new Set(["RegularElement", "SvelteElement"]);
 

@@ -1,14 +1,7 @@
 import type { ComponentPropParam, ComponentPropTypeSource } from "../model";
 import { formatParamList } from "./utils";
 
-/**
- * Decides a prop's provenance for docs UIs. Order is fixed and mirrors the
- * precedence used to pick the prop's final `type` text in
- * {@link resolvePropTypeAndDocs}: an explicit TypeScript annotation always
- * wins, then JSDoc `@type`/`@param`/`@returns`, then a type resolved from an
- * identifier default's own JSDoc, and only then a bare inferred/initializer
- * type. `"unknown"` means none of the above produced any type text at all.
- */
+/** A prop's type provenance, in the same precedence {@link resolvePropTypeAndDocs} picks its type. */
 export function resolveTypeSource({
   hasTypeScriptType,
   hasJSDocType,
@@ -28,55 +21,30 @@ export function resolveTypeSource({
 }
 
 export interface ResolvePropTypeAndDocsInput {
-  /** Explicit TypeScript type text: a legacy `: T` annotation, or the matching `$props()` type-literal member in runes. */
+  /** A legacy `: T` annotation, or the matching `$props()` type-literal member. */
   explicitType?: string;
-  /**
-   * Lowest-precedence type text, used only when nothing else applies: the
-   * initializer's inferred type, or the literal `"() => any"` seed for a
-   * bare `export function` declaration (which has no initializer).
-   */
+  /** Lowest precedence: the initializer's inferred type, or `"() => any"` for an `export function`. */
   typeSeed?: string;
-  /**
-   * Value fed to {@link resolveTypeSource}'s `inferredType` bucket. Distinct
-   * from `typeSeed` for function declarations, which have an initializer-less
-   * `typeSeed` placeholder but no actual inferred type.
-   */
+  /** Differs from `typeSeed` for function declarations, whose seed is a placeholder, not an inferred type. */
   inferredTypeForSource?: string;
   jsdocType?: string;
   jsdocDescription?: string;
   jsdocParams?: ComponentPropParam[];
   jsdocReturnType?: string;
-  /** `@template` type parameters from a comment documenting a function (see `processJSDocComment`). */
   jsdocTypeParameters?: string;
   /**
-   * Type/description/params/returnType resolved from an identifier default's
-   * own JSDoc (e.g. `export let onClick = defaultHandler;` where
-   * `defaultHandler` carries its own doc comment). Callers should gate this
-   * to `undefined` whenever `explicitType`/`jsdocType` is already set, so it
-   * only ever fills a genuine gap (see {@link resolvePropIsFunction}, which
-   * relies on the same gating).
+   * From an identifier default's own JSDoc (`export let onClick = handler`).
+   * Callers leave it unset when `explicitType`/`jsdocType` is set.
    */
   resolvedType?: string;
   resolvedDescription?: string;
   resolvedParams?: ComponentPropParam[];
   resolvedReturnType?: string;
-  /** True when the initializer itself is an arrow/function expression. */
   initializerIsFunction: boolean;
-  /** True for a bare `export function foo() {}` declaration. */
   isFunctionDeclaration: boolean;
-  /**
-   * Runes-only: also treat the prop as a function when its resolved type
-   * text looks like a callback signature (`@param`/`@returns`/`=>` from
-   * TypeScript, JSDoc, or an identifier default). Legacy `export let` never
-   * applies this signature check; the mode difference predates this helper
-   * and is preserved here rather than silently converged.
-   */
+  /** Runes-only (a preserved mode difference): a callback-looking type makes the prop a function. */
   inferIsFunctionFromTypeSignature?: boolean;
-  /**
-   * Legacy-only: fall back to a `@typedef`'s own description when the prop
-   * has none of its own. Runes omits this today (a preserved mode
-   * difference); pass `undefined` there.
-   */
+  /** Legacy-only (a preserved mode difference): falls back to a `@typedef`'s description. */
   typedefs?: Map<string, { description?: string }>;
 }
 
@@ -90,31 +58,19 @@ export interface ResolvedPropTypeAndDocs {
   typeParameters?: string;
 }
 
-/**
- * Resolves the type/description/params/returnType/isFunction decisions
- * shared by every prop front-end (legacy module exports, legacy instance
- * `export let`/`export function`, and runes `$props()` destructuring). The
- * front-ends differ only in how they extract the raw signals below from
- * their respective AST shapes; once extracted, the decisions are identical
- * except where explicitly parameterized above.
- */
+/** The type and docs decisions shared by module exports, `export let`/`export function`, and `$props()`. */
 export function resolvePropTypeAndDocs(input: ResolvePropTypeAndDocsInput): ResolvedPropTypeAndDocs {
   let type = input.explicitType ?? input.jsdocType ?? input.resolvedType ?? input.typeSeed;
   const params = input.jsdocParams ?? input.resolvedParams;
   const returnType = input.jsdocReturnType ?? input.resolvedReturnType;
 
-  // A function declaration or function initializer only has a placeholder signature
-  // (`() => any`, or one inferred from its params); if JSDoc supplies `@param`/`@returns`
-  // but no `@type`, build the signature from them.
+  // A function's placeholder signature gives way to one built from `@param`/`@returns`.
   const hasPlaceholderSignature = input.isFunctionDeclaration
     ? type === "() => any"
     : input.initializerIsFunction && type === input.typeSeed;
   if (hasPlaceholderSignature && returnType) {
     const typeParameters = input.jsdocTypeParameters ? `<${input.jsdocTypeParameters}>` : "";
-    type =
-      params && params.length > 0
-        ? `${typeParameters}(${formatParamList(params)}) => ${returnType}`
-        : `${typeParameters}() => ${returnType}`;
+    type = `${typeParameters}(${formatParamList(params ?? [])}) => ${returnType}`;
   }
 
   let description = input.jsdocDescription ?? input.resolvedDescription;

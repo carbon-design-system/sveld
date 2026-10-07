@@ -16,24 +16,21 @@ import { compareSerializedEvents } from "./parser/event-order";
 import type { DetailTypeSource } from "./parser/events";
 import { getParserStack } from "./parser-stack";
 
-export type DispatchEscapeFailureReason =
+type DispatchEscapeFailureReason =
   | "module-not-found"
   | "not-a-function"
   | "parameter-not-found"
   | "dynamic-event-name"
   | "passed-on";
 
-/** An event the helper dispatches through the component's dispatcher. */
-export interface HelperDispatchedEvent {
+interface HelperDispatchedEvent {
   name: string;
   detail: string;
 }
 
-export interface DispatchEscapeResolution {
+interface DispatchEscapeResolution {
   candidate: PendingDispatchEscapeCandidate;
-  /** Present on success. */
   events?: HelperDispatchedEvent[];
-  /** Present on failure. */
   failureReason?: DispatchEscapeFailureReason;
 }
 
@@ -41,14 +38,12 @@ export interface DispatchEscapeResolution {
 type DispatcherBinding = { name: string } | { object: string; property: string };
 
 /**
- * Read the function each candidate passes its dispatcher to
- * ({@link findImportedExport} follows re-exports and namespace exports)
- * and collect the events it dispatches: every call through the receiving
- * parameter must name its event with a string literal, or a conditional
- * between them. A dispatcher the function passes on, or a name computed at
- * runtime, leaves the candidate unresolved. AST only, no `tsc`.
+ * Collects the events each candidate's helper dispatches. Every call through
+ * the receiving parameter must name its event with a string literal (or a
+ * conditional between them); a dispatcher passed on, or a runtime-computed
+ * name, leaves the candidate unresolved. AST only, no `tsc`.
  */
-export function resolveDispatchEscapeCandidates(
+function resolveDispatchEscapeCandidates(
   componentFilePath: string,
   candidates: PendingDispatchEscapeCandidate[],
   ctx: ResolveContext,
@@ -112,11 +107,7 @@ const helperDetailTypeSource: DetailTypeSource = {
   variableType: () => undefined,
 };
 
-/**
- * Detail type of one `dispatch(name, detail)` call, inferred as a
- * same-file dispatch's is: object and array literals structurally, other
- * literals as their value. Anything else is `any`.
- */
+/** Inferred like a same-file dispatch's detail: literals structurally, anything else `any`. */
 function detailType(node: Expression | SpreadElement | undefined): string {
   if (!node) return "null";
   const { deriveLiteralDetailType, literalDetailToTypeText } = getParserStack();
@@ -140,13 +131,11 @@ function collectDispatchedEvents(
   binding: DispatcherBinding,
   candidate: PendingDispatchEscapeCandidate,
 ): DispatchEscapeResolution {
-  const body = fn.body;
-
   const detailsByName = new Map<string, Set<string>>();
   const referenceName = "name" in binding ? binding.name : binding.object;
   let failureReason: DispatchEscapeFailureReason | undefined;
 
-  walk(body, {
+  walk(fn.body, {
     enter(node, parent, prop) {
       if (node.type === "CallExpression") {
         if (!isDispatcherCallee(node.callee, binding)) return;
@@ -191,8 +180,8 @@ function collectDispatchedEvents(
   return { candidate, events };
 }
 
-/** Why the helper's events couldn't be read, completing "sveld couldn't read the events it dispatches: ...". */
-export function describeDispatchEscapeFailure(
+/** Completes "sveld couldn't read the events it dispatches: ...". */
+function describeDispatchEscapeFailure(
   candidate: PendingDispatchEscapeCandidate,
   reason: DispatchEscapeFailureReason,
 ): string {
@@ -216,12 +205,11 @@ export function describeDispatchEscapeFailure(
 }
 
 /**
- * Add the events each helper dispatches, unless the component already
- * dispatches one by that name (its `@event` tag wins). A helper event
- * replaces a forwarded event of the same name. A helper sveld couldn't read
- * gets a `dispatch-escapes` diagnostic. The held-back `event-no-source`
- * diagnostics come back only when every helper was read and none of them
- * dispatches the event.
+ * Adds each helper's events unless the component already dispatches one by
+ * that name; a helper event replaces a forwarded one of the same name. An
+ * unreadable helper gets a `dispatch-escapes` diagnostic. Held-back
+ * `event-no-source` diagnostics return only when every helper was read and
+ * none dispatches the event.
  */
 function applyDispatchEscapeResolutions(
   component: ComponentDocApi,
@@ -321,7 +309,6 @@ function applyDispatchEscapeResolutions(
   ].sort(compareSerializedEvents);
 }
 
-/** Adds the events a component's dispatcher is passed to an imported helper to dispatch. */
 export const dispatchEscapesPass: CrossFilePass<PendingDispatchEscapeCandidate, DispatchEscapeResolution> = {
   collect: (pending) => pending.pendingDispatchEscapeCandidates ?? [],
   resolve: resolveDispatchEscapeCandidates,

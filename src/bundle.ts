@@ -13,10 +13,7 @@ export interface ComponentDocApi extends ParsedComponent {
 
 export type ComponentDocs = Map<string, ComponentDocApi>;
 
-/**
- * A parse failure for a single component, captured so the rest of the run
- * can continue. Surfaced via {@link GenerateBundleResult.errors}.
- */
+/** A component parse failure, captured so the rest of the run can continue. */
 export interface ComponentParseError {
   filePath: string;
   moduleName: string;
@@ -45,25 +42,21 @@ export interface GenerateBundleResult {
   /** Unknown props, `any` contexts, and orphan `@event` tags across the bundle. */
   diagnostics: SveldDiagnostic[];
   /**
-   * @internal The parse cache instance for this run (undefined when the parse
-   * cache is disabled). Exposed so the write phase can layer a generated-text
-   * cache on top of it (see `writeTsDefinitions`) and persist the addition
-   * with a second `save()` after writing.
+   * @internal Undefined when caching is off. Exposed so the write phase can
+   * layer a generated-text cache on top and `save()` again after writing.
    */
   cache?: ParseCache;
   /**
-   * @internal filePath -> resolved source path, matching `cache` entry
-   * identity so the write phase can look up text cache without redoing
-   * path-alias resolution. Uses filePath because moduleName is not unique
-   * when two components share a basename. Undefined when the parse cache
-   * is disabled. Leaves out components whose output was resolved from
-   * another file's contents; see `crossFileResolvedPathByFilePath`.
+   * @internal filePath -> resolved source path (the `cache` entry key), so
+   * the write phase skips path-alias resolution. Keyed by filePath since
+   * moduleName isn't unique. Undefined when caching is off. Omits components
+   * resolved from another file's contents; see `crossFileResolvedPathByFilePath`.
    */
   resolvedPathByFilePath?: Map<string, string>;
   /**
-   * @internal Like `resolvedPathByFilePath`, for the components it leaves
-   * out: their cached text is also keyed on their resolved content, since
-   * their own source doesn't determine it.
+   * @internal The components `resolvedPathByFilePath` omits: their cached
+   * text is also keyed on their resolved content, since their own source
+   * doesn't determine it.
    */
   crossFileResolvedPathByFilePath?: Map<string, string>;
 }
@@ -103,9 +96,7 @@ export interface GenerateBundleOptions {
   diagnostics?: { ignore?: DiagnosticIgnoreMatcher[] };
 }
 
-export function toGenerateBundleOptions(
-  opts?: Pick<GenerateBundleOptions, "failFast" | "documentExports" | "cache" | "checkExamples" | "diagnostics">,
-): GenerateBundleOptions {
+export function toGenerateBundleOptions(opts?: GenerateBundleOptions): GenerateBundleOptions {
   return {
     failFast: opts?.failFast,
     documentExports: opts?.documentExports === true,
@@ -115,36 +106,13 @@ export function toGenerateBundleOptions(
   };
 }
 
-/** A function that resolves a (possibly relative) component path to an absolute path. */
+/** Resolves a (possibly relative) component path to an absolute path. */
 export type ResolveComponentFilePath = (filePath: string) => string;
 
 /**
- * Generates component documentation bundle from Svelte source files.
- *
- * Parses exports, discovers components (optionally via glob), and processes
- * all Svelte files to extract component metadata. Returns both exported
- * components (for JSON/Markdown) and all components (for TypeScript definitions).
- *
- * A single component that fails to parse is captured as a diagnostic (see
- * {@link GenerateBundleResult.errors}) so the remaining components still emit
- * output. Pass `{ failFast: true }` to restore abort-on-first-error behavior.
- *
- * @param input - Entry point file or directory containing Svelte components
- * @param glob - Whether to glob for all .svelte files in the directory
- * @param options - Bundle options (e.g. `failFast`, `checkExamples`, `documentExports`)
- * @returns Bundle result containing exports, entryExports, components, allComponentsForTypes, and errors
- *
- * @example
- * ```ts
- * // Generate from single file:
- * const result = await generateBundle("./src/App.svelte", false);
- *
- * // Generate from directory with glob:
- * const result = await generateBundle("./src", true);
- *
- * // Abort on the first parse failure:
- * const result = await generateBundle("./src", true, { failFast: true });
- * ```
+ * Parses the entry's exported components (for JSON/Markdown) and, with
+ * `glob`, every `.svelte` file beside it (for TypeScript definitions). A
+ * component that fails to parse lands in `errors` unless `failFast` is set.
  */
 export async function generateBundle(
   input: string,

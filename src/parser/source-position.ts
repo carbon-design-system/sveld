@@ -1,8 +1,8 @@
 import { createLocator } from "sveast/walk";
+import { isObject } from "../ast-guards";
 import type { SourcePosition, SourceRange } from "../model";
 import type { ParserContext } from "./context";
 
-/** Matches one or more consecutive `\r`/`\n` so multiline source can collapse to a single space. */
 export const NEWLINE_CR_REGEX = /[\r\n]+/g;
 
 function sourcePositionFromOffset(ctx: ParserContext, offset: number): SourcePosition | undefined {
@@ -22,31 +22,30 @@ export function sourceRangeFromOffsets(
   const endPosition = sourcePositionFromOffset(ctx, end);
   if (!startPosition || !endPosition) return undefined;
 
+  return { start: startPosition, end: endPosition };
+}
+
+function nodeOffsets(node: unknown): { start?: number; end?: number } {
+  if (!isObject(node)) return {};
   return {
-    start: startPosition,
-    end: endPosition,
+    start: typeof node.start === "number" ? node.start : undefined,
+    end: typeof node.end === "number" ? node.end : undefined,
   };
 }
 
 export function sourceRangeFromNode(ctx: ParserContext, node: unknown) {
-  if (!node || typeof node !== "object") return undefined;
-  const start = "start" in node && typeof node.start === "number" ? node.start : undefined;
-  const end = "end" in node && typeof node.end === "number" ? node.end : undefined;
+  const { start, end } = nodeOffsets(node);
   return sourceRangeFromOffsets(ctx, start, end);
 }
 
-/**
- * Computes the {@link SourceRange} for a JSDoc tag, given that tag's own comment lines (each
- * already carrying its absolute offset in the source - see `./comment-parser.ts`).
- */
+/** A JSDoc tag's range, from its comment lines (each carrying its absolute offset). */
 export function sourceRangeFromCommentTag(
   ctx: ParserContext,
   tagLines: Array<{ start: number; raw: string; tag?: string }> | undefined,
 ): SourceRange | undefined {
   if (!tagLines || tagLines.length === 0) return undefined;
 
-  // A trailing line that's purely the block's closing `*/` (not itself a tag boundary) isn't
-  // part of this tag's own text - drop it before computing the range's end.
+  // A trailing line that's just the block's closing `*/` isn't part of the tag.
   const relevantLines = [...tagLines];
   while (relevantLines.length > 1) {
     const lastLine = relevantLines[relevantLines.length - 1];
@@ -68,10 +67,13 @@ export function sourceAtPos(ctx: ParserContext, start: number, end: number) {
   return ctx.source?.slice(start, end);
 }
 
-export function sourceForExpression(ctx: ParserContext, node: unknown) {
-  if (!node || typeof node !== "object") return undefined;
-  const start = "start" in node && typeof node.start === "number" ? node.start : undefined;
-  const end = "end" in node && typeof node.end === "number" ? node.end : undefined;
+export function nodeSourceText(ctx: ParserContext, node: unknown) {
+  const { start, end } = nodeOffsets(node);
   if (start === undefined || end === undefined) return undefined;
-  return sourceAtPos(ctx, start, end)?.replace(NEWLINE_CR_REGEX, " ");
+  return sourceAtPos(ctx, start, end);
+}
+
+/** `nodeSourceText` with newlines folded to spaces. */
+export function sourceForExpression(ctx: ParserContext, node: unknown) {
+  return nodeSourceText(ctx, node)?.replace(NEWLINE_CR_REGEX, " ");
 }

@@ -1,11 +1,9 @@
 /**
- * Component-level JSDoc: the `@event`, `@slot`/`@snippet`, `@typedef`,
- * `@callback`, `@restProps`, `@extends`, `@generics`/`@template`, and
- * `@csspart`/`@cssprop` tags anywhere in a component's comments, which
- * describe the component rather than the declaration they sit on.
+ * Component-level JSDoc tags (`@event`, `@slot`, `@typedef`, `@generics`, ...): anywhere in a
+ * component's comments, they describe the component, not the declaration they sit on.
  */
 import { closestMatch } from "../levenshtein";
-import type { DeprecatedValue, JsDocPassthroughTag, SourceRange } from "../model";
+import type { DeprecatedValue, JsDocPassthroughTag, SourceRange, TypeDef } from "../model";
 import { indexOfClosingBracket, splitTopLevel } from "../type-text";
 import type { JSDocComment, JSDocTag } from "./comment-parser";
 import { parseComments, togglesCodeFence } from "./comment-parser";
@@ -27,16 +25,11 @@ import {
 import { parseObjectTypeLiteralMembers } from "./object-type-literal";
 import { addSlot } from "./slots";
 import { sourceRangeFromCommentTag } from "./source-position";
-import { assignValueOrUndefined } from "./utils";
+import { formatParamList } from "./utils";
 
 const GENERIC_DEFAULT_EQUALS_REGEX = /\s*=\s*/;
 
-/**
- * Normalizes spacing in a `@typedef`/`@callback` tag's generic suffix, as
- * literally written by the author (e.g. `Name<Row=DataTableRow,Header=Foo>`),
- * to `Name<Row = DataTableRow, Header = Foo>` — matching how every other
- * generic parameter list sveld emits is spaced.
- */
+/** `Name<Row=DataTableRow,Header=Foo>` to `Name<Row = DataTableRow, Header = Foo>`, as sveld spaces other generics. */
 function normalizeGenericNameSpacing(name: string): string {
   const openIndex = name.indexOf("<");
   if (openIndex === -1 || !name.endsWith(">")) return name;
@@ -50,10 +43,7 @@ function normalizeGenericNameSpacing(name: string): string {
   return `${base}<${normalizedParams}>`;
 }
 
-/**
- * Tags that take the description lines directly above them when they have none on their own
- * line (sveld's description-above-the-tag convention), e.g. a line of prose then `@event`.
- */
+/** Tags that take the description lines directly above them when they have none on their own line. */
 const PRECEDING_DESCRIPTION_TAGS = new Set(["restProps", "slot", "snippet", "event", "typedef", "callback"]);
 
 /** Tags that stay inside the preceding `@event`'s scope instead of ending it. */
@@ -63,9 +53,8 @@ const EVENT_SCOPE_TAGS = new Set(["property", "type"]);
 const EVENT_SCOPE_ENDING_TAGS = new Set(["slot", "snippet", "typedef", "callback"]);
 
 /**
- * Returns the description text that appears on the same line as the tag itself, ignoring
- * continuation lines that `parseComments` aggregated into the tag's `description` field. A
- * multi-line `{type}` moves that line down to where the type closes.
+ * Text on the tag's own line, without the continuation lines `parseComments` folds into
+ * `description`. A multi-line `{type}` moves that line down to where the type closes.
  */
 function getInlineTagDescription(
   tagLines: Array<{ content: string; continuesType?: true }> | undefined,
@@ -85,7 +74,6 @@ function hasBodyOnTagLine(tag: JSDocTag): boolean {
   return tag.text.split("\n").length === tag.lines.length;
 }
 
-/** `text` minus its last `count` lines. */
 function dropLastLines(text: string, count: number): string {
   if (count <= 0) return text;
   return text.split("\n").slice(0, -count).join("\n").trimEnd();
@@ -186,9 +174,6 @@ const TRAILING_SEMICOLON_REGEX = /;$/;
 function isSingleObjectLiteral(source: string): boolean {
   const s = source.trim().replace(TRAILING_SEMICOLON_REGEX, "").trimEnd();
   if (!s.startsWith("{") || !s.endsWith("}")) return false;
-
-  // The opening `{` must close at the very end, not before other top-level
-  // content (e.g. `{...} | {...}`).
   return indexOfClosingBracket(s, 0) === s.length - 1;
 }
 
@@ -224,7 +209,7 @@ function typedefTakesProperties(typedefType: string | undefined): boolean {
   return !type || type === "object" || type === "Object";
 }
 
-/** `@generics`/`@template` bookkeeping across all of a component's comment blocks, for the duplicate/mixed-tag warnings. */
+/** Spans all of a component's comment blocks, for the duplicate/mixed generics warnings. */
 interface GenericsTagState {
   usedGenericsTag: boolean;
   usedTemplateTag: boolean;
@@ -255,12 +240,7 @@ function warnAndTrackGenericName(
   }
 }
 
-/**
- * Accumulates a `@generics`/`@template` declaration, replacing an earlier
- * declaration in place when `declaredName` was already declared - so
- * redeclaring the same generic (e.g. via both tags) updates its constraint
- * instead of appending a second, invalid duplicate type parameter.
- */
+/** Redeclaring a generic (e.g. via both tags) updates its constraint instead of adding an invalid duplicate. */
 function accumulateOrReplaceGeneric(ctx: ParserContext, declaredName: string, constraint: string) {
   if (ctx.generics) {
     const names = splitTopLevel(ctx.generics[0], ",").map((n) => n.trim());
@@ -275,8 +255,22 @@ function accumulateOrReplaceGeneric(ctx: ParserContext, declaredName: string, co
   accumulateGeneric(ctx, declaredName, constraint);
 }
 
-/** `ctx.typedefs` holds both `@typedef` and `@callback` declarations, keyed by name; both finalizers share this check. */
-function warnDuplicateTypedefName(ctx: ParserContext, name: string, source: SourceRange | undefined) {
+/** `@typedef` and `@callback` share `ctx.typedefs`, so either one can overwrite the other. */
+function addTypedef(
+  ctx: ParserContext,
+  {
+    name,
+    type,
+    ts,
+    description,
+    tags,
+    internal,
+    source,
+  }: Omit<TypeDef, "tags" | "internal"> & {
+    tags: JsDocPassthroughTag[];
+    internal: boolean;
+  },
+) {
   if (ctx.typedefs.has(name)) {
     recordDiagnostic(
       ctx,
@@ -286,13 +280,18 @@ function warnDuplicateTypedefName(ctx: ParserContext, name: string, source: Sour
       source,
     );
   }
+  ctx.typedefs.set(name, {
+    type,
+    name,
+    description: description || undefined,
+    ts,
+    tags: tags.length > 0 ? tags : undefined,
+    ...(internal ? { internal: true as const } : {}),
+    source,
+  });
 }
 
-/**
- * Replaces an earlier `@property` with the same name instead of pushing a
- * second entry - two properties with the same key would otherwise appear
- * in the emitted object type.
- */
+/** Two properties with the same key would otherwise both appear in the emitted object type. */
 function pushOrReplaceProperty<T extends { name: string }>(
   ctx: ParserContext,
   list: T[],
@@ -328,11 +327,9 @@ interface TagProperty {
 }
 
 /**
- * Reads one comment block's tags in order. Tags in a block build on each
- * other (an `@event` collects the `@property` tags below it, a tag with no
- * description of its own takes the text above it), so the block's
- * in-progress event, typedef, and callback, and which description lines
- * are taken, live here; {@link read} hands each tag to its `read*` method.
+ * Reads one comment block's tags in order. Tags build on each other (an `@event` collects
+ * the `@property` tags below it, a tag with no description takes the text above it), so the
+ * in-progress event/typedef/callback and the claimed description lines live here.
  */
 class CommentBlockReader {
   private readonly tags: JSDocTag[];
@@ -370,11 +367,9 @@ class CommentBlockReader {
   private callbackReturnType: string | undefined;
 
   /**
-   * Where a passthrough tag (`@since`, `@see`, an unknown tag, ...) attaches
-   * once a structural tag (`@slot`/`@snippet`/`@event`/`@typedef`/`@callback`)
-   * has been seen in this block: set every time one starts, so a tag
-   * trailing it attaches to it directly instead of queuing in `pendingTags`
-   * for whatever structural tag happens to come next.
+   * Set whenever a structural tag (`@slot`/`@event`/`@typedef`/...) starts, so a passthrough
+   * tag (`@since`, `@see`, ...) after it attaches to it instead of queuing in `pendingTags`
+   * for the next structural tag.
    */
   private attachTrailingTag: ((tag: JsDocPassthroughTag) => void) | undefined;
   private readonly pendingTags: JsDocPassthroughTag[] = [];
@@ -387,7 +382,6 @@ class CommentBlockReader {
 
   private readonly lineDescriptions = new Map<number, string>();
   private readonly tagLineNumbers = new Set<number>();
-  /** Lines already used as preceding-description for another tag. */
   private readonly consumedDescriptionLines = new Set<number>();
   /**
    * Indented lines directly under a tag's line: that tag's wrapped description, never the
@@ -396,9 +390,8 @@ class CommentBlockReader {
    */
   private readonly indentedContinuationLines = new Set<number>();
   /**
-   * Cuts the body of the tag right above the current one (`@since`, `@deprecated`,
-   * `@restProps`, ...) short at the first line the current tag claims as its description, so
-   * the text isn't in both. `trimThisBody` is the current tag's, handed down to the next one.
+   * Cuts the body of the tag above the current one short at the first line the current tag
+   * claims as its description, so the text isn't in both. `trimThisBody` is handed to the next tag.
    */
   private trimBodyAbove: ((fromLine: number) => void) | undefined;
   private trimThisBody: ((fromLine: number) => void) | undefined;
@@ -439,9 +432,7 @@ class CommentBlockReader {
     let inIndentedContinuation = false;
     let inCodeFence = false;
     for (const line of blockLines) {
-      // A line whose only remaining content is a lone "}" is the tail of a multi-line `{...}`
-      // type, not prose - it must not get attributed to any tag as a description. Inside a code
-      // fence it's code.
+      // A lone "}" outside a code fence is the tail of a multi-line `{...}` type, not prose.
       if (!line.tag && !line.continuesType && line.content && (inCodeFence || line.content.trim() !== "}")) {
         this.lineDescriptions.set(line.number, line.content);
       }
@@ -459,7 +450,7 @@ class CommentBlockReader {
     }
   }
 
-  /** `description`, or when it's empty and this is the block's first structural tag, the block's leading description. */
+  /** Falls back to the block's leading description for the block's first structural tag. */
   private orCommentDescription(description: string | undefined): string | undefined {
     if (description || !this.isFirstTag || this.commentDescriptionUsed || !this.commentDescription) return description;
     this.commentDescriptionUsed = true;
@@ -475,9 +466,8 @@ class CommentBlockReader {
   }
 
   /**
-   * The description text of block lines `lineNums` (ascending), after `head` (the text on the
-   * tag's own line) when given. Blank lines between two of them are kept as a paragraph break
-   * when nothing else sits in between; see {@link joinDescriptionLines}.
+   * Joins block lines `lineNums` (ascending) after `head` (the tag line's text). Blank lines
+   * between two of them stay a paragraph break when nothing else sits in between.
    */
   private joinBlockLines(lineNums: readonly number[], head?: { text: string; line: number }): string {
     const texts = head ? head.text.split("\n") : [];
@@ -542,12 +532,9 @@ class CommentBlockReader {
   }
 
   /**
-   * A tag's own description: the text on its line plus its continuation lines, which run to
-   * the next tag as in JSDoc and TypeScript. When that next tag has no description of its own
-   * and takes the text above it instead (see {@link PRECEDING_DESCRIPTION_TAGS}), unindented
-   * lines are left for it, preserving sveld's description-above-the-tag convention. The same
-   * goes for the last tag in an `@event`'s scope (`inEventScope`), whose trailing text
-   * describes the event.
+   * A tag's line plus its continuation lines, which run to the next tag as in JSDoc. Unindented
+   * lines are left for the next tag when it takes the text above it (see
+   * {@link PRECEDING_DESCRIPTION_TAGS}), and for the event when this tag ends an `@event`'s scope.
    */
   private getTagDescription(tagSource: BlockLines, nextTag: JSDocTag | undefined, inEventScope = false) {
     const inline = cleanDescription(getInlineTagDescription(tagSource));
@@ -555,7 +542,6 @@ class CommentBlockReader {
       nextTag !== undefined &&
       PRECEDING_DESCRIPTION_TAGS.has(nextTag.tag) &&
       !cleanDescription(getInlineTagDescription(nextTag.lines));
-    // Unindented text after an event's last `@property`/`@type` is the event's own description.
     const endsEventScope = inEventScope && (nextTag === undefined || !EVENT_SCOPE_TAGS.has(nextTag.tag));
 
     const continuation: number[] = [];
@@ -571,10 +557,8 @@ class CommentBlockReader {
   }
 
   /**
-   * Unindented text right after an `@event` (or after its last `@property`/`@type`) is read
-   * as the description of the tag below it, per the description-above-the-tag convention.
-   * When that leaves the event with no description, the author likely meant the text for the
-   * event, so flag the attribution instead of guessing.
+   * Unindented text after an `@event`'s scope describes the tag below it. When that leaves the
+   * event with no description, the author likely meant it for the event, so flag it.
    */
   private flagDescriptionAfterEvent(
     tag: string,
@@ -598,9 +582,8 @@ class CommentBlockReader {
   }
 
   /**
-   * The text above `tags[tagIndex]`, for a tag with no description of its own. Only a tag that
-   * uses it claims it: otherwise it stays with the tag above (e.g. an `@event`'s trailing text),
-   * and a `@property` or `@type` never swallows the lines between an `@event` and itself.
+   * The text above `tags[tagIndex]`. Only a tag that uses it claims it: otherwise it stays with
+   * the tag above (e.g. an `@event`'s trailing text).
    */
   private takePrecedingDescription(tagIndex: number): string | undefined {
     const { tag, name, lines: tagSource } = this.tags[tagIndex];
@@ -615,40 +598,32 @@ class CommentBlockReader {
     // Prefer explicit `@type` over `@property`-built objects; `{object}` falls through.
     const explicitType =
       this.eventType && this.eventType !== "object" && this.eventType !== "Object" ? this.eventType : undefined;
-    let detailType: string;
-    if (explicitType) {
-      detailType = explicitType;
-    } else if (this.eventProperties.length > 0) {
-      detailType = buildEventDetailFromProperties(this.eventProperties, this.eventName, true);
-    } else {
-      detailType = this.eventType || "";
-    }
+    const detailType =
+      explicitType ??
+      (this.eventProperties.length > 0
+        ? buildEventDetailFromProperties(this.eventProperties, true)
+        : this.eventType || "");
 
-    if (this.eventTagLine !== undefined) {
-      let scopeBoundaryLine: number | undefined;
-      for (const t of this.tags) {
-        const tLine = t.lines[0]?.number;
-        if (typeof tLine !== "number") continue;
-        if (tLine <= this.eventTagLine) continue;
-        if (EVENT_SCOPE_TAGS.has(t.tag)) continue;
-        scopeBoundaryLine = tLine;
-        break;
-      }
-      const trailing: number[] = [];
-      const sortedLineNums = Array.from(this.lineDescriptions.keys()).sort((a, b) => a - b);
-      for (const lineNum of sortedLineNums) {
-        if (lineNum <= this.eventTagLine) continue;
-        if (scopeBoundaryLine !== undefined && lineNum >= scopeBoundaryLine) continue;
-        if (this.consumedDescriptionLines.has(lineNum)) continue;
-        if (this.lineDescriptions.get(lineNum)?.trim()) {
-          trailing.push(lineNum);
-          this.consumedDescriptionLines.add(lineNum);
-        }
-      }
+    const eventTagLine = this.eventTagLine;
+    if (eventTagLine !== undefined) {
+      const scopeBoundaryLine = this.tags.find((t) => {
+        const line = t.lines[0]?.number;
+        return line !== undefined && line > eventTagLine && !EVENT_SCOPE_TAGS.has(t.tag);
+      })?.lines[0].number;
+      const trailing = Array.from(this.lineDescriptions.keys())
+        .sort((a, b) => a - b)
+        .filter(
+          (lineNum) =>
+            lineNum > eventTagLine &&
+            (scopeBoundaryLine === undefined || lineNum < scopeBoundaryLine) &&
+            !this.consumedDescriptionLines.has(lineNum) &&
+            this.lineDescriptions.get(lineNum)?.trim(),
+        );
+      for (const lineNum of trailing) this.consumedDescriptionLines.add(lineNum);
       if (trailing.length > 0) {
         this.eventDescription = this.joinBlockLines(
           trailing,
-          this.eventDescription ? { text: this.eventDescription, line: this.eventTagLine } : undefined,
+          this.eventDescription ? { text: this.eventDescription, line: eventTagLine } : undefined,
         );
       }
     }
@@ -687,43 +662,34 @@ class CommentBlockReader {
   private finalizeTypedef() {
     if (this.typedefName === undefined) return;
     const { ctx } = this;
-    let typedefType: string;
-    let typedefTs: string;
-
-    if (this.typedefProperties.length > 0) {
-      typedefType = buildEventDetailFromProperties(this.typedefProperties, undefined, true);
-      typedefTs = `type ${this.typedefName} = ${typedefType};`;
-    } else if (this.typedefType) {
-      typedefType = this.typedefType;
-      typedefTs = isSingleObjectLiteral(typedefType)
+    const hasProperties = this.typedefProperties.length > 0;
+    const typedefType = hasProperties
+      ? buildEventDetailFromProperties(this.typedefProperties, true)
+      : this.typedefType || "{}";
+    const typedefTs =
+      !hasProperties && this.typedefType && isSingleObjectLiteral(typedefType)
         ? `interface ${this.typedefName} ${typedefType}`
         : `type ${this.typedefName} = ${typedefType};`;
-    } else {
-      typedefType = "{}";
-      typedefTs = `type ${this.typedefName} = ${typedefType};`;
-    }
 
-    const members =
-      this.typedefProperties.length > 0
-        ? this.typedefProperties
-            .filter(({ name }) => !name.includes(".") && !name.startsWith("["))
-            .map(({ name, type, optional, description }) => ({
-              name,
-              type,
-              optional: optional === true,
-              ...(description ? { description } : {}),
-            }))
-        : parseObjectTypeLiteralMembers(typedefType);
+    const members = hasProperties
+      ? this.typedefProperties
+          .filter(({ name }) => !name.includes(".") && !name.startsWith("["))
+          .map(({ name, type, optional, description }) => ({
+            name,
+            type,
+            optional: optional === true,
+            ...(description ? { description } : {}),
+          }))
+      : parseObjectTypeLiteralMembers(typedefType);
     if (members) ctx.typedefMembersByName.set(this.typedefName, members);
 
-    warnDuplicateTypedefName(ctx, this.typedefName, this.typedefSource);
-    ctx.typedefs.set(this.typedefName, {
-      type: typedefType,
+    addTypedef(ctx, {
       name: this.typedefName,
-      description: assignValueOrUndefined(this.typedefDescription),
+      type: typedefType,
       ts: typedefTs,
-      tags: this.typedefTags.length > 0 ? this.typedefTags : undefined,
-      ...(this.typedefInternal ? { internal: true as const } : {}),
+      description: this.typedefDescription,
+      tags: this.typedefTags,
+      internal: this.typedefInternal,
       source: this.typedefSource,
     });
 
@@ -738,24 +704,14 @@ class CommentBlockReader {
 
   private finalizeCallback() {
     if (this.callbackName === undefined) return;
-    const params = this.callbackParams
-      .map(({ name, type, optional }) => {
-        const optionalMarker = optional ? "?" : "";
-        return `${name}${optionalMarker}: ${type}`;
-      })
-      .join(", ");
-    const returnType = this.callbackReturnType || "void";
-    const callbackType = `(${params}) => ${returnType}`;
-    const callbackTs = `type ${this.callbackName} = ${callbackType};`;
-
-    warnDuplicateTypedefName(this.ctx, this.callbackName, this.callbackSource);
-    this.ctx.typedefs.set(this.callbackName, {
-      type: callbackType,
+    const callbackType = `(${formatParamList(this.callbackParams)}) => ${this.callbackReturnType || "void"}`;
+    addTypedef(this.ctx, {
       name: this.callbackName,
-      description: assignValueOrUndefined(this.callbackDescription),
-      ts: callbackTs,
-      tags: this.callbackTags.length > 0 ? this.callbackTags : undefined,
-      ...(this.callbackInternal ? { internal: true as const } : {}),
+      type: callbackType,
+      ts: `type ${this.callbackName} = ${callbackType};`,
+      description: this.callbackDescription,
+      tags: this.callbackTags,
+      internal: this.callbackInternal,
       source: this.callbackSource,
     });
 
@@ -812,9 +768,8 @@ class CommentBlockReader {
       slotDesc = this.takePrecedingDescription(tagIndex);
     }
     this.isFirstTag = false;
-    let slotType = type;
-    if (!slotType) {
-      slotType = "Record<string, never>";
+    const slotType = type || "Record<string, never>";
+    if (!type) {
       recordDiagnostic(
         this.ctx,
         "slot-missing-type",
@@ -823,16 +778,16 @@ class CommentBlockReader {
         sourceRangeFromCommentTag(this.ctx, tagSource),
       );
     }
+    const slotTags = this.pendingTags.splice(0);
     addSlot(this.ctx, {
       slot_name: name,
       slot_props: slotType,
       slot_description: slotDesc || undefined,
       slot_deprecated: this.pendingDeprecated,
-      slot_tags: this.pendingTags.length > 0 ? [...this.pendingTags] : undefined,
+      slot_tags: slotTags.length > 0 ? slotTags : undefined,
       slot_internal: this.pendingInternal || undefined,
       source: sourceRangeFromCommentTag(this.ctx, tagSource),
     });
-    this.pendingTags.length = 0;
     this.pendingDeprecated = undefined;
     this.pendingInternal = false;
     const slotKey = name === undefined || name === "" ? null : name;
@@ -854,10 +809,7 @@ class CommentBlockReader {
     this.eventTagLine = tagSource.length > 0 ? tagSource[0].number : undefined;
     this.eventDescription = this.orCommentDescription(eventDescription);
     this.eventSource = sourceRangeFromCommentTag(this.ctx, tagSource);
-    if (this.pendingTags.length > 0) {
-      this.eventTags.push(...this.pendingTags);
-      this.pendingTags.length = 0;
-    }
+    this.eventTags.push(...this.pendingTags.splice(0));
     this.attachTrailingTag = (trailingTag) => this.eventTags.push(trailingTag);
     this.isFirstTag = false;
   }
@@ -901,10 +853,7 @@ class CommentBlockReader {
     this.typedefDescription = this.orCommentDescription(
       this.getTagDescription(tagSource, this.tags[tagIndex + 1]) || this.takePrecedingDescription(tagIndex),
     );
-    if (this.pendingTags.length > 0) {
-      this.typedefTags.push(...this.pendingTags);
-      this.pendingTags.length = 0;
-    }
+    this.typedefTags.push(...this.pendingTags.splice(0));
     this.typedefInternal = this.pendingInternal;
     this.pendingInternal = false;
     this.attachTrailingTag = (trailingTag) => this.typedefTags.push(trailingTag);
@@ -920,10 +869,7 @@ class CommentBlockReader {
     this.callbackDescription = this.orCommentDescription(
       this.getTagDescription(tagSource, this.tags[tagIndex + 1]) || this.takePrecedingDescription(tagIndex),
     );
-    if (this.pendingTags.length > 0) {
-      this.callbackTags.push(...this.pendingTags);
-      this.pendingTags.length = 0;
-    }
+    this.callbackTags.push(...this.pendingTags.splice(0));
     this.callbackInternal = this.pendingInternal;
     this.pendingInternal = false;
     this.attachTrailingTag = (trailingTag) => this.callbackTags.push(trailingTag);
@@ -932,38 +878,24 @@ class CommentBlockReader {
 
   private readGenerics(tagIndex: number, type: string) {
     const { name, lines: tagSource } = this.tags[tagIndex];
-    // A bare `@generics Name` (no `{constraint}`) falls back to the name
-    // itself, mirroring `@template`'s unconstrained-parameter fallback.
-    const constraint = type || name;
+    const source = sourceRangeFromCommentTag(this.ctx, tagSource);
     for (const genericName of splitTopLevel(name, ",")) {
-      warnAndTrackGenericName(
-        this.ctx,
-        this.generics,
-        genericName.trim(),
-        sourceRangeFromCommentTag(this.ctx, tagSource),
-      );
+      warnAndTrackGenericName(this.ctx, this.generics, genericName.trim(), source);
     }
     this.generics.usedGenericsTag = true;
     warnMixedGenericsTags(this.ctx, this.generics);
-    accumulateOrReplaceGeneric(this.ctx, name, constraint);
+    // A bare `@generics Name` is unconstrained, like `@template Name`.
+    accumulateOrReplaceGeneric(this.ctx, name, type || name);
     this.isFirstTag = false;
   }
 
   private readTemplate(tagIndex: number, type: string) {
     const { tags } = this;
-    // Build constraint from standard JSDoc @template syntax:
-    //   @template T              → type="", name="T", default=undefined
-    //   @template {string} T     → type="string", name="T", default=undefined
-    //   @template [T=string]     → type="", name="T", default="string"
-    //   @template {Foo} [T=Foo]  → type="Foo", name="T", default="Foo"
-    //   @template T, U           → one parameter each
     const parameters = templateTagParameters(tags[tagIndex], type);
 
-    // Right above a `@typedef`/`@callback` without its own `<...>`, the `@template`s
-    // parameterize that type (`type Box<T>`), as in TypeScript. Below one, they keep
-    // declaring component generics.
-    // A typedef that never mentions them (`@template {Node} [Node=Node]` above
-    // `@typedef {object} Node`) can't take them, so they stay component generics.
+    // Right above a `@typedef`/`@callback` without its own `<...>` that uses them, the
+    // `@template`s parameterize that type (`type Box<T>`), as in TypeScript. Otherwise
+    // (`@template {Node} [Node=Node]` above `@typedef {object} Node`) they stay component generics.
     let ownerIndex = tagIndex + 1;
     while (tags[ownerIndex]?.tag === "template") ownerIndex++;
     const owner = tags[ownerIndex];
@@ -981,17 +913,12 @@ class CommentBlockReader {
       return;
     }
 
-    // Standard JSDoc usage: this `@template` types the function's own generic
-    // parameter, not the component's - leave it out of the component's generics.
+    // The function's own type parameter, not the component's.
     if (this.documentsFunction) return;
 
+    const source = sourceRangeFromCommentTag(this.ctx, tags[tagIndex].lines);
     for (const parameter of parameters) {
-      warnAndTrackGenericName(
-        this.ctx,
-        this.generics,
-        parameter.name,
-        sourceRangeFromCommentTag(this.ctx, tags[tagIndex].lines),
-      );
+      warnAndTrackGenericName(this.ctx, this.generics, parameter.name, source);
       accumulateOrReplaceGeneric(this.ctx, parameter.name, parameter.constraint);
     }
     this.generics.usedTemplateTag = true;
@@ -1147,8 +1074,6 @@ class CommentBlockReader {
           this.readPassthrough(tagIndex);
           break;
       }
-      // A `@slot`/`@snippet`/`@typedef`/`@callback` ends the preceding `@event`'s scope, so a
-      // `@property` below it belongs to it, not to the event.
       if (EVENT_SCOPE_ENDING_TAGS.has(tag)) this.finalizeEvent();
     }
 
@@ -1156,35 +1081,23 @@ class CommentBlockReader {
     this.finalizeTypedef();
     this.finalizeCallback();
 
-    /**
-     * Whether this block declares anything `pendingTags` can attach to. A plain
-     * prop or context comment with just a `@since`/`@example`/`@see` tag has no
-     * such tag, so a leftover passthrough tag there is expected, not dropped -
-     * that comment's own tags are captured separately by `processJSDocComment`.
-     */
-    const hasStructuralTag = tags.some(
-      (t) =>
-        t.tag === "slot" || t.tag === "snippet" || t.tag === "event" || t.tag === "typedef" || t.tag === "callback",
-    );
-    if (hasStructuralTag && this.pendingTags.length > 0) {
-      for (const danglingTag of this.pendingTags) {
-        recordDiagnostic(
-          this.ctx,
-          "jsdoc-tag-dropped",
-          danglingTag.name,
-          `@${danglingTag.name} could not attach to a @slot/@snippet/@event/@typedef/@callback tag in the same comment block and was dropped.`,
-        );
-      }
-      this.pendingTags.length = 0;
+    // Leftover tags in a plain prop or context comment are expected: `processJSDocComment`
+    // captures those. They're only dropped when the block had a structural tag to attach to.
+    if (this.pendingTags.length === 0) return;
+    const hasStructuralTag = tags.some((t) => t.tag === "event" || EVENT_SCOPE_ENDING_TAGS.has(t.tag));
+    if (!hasStructuralTag) return;
+    for (const danglingTag of this.pendingTags) {
+      recordDiagnostic(
+        this.ctx,
+        "jsdoc-tag-dropped",
+        danglingTag.name,
+        `@${danglingTag.name} could not attach to a @slot/@snippet/@event/@typedef/@callback tag in the same comment block and was dropped.`,
+      );
     }
   }
 }
 
-/**
- * Reads the component-level tags (`@event`, `@slot`, `@typedef`, ...) in
- * every JSDoc block of `scanSource`, the component source with its
- * `<style>` blanked out.
- */
+/** `scanSource` is the component source with its `<style>` blanked out. */
 export function parseCustomTypes(ctx: ParserContext, scanSource: string | undefined = ctx.source) {
   if (!scanSource) return;
   const generics: GenericsTagState = {
@@ -1197,8 +1110,7 @@ export function parseCustomTypes(ctx: ParserContext, scanSource: string | undefi
   const functionDocStarts = scanSource.includes("@template") ? functionDocCommentStarts(ctx) : new Set<number>();
   ctx.functionDocCommentStarts = functionDocStarts;
   const blocks = parseComments(scanSource);
-  // Leading-comment lookups during the main walk reuse these instead of
-  // re-tokenizing each block from the parser's comment value (see `parsedSourceBlock`).
+  // Reused by leading-comment lookups in the main walk (see `parsedSourceBlock`).
   for (const block of blocks) ctx.jsDocBlocksByStart.set(block.start, block);
   for (const block of blocks) {
     new CommentBlockReader(ctx, generics, block, functionDocStarts.has(block.start)).read();

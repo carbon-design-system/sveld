@@ -1,7 +1,4 @@
-/**
- * Checks that span components, run on the whole bundle once every component
- * has parsed and been resolved. Each returns the diagnostics it found.
- */
+/** Checks that span components, run once every component has parsed and been resolved. */
 import { dirname } from "node:path";
 import type { ComponentDocApi, ComponentDocs, ResolveComponentFilePath } from "./bundle";
 import { createDiagnostic, type SveldDiagnostic } from "./diagnostics";
@@ -12,7 +9,7 @@ import { exportsTypeName, propsTypeName } from "./writer/writer-ts-definitions-c
 /** An import's extensions, and a component's: `"./Base"` may name `Base.svelte`. */
 const EXTENDS_TARGET_EXTENSIONS = [...MODULE_EXTENSIONS, ".svelte"];
 
-/** Strips a matching pair of quote characters from an `@extends`/`@extendProps` import specifier, stored verbatim. */
+/** `@extends`/`@extendProps` import specifiers are stored with their quotes. */
 function stripQuotes(text: string): string | undefined {
   const trimmed = text.trim();
   if (trimmed.length < 2) return undefined;
@@ -52,16 +49,11 @@ export function validateModuleReExportNames(component: ComponentDocApi): SveldDi
 }
 
 /**
- * Returns a check of a component's `@extends`/`@extendProps` target against
- * `components`, run once all of them have parsed: the referenced file must
- * exist, and when it's a `.svelte` file in the bundle, the named interface
- * must match that file's generated `<Name>Props`. Also flags an own prop
- * that shares a name with a same-named prop of a different type on a
- * bundled target, since `Base & $Props` silently collapses that prop to
- * `never` in the generated type.
- *
- * The target resolves as an import of it would (see `ModuleGraph.resolve`).
- * Bare/package specifiers (not starting with `.` or `/`) are left alone.
+ * Checks a component's `@extends`/`@extendProps` target: the file must exist,
+ * and when it's a bundled `.svelte` file, the named interface must match its
+ * generated `<Name>Props`. Also flags an own prop whose type differs from the
+ * target's same-named prop, since `Base & $Props` collapses it to `never`.
+ * Bare/package specifiers are skipped.
  */
 export function createExtendsTargetValidator(
   components: ComponentDocs,
@@ -93,8 +85,7 @@ export function createExtendsTargetValidator(
       ];
     }
 
-    // A real file outside the bundle (e.g. a hand-written .ts interface): file
-    // existence is all that's verifiable without a module resolver.
+    // A file outside the bundle (e.g. a hand-written .ts interface): existence is all that's verifiable.
     const target = componentsByAbsolutePath.get(targetPath);
     if (!target) return [];
 

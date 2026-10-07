@@ -21,16 +21,10 @@ function moduleExportName(node: Identifier | StringLiteral): string {
 }
 
 /**
- * Follows a re-export specifier that does not point directly at a `.svelte`
- * file (e.g. `export { X } from "./barrel"`) to the module it resolves to,
- * and parses that module's own exports.
- *
- * Returns `null` when the specifier cannot be resolved to a file at all, so
- * callers can warn instead of recording a dangling source path. Returns an
- * empty map (not `null`) when the target participates in an import cycle
- * (mirroring the silent `export *` cycle guard below) or when it can't be
- * parsed as plain JS (e.g. a TypeScript-only `documentExports` data module),
- * so callers fall back to recording the literal specifier instead.
+ * Parses the exports of the module a non-`.svelte` re-export
+ * (`export { X } from "./barrel"`) resolves to. `null` when it resolves to no
+ * file, so callers warn. Empty (callers record the literal specifier) on an
+ * import cycle or when the module isn't plain JS, e.g. TypeScript-only.
  */
 function resolveBarrelExports(
   graph: ModuleGraph,
@@ -55,22 +49,10 @@ function resolveBarrelExports(
 }
 
 /**
- * Parses exports from an entry file and resolves aliases against `dir`.
+ * Parses an entry file's exports, resolving aliases against `dir`.
  *
- * @param graph - Resolves the modules it re-exports from; a fresh one by default.
- * @param resolving - Absolute paths not to follow `export *` into: the
- *   entry file itself, so a barrel that re-exports itself stops there.
- *
- * @example
- * ```ts
- * // Source: export { Button } from "./Button.svelte";
- * //        export default App from "./App.svelte";
- * parseExports(source, "./src")
- * // Returns: {
- * //   Button: { source: "./Button.svelte", default: false },
- * //   App: { source: "./App.svelte", default: true }
- * // }
- * ```
+ * @param resolving - Absolute paths not to follow `export *` into, e.g. the
+ *   entry itself so a self-re-exporting barrel stops there.
  */
 export function parseExports(
   source: string,
@@ -82,13 +64,8 @@ export function parseExports(
 }
 
 /**
- * {@link parseExports} on one file of the chain.
- *
- * @param resolving - Absolute paths currently being resolved on this call
- *   stack, used to break `export *` cycles between files that re-export
- *   each other.
- * @param fromFile - The file currently being parsed, which names the source
- *   of an unresolved specifier in a thrown {@link UnresolvedModuleError}.
+ * @param resolving - Paths on the current call stack, breaking `export *` cycles.
+ * @param fromFile - Named in a thrown {@link UnresolvedModuleError}.
  */
 function readExports(
   graph: ModuleGraph,
@@ -144,10 +121,7 @@ function readExports(
               : `./${join(specifier, value.source)}`,
           ),
         );
-        exports_by_identifier[key] = {
-          ...value,
-          source,
-        };
+        exports_by_identifier[key] = { ...value, source };
       }
     } else if (node.type === "ExportNamedDeclaration") {
       const sourceValue = node.source?.value;
@@ -167,15 +141,13 @@ function readExports(
         console.warn(
           `sveld: could not resolve re-exported module "${sourceValue}" from barrel "${dir || "."}"; skipping.`,
         );
+        continue;
       }
 
       for (const specifier of node.specifiers) {
         const exported_name = moduleExportName(specifier.exported);
         const local_name = moduleExportName(specifier.local);
         const id = exported_name || local_name;
-
-        if (chain === null) continue;
-
         const chained = chain?.exports[local_name];
         const source: RelativeSourcePath = chained
           ? asRelativeSourcePath(normalizeSeparators(`./${relative(dir, resolve(chain.dir, chained.source))}`))
@@ -197,17 +169,12 @@ function readExports(
       const first = node.specifiers[0];
       if (!first) continue;
       const id = first.local.name;
-      const importSource = node.source.value;
+      const source = asRelativeSourcePath(graph.aliases.relative(node.source.value, dir));
 
       if (id in exports_by_identifier) {
-        if (!exports_by_identifier[id].source) {
-          exports_by_identifier[id].source = asRelativeSourcePath(graph.aliases.relative(importSource, dir));
-        }
+        if (!exports_by_identifier[id].source) exports_by_identifier[id].source = source;
       } else {
-        exports_by_identifier[id] = {
-          source: asRelativeSourcePath(graph.aliases.relative(importSource, dir)),
-          default: id === "default",
-        };
+        exports_by_identifier[id] = { source, default: id === "default" };
       }
     }
   }

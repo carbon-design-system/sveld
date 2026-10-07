@@ -55,7 +55,7 @@ export interface SveldRuntimeOptions extends PluginSveldOptions {
  */
 export type SveldConfig = SveldRuntimeOptions;
 
-/** Config file names probed at the project root. First existing file wins. */
+/** First existing file wins. */
 const CONFIG_FILE_NAMES = ["sveld.config.js", "sveld.config.mjs", "sveld.config.ts"] as const;
 
 /**
@@ -77,7 +77,6 @@ export function defineConfig(config: SveldConfig): SveldConfig {
   return config;
 }
 
-/** Locate a `sveld.config.{js,mjs,ts}` file in `cwd`, or `null` if none exists. */
 export function resolveConfigPath(cwd: string = process.cwd()): string | null {
   for (const name of CONFIG_FILE_NAMES) {
     const candidate = join(cwd, name);
@@ -90,14 +89,8 @@ export function resolveConfigPath(cwd: string = process.cwd()): string | null {
 }
 
 /**
- * Load and validate a `sveld` config file by absolute path.
- *
- * The package is ESM-only, so the file is loaded via dynamic `import()`. A
- * cache-busting query is appended so repeated loads (e.g. across tests or
- * watch runs) reflect the latest contents.
- *
- * @throws if the module cannot be imported (e.g. a syntax error or a config
- * that throws at evaluation time) or if it does not default-export an object.
+ * The cache-busting query makes repeated loads (tests, watch runs) see the
+ * latest contents. Throws if the import fails or the default export isn't an object.
  */
 export async function loadConfigFrom(configPath: string): Promise<SveldConfig> {
   let mod: { default?: unknown };
@@ -122,27 +115,16 @@ export async function loadConfigFrom(configPath: string): Promise<SveldConfig> {
   return config as SveldConfig;
 }
 
-/**
- * Discover and load a `sveld.config.{js,mjs,ts}` file from `cwd`.
- * Returns an empty object when no config file is present.
- */
+/** `{}` when `cwd` has no config file. */
 export async function loadConfig(cwd: string = process.cwd()): Promise<SveldConfig> {
   const configPath = resolveConfigPath(cwd);
-
-  if (configPath === null) {
-    return {};
-  }
-
-  return loadConfigFrom(configPath);
+  return configPath === null ? {} : loadConfigFrom(configPath);
 }
 
 /**
- * Merge option sources. Later sources override earlier ones. Keys whose
- * value is a plain object (e.g. `typesOptions`, `jsonOptions`,
- * `markdownOptions`) are merged one level deep instead of replaced
- * outright, so setting one nested key from a later source doesn't drop
- * sibling keys set by an earlier one.
- * Arrays and functions always replace; they are never merged.
+ * Later sources win. Plain-object values (`typesOptions`, ...) merge one
+ * level deep so a later source's nested key doesn't drop earlier siblings;
+ * arrays and functions replace.
  */
 export function mergeConfig<T extends PluginSveldOptions = PluginSveldOptions>(
   ...sources: Array<Partial<T> | undefined>
@@ -164,7 +146,6 @@ export function mergeConfig<T extends PluginSveldOptions = PluginSveldOptions>(
   return merged as Partial<T>;
 }
 
-/** Top-level keys accepted anywhere in `PluginSveldOptions` / `SveldRuntimeOptions`. */
 const KNOWN_TOP_LEVEL_KEYS = [
   "entry",
   "glob",
@@ -190,7 +171,6 @@ const KNOWN_TOP_LEVEL_KEYS = [
   "diagnostics",
 ];
 
-/** Known keys inside each `*Options` object, keyed by the top-level option name. */
 const KNOWN_NESTED_KEYS: Record<string, string[]> = {
   typesOptions: ["outDir", "preamble", "format", "transform", "indexTypes"],
   jsonOptions: ["outFile", "outDir", "source"],
@@ -198,7 +178,6 @@ const KNOWN_NESTED_KEYS: Record<string, string[]> = {
   diagnostics: ["ignore"],
 };
 
-/** Prints a "did you mean" suggestion for an unrecognized option key. `prefix` namespaces nested keys, e.g. `"typesOptions"` for `typesOptions.printWidth`. */
 function warnUnknownKey(prefix: string | null, key: string, candidates: string[]): void {
   const path = prefix === null ? key : `${prefix}.${key}`;
   const suggestion = closestMatch(key, candidates);
@@ -207,11 +186,7 @@ function warnUnknownKey(prefix: string | null, key: string, candidates: string[]
   console.warn(`sveld: unknown option "${path}".${suggestionPath ? ` Did you mean "${suggestionPath}"?` : ""}`);
 }
 
-/**
- * Warns (via `console.warn`) about unknown top-level option keys and unknown
- * keys inside each `*Options` object. Never throws: an unrecognized option
- * is surfaced as a hint, not a fatal error.
- */
+/** Warns about unknown option keys, top-level and nested. Never throws. */
 export function validateOptions(options: Partial<PluginSveldOptions>): void {
   for (const key of Object.keys(options)) {
     if (!KNOWN_TOP_LEVEL_KEYS.includes(key)) {

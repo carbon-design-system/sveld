@@ -1,16 +1,12 @@
 import type { ComponentDocApi, ResolveComponentFilePath } from "./bundle";
 import { createDiagnostic, type SveldDiagnostic } from "./diagnostics";
-import type { ComponentProp, ComponentSlot, ParsedComponent, SourceRange } from "./model";
+import type { ComponentProp, ParsedComponent, SourceRange } from "./model";
 import { loadParserStack } from "./parser-stack";
 import type { TypeResolver } from "./resolve-types";
 
 /** `"compile"` runs through the TypeScript program; `"syntax"` runs through sveld's template parser only. */
 type ExampleCheckKind = "compile" | "syntax";
 
-/**
- * One `@example` block worth checking, reduced to what `resolve-types.ts`
- * (for `kind: "compile"`) or the template parser (for `kind: "syntax"`) needs.
- */
 export interface ExampleCheckSource {
   /** Stable id for diagnostics, e.g. `"prop:variant"` or `"prop:variant#1"` for a second example. */
   id: string;
@@ -20,32 +16,18 @@ export interface ExampleCheckSource {
   type: string;
   /** The `@example` body, stripped of any surrounding code fence. */
   code: string;
-  /** How `code` gets checked. */
   kind: ExampleCheckKind;
-  /** Source range of the documented symbol (prop/export/slot/event), when available. */
+  /** The documented symbol's range. */
   source?: SourceRange;
 }
 
 const FENCE_REGEX = /^```([\w-]*)\r?\n([\s\S]*?)\r?\n?```$/;
 
-/** Languages sveld can type-check with `tsc`. */
 const COMPILE_FENCE_LANGS = new Set(["", "js", "jsx", "ts", "tsx", "javascript", "typescript"]);
-
-/** Languages sveld can syntax-check with sveast. */
 const SYNTAX_FENCE_LANGS = new Set(["svelte", "html"]);
 
-interface ExtractedExampleCode {
-  kind: ExampleCheckKind;
-  code: string;
-}
-
-/**
- * Extracts checkable code from an `@example` body: plain TS/JS (`kind:
- * "compile"`), Svelte/HTML markup (`kind: "syntax"`), or `null` when the
- * example is fenced as something else, or is bare unfenced markup sveld
- * doesn't try to check.
- */
-function extractCheckableCode(body: string): ExtractedExampleCode | null {
+/** `null` for another fenced language, or bare unfenced markup. */
+function extractCheckableCode(body: string): Pick<ExampleCheckSource, "kind" | "code"> | null {
   const trimmed = body.trim();
   if (trimmed === "") return null;
 
@@ -79,35 +61,24 @@ function sourcesFromTags(
   source: SourceRange | undefined,
 ): ExampleCheckSource[] {
   const examples = (tags ?? []).filter((tag) => tag.name === "example");
-  const sources: ExampleCheckSource[] = [];
-
-  examples.forEach((tag, index) => {
+  const numbered = examples.length > 1;
+  return examples.flatMap((tag, index): ExampleCheckSource[] => {
     const extracted = extractCheckableCode(tag.body);
-    if (extracted === null) return;
-    const numbered = examples.length > 1;
-    sources.push({
-      id: numbered ? `${idPrefix}#${index}` : idPrefix,
-      name: numbered ? `${name} (example ${index + 1})` : name,
-      type,
-      code: extracted.code,
-      kind: extracted.kind,
-      ...(source ? { source } : {}),
-    });
+    if (extracted === null) return [];
+    return [
+      {
+        id: numbered ? `${idPrefix}#${index}` : idPrefix,
+        name: numbered ? `${name} (example ${index + 1})` : name,
+        type,
+        code: extracted.code,
+        kind: extracted.kind,
+        ...(source ? { source } : {}),
+      },
+    ];
   });
-
-  return sources;
 }
 
-function slotName(slot: ComponentSlot): string {
-  return slot.name ?? "default";
-}
-
-/**
- * Collects every `@example` block sveld can check for a parsed component:
- * plain TS/JS bodies (`kind: "compile"`) on props, module exports, slots, and
- * events, plus Svelte/HTML markup bodies (`kind: "syntax"`). Bare unfenced
- * markup and other fenced languages are skipped.
- */
+/** The checkable `@example` blocks on a component's props, module exports, slots, and events. */
 export function collectExampleSources(component: ParsedComponent): ExampleCheckSource[] {
   const sources: ExampleCheckSource[] = [];
 
@@ -128,7 +99,8 @@ export function collectExampleSources(component: ParsedComponent): ExampleCheckS
   }
 
   for (const slot of component.slots) {
-    sources.push(...sourcesFromTags(slot.tags, `slot:${slotName(slot)}`, slotName(slot), "any", slot.source));
+    const name = slot.name ?? "default";
+    sources.push(...sourcesFromTags(slot.tags, `slot:${name}`, name, "any", slot.source));
   }
 
   for (const event of component.events) {
@@ -143,39 +115,13 @@ interface CheckExamplesCandidate {
   sources: ExampleCheckSource[];
 }
 
-function collectCheckExamplesCandidates(components: Iterable<ComponentDocApi>): CheckExamplesCandidate[] {
-  const candidates: CheckExamplesCandidate[] = [];
-
-  for (const component of components) {
-    const sources = collectExampleSources(component);
-    if (sources.length === 0) continue;
-    candidates.push({ component, sources });
-  }
-
-  return candidates;
-}
-
-/** Narrows each candidate's `sources` to one `ExampleCheckKind`, dropping candidates left with none. */
-function candidatesForKind(
-  candidates: CheckExamplesCandidate[],
-  kind: ExampleCheckSource["kind"],
-): CheckExamplesCandidate[] {
-  const filtered: CheckExamplesCandidate[] = [];
-
-  for (const { component, sources } of candidates) {
+/** Drops candidates left with no sources of `kind`. */
+function candidatesForKind(candidates: CheckExamplesCandidate[], kind: ExampleCheckKind): CheckExamplesCandidate[] {
+  return candidates.flatMap(({ component, sources }) => {
     const matching = sources.filter((source) => source.kind === kind);
-    if (matching.length === 0) continue;
-    filtered.push({ component, sources: matching });
-  }
-
-  return filtered;
+    return matching.length === 0 ? [] : [{ component, sources: matching }];
+  });
 }
-
-/**
- * Syntax-checks `kind: "syntax"` `@example` blocks (Svelte/HTML markup) with
- * sveast, the template parser: parse only, discard the AST. A parser error
- * becomes an `example-syntax-error` diagnostic.
- */
 async function checkComponentExamplesSyntax(
   candidates: CheckExamplesCandidate[],
 ): Promise<Map<ComponentDocApi, SveldDiagnostic[]>> {
@@ -243,20 +189,14 @@ async function compileExamples(
   return found;
 }
 
-/**
- * Checks the `@example` blocks of `components` (see `checkExamples` in
- * `GenerateBundleOptions`), returning each one's `example-syntax-error`
- * diagnostics followed by its `example-compile-error` ones. `"syntax"` only
- * runs the template-parser path, so plain TS/JS examples never reach the
- * TypeScript program.
- */
+/** Each component's `example-syntax-error` diagnostics, then its `example-compile-error` ones. */
 export async function checkComponentExamples(
   components: Iterable<ComponentDocApi>,
   mode: true | "syntax",
   rootDir: string,
   resolveComponentFilePath: ResolveComponentFilePath,
 ): Promise<Map<ComponentDocApi, SveldDiagnostic[]>> {
-  const candidates = collectCheckExamplesCandidates(components);
+  const candidates = Array.from(components, (component) => ({ component, sources: collectExampleSources(component) }));
   const compileCandidates = mode === true ? candidatesForKind(candidates, "compile") : [];
   const syntaxCandidates = candidatesForKind(candidates, "syntax");
 
@@ -272,8 +212,7 @@ export async function checkComponentExamples(
   }
 
   if (compileCandidates.length > 0) {
-    // Guarded on `compileCandidates` (not `candidates`) so `checkExamples:
-    // true`/`"syntax"` with only markup fences never loads TypeScript.
+    // Only loaded when there's TS/JS to compile.
     const { TypeResolver } = await import("./resolve-types");
     const created = await TypeResolver.create(rootDir);
     if (!created.ok) throw new Error(`sveld: \`checkExamples\` ${created.message}.`);

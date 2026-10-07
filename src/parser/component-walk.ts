@@ -4,16 +4,7 @@
  * props, and collects the calls that phase 4 ({@link finalizeComponent})
  * turns into dispatched events once the dispatcher's name is known.
  */
-import type {
-  AST,
-  CallExpression,
-  Expression,
-  Identifier,
-  Literal,
-  ObjectExpression,
-  SimpleCallExpression,
-  TSNode,
-} from "sveast";
+import type { AST, CallExpression, Expression, SimpleCallExpression, TSNode } from "sveast";
 import { SKIP, type Visitor, walk as walkTree } from "sveast/walk";
 import { isCallExpressionNamed, isIdentifier, isMemberExpression } from "../ast-guards";
 import type { ComponentElement, ComponentInlineElement, SlotProps, SlotPropValue } from "../model";
@@ -40,15 +31,11 @@ import { sourceAtPos, sourceRangeFromNode } from "./source-position";
 import { collectValueImportBindings } from "./value-imports";
 import { isTypeOnlySubtree } from "./walk";
 
-/** Matches `@component` in HTML comments. */
 const COMPONENT_COMMENT_REGEX = /^@component/;
 
 const CARRIAGE_RETURN_REGEX = /\r/g;
 
-/**
- * Node types the component walk acts on. Keep in sync with the cases in
- * {@link walkComponent}'s `enter`.
- */
+/** Keep in sync with the cases in {@link walkComponent}'s `enter`. */
 const MAIN_WALK_NODE_TYPES = new Set([
   "AssignmentExpression",
   "UpdateExpression",
@@ -66,7 +53,7 @@ const MAIN_WALK_NODE_TYPES = new Set([
 ]);
 
 /** A call to a named function: a dispatch once the dispatcher's name is known. */
-export interface NamedCall {
+interface NamedCall {
   name: string;
   arguments: Array<Expression | unknown>;
   node: CallExpression;
@@ -76,7 +63,6 @@ export interface NamedCall {
 
 /** What the component walk collects for {@link finalizeComponent}, beyond what it writes to `ctx`. */
 export interface ComponentWalkResult {
-  /** Local name of the `createEventDispatcher()` result. */
   dispatcherName: string | undefined;
   dispatcherDeclaratorNode: unknown;
   dispatcherTypeArgument: TSNode | undefined;
@@ -84,10 +70,7 @@ export interface ComponentWalkResult {
   hostLocalNames: Set<string>;
   hostDispatchedEventNames: Set<string>;
   hostDispatches: HostDispatch[];
-  /**
-   * Source ranges are resolved lazily: only calls to the dispatcher need
-   * one, and most components' call expressions aren't dispatches.
-   */
+  /** Source ranges resolve lazily: most calls aren't dispatches. */
   callees: NamedCall[];
   /** Every call with arguments, any callee: checked for the dispatcher escaping once its name is known. */
   callsWithArguments: CallExpression[];
@@ -155,83 +138,50 @@ function enterCallExpression(
   }
 }
 
-/** A `<slot>` element: its name, props from its attributes, and fallback content. */
+/** The `value` of a `<slot>` attribute as a slot prop. */
+function slotPropValueFromAttribute(
+  ctx: ParserContext,
+  name: string,
+  value: Exclude<AST.Attribute["value"], true>,
+): SlotPropValue {
+  const slot_prop_value: SlotPropValue = { value: undefined, replace: false };
+  // Quoted or multi-chunk values are an array; `name={expr}` and `{name}` are a bare tag.
+  const first = Array.isArray(value) ? value[0] : value;
+
+  if (first?.type === "Text") {
+    slot_prop_value.value = JSON.stringify(first.raw);
+  } else if (first?.type === "ExpressionTag") {
+    const { expression } = first;
+    if (expression.type === "Identifier") {
+      if (!Array.isArray(value) && expression.name === name) {
+        slot_prop_value.value = expression.name;
+        slot_prop_value.replace = true;
+      }
+    } else if (expression.type === "Literal") {
+      slot_prop_value.value =
+        typeof expression.value === "string" ? JSON.stringify(expression.value) : String(expression.value);
+    } else if (expression.type === "MemberExpression") {
+      slot_prop_value.value = resolveMemberExpressionType(ctx, expression);
+    } else if (expression.type === "ObjectExpression" || expression.type === "TemplateLiteral") {
+      // The tag's range includes its braces.
+      slot_prop_value.value = sourceAtPos(ctx, first.start + 1, first.end - 1);
+    }
+  }
+  return slot_prop_value;
+}
+
 function addSlotElement(ctx: ParserContext, node: AST.SlotElement) {
-  type AttributeValueChunk = {
-    type?: string;
-    expression?: unknown;
-    raw?: string;
-    start?: number;
-    end?: number;
-    data?: string;
-  };
-  // Spreads and directives read as attributes without a value.
-  const slotNode = node as {
-    attributes?: Array<{
-      name?: string;
-      value?: true | AttributeValueChunk | AttributeValueChunk[];
-    }>;
-  };
-  const nameAttributeValue = slotNode.attributes?.find((attr) => attr.name === "name")?.value;
-  const slot_name = (Array.isArray(nameAttributeValue) ? nameAttributeValue[0] : undefined)?.data;
+  const nameAttribute = node.attributes.find((attr) => "name" in attr && attr.name === "name");
+  const nameValue = nameAttribute && "value" in nameAttribute ? nameAttribute.value : undefined;
+  const firstNameChunk = Array.isArray(nameValue) ? nameValue[0] : undefined;
+  const slot_name = firstNameChunk?.type === "Text" ? firstNameChunk.data : undefined;
 
-  const slot_props = (slotNode.attributes || [])
-    .filter((attr) => attr.name !== "name")
-    .reduce<SlotProps>((slot_props, attr) => {
-      const slot_prop_value: SlotPropValue = {
-        value: undefined,
-        replace: false,
-      };
-
-      const value = attr.value;
-      if (value === undefined || value === true) return slot_props;
-
-      // Quoted or multi-chunk values are an array. A single expression
-      // (`name={expr}` or `{name}`) is unwrapped. Modern AST doesn't
-      // distinguish those two.
-      const firstValue = Array.isArray(value) ? value[0] : value;
-
-      if (firstValue) {
-        const { type, expression, raw, start, end } = firstValue;
-
-        if (type === "Text" && raw !== undefined) {
-          slot_prop_value.value = JSON.stringify(raw);
-        } else if (
-          !Array.isArray(value) &&
-          type === "ExpressionTag" &&
-          expression &&
-          typeof expression === "object" &&
-          "type" in expression &&
-          expression.type === "Identifier" &&
-          "name" in expression &&
-          expression.name === attr.name
-        ) {
-          slot_prop_value.value = (expression as Identifier).name;
-          slot_prop_value.replace = true;
-        }
-
-        if (expression && typeof expression === "object" && "type" in expression) {
-          if (expression.type === "Literal" && "value" in expression) {
-            const literalValue = (expression as Literal).value;
-            slot_prop_value.value =
-              typeof literalValue === "string" ? JSON.stringify(literalValue) : String(literalValue);
-          } else if (expression.type === "MemberExpression") {
-            slot_prop_value.value = resolveMemberExpressionType(ctx, expression);
-          } else if (expression.type !== "Identifier") {
-            if (start !== undefined && end !== undefined) {
-              if (expression.type === "ObjectExpression" || expression.type === "TemplateLiteral") {
-                slot_prop_value.value = sourceAtPos(ctx, start + 1, end - 1);
-              }
-            }
-          }
-        }
-      }
-
-      if (attr.name) {
-        slot_props[attr.name] = slot_prop_value;
-      }
-      return slot_props;
-    }, {});
+  const slot_props: SlotProps = {};
+  for (const attr of node.attributes) {
+    // Only attributes and `style:` directives have a `value`.
+    if (!("value" in attr) || attr.name === "name" || attr.value === true) continue;
+    slot_props[attr.name] = slotPropValueFromAttribute(ctx, attr.name, attr.value);
+  }
 
   const fallback = node.fragment.nodes
     .map(({ start, end }) => sourceAtPos(ctx, start, end) ?? "")
@@ -251,29 +201,20 @@ function addRenderTagSlot(ctx: ParserContext, node: AST.RenderTag) {
   const renderInfo = extractRenderTagInfo(ctx, node.expression);
   if (!renderInfo) return;
 
+  // Positional arguments (`{@render row(item, index)}`) aren't slot props: the
+  // snippet prop's own `Snippet<[...]>` type describes them.
+  const [first, ...rest] = renderInfo.arguments;
   let slot_props: SlotProps | undefined;
   let slot_props_unresolved_spread = false;
-  if (renderInfo.arguments.length === 0) {
+  if (first === undefined) {
     slot_props = {};
-  } else if (
-    renderInfo.arguments.length === 1 &&
-    typeof renderInfo.arguments[0] === "object" &&
-    renderInfo.arguments[0] &&
-    "type" in renderInfo.arguments[0] &&
-    renderInfo.arguments[0].type === "ObjectExpression"
-  ) {
-    const built = buildSlotPropsFromObjectExpression(ctx, renderInfo.arguments[0] as ObjectExpression);
+  } else if (rest.length === 0 && first.type === "ObjectExpression") {
+    const built = buildSlotPropsFromObjectExpression(ctx, first);
     slot_props = built.slot_props;
     slot_props_unresolved_spread = built.hasUnresolvedSpread;
   }
-  /**
-   * Positional arguments (`{@render icon(16)}`, `{@render row(item, index)}`) aren't
-   * mapped to slot props: the snippet prop's own type (`Snippet<[...]>`) describes
-   * them, and an untyped one is reported as `prop-unknown-type`.
-   */
 
   const slot_name = renderInfo.publicName === "children" ? undefined : renderInfo.publicName;
-  const slotKey: string | null = slot_name === undefined ? DEFAULT_SLOT_NAME : slot_name;
 
   if (slot_props !== undefined) {
     addSlot(ctx, {
@@ -284,7 +225,7 @@ function addRenderTagSlot(ctx: ParserContext, node: AST.RenderTag) {
     });
   }
 
-  if (slot_props !== undefined || ctx.slots.has(slotKey)) {
+  if (slot_props !== undefined || ctx.slots.has(slot_name ?? DEFAULT_SLOT_NAME)) {
     ctx.snippetPropLocals.add(renderInfo.trackingName);
   }
 }
@@ -293,86 +234,54 @@ function addRenderTagSlot(ctx: ParserContext, node: AST.RenderTag) {
 function addForwardedEvent(ctx: ParserContext, node: AST.OnDirective, parent: AST.SvelteNode | null) {
   const eventName = node.name;
   if (node.expression != null || !eventName) return;
-  if (parent == null || !("name" in parent)) return;
+  if (parent == null || !("name" in parent) || typeof parent.name !== "string" || !parent.name) return;
 
-  const parentName = typeof parent.name === "string" ? parent.name : undefined;
-  const parentType = parent.type;
-  if (!parentName || !parentType) return;
-
-  const element: ComponentInlineElement | ComponentElement = isComponentLikeType(parentType)
-    ? { type: "InlineComponent", name: parentName }
-    : { type: "Element", name: parentName };
+  const element: ComponentInlineElement | ComponentElement = isComponentLikeType(parent.type)
+    ? { type: "InlineComponent", name: parent.name }
+    : { type: "Element", name: parent.name };
 
   ctx.forwardedEvents.set(eventName, element);
 
-  const existing_event = ctx.events.get(eventName);
+  const existing = ctx.events.get(eventName);
+  const description = ctx.eventDescriptions.get(eventName);
 
-  const event_description = ctx.eventDescriptions.get(eventName);
-  const event_deprecated = existing_event?.deprecated;
-  const event_internal = existing_event?.internal;
-
-  if (!existing_event) {
+  if (!existing) {
     ctx.events.set(eventName, {
       type: "forwarded",
       name: eventName,
-      element: element,
-      description: event_description,
-      deprecated: event_deprecated,
-      ...(event_internal ? { internal: true as const } : {}),
+      element,
+      description,
+      deprecated: undefined,
       source: sourceRangeFromNode(ctx, node),
     });
-  } else if (existing_event.type === "forwarded" && event_description && !existing_event.description) {
+  } else if (existing.type === "forwarded" && description && !existing.description) {
     ctx.events.set(eventName, {
-      ...existing_event,
-      description: event_description,
-      deprecated: existing_event.deprecated ?? event_deprecated,
-      ...(existing_event.internal || event_internal ? { internal: true as const } : {}),
-      source: existing_event.source || sourceRangeFromNode(ctx, node),
+      ...existing,
+      description,
+      deprecated: existing.deprecated,
+      source: existing.source || sourceRangeFromNode(ctx, node),
     });
   }
 }
 
 /** `bind:*` marks props reactive; `bind:this` on elements also narrows the prop type. */
 function recordBindDirective(ctx: ParserContext, node: AST.BindDirective, parent: AST.SvelteNode | null) {
-  if (!(parent && (isElementLikeType(parent.type) || isComponentLikeType(parent.type)))) {
-    return;
-  }
+  if (!parent || !(isElementLikeType(parent.type) || isComponentLikeType(parent.type))) return;
+  if (node.expression.type !== "Identifier") return;
 
-  const expressionName = node.expression.type === "Identifier" ? node.expression.name : undefined;
-  if (expressionName) {
-    const prop_name = resolveIdentifierToReactiveProp(ctx, expressionName);
-    if (prop_name) {
-      ctx.reactive_vars.add(prop_name);
-    }
-  }
+  const prop_name = resolveIdentifierToReactiveProp(ctx, node.expression.name);
+  if (!prop_name) return;
+  ctx.reactive_vars.add(prop_name);
 
-  if (
-    isElementLikeType(parent.type) &&
-    node.name === "this" &&
-    expressionName &&
-    "name" in parent &&
-    typeof parent.name === "string"
-  ) {
-    const prop_name = resolveIdentifierToReactiveProp(ctx, expressionName);
-    if (!prop_name) {
-      return;
-    }
-    const element_name = parent.name;
+  if (node.name !== "this" || !isElementLikeType(parent.type) || !("name" in parent)) return;
+  if (typeof parent.name !== "string") return;
 
-    if (ctx.bindings.has(prop_name)) {
-      const existing_bindings = ctx.bindings.get(prop_name);
-
-      if (existing_bindings && !existing_bindings.elements.includes(element_name)) {
-        ctx.bindings.set(prop_name, {
-          ...existing_bindings,
-          elements: [...existing_bindings.elements, element_name],
-        });
-      }
-    } else {
-      ctx.bindings.set(prop_name, {
-        elements: [element_name],
-      });
-    }
+  const element_name = parent.name;
+  const existing = ctx.bindings.get(prop_name);
+  if (!existing) {
+    ctx.bindings.set(prop_name, { elements: [element_name] });
+  } else if (!existing.elements.includes(element_name)) {
+    ctx.bindings.set(prop_name, { ...existing, elements: [...existing.elements, element_name] });
   }
 }
 
@@ -396,21 +305,14 @@ export function walkComponent(ctx: ParserContext): ComponentWalkResult {
 
   const visitor: Visitor = {
     enter(node, parent) {
-      // Every type this walk acts on is value-level (calls, declarations,
-      // assignments, directives, slots), and scopes only come from
-      // functions/blocks, so type-level TS subtrees have nothing for it.
+      // Everything this walk acts on is value-level, and type-level TS
+      // subtrees own no scopes.
       if (isTypeOnlySubtree(node.type)) return SKIP;
 
-      // Fuse scope declaration into this walk (see enterNestedScopeDeclarationNode).
-      // Only scope-owner nodes get a scope, so the returned scope is the
-      // same one a `scopeDeclarations.get(node)` lookup would find.
+      // Scope declaration is fused into this walk.
       const nodeScope = enterNestedScopeDeclarationNode(ctx, scopeWalkState, node);
-      if (nodeScope) {
-        ctx.activeScopes.push(nodeScope);
-      }
+      if (nodeScope) ctx.activeScopes.push(nodeScope);
 
-      // Every case below is keyed on one of these types; most nodes
-      // (identifiers, literals, text, elements) match none of them.
       if (!MAIN_WALK_NODE_TYPES.has(node.type)) return;
 
       switch (node.type) {
@@ -424,7 +326,6 @@ export function walkComponent(ctx: ParserContext): ComponentWalkResult {
           enterCallExpression(ctx, walk, node, parent);
           break;
         case "SpreadAttribute": {
-          // Svelte spread attribute nodes: `{...$$restProps}` and rest-prop locals.
           const name = node.expression.type === "Identifier" ? node.expression.name : undefined;
           if (name === "$$restProps" || ctx.restPropLocals.has(name ?? "")) {
             maybeSetRestProps(ctx, parent);
@@ -432,9 +333,7 @@ export function walkComponent(ctx: ParserContext): ComponentWalkResult {
           break;
         }
         case "FunctionDeclaration":
-          if (node.id?.name) {
-            ctx.funcDecls.set(node.id.name, node);
-          }
+          if (node.id?.name) ctx.funcDecls.set(node.id.name, node);
           break;
         case "ImportDeclaration":
           collectValueImportBindings(ctx, node);
@@ -453,7 +352,6 @@ export function walkComponent(ctx: ParserContext): ComponentWalkResult {
           break;
         case "Comment": {
           const data = node.data.trim();
-
           if (COMPONENT_COMMENT_REGEX.test(data)) {
             ctx.componentComment = data.replace(COMPONENT_COMMENT_REGEX, "").replace(CARRIAGE_RETURN_REGEX, "");
             ctx.componentCommentSource = sourceRangeFromNode(ctx, node);
@@ -475,16 +373,14 @@ export function walkComponent(ctx: ParserContext): ComponentWalkResult {
       }
     },
     leave(node) {
-      // Scopes exist exactly for scope-owner nodes (see `enter` above), and
-      // function-scope owners are a subset, so one type check covers both.
+      // `enter` pushes a scope for exactly the scope-owner nodes.
       if (isScopeOwner(node)) {
         ctx.activeScopes.pop();
         leaveNestedScopeDeclarationNode(scopeWalkState, node);
       }
     },
   };
-  // The instance script and then the template, as one pass: the scopes the
-  // script declares stay live while the template is walked.
+  // One pass: the script's scopes stay live while the template is walked.
   if (ctx.parsed?.instance) walkTree(ctx.parsed.instance, visitor);
   if (ctx.parsed?.fragment) walkTree(ctx.parsed.fragment, visitor);
 

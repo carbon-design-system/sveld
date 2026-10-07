@@ -4,12 +4,10 @@ import type {
   Declaration,
   Identifier,
   Program,
-  Property,
   TSNode,
   TSTypeReference,
   TypeElement,
   VariableDeclaration,
-  VariableDeclarator,
 } from "sveast";
 import { getPropertyName, getTypeCastAnnotation, isCallExpressionNamed, unwrapTypeCastExpression } from "../ast-guards";
 import type {
@@ -25,7 +23,7 @@ import { trackPropLocalName } from "./context";
 import { recordSveldIgnore } from "./diagnostics";
 import { addDispatchedEvent } from "./events";
 import { collectGenericsAttributeTypeDependencies } from "./generics";
-import { processLeadingCommentsJSDoc, processNodeJSDoc } from "./jsdoc";
+import { processNodeJSDoc } from "./jsdoc";
 import { parseObjectTypeLiteralMembers } from "./object-type-literal";
 import { resolvePropTypeAndDocs } from "./prop-shared";
 import { addProp, processInitializer, queuePendingCrossFileDefault, unwrapBindableInitializer } from "./props";
@@ -35,7 +33,6 @@ import {
   buildEnumLocalTypeDeclarationCode,
   collectReferencedTypeDependencies,
   getRunesPropsDeclarationMetadata,
-  getRunesPropTypeMetadata,
   getTypeAnnotationText,
   getTypeNodeText,
   getTypeReferenceName,
@@ -43,7 +40,6 @@ import {
 } from "./type-resolution";
 import { resolveLocalVarJSDoc } from "./variable-jsdoc";
 
-/** Any identifier-shaped token, used to substitute type-parameter names within a type's source text. */
 const IDENTIFIER_TOKEN_REGEX = /[A-Za-z_$][\w$]*/g;
 
 /**
@@ -75,7 +71,6 @@ function buildTypeParameterSubstitutions(
   return substitutions;
 }
 
-/** Replaces bare occurrences of substituted type-parameter names within a type's source text. */
 function substituteTypeParameters(type: string, substitutions: Map<string, string>): string {
   if (substitutions.size === 0) return type;
   return type.replace(IDENTIFIER_TOKEN_REGEX, (token) => substitutions.get(token) ?? token);
@@ -93,10 +88,9 @@ function buildRunesPropTypeMetadataMap(
 
   const mergeMembers = (members: TypeElement[]) => {
     for (const member of members) {
-      if (member?.type !== "TSPropertySignature" || member.computed) continue;
-      if (!member.key) continue;
+      if (member?.type !== "TSPropertySignature" || member.computed || !member.key) continue;
 
-      const propName = getPropertyName(member.key as Property["key"]);
+      const propName = getPropertyName(member.key);
       if (!propName) continue;
 
       const typeStart = member.typeAnnotation?.start;
@@ -108,7 +102,7 @@ function buildRunesPropTypeMetadataMap(
 
       trackAdditionalTypeDependencyNode(ctx, member.typeAnnotation?.typeAnnotation);
 
-      const jsdoc = processLeadingCommentsJSDoc(ctx, member as { leadingComments?: unknown[]; start?: number });
+      const jsdoc = processNodeJSDoc(ctx, member);
       metadata.set(propName, {
         type,
         optional: member.optional === true,
@@ -118,6 +112,11 @@ function buildRunesPropTypeMetadataMap(
     }
   };
 
+  const mergeNested = (nestedType: TSNode | undefined) => {
+    const nested = buildRunesPropTypeMetadataMap(ctx, nestedType, localTypeDeclarations, visitedTypeNames);
+    for (const [propName, memberMetadata] of nested) metadata.set(propName, memberMetadata);
+  };
+
   switch (typeNode.type) {
     case "TSTypeLiteral":
       mergeMembers(typeNode.members ?? []);
@@ -125,18 +124,10 @@ function buildRunesPropTypeMetadataMap(
     case "TSInterfaceDeclaration":
       mergeMembers(typeNode.body?.body ?? []);
       break;
-    case "TSTypeAliasDeclaration": {
-      const nestedMetadata = buildRunesPropTypeMetadataMap(
-        ctx,
-        typeNode.typeAnnotation,
-        localTypeDeclarations,
-        visitedTypeNames,
-      );
-      for (const [propName, memberMetadata] of nestedMetadata) {
-        metadata.set(propName, memberMetadata);
-      }
+    case "TSTypeAliasDeclaration":
+    case "TSParenthesizedType":
+      mergeNested(typeNode.typeAnnotation);
       break;
-    }
     case "TSTypeReference": {
       const typeName = getTypeReferenceName(typeNode.typeName);
       if (!typeName || visitedTypeNames.has(typeName)) break;
@@ -160,33 +151,15 @@ function buildRunesPropTypeMetadataMap(
       break;
     }
     case "TSIntersectionType":
-      for (const nestedType of typeNode.types ?? []) {
-        const nestedMetadata = buildRunesPropTypeMetadataMap(ctx, nestedType, localTypeDeclarations, visitedTypeNames);
-        for (const [propName, memberMetadata] of nestedMetadata) {
-          metadata.set(propName, memberMetadata);
-        }
-      }
+      for (const nestedType of typeNode.types ?? []) mergeNested(nestedType);
       break;
-    case "TSParenthesizedType": {
-      const nestedMetadata = buildRunesPropTypeMetadataMap(
-        ctx,
-        typeNode.typeAnnotation,
-        localTypeDeclarations,
-        visitedTypeNames,
-      );
-      for (const [propName, memberMetadata] of nestedMetadata) {
-        metadata.set(propName, memberMetadata);
-      }
-      break;
-    }
   }
 
   return metadata;
 }
 
-/** A script's top-level statements, TS nodes included. */
-function scriptStatements(script: AST.Script | undefined): Program["body"] {
-  return script?.content.body ?? [];
+function localTypeDeclarationNodes(ctx: ParserContext): Map<string, TSNode> {
+  return new Map(Array.from(ctx.localTypeDeclarationsByName, ([name, declaration]) => [name, declaration.node]));
 }
 
 /** JSON-safe copy of the raw `customElement.props` config read off `parsed.options`. */
@@ -301,9 +274,8 @@ export function buildRunesPropTypeMetadata(ctx: ParserContext, parsed: AST.Root)
   // Module-script type imports and declarations are in scope for the
   // instance script. Collected first, so an instance declaration of the
   // same name wins.
-  const moduleBody = scriptStatements(parsed.module);
   const typeOnlyExportNames = new Set<string>();
-  for (const statement of moduleBody) {
+  for (const statement of parsed.module?.content.body ?? []) {
     if (!statement?.type) continue;
     if (statement.type === "ExportNamedDeclaration" && statement.declaration) {
       collectScriptTypeDeclaration(ctx, statement.declaration, true);
@@ -322,7 +294,7 @@ export function buildRunesPropTypeMetadata(ctx: ParserContext, parsed: AST.Root)
     if (declaration) declaration.exported = true;
   }
 
-  const body = scriptStatements(parsed.instance);
+  const body = parsed.instance?.content.body ?? [];
 
   for (const statement of body) {
     if (!statement?.type) continue;
@@ -356,21 +328,13 @@ export function buildRunesPropTypeMetadata(ctx: ParserContext, parsed: AST.Root)
     for (const declarator of statement.declarations ?? []) {
       if (!isCallExpressionNamed(unwrapTypeCastExpression(declarator.init), "$props")) continue;
 
-      // `let props = $props() as Props` / `... satisfies Props` carry their type on the
-      // initializer rather than on `declarator.id`, so fall back to that when there's no
-      // explicit `: Props` annotation on the binding itself.
+      // `$props() as Props` / `satisfies Props` carry the type on the initializer, not the binding.
       const annotation = "typeAnnotation" in declarator.id ? declarator.id.typeAnnotation : undefined;
       const castTypeNode = annotation ? undefined : getTypeCastAnnotation(declarator.init);
       const effectiveTypeNode = annotation?.typeAnnotation ?? castTypeNode;
 
       const canonicalType = annotation ? getTypeAnnotationText(ctx, annotation) : getTypeNodeText(ctx, castTypeNode);
-      const metadata = buildRunesPropTypeMetadataMap(
-        ctx,
-        effectiveTypeNode,
-        new Map(
-          Array.from(ctx.localTypeDeclarationsByName.entries(), ([name, declaration]) => [name, declaration.node]),
-        ),
-      );
+      const metadata = buildRunesPropTypeMetadataMap(ctx, effectiveTypeNode, localTypeDeclarationNodes(ctx));
       const referencedImportedTypes = new Set<string>();
       const referencedLocalTypes = new Set<string>();
       collectReferencedTypeDependencies(ctx, effectiveTypeNode, referencedImportedTypes, referencedLocalTypes);
@@ -384,9 +348,7 @@ export function buildRunesPropTypeMetadata(ctx: ParserContext, parsed: AST.Root)
           referencedLocalTypes,
         };
         ctx.runesPropsDeclarationMetadataByDeclaratorStart.set(declarator.start, declarationMetadata);
-        if (canonicalType) {
-          ctx.typedRunesPropsDeclarations.push(declarationMetadata);
-        }
+        if (canonicalType) ctx.typedRunesPropsDeclarations.push(declarationMetadata);
       }
     }
   }
@@ -406,19 +368,16 @@ function getJsDocPropsMembers(
   return members ? new Map(members.map((member) => [member.name, member])) : undefined;
 }
 
-/** Top-level `$props()` declarations in runes components. */
 export function parseRunesPropsDeclaration(ctx: ParserContext, node: VariableDeclaration) {
   for (const declarator of node.declarations) {
     if (!isCallExpressionNamed(declarator.init, "$props")) continue;
+
+    const metadata = getRunesPropsDeclarationMetadata(ctx, declarator.start);
 
     if (declarator.id.type === "Identifier") {
       ctx.wholePropsLocals.add(declarator.id.name);
       ctx.restPropLocals.add(declarator.id.name);
 
-      const metadata = getRunesPropsDeclarationMetadata(
-        ctx,
-        (declarator as VariableDeclarator & { start?: number }).start,
-      );
       const jsDocMembers = metadata?.props.size
         ? undefined
         : getJsDocPropsMembers(ctx, processNodeJSDoc(ctx, node)?.type);
@@ -436,41 +395,32 @@ export function parseRunesPropsDeclaration(ctx: ParserContext, node: VariableDec
           reactive: false,
         });
       }
-      if (metadata) {
-        for (const [propName, typeMetadata] of metadata.props) {
-          addProp(ctx, propName, {
-            name: propName,
-            kind: "let",
-            description: typeMetadata.jsdoc?.description,
-            deprecated: typeMetadata.jsdoc?.deprecated,
-            tags: typeMetadata.jsdoc?.tags,
-            type: typeMetadata.type,
-            typeSource: "typescript",
-            isFunction: false,
-            isFunctionDeclaration: false,
-            isRequired: !typeMetadata.optional,
-            constant: false,
-            reactive: false,
-            source: typeMetadata.source,
-          });
-        }
+      for (const [propName, typeMetadata] of metadata?.props ?? []) {
+        addProp(ctx, propName, {
+          name: propName,
+          kind: "let",
+          description: typeMetadata.jsdoc?.description,
+          deprecated: typeMetadata.jsdoc?.deprecated,
+          tags: typeMetadata.jsdoc?.tags,
+          type: typeMetadata.type,
+          typeSource: "typescript",
+          isFunction: false,
+          isFunctionDeclaration: false,
+          isRequired: !typeMetadata.optional,
+          constant: false,
+          reactive: false,
+          source: typeMetadata.source,
+        });
       }
       continue;
     }
 
-    if (declarator.id.type !== "ObjectPattern") {
-      continue;
-    }
+    if (declarator.id.type !== "ObjectPattern") continue;
 
     const declarationJSDoc = processNodeJSDoc(ctx, node);
     // `/** @type {Props} */ let { a, b } = $props()` types the whole object, so each
     // prop takes its member's type and docs instead of the declaration's JSDoc.
-    const jsDocMembers = getRunesPropsDeclarationMetadata(
-      ctx,
-      (declarator as VariableDeclarator & { start?: number }).start,
-    )?.props.size
-      ? undefined
-      : getJsDocPropsMembers(ctx, declarationJSDoc?.type);
+    const jsDocMembers = metadata?.props.size ? undefined : getJsDocPropsMembers(ctx, declarationJSDoc?.type);
 
     const supportedPublicPropCount = declarator.id.properties.filter((property) => {
       if (property.type !== "Property" || property.computed) return false;
@@ -482,18 +432,13 @@ export function parseRunesPropsDeclaration(ctx: ParserContext, node: VariableDec
 
     for (const property of declarator.id.properties) {
       if (property.type === "RestElement") {
-        if (property.argument.type === "Identifier") {
-          ctx.restPropLocals.add(property.argument.name);
-        }
+        if (property.argument.type === "Identifier") ctx.restPropLocals.add(property.argument.name);
         continue;
       }
 
-      // Svelte's own `$props()` analysis (VariableDeclarator.js) already rejects computed keys
-      // and non-Identifier destructuring targets as a compile error, so neither can reach here.
+      // Svelte rejects computed keys and non-Identifier destructuring targets in `$props()`.
       const propName = getPropertyName(property.key);
-      if (!propName) {
-        continue;
-      }
+      if (!propName) continue;
 
       let localName: string | undefined;
       let init: unknown;
@@ -509,18 +454,12 @@ export function parseRunesPropsDeclaration(ctx: ParserContext, node: VariableDec
       if (!localName) continue;
 
       trackPropLocalName(ctx, propName, localName);
-      if (propName === "children") {
-        ctx.snippetPropLocals.add(localName);
-      }
+      if (propName === "children") ctx.snippetPropLocals.add(localName);
 
       const member = jsDocMembers?.get(propName);
-      const typeMetadata = getRunesPropTypeMetadata(
-        ctx,
-        (declarator as VariableDeclarator & { start?: number }).start,
-        propName,
-      );
+      const typeMetadata = metadata?.props.get(propName);
       const propertyJSDoc =
-        processLeadingCommentsJSDoc(ctx, property) ??
+        processNodeJSDoc(ctx, property) ??
         typeMetadata?.jsdoc ??
         (supportedPublicPropCount === 1 && !jsDocMembers ? declarationJSDoc : undefined);
       const { init: unwrappedInit, bindable } = unwrapBindableInitializer(init);
@@ -549,9 +488,7 @@ export function parseRunesPropsDeclaration(ctx: ParserContext, node: VariableDec
         inferIsFunctionFromTypeSignature: true,
       });
 
-      if (bindable) {
-        ctx.reactive_vars.add(propName);
-      }
+      if (bindable) ctx.reactive_vars.add(propName);
 
       recordSveldIgnore(ctx, "prop-unknown-type", propName, propertyJSDoc?.sveldIgnore);
 
@@ -582,7 +519,7 @@ export function parseRunesPropsDeclaration(ctx: ParserContext, node: VariableDec
   }
 }
 
-/** Returns the raw (unparsed) text of the generic argument in `EventDispatcher<...>`. */
+/** The raw text of the generic argument in `EventDispatcher<...>`. */
 function extractEventDispatcherGenericText(typeText: string): string | undefined {
   const marker = "EventDispatcher";
   const markerIndex = typeText.indexOf(marker);
@@ -629,11 +566,7 @@ export function registerTypedDispatcherEvents(
   fallbackSource: SourceRange | undefined,
 ) {
   if (typeArgument) {
-    const localTypeDeclarations = new Map(
-      Array.from(ctx.localTypeDeclarationsByName.entries(), ([name, declaration]) => [name, declaration.node]),
-    );
-    const members = buildRunesPropTypeMetadataMap(ctx, typeArgument, localTypeDeclarations);
-    for (const [name, member] of members) {
+    for (const [name, member] of buildRunesPropTypeMetadataMap(ctx, typeArgument, localTypeDeclarationNodes(ctx))) {
       addDispatchedEvent(ctx, { name, detail: member.type, has_argument: true, source: member.source });
     }
     return;

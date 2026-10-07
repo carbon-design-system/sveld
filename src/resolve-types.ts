@@ -4,14 +4,14 @@ import path from "node:path";
 import type { ExampleCheckSource } from "./example-check";
 import { normalizeSeparators } from "./path";
 
-export interface ExampleCheckTarget {
+interface ExampleCheckTarget {
   moduleName: string;
   filePath: string;
   sources: ExampleCheckSource[];
 }
 
 /** One `@example` block that failed to type-check. */
-export interface ExampleCheckDiagnostic {
+interface ExampleCheckDiagnostic {
   id: string;
   name: string;
   message: string;
@@ -28,30 +28,17 @@ const EXAMPLE_CODE_START_LINE = 2;
 const MIN_SUPPORTED_TS_MAJOR = 7;
 const REQUIREMENT_TEXT = `TypeScript ${MIN_SUPPORTED_TS_MAJOR} or later, which provides \`typescript/unstable/async\``;
 
-/** Outcome of loading the `typescript` package, before any tsconfig lookup. */
 interface TypeScriptLoadResult {
   installed: boolean;
   version?: string;
   module?: TS;
 }
 
-/** Structured failure reason for {@link TypeResolver.create}. */
-type TypeResolverFailureReason = "not-installed" | "unsupported-version" | "no-tsconfig";
+type TypeResolverCreateResult =
+  | { ok: true; resolver: TypeResolver }
+  | { ok: false; reason: "not-installed" | "unsupported-version" | "no-tsconfig"; message: string };
 
-interface TypeResolverFailure {
-  ok: false;
-  reason: TypeResolverFailureReason;
-  message: string;
-}
-
-interface TypeResolverSuccess {
-  ok: true;
-  resolver: TypeResolver;
-}
-
-export type TypeResolverCreateResult = TypeResolverSuccess | TypeResolverFailure;
-
-export interface TypeResolverCreateOptions {
+interface TypeResolverCreateOptions {
   /** Test seam: replaces the real `typescript` package lookup/import. */
   importTs?: (cwd: string) => Promise<TypeScriptLoadResult>;
 }
@@ -62,7 +49,6 @@ function isSupportedVersion(version: string | undefined): boolean {
   return Number.isFinite(major) && major >= MIN_SUPPORTED_TS_MAJOR;
 }
 
-/** Resolves the installed `typescript` version from `cwd`'s module resolution, then imports the async API. */
 async function defaultImportTs(cwd: string): Promise<TypeScriptLoadResult> {
   let version: string | undefined;
   try {
@@ -88,22 +74,16 @@ async function defaultImportTs(cwd: string): Promise<TypeScriptLoadResult> {
  * Loaded only when `checkExamples` has plain TS/JS examples to check.
  */
 export class TypeResolver {
-  private readonly api: TS;
+  // Assigned in `create()`, after `createFileSystem()` can close over `this`.
+  private api: TS = null;
   private readonly tsconfigPath: string;
   private readonly overlay = new Map<string, string>();
 
-  private constructor(api: TS, tsconfigPath: string) {
-    this.api = api;
+  private constructor(tsconfigPath: string) {
     this.tsconfigPath = tsconfigPath;
   }
 
-  /**
-   * Loads `typescript` and the nearest `tsconfig.json`.
-   *
-   * `checkExamples` is explicitly opt-in, so a failure to start here is
-   * reported as a structured failure rather than swallowed: the caller
-   * decides whether that's fatal.
-   */
+  /** Loads `typescript` and the nearest `tsconfig.json`; the caller decides whether a failure is fatal. */
   static async create(
     cwd: string = process.cwd(),
     { importTs = defaultImportTs }: TypeResolverCreateOptions = {},
@@ -135,29 +115,20 @@ export class TypeResolver {
       };
     }
 
-    const mod = loaded.module;
-    const resolver = new TypeResolver(null, tsconfigPath);
-    const api = new mod.API({ cwd, fs: resolver.createFileSystem() });
-    // biome-ignore lint/suspicious/noExplicitAny: assign after fs closure is created.
-    (resolver as any).api = api;
+    const resolver = new TypeResolver(tsconfigPath);
+    resolver.api = new loaded.module.API({ cwd, fs: resolver.createFileSystem() });
     return { ok: true, resolver };
   }
 
   /**
-   * Type-checks every `@example` block in one program snapshot.
-   *
-   * Each example gets its own virtual file: a `declare`-style binding for the
-   * documented symbol (typed as `any` end-to-end, so types sveld can't see
-   * never cause a false positive), then the example body. Catches renamed
-   * or removed symbols and wrong arity. Not full type checking; it does not
-   * depend on the rest of the component's types.
+   * Type-checks every `@example` block in one program snapshot, keyed by
+   * `filePath`. Each example is a virtual file: a binding for the documented
+   * symbol, typed `any` end-to-end so types sveld can't see never cause a
+   * false positive, then the body. Catches renamed or removed symbols and
+   * wrong arity, not full type errors.
    */
   async checkExamples(targets: ExampleCheckTarget[]): Promise<Map<string, ExampleCheckDiagnostic[]>> {
-    // Keyed by `filePath`. Glob can find two components with the same
-    // basename, so `moduleName` alone is not unique.
     const results = new Map<string, ExampleCheckDiagnostic[]>();
-    if (targets.length === 0) return results;
-
     const examples: Array<{ filePath: string; source: ExampleCheckSource; file: string }> = [];
     for (const target of targets) {
       for (const source of target.sources) {
@@ -175,8 +146,7 @@ export class TypeResolver {
     });
 
     try {
-      const [firstExample] = examples;
-      const project = await snapshot.getDefaultProjectForFile(firstExample.file);
+      const project = await snapshot.getDefaultProjectForFile(examples[0].file);
       if (!project) return results;
 
       await Promise.all(
@@ -190,7 +160,7 @@ export class TypeResolver {
 
           const content = this.overlay.get(file) ?? "";
           const message = diagnostics
-            .map((diagnostic: TS) => formatExampleDiagnostic(diagnostic, content))
+            .map((diagnostic) => formatExampleDiagnostic(diagnostic, content))
             .sort((a, b) => a.line - b.line)
             .map((entry) => `Line ${entry.line}: ${entry.text}`)
             .join("\n");
@@ -207,7 +177,6 @@ export class TypeResolver {
     return results;
   }
 
-  /** Closes the TypeScript server process. */
   async dispose(): Promise<void> {
     this.overlay.clear();
     await this.api?.close?.();

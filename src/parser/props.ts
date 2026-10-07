@@ -17,7 +17,7 @@ import type {
   TemplateLiteral,
   UnaryExpression,
 } from "sveast";
-import { getPropertyName, isCallExpressionNamed } from "../ast-guards";
+import { getPropertyName, isCallExpressionNamed, isIdentifier } from "../ast-guards";
 import type {
   ComponentProp,
   ComponentPropDefaultValue,
@@ -28,27 +28,21 @@ import type {
 import { returnTypeOfFunctionType } from "../type-text";
 import type { ParserContext } from "./context";
 import { trackPropLocalName } from "./context";
-import { NEWLINE_CR_REGEX, sourceAtPos, sourceForExpression } from "./source-position";
+import { NEWLINE_CR_REGEX, nodeSourceText, sourceAtPos, sourceForExpression } from "./source-position";
 import { trackAdditionalTypeDependencyNode } from "./type-resolution";
-import { assignValueOrUndefined, formatParamList } from "./utils";
+import { formatParamList } from "./utils";
 import { importedMemberBinding } from "./value-imports";
 import { findVariableTypeAndDescription, resolveLocalVarJSDoc } from "./variable-jsdoc";
 import { collectReturnArguments } from "./walk";
 
+type FunctionNode = FunctionDeclaration | FunctionExpression | ArrowFunctionExpression;
+
 export function addProp(ctx: ParserContext, prop_name: string, data: ComponentProp) {
-  if (assignValueOrUndefined(prop_name) === undefined) return;
+  if (!prop_name) return;
   trackPropLocalName(ctx, prop_name);
 
-  if (ctx.props.has(prop_name)) {
-    const existing_slot = ctx.props.get(prop_name);
-
-    ctx.props.set(prop_name, {
-      ...existing_slot,
-      ...data,
-    });
-  } else {
-    ctx.props.set(prop_name, data);
-  }
+  const existing = ctx.props.get(prop_name);
+  ctx.props.set(prop_name, existing ? { ...existing, ...data } : data);
 }
 
 /** Queue an initializer's unresolved cross-file default for `generateBundle`. */
@@ -69,6 +63,18 @@ export function queuePendingCrossFileDefault(
 /** A line break plus the indentation around it, folded to one space in default text. */
 const LINE_BREAK_WITH_INDENT_REGEX = /[^\S\r\n]*[\r\n]\s*/g;
 
+const NEW_EXPRESSION_TYPES = new Map([
+  ["Date", "Date"],
+  ["Map", "Map<any, any>"],
+  ["Set", "Set<any>"],
+  ["WeakMap", "WeakMap<object, any>"],
+  ["WeakSet", "WeakSet<object>"],
+  ["Array", "any[]"],
+  ["RegExp", "RegExp"],
+  ["Regexp", "RegExp"],
+  ["Error", "Error"],
+]);
+
 export function processInitializer(ctx: ParserContext, init: unknown, depth = 0): ProcessedInitializer {
   let value: string | undefined;
   let type: string | undefined;
@@ -87,10 +93,7 @@ export function processInitializer(ctx: ParserContext, init: unknown, depth = 0)
     init.type === "ArrowFunctionExpression" ||
     init.type === "FunctionExpression"
   ) {
-    const expr = init as ObjectExpression | BinaryExpression | ArrayExpression | ArrowFunctionExpression;
-    if ("start" in expr && "end" in expr && typeof expr.start === "number" && typeof expr.end === "number") {
-      value = sourceAtPos(ctx, expr.start, expr.end)?.replace(NEWLINE_CR_REGEX, " ");
-    }
+    value = sourceForExpression(ctx, init);
     isFunction = init.type === "ArrowFunctionExpression" || init.type === "FunctionExpression";
 
     if (init.type === "BinaryExpression") {
@@ -98,25 +101,15 @@ export function processInitializer(ctx: ParserContext, init: unknown, depth = 0)
     } else if (init.type === "ObjectExpression" || init.type === "ArrayExpression") {
       // The literal's own text doubles as its type (`{ dense: true }`, `[1, 2]`)
       // only when every member is itself a literal; `{ x: a }` isn't a type.
-      const { start, end } = expr as { start?: number; end?: number };
+      const { start, end } = init as { start?: number; end?: number };
       type = isLiteralTypeText(init) ? literalTypeText(ctx, start, end, value) : undefined;
-    }
-
-    if (init.type === "ArrowFunctionExpression" || init.type === "FunctionExpression") {
+    } else if (isFunction) {
       type = inferFunctionTypeFromNode(init as ArrowFunctionExpression | FunctionExpression);
       value = conciseFunctionDefaultText(ctx, init as ArrowFunctionExpression | FunctionExpression);
     }
   } else if (init.type === "UnaryExpression") {
-    const unaryExpr = init as UnaryExpression;
-    if (
-      "start" in unaryExpr &&
-      "end" in unaryExpr &&
-      typeof unaryExpr.start === "number" &&
-      typeof unaryExpr.end === "number"
-    ) {
-      value = sourceAtPos(ctx, unaryExpr.start, unaryExpr.end);
-    }
-    type = inferExpressionType(ctx, unaryExpr, depth);
+    value = nodeSourceText(ctx, init);
+    type = inferExpressionType(ctx, init, depth);
   } else if (
     init.type === "LogicalExpression" ||
     init.type === "ConditionalExpression" ||
@@ -124,66 +117,21 @@ export function processInitializer(ctx: ParserContext, init: unknown, depth = 0)
   ) {
     // The whole expression is the default (`size ?? "md"`), folded onto one
     // line; a sequence keeps the parens it needs to read as one value.
-    const { start, end } = init as { start?: number; end?: number };
-    const text =
-      start === undefined || end === undefined
-        ? undefined
-        : sourceAtPos(ctx, start, end)?.replace(LINE_BREAK_WITH_INDENT_REGEX, " ");
+    const text = nodeSourceText(ctx, init)?.replace(LINE_BREAK_WITH_INDENT_REGEX, " ");
     value = text !== undefined && init.type === "SequenceExpression" ? `(${text})` : text;
     type = inferExpressionType(ctx, init, depth);
   } else if (init.type === "NewExpression") {
-    const newExpr = init as NewExpression;
-    if (
-      "start" in newExpr &&
-      "end" in newExpr &&
-      typeof newExpr.start === "number" &&
-      typeof newExpr.end === "number"
-    ) {
-      value = sourceAtPos(ctx, newExpr.start, newExpr.end);
-    }
-    if (
-      newExpr.callee &&
-      typeof newExpr.callee === "object" &&
-      "type" in newExpr.callee &&
-      newExpr.callee.type === "Identifier"
-    ) {
-      const calleeName = (newExpr.callee as Identifier).name;
-      if (calleeName === "Date") {
-        type = "Date";
-      } else if (calleeName === "Map") {
-        type = "Map<any, any>";
-      } else if (calleeName === "Set") {
-        type = "Set<any>";
-      } else if (calleeName === "WeakMap") {
-        type = "WeakMap<object, any>";
-      } else if (calleeName === "WeakSet") {
-        type = "WeakSet<object>";
-      } else if (calleeName === "Array") {
-        type = "any[]";
-      } else if (calleeName === "RegExp" || calleeName === "Regexp") {
-        type = "RegExp";
-      } else if (calleeName === "Error") {
-        type = "Error";
-      } else {
-        type = calleeName;
-      }
+    value = nodeSourceText(ctx, init);
+    const callee = (init as NewExpression).callee;
+    if (isIdentifier(callee)) {
+      type = NEW_EXPRESSION_TYPES.get(callee.name) ?? callee.name;
     }
   } else if (init.type === "CallExpression") {
     const callExpr = init as CallExpression;
-    if (
-      "start" in callExpr &&
-      "end" in callExpr &&
-      typeof callExpr.start === "number" &&
-      typeof callExpr.end === "number"
-    ) {
-      value = sourceAtPos(ctx, callExpr.start, callExpr.end);
-    }
+    value = nodeSourceText(ctx, init);
 
     const callee = callExpr.callee;
-    const calleeName =
-      callee && typeof callee === "object" && "type" in callee && callee.type === "Identifier"
-        ? (callee as Identifier).name
-        : undefined;
+    const calleeName = isIdentifier(callee) ? callee.name : undefined;
 
     // `$derived`/`$state` wrap a value. Unwrap like `$bindable`, keep the rune
     // call text as `@default`.
@@ -207,7 +155,7 @@ export function processInitializer(ctx: ParserContext, init: unknown, depth = 0)
         };
       }
 
-      if (ctx.funcDecls.has(calleeName) || isLocalFunctionValuedBinding(ctx, calleeName)) {
+      if (ctx.funcDecls.has(calleeName) || localFunctionValuedInitializer(ctx, calleeName)) {
         return { value, type: undefined, isFunction: false, defaultValue, pendingCallDefault: { calleeName } };
       }
 
@@ -234,7 +182,7 @@ export function processInitializer(ctx: ParserContext, init: unknown, depth = 0)
       type: undefined,
       isFunction: false,
       defaultValue,
-      pendingCallDefault: { calleeName: calleeName ?? calleeDisplayText(ctx, callee) },
+      pendingCallDefault: { calleeName: calleeName ?? nodeSourceText(ctx, callee) ?? "call" },
     };
   } else if (init.type === "Identifier") {
     const ident = init as Identifier;
@@ -268,9 +216,7 @@ export function processInitializer(ctx: ParserContext, init: unknown, depth = 0)
         };
       }
     }
-    if ("start" in ident && "end" in ident && typeof ident.start === "number" && typeof ident.end === "number") {
-      value = sourceAtPos(ctx, ident.start, ident.end);
-    }
+    value = nodeSourceText(ctx, ident);
 
     // Named value import. The cross-file pass may swap in the imported literal.
     const importBinding = ctx.valueImportBindingsByLocalName.get(ident.name);
@@ -284,15 +230,7 @@ export function processInitializer(ctx: ParserContext, init: unknown, depth = 0)
       };
     }
   } else if (init.type === "MemberExpression") {
-    const memberExpr = init as MemberExpression;
-    if (
-      "start" in memberExpr &&
-      "end" in memberExpr &&
-      typeof memberExpr.start === "number" &&
-      typeof memberExpr.end === "number"
-    ) {
-      value = sourceAtPos(ctx, memberExpr.start, memberExpr.end);
-    }
+    value = nodeSourceText(ctx, init);
     if (isNumericConstant(init)) {
       type = "number";
     }
@@ -313,15 +251,7 @@ export function processInitializer(ctx: ParserContext, init: unknown, depth = 0)
       };
     }
   } else if (init.type === "TemplateLiteral") {
-    const template = init as TemplateLiteral;
-    if (
-      "start" in template &&
-      "end" in template &&
-      typeof template.start === "number" &&
-      typeof template.end === "number"
-    ) {
-      value = sourceAtPos(ctx, template.start, template.end);
-    }
+    value = nodeSourceText(ctx, init);
     type = "string";
   } else if ("raw" in init && typeof init.raw === "string") {
     value = init.raw;
@@ -514,71 +444,19 @@ export function inferVariableInitializerType(ctx: ParserContext, name: string): 
   return processInitializer(ctx, init).type;
 }
 
-/**
- * Look up a local variable's initializer AST node by name.
- * Returns the init node if found, or undefined.
- */
-function resolveLocalVarInitializer(ctx: ParserContext, name: string): unknown | undefined {
+function resolveLocalVarInitializer(ctx: ParserContext, name: string, constOnly = false): unknown {
   for (const decl of ctx.vars) {
+    if (constOnly && decl.kind !== "const") continue;
     for (const declarator of decl.declarations) {
-      if (
-        declarator.id &&
-        typeof declarator.id === "object" &&
-        "type" in declarator.id &&
-        declarator.id.type === "Identifier" &&
-        "name" in declarator.id &&
-        declarator.id.name === name &&
-        declarator.init
-      ) {
-        return declarator.init;
-      }
+      if (isIdentifier(declarator.id) && declarator.id.name === name && declarator.init) return declarator.init;
     }
   }
   return undefined;
 }
 
-/**
- * Look up the initializer for a local `const` by name.
- *
- * {@link resolveLocalVarInitializer} also walks `let`/`var`. This method does not.
- * Props and mutable bindings can change at runtime, so they cannot be context keys.
- *
- * @param name - The variable name to look up
- * @returns The initializer node for a matching `const` binding, or undefined
- */
-export function resolveConstInitializer(ctx: ParserContext, name: string): unknown | undefined {
-  for (const decl of ctx.vars) {
-    if (decl.kind !== "const") continue;
-    for (const declarator of decl.declarations) {
-      if (
-        declarator.id &&
-        typeof declarator.id === "object" &&
-        "type" in declarator.id &&
-        declarator.id.type === "Identifier" &&
-        "name" in declarator.id &&
-        declarator.id.name === name &&
-        declarator.init
-      ) {
-        return declarator.init;
-      }
-    }
-  }
-  return undefined;
-}
-
-/** Callee source text for diagnostics (`now.toISOString`). Falls back to `"call"`. */
-function calleeDisplayText(ctx: ParserContext, callee: unknown): string {
-  if (
-    callee &&
-    typeof callee === "object" &&
-    "start" in callee &&
-    "end" in callee &&
-    typeof callee.start === "number" &&
-    typeof callee.end === "number"
-  ) {
-    return sourceAtPos(ctx, callee.start, callee.end) ?? "call";
-  }
-  return "call";
+/** Unlike `let`/`var`, a `const` can't change at runtime, so only it can be a context key. */
+export function resolveConstInitializer(ctx: ParserContext, name: string): unknown {
+  return resolveLocalVarInitializer(ctx, name, true);
 }
 
 /**
@@ -604,12 +482,6 @@ function resolveSameFileCallReturnType(ctx: ParserContext, calleeName: string): 
   return inferred === "any" ? undefined : inferred;
 }
 
-/** Local const/let whose initializer is an arrow or function expression. */
-function isLocalFunctionValuedBinding(ctx: ParserContext, name: string): boolean {
-  return localFunctionValuedInitializer(ctx, name) !== undefined;
-}
-
-/** Arrow or function-expression initializer for a local binding. */
 function localFunctionValuedInitializer(
   ctx: ParserContext,
   name: string,
@@ -622,23 +494,12 @@ function localFunctionValuedInitializer(
   return undefined;
 }
 
-/**
- * Return type from `const f: () => string = ...` when the arrow omits `): string`.
- */
+/** Return type from `const f: () => string = ...` when the arrow omits `): string`. */
 function bindingCallableReturnTypeText(ctx: ParserContext, name: string): string | undefined {
   for (const decl of ctx.vars) {
     for (const declarator of decl.declarations) {
       const id = declarator.id;
-      if (
-        !id ||
-        typeof id !== "object" ||
-        !("type" in id) ||
-        id.type !== "Identifier" ||
-        !("name" in id) ||
-        id.name !== name
-      ) {
-        continue;
-      }
+      if (!isIdentifier(id) || id.name !== name) continue;
       const typeNode = id.typeAnnotation?.typeAnnotation;
       if (!typeNode) return undefined;
       return returnTypeOfFunctionType(sourceAtPos(ctx, typeNode.start, typeNode.end));
@@ -647,15 +508,9 @@ function bindingCallableReturnTypeText(ctx: ParserContext, name: string): string
   return undefined;
 }
 
-/** Explicit TS return annotation text on a function (`): T`). */
-function functionReturnTypeAnnotationText(
-  ctx: ParserContext,
-  node: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression,
-): string | undefined {
+function functionReturnTypeAnnotationText(ctx: ParserContext, node: FunctionNode): string | undefined {
   const annotation = node.returnType?.typeAnnotation;
-  if (!annotation) return undefined;
-
-  return sourceAtPos(ctx, annotation.start, annotation.end);
+  return annotation && sourceAtPos(ctx, annotation.start, annotation.end);
 }
 
 /**
@@ -665,20 +520,13 @@ function functionReturnTypeAnnotationText(
  */
 function buildFunctionTypeFromParts(
   jsdoc?: { params?: ComponentPropParam[]; returnType?: string },
-  node?: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression,
+  node?: FunctionNode,
 ): string {
   const returnType = jsdoc?.returnType ?? "any";
   const params = jsdoc?.params;
-  if (params && params.length > 0) {
-    return `(${formatParamList(params)}) => ${returnType}`;
-  }
-  if (jsdoc?.returnType) {
-    return `() => ${returnType}`;
-  }
-  if (node) {
-    return inferFunctionTypeFromNode(node);
-  }
-  return "(...args: any[]) => any";
+  if (params && params.length > 0) return `(${formatParamList(params)}) => ${returnType}`;
+  if (jsdoc?.returnType) return `() => ${returnType}`;
+  return node ? inferFunctionTypeFromNode(node) : "(...args: any[]) => any";
 }
 
 /**
@@ -687,7 +535,7 @@ function buildFunctionTypeFromParts(
  * A default's body is a weak signal for the prop contract. We only read
  * named params and literal returns. Everything else becomes `any`.
  */
-function inferFunctionTypeFromNode(node: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression): string {
+function inferFunctionTypeFromNode(node: FunctionNode): string {
   return `(${inferParamsFromNode(node)}) => ${inferReturnTypeFromNode(node)}`;
 }
 
@@ -695,26 +543,13 @@ function inferFunctionTypeFromNode(node: FunctionDeclaration | FunctionExpressio
  * Turn params into `name: any`, or use `...args: any[]` when arity is unclear:
  * no params, destructuring, rest, or defaults.
  */
-function inferParamsFromNode(node: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression): string {
+function inferParamsFromNode(node: FunctionNode): string {
   const params = node.params;
-  if (!Array.isArray(params) || params.length === 0) {
-    return "...args: any[]";
-  }
+  if (!Array.isArray(params) || params.length === 0) return "...args: any[]";
   const names: string[] = [];
   for (const param of params) {
-    if (
-      param &&
-      typeof param === "object" &&
-      "type" in param &&
-      param.type === "Identifier" &&
-      "name" in param &&
-      typeof param.name === "string"
-    ) {
-      names.push(`${param.name}: any`);
-    } else {
-      // Destructuring, rest, or default param: use ...args: any[]
-      return "...args: any[]";
-    }
+    if (!isIdentifier(param)) return "...args: any[]";
+    names.push(`${param.name}: any`);
   }
   return names.join(", ");
 }
@@ -724,36 +559,13 @@ function inferParamsFromNode(node: FunctionDeclaration | FunctionExpression | Ar
  * the same primitive. Bare `return;`, no returns, identifiers, calls,
  * objects, ternaries, async, or generators all become `any`.
  */
-function inferReturnTypeFromNode(node: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression): string {
-  if (node.async || node.generator) {
-    return "any";
-  }
-
-  const body = node.body;
-  let returnArgs: unknown[];
-  if (body && typeof body === "object" && "type" in body && body.type === "BlockStatement") {
-    returnArgs = collectReturnArguments(body);
-    if (returnArgs.length === 0) {
-      return "any";
-    }
-  } else {
-    // Expression-bodied arrow: body is the return value.
-    returnArgs = [body];
-  }
-
-  let inferred: string | null = null;
-  for (const arg of returnArgs) {
-    const primitive = inferReturnPrimitive(arg);
-    if (!primitive) {
-      return "any";
-    }
-    if (inferred === null) {
-      inferred = primitive;
-    } else if (inferred !== primitive) {
-      return "any";
-    }
-  }
-  return inferred ?? "any";
+function inferReturnTypeFromNode(node: FunctionNode): string {
+  if (node.async || node.generator) return "any";
+  const { body } = node;
+  const returnArgs = body.type === "BlockStatement" ? collectReturnArguments(body) : [body];
+  const primitives = new Set(returnArgs.map(inferReturnPrimitive));
+  const [only] = primitives;
+  return primitives.size === 1 && only ? only : "any";
 }
 
 /**
@@ -761,9 +573,7 @@ function inferReturnTypeFromNode(node: FunctionDeclaration | FunctionExpression 
  * if it isn't a literal, template literal, or `String`/`Number`/`Boolean` call.
  */
 function inferReturnPrimitive(expr: unknown): "string" | "number" | "boolean" | null {
-  if (!expr || typeof expr !== "object" || !("type" in expr)) {
-    return null;
-  }
+  if (!expr || typeof expr !== "object" || !("type" in expr)) return null;
   switch (expr.type) {
     case "Literal": {
       const value = (expr as Literal).value;
@@ -776,12 +586,10 @@ function inferReturnPrimitive(expr: unknown): "string" | "number" | "boolean" | 
       return "string";
     case "CallExpression": {
       const callee = (expr as CallExpression).callee;
-      if (callee && typeof callee === "object" && "type" in callee && callee.type === "Identifier") {
-        const name = (callee as Identifier).name;
-        if (name === "String") return "string";
-        if (name === "Number") return "number";
-        if (name === "Boolean") return "boolean";
-      }
+      if (!isIdentifier(callee)) return null;
+      if (callee.name === "String") return "string";
+      if (callee.name === "Number") return "number";
+      if (callee.name === "Boolean") return "boolean";
       return null;
     }
     default:
@@ -789,21 +597,11 @@ function inferReturnPrimitive(expr: unknown): "string" | "number" | "boolean" | 
   }
 }
 
-/**
- * Unwraps `$bindable(...)` calls so defaults are documented as their underlying values.
- */
+/** Unwraps `$bindable(...)` so the default is documented as its underlying value. */
 export function unwrapBindableInitializer(init: unknown): { init?: unknown; bindable: boolean } {
-  if (isCallExpressionNamed(init, "$bindable")) {
-    return {
-      init: init.arguments[0],
-      bindable: true,
-    };
-  }
-
-  return {
-    init,
-    bindable: false,
-  };
+  return isCallExpressionNamed(init, "$bindable")
+    ? { init: init.arguments[0], bindable: true }
+    : { init, bindable: false };
 }
 
 /**
@@ -811,10 +609,7 @@ export function unwrapBindableInitializer(init: unknown): { init?: unknown; bind
  * matter for a value default; `inferParamsFromNode`'s `: any` annotations
  * are for the prop's *type*, not this).
  */
-function paramsSourceText(
-  ctx: ParserContext,
-  node: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression,
-): string {
+function paramsSourceText(ctx: ParserContext, node: FunctionNode): string {
   const params = node.params;
   if (!Array.isArray(params) || params.length === 0) return "";
   const first = params[0] as { start?: number };
@@ -824,53 +619,34 @@ function paramsSourceText(
 }
 
 /**
- * A concise arrow-shorthand default value for a function default (e.g.
- * `() => true`, `(value) => String(value)`), or `undefined` when the body
- * isn't trivial enough to show without clutter. Only an expression-bodied
- * arrow, an empty block, or a block with exactly one `return <expr>;`
- * qualify; anything with side effects, control flow, or multiple statements
- * is intentionally omitted from `@default` (see #203).
+ * A function default as arrow shorthand (`(value) => String(value)`), or `undefined` unless
+ * the body is an expression, empty, or a single `return <expr>;` (see #203).
  */
-function conciseFunctionDefaultText(
-  ctx: ParserContext,
-  node: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression,
-): string | undefined {
-  // Generators can't be represented as an arrow shorthand without losing
-  // `function*`/`yield` semantics; leave those to the description instead.
+function conciseFunctionDefaultText(ctx: ParserContext, node: FunctionNode): string | undefined {
+  // An arrow can't be a generator.
   if (node.generator) return undefined;
 
-  const body = node.body;
-  if (!body || typeof body !== "object" || !("type" in body)) return undefined;
-
+  const { body } = node;
   const params = paramsSourceText(ctx, node);
   const asyncPrefix = node.async ? "async " : "";
 
-  // An object-literal arrow body needs parens (`() => ({ a: 1 })`) or it
-  // reads as a block statement instead of an expression.
-  const arrowBody = (expr: unknown, exprText: string) =>
-    expr && typeof expr === "object" && "type" in expr && expr.type === "ObjectExpression" ? `(${exprText})` : exprText;
+  // An object-literal arrow body needs parens (`() => ({ a: 1 })`) to not read as a block.
+  const arrowBody = (expr: { type: string }, exprText: string) =>
+    expr.type === "ObjectExpression" ? `(${exprText})` : exprText;
 
   if (body.type !== "BlockStatement") {
     const exprText = sourceForExpression(ctx, body);
     return exprText === undefined ? undefined : `${asyncPrefix}(${params}) => ${arrowBody(body, exprText)}`;
   }
 
-  const statements = (body as { body: unknown[] }).body;
-  if (statements.length === 0) {
-    return `${asyncPrefix}(${params}) => {}`;
-  }
+  const statements = body.body;
+  if (statements.length === 0) return `${asyncPrefix}(${params}) => {}`;
 
-  if (statements.length === 1) {
-    const stmt = statements[0];
-    if (stmt && typeof stmt === "object" && "type" in stmt && stmt.type === "ReturnStatement") {
-      const arg = (stmt as { argument?: unknown }).argument;
-      if (arg) {
-        const exprText = sourceForExpression(ctx, arg);
-        if (exprText !== undefined) return `${asyncPrefix}(${params}) => ${arrowBody(arg, exprText)}`;
-      }
-    }
+  const [stmt] = statements;
+  if (statements.length === 1 && stmt.type === "ReturnStatement" && stmt.argument) {
+    const exprText = sourceForExpression(ctx, stmt.argument);
+    if (exprText !== undefined) return `${asyncPrefix}(${params}) => ${arrowBody(stmt.argument, exprText)}`;
   }
-
   return undefined;
 }
 
@@ -898,9 +674,7 @@ function classifyDefaultValue(ctx: ParserContext, init: unknown): ComponentPropD
   const defaultValue: ComponentPropDefaultValue = { raw, kind };
   if (kind === "literal" || kind === "array" || kind === "object") {
     const parsed = jsonSafeValueFromExpression(init);
-    if (parsed.ok) {
-      defaultValue.value = parsed.value;
-    }
+    if (parsed.ok) defaultValue.value = parsed.value;
   }
 
   return defaultValue;
@@ -916,20 +690,14 @@ function jsonSafeValueFromExpression(node: unknown): { ok: true; value: unknown 
   }
 
   if (node.type === "UnaryExpression") {
-    const unary = node as UnaryExpression;
-    const argument = unary.argument;
-    if (!argument || typeof argument !== "object" || !("type" in argument) || argument.type !== "Literal") {
-      return { ok: false };
-    }
-
-    const value = (argument as Literal).value;
+    const { operator, argument } = node as UnaryExpression;
+    if (argument?.type !== "Literal") return { ok: false };
+    const { value } = argument;
     if (typeof value === "number") {
-      if (unary.operator === "-") return { ok: true, value: -value };
-      if (unary.operator === "+") return { ok: true, value };
+      if (operator === "-") return { ok: true, value: -value };
+      if (operator === "+") return { ok: true, value };
     }
-    if (typeof value === "boolean" && unary.operator === "!") {
-      return { ok: true, value: !value };
-    }
+    if (typeof value === "boolean" && operator === "!") return { ok: true, value: !value };
     return { ok: false };
   }
 

@@ -23,18 +23,13 @@ const GT_REGEX = />/g;
 const NEWLINE_REGEX = /\n/g;
 const IDENTIFIER_REGEX = /^[A-Za-z_$][\w$]*$/;
 const LINE_BREAK_REGEX = /\s*\n\s*/g;
-/**
- * An entity-like `&`, a tag-opening `<`, `|`, a backtick, `*`, a backslash
- * escape, or a word-edge `_`, matched in one pass.
- */
+// An entity-like `&`, a tag-opening `<`, `|`, a backtick, `*`, a backslash escape, or a word-edge `_`.
 const CODE_ESCAPE_REGEX = /&(?=#?\w+;)|<(?=[A-Za-z/!?])|[|`*]|\\(?=[!-/:-@[-`{-~])|(?<![A-Za-z0-9])_|_(?![A-Za-z0-9])/g;
 const CODE_ESCAPE_CHAR_REGEX = /[&<|`*\\_]/;
 
 /**
- * Markdown still parses the text inside a `<code>` element, so `Promise<void>`
- * would lose `<void>` as an unknown HTML tag, and a backtick, `*`, or
- * word-edge `_` would start a code span or emphasis. Encode just those, so
- * the raw Markdown stays readable.
+ * Markdown still parses inside `<code>`: `<void>` would vanish as an unknown tag
+ * and a backtick, `*`, or word-edge `_` would start a span. Encode only those.
  */
 function escapeCodeText(text: string): string {
   if (!CODE_ESCAPE_CHAR_REGEX.test(text)) return text;
@@ -48,14 +43,9 @@ function codeCell(text: string): string {
   return `<code>${escapeCodeText(text.includes("\n") ? text.replace(LINE_BREAK_REGEX, " ") : text)}</code>`;
 }
 
-/** `{@link target}` or `{@link target|display text}`, per the inline JSDoc `@link` tag grammar. */
 const JSDOC_LINK_REGEX = /\{@link\s+([^{}\s|]+)(?:\|([^{}]+))?\}/g;
 
-/**
- * Rewrites inline `{@link target|text}` / `{@link target}` to Markdown
- * `[text](target)` / `[target](target)`. Markdown-only: JSON and `.d.ts`
- * keep the JSDoc tag verbatim.
- */
+/** `{@link target|text}` to `[text](target)`. JSON and `.d.ts` keep the tag verbatim. */
 function rewriteJsDocLinks(text: string): string {
   if (!text.includes("{@link")) return text;
   return text.replace(JSDOC_LINK_REGEX, (_match, target: string, label: string | undefined) => {
@@ -74,7 +64,6 @@ function hasCodeFence(text: string): boolean {
   return text.includes("```") || text.includes("~~~");
 }
 
-/** Cell prose: HTML-escaped, with `{@link}` rewritten. */
 function proseText(text: string): string {
   return escapeHtml(rewriteJsDocLinks(text));
 }
@@ -84,11 +73,9 @@ const LEADING_NEWLINE_REGEX = /^\n/;
 const TRAILING_NEWLINE_REGEX = /\n$/;
 
 /**
- * Splits text on its fenced code blocks, CommonMark-style: a fence closes
- * on a line of the same marker character at least as long, an unclosed
- * fence runs to the end, and code lines lose up to the opening fence's
- * indentation. A prose part keeps the line breaks that border a fence, so
- * joining the parts' text back up gives the original line structure.
+ * Splits text on fenced code blocks, CommonMark-style (a closing fence is the same
+ * marker at least as long; unclosed runs to the end; code loses up to the opening
+ * fence's indent). Prose parts keep the line breaks bordering a fence.
  */
 function splitCodeFences(text: string): CellPart[] {
   const prose = (lines: string[]): CellPart => ({ kind: "prose", text: proseText(lines.join("\n")) });
@@ -127,10 +114,8 @@ function splitCodeFences(text: string): CellPart[] {
 }
 
 /**
- * Renders a table cell from its parts on one line. A fence becomes
- * `<pre><code>`, a block, so the line breaks bordering it are dropped; its
- * lines join with `<br />` since a cell can't hold a raw newline, and
- * `<pre>` keeps their indentation.
+ * One-line table cell. A fence becomes a `<pre><code>` block, so its bordering
+ * line breaks drop; a cell can't hold a raw newline, so lines join with `<br />`.
  */
 function renderCellParts(parts: CellPart[]): string {
   let cell = "";
@@ -154,10 +139,7 @@ export function formatPropType(type?: string) {
   return codeCell(type);
 }
 
-/**
- * Type cell for a prop or module export. A re-export has no `type` of its
- * own, so it shows where the binding comes from as a `typeof import(...)`.
- */
+/** A re-export has no `type` of its own, so it shows `typeof import(...)` instead. */
 export function formatExportType(prop: Pick<ComponentProp, "type" | "reExport">) {
   if (!prop.reExport) return formatPropType(prop.type);
   const { from, imported } = prop.reExport;
@@ -200,10 +182,7 @@ export function formatSlotFallback(fallback?: string) {
   return `<code>${escapeCodeText(fallback).replace(NEWLINE_REGEX, "<br />")}</code>`;
 }
 
-/**
- * The description, then one line per tag (`@since 1.2.0`), as one table
- * cell, with fenced code blocks rendered inline.
- */
+/** The description, then one line per tag (`@since 1.2.0`), as one table cell. */
 export function formatDescriptionWithTags(description?: string, tags?: Array<{ name: string; body: string }>) {
   const hasDescription = description !== undefined && description.trim().length > 0;
   if (!(hasDescription && hasCodeFence(description)) && !tags?.some(({ body }) => body && hasCodeFence(body))) {
@@ -247,7 +226,7 @@ export function formatEventDetail(detail?: string) {
   return formatPropType(detail.replace(NEWLINE_REGEX, " "));
 }
 
-/** `Extends <code>Base&lt;T></code>. Implements <code>Disposable</code>.`, or `undefined`. */
+/** `Extends <code>Base&lt;T></code>. Implements <code>Disposable</code>.` */
 function classHeritageLine(moduleExport: ComponentProp): string | undefined {
   const parts = [
     moduleExport.extends ? `Extends ${formatPropType(moduleExport.extends)}.` : "",
@@ -258,11 +237,7 @@ function classHeritageLine(moduleExport: ComponentProp): string | undefined {
   return parts.length > 0 ? parts.join(" ") : undefined;
 }
 
-/**
- * A `#### \`Store\` members` table after the module exports table, for each
- * class module export with members. A class exported under several names
- * (`export { Store as Alias }`) gets one table, under its own name.
- */
+/** A class exported under several names (`export { Store as Alias }`) gets one table, under its own name. */
 export function renderClassMemberTables(
   document: { append(type: "h4" | "raw", raw?: string): unknown },
   moduleExports: ComponentProp[],

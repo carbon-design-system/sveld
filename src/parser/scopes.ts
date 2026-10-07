@@ -87,12 +87,10 @@ export function markReactivePropsFromMutationTarget(
     return;
   }
 
-  // Past an identifier, only a destructuring assignment's left side binds
-  // names; a member expression target (`x.y = ...`, `x.y++`) binds none.
+  // A member expression target (`x.y = ...`) binds nothing.
   if (target.type !== "ObjectPattern" && target.type !== "ArrayPattern") return;
-  const identifiers = collectPatternIdentifiers(target);
 
-  for (const identifier of identifiers) {
+  for (const identifier of collectPatternIdentifiers(target)) {
     const publicPropName = resolveIdentifierToReactiveProp(ctx, identifier);
     if (publicPropName) {
       ctx.reactive_vars.add(publicPropName);
@@ -100,7 +98,6 @@ export function markReactivePropsFromMutationTarget(
   }
 }
 
-/** A node {@link isScopeOwner} accepts. */
 type ScopeOwnerNode =
   | BlockStatement
   | FunctionDeclaration
@@ -111,14 +108,9 @@ type ScopeOwnerNode =
   | AST.AwaitBlock;
 
 /**
- * True for node types that introduce a new lexical scope.
- *
- * Modern AST puts `{:then}` / `{:catch}` bindings on `AwaitBlock` itself,
- * not on separate `ThenBlock`/`CatchBlock` children. Both patterns share
- * one AwaitBlock-wide scope. Walking `pending` or `catch` will see the
- * `then` binding too. That only bites if someone names an await binding
- * the same as a prop and relies on cross-branch shadowing. Not worth
- * three scope objects for one block.
+ * True for node types that introduce a new lexical scope. `{:then}` and
+ * `{:catch}` bindings share one AwaitBlock-wide scope, so every branch sees
+ * both; only cross-branch shadowing of a prop name would notice.
  */
 export function isScopeOwner(node: unknown): node is ScopeOwnerNode {
   if (!node || typeof node !== "object" || !("type" in node)) return false;
@@ -137,14 +129,13 @@ export function isScopeOwner(node: unknown): node is ScopeOwnerNode {
   }
 }
 
-/** True for node types that introduce a new `var`-hoisting (function) scope. */
+/** True for node types that introduce a `var`-hoisting (function) scope. */
 function isFunctionScopeOwner(node: unknown) {
   if (!node || typeof node !== "object" || !("type" in node)) return false;
   const type = String(node.type);
   return type === "FunctionDeclaration" || type === "FunctionExpression" || type === "ArrowFunctionExpression";
 }
 
-/** Returns the scope map for `node`, creating and caching an empty one on first access. */
 function getOrCreateScope(ctx: ParserContext, node: object) {
   let scope = ctx.scopeDeclarations.get(node);
   if (!scope) {
@@ -180,39 +171,27 @@ function extractRunesScopeBindings(declarator: VariableDeclarator) {
     const propName = getPropertyName(property.key);
     if (!propName) continue;
 
-    let localName: string | undefined;
+    const target = property.value.type === "AssignmentPattern" ? property.value.left : property.value;
+    if (target.type !== "Identifier" || !target.name) continue;
 
-    if (property.value.type === "Identifier") {
-      localName = property.value.name;
-    } else if (property.value.type === "AssignmentPattern" && property.value.left.type === "Identifier") {
-      localName = property.value.left.name;
-    }
-
-    if (!localName) continue;
-
-    bindings.push({ kind: "prop", name: localName, publicPropName: propName });
+    bindings.push({ kind: "prop", name: target.name, publicPropName: propName });
   }
 
   return bindings;
 }
 
-/** Declares bindings for every declarator in a `var`/`let`/`const` declaration into the appropriate scope. */
 function declareVariableDeclaration(
   declaration: unknown,
   lexicalScope: LexicalScope,
   varScope: LexicalScope,
   options?: { allowRunesProps?: boolean; forceProp?: boolean },
 ) {
-  if (!isVariableDeclaration(declaration)) {
-    return;
-  }
+  if (!isVariableDeclaration(declaration)) return;
 
-  const allowRunesProps = options?.allowRunesProps ?? false;
-  const forceProp = options?.forceProp ?? false;
-  const variableDeclaration = declaration;
+  const targetScope = declaration.kind === "var" ? varScope : lexicalScope;
 
-  for (const declarator of variableDeclaration.declarations) {
-    if (allowRunesProps && isCallExpressionNamed(declarator.init, "$props")) {
+  for (const declarator of declaration.declarations) {
+    if (options?.allowRunesProps && isCallExpressionNamed(declarator.init, "$props")) {
       for (const binding of extractRunesScopeBindings(declarator)) {
         declareScopeBinding(
           binding.kind === "prop" ? lexicalScope : varScope,
@@ -223,27 +202,21 @@ function declareVariableDeclaration(
       continue;
     }
 
-    const targetScope = variableDeclaration.kind === "var" ? varScope : lexicalScope;
-    const bindingKind: ScopeBindingKind = forceProp ? "prop" : "local";
-
     for (const identifier of collectPatternIdentifiers(declarator.id)) {
       declareScopeBinding(
         targetScope,
         identifier,
-        bindingKind === "prop" ? { kind: "prop", publicPropName: identifier } : { kind: "local" },
+        options?.forceProp ? { kind: "prop", publicPropName: identifier } : { kind: "local" },
       );
     }
   }
 }
 
-/** Declares a function-like node's own name (if any) and its parameter bindings into `scope`. */
 function declareFunctionLikeScopeBindings(
   node: FunctionExpression | ArrowFunctionExpression | FunctionDeclaration,
   scope: LexicalScope,
 ) {
-  if ("id" in node && node.id && typeof node.id === "object" && "name" in node.id && typeof node.id.name === "string") {
-    declareScopeBinding(scope, node.id.name, { kind: "local" });
-  }
+  if (node.id) declareScopeBinding(scope, node.id.name, { kind: "local" });
 
   for (const param of node.params) {
     // `constructor(private x)`: the parameter is wrapped.
@@ -266,10 +239,6 @@ function collectDirectBlockDeclarations(body: unknown, lexicalScope: LexicalScop
         declareVariableDeclaration(statement, lexicalScope, varScope);
         break;
       case "FunctionDeclaration":
-        if (statement.id?.name) {
-          declareScopeBinding(lexicalScope, statement.id.name, { kind: "local" });
-        }
-        break;
       case "ClassDeclaration":
         if (statement.id?.name) {
           declareScopeBinding(lexicalScope, statement.id.name, { kind: "local" });
@@ -293,7 +262,6 @@ function declareExportSpecifierProps(ctx: ParserContext, specifiers: ExportSpeci
   }
 }
 
-/** Declares all component-instance-level (`<script>`) bindings into `ctx.componentScope`. */
 function collectComponentScopeDeclarations(ctx: ParserContext, instance: AST.Script | undefined) {
   for (const statement of instance?.content.body ?? []) {
     switch (statement.type) {
@@ -310,10 +278,6 @@ function collectComponentScopeDeclarations(ctx: ParserContext, instance: AST.Scr
         });
         break;
       case "FunctionDeclaration":
-        if (statement.id?.name) {
-          declareScopeBinding(ctx.componentScope, statement.id.name, { kind: "local" });
-        }
-        break;
       case "ClassDeclaration":
         if (statement.id?.name) {
           declareScopeBinding(ctx.componentScope, statement.id.name, { kind: "local" });
@@ -341,11 +305,9 @@ function collectComponentScopeDeclarations(ctx: ParserContext, instance: AST.Scr
 }
 
 /**
- * Resets `ctx.componentScope` / `ctx.scopeDeclarations` / `ctx.activeScopes` and declares the
- * top-level `<script>` bindings. Does not walk the component tree; nested scope declarations are
- * built incrementally by {@link enterNestedScopeDeclarationNode} inside the caller's own walk of
- * the instance script and template (fused with prop/slot/event extraction there rather than walked
- * separately).
+ * Resets scope state and declares the top-level `<script>` bindings. Nested
+ * scopes are built by {@link enterNestedScopeDeclarationNode} during the
+ * caller's component walk.
  */
 export function initComponentScope(ctx: ParserContext) {
   ctx.componentScope.clear();
@@ -358,17 +320,14 @@ export function initComponentScope(ctx: ParserContext) {
 /** Mutable stack tracking the enclosing `var`-hoisting scope during the component walk. */
 export type ScopeWalkState = { varScopeStack: LexicalScope[] };
 
-/** Creates the scope-walk state for a fresh component walk, seeded with `ctx.componentScope`. */
 export function createScopeWalkState(ctx: ParserContext): ScopeWalkState {
   return { varScopeStack: [ctx.componentScope] };
 }
 
 /**
- * Per-node `enter` step of the (formerly standalone) nested-scope-declaration walk. Declares
- * bindings for `node` if it's a scope owner and pushes it as the active `var` scope for its
- * descendants. Must be called during the same component walk that
- * {@link leaveNestedScopeDeclarationNode} tears down, and before any logic that reads
- * `ctx.scopeDeclarations` for `node` itself (its own scope is only created here, on entry).
+ * Declares bindings for a scope-owning `node` and, for functions, pushes it as
+ * the active `var` scope. Must run before anything reads
+ * `ctx.scopeDeclarations` for `node`, since its scope is created here.
  */
 export function enterNestedScopeDeclarationNode(
   ctx: ParserContext,
@@ -419,7 +378,6 @@ export function enterNestedScopeDeclarationNode(
   return scope;
 }
 
-/** Per-node `leave` step counterpart to {@link enterNestedScopeDeclarationNode}. */
 export function leaveNestedScopeDeclarationNode(state: ScopeWalkState, node: unknown) {
   if (isFunctionScopeOwner(node)) {
     state.varScopeStack.pop();

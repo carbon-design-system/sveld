@@ -5,7 +5,7 @@ import {
   generateBundle,
   toGenerateBundleOptions,
 } from "./bundle";
-import { getSvelteEntry } from "./get-svelte-entry";
+import { getSvelteEntry, UNRESOLVED_ENTRY_MESSAGE } from "./get-svelte-entry";
 import { loadConfig, loadConfigFrom, mergeConfig, validateOptions } from "./load-config";
 import { setQuiet } from "./logger";
 import { WATCH_RELEVANT_EXT_REGEX } from "./path";
@@ -65,17 +65,15 @@ export interface PluginSveldOptions extends Pick<GenerateBundleOptions, "cache" 
   watch?: boolean;
 }
 
-/** Subset of Vite/Rollup's HMR context that the watch hook relies on. */
+// Structural subsets of the Vite/Rollup types, so neither is a dependency.
 interface HotUpdateContext {
   file: string;
 }
 
-/** Subset of Rollup's plugin context that `generateBundle`/`writeBundle` rely on to fail the build. */
 interface RollupPluginContext {
   error(message: string): never;
 }
 
-/** Subset of Vite's resolved config, used only to locate the project root for `config` loading. */
 interface ResolvedViteConfig {
   root: string;
 }
@@ -95,9 +93,7 @@ interface SveldPlugin {
   watchChange?(id: string): void;
 }
 
-/** Message emitted (via `this.error`) when the entry point cannot be resolved. Matches `sveld()`'s thrown message. */
-const UNRESOLVED_ENTRY_MESSAGE =
-  'sveld: could not resolve a Svelte entry point. Set package.json#svelte, or pass the "entry" option.';
+/** Matches `sveld()`'s thrown message. */
 
 /**
  * `sveld.config` keys that only the CLI and `sveld()` act on: the plugin
@@ -106,15 +102,11 @@ const UNRESOLVED_ENTRY_MESSAGE =
  */
 const RUNTIME_ONLY_KEYS = ["reportDiagnostics", "strict", "check", "checkLevel", "stdout", "format"];
 
-/** Debounce window (ms) for coalescing rapid file changes into one regeneration. */
 const WATCH_DEBOUNCE_MS = 50;
 
 /**
- * Wraps an async `run` function so repeated calls execute strictly one after
- * another: a call that arrives while a previous one is still in flight
- * queues behind it instead of overlapping. Used to serialize watch-mode
- * flushes, which mutate a shared `SveldBundle`'s internal state and would
- * race if two ran concurrently.
+ * Serializes calls to `run`: a call made while one is in flight queues behind
+ * it. Watch-mode flushes mutate a shared `SveldBundle` and would otherwise race.
  */
 export function createSerialQueue(run: () => Promise<void>): () => void {
   let pending: Promise<void> = Promise.resolve();
@@ -127,13 +119,10 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
   const watch = opts?.watch === true;
   let result: GenerateBundleResult;
   let input: string | null;
-  // Reassigned once in `buildStart` when `config` loading is enabled; every
-  // hook below reads options through this rather than `opts` directly so a
-  // loaded config file is visible everywhere.
+  // Hooks read this, not `opts`, so a config file loaded in `buildStart` applies.
   let mergedOpts: PluginSveldOptions = opts ?? {};
   let root: string | undefined;
 
-  // Watch-mode state: a long-lived bundle that supports scoped re-parsing.
   let bundle: SveldBundle | null = null;
   let timer: ReturnType<typeof setTimeout> | undefined;
   const pending = new Set<string>();
@@ -151,8 +140,6 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
     }
   };
 
-  // Queues flushes onto one another so a slow `bundle.update()` can't
-  // overlap with the next debounced flush and race on the bundle's shared state.
   const flush = createSerialQueue(runFlush);
 
   const scheduleUpdate = (id: string) => {
@@ -164,8 +151,7 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
 
   return {
     name: "vite-plugin-sveld",
-    // In watch mode the plugin must also run in `serve` (dev server), so leave
-    // `apply` unset. Otherwise keep the original build-only behavior.
+    // Watch mode also runs under the dev server.
     apply: watch ? undefined : "build",
     enforce: "post",
     configResolved(config) {
@@ -190,16 +176,12 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
       setQuiet(mergedOpts.quiet === true);
       input = getSvelteEntry(mergedOpts.entry);
       if (watch && input != null) {
-        // Produce the initial output and prime the incremental bundle. This
-        // covers both `vite dev` (where generateBundle/writeBundle never fire)
-        // and `vite build --watch`. Caught the same way `runFlush` catches a
-        // later flush's failure: an error here must degrade to "no output
-        // yet" rather than crashing the dev server on startup.
+        // The initial output, here since `vite dev` never fires
+        // generateBundle/writeBundle. A failure must not crash the dev server.
         try {
           bundle = await createSveldBundle(input, mergedOpts.glob === true, toGenerateBundleOptions(mergedOpts));
           const initial = await bundle.result;
           await writeOutput(initial, mergedOpts, input);
-          // Persists the generated `.d.ts` text writeOutput just cached.
           initial.cache?.save();
         } catch (error) {
           console.error("sveld: failed to generate initial types in watch mode:", error);
@@ -207,7 +189,7 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
       }
     },
     async generateBundle() {
-      // In watch mode the initial build happens in `buildStart`.
+      // Watch mode builds in `buildStart`.
       if (watch) return;
       if (input == null) {
         this.error(UNRESOLVED_ENTRY_MESSAGE);
@@ -220,8 +202,7 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
         this.error(UNRESOLVED_ENTRY_MESSAGE);
       }
       await writeOutput(result, mergedOpts, input);
-      // Persists any generated `.d.ts` text writeOutput just cached, on top
-      // of the parse-only save generateBundle() already did.
+      // Persists the `.d.ts` text writeOutput just cached.
       result.cache?.save();
     },
     handleHotUpdate(ctx) {
@@ -233,40 +214,15 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
   };
 }
 
-/**
- * Writes output files based on plugin options.
- *
- * Generates TypeScript definitions, JSON metadata, and/or Markdown documentation
- * based on the options provided. Uses different component sets for different
- * output types to match expected behavior.
- *
- * @param result - Bundle result containing exports and component documentation
- * @param opts - Plugin options determining what outputs to generate
- * @param input - Input file path for determining input directory
- *
- * @example
- * ```ts
- * await writeOutput(result, {
- *   types: true,
- *   json: true,
- *   markdown: true
- * }, "./src/App.svelte");
- * // Generates: types/*.d.ts, COMPONENT_API.json, COMPONENT_INDEX.md
- * ```
- */
+/** `.d.ts` covers every discovered component; JSON and Markdown only the exported ones. */
 export async function writeOutput(result: GenerateBundleResult, opts: PluginSveldOptions, input: string) {
   const inputDir = dirname(input);
 
-  if (opts?.types !== false) {
-    /**
-     * Use allComponentsForTypes to generate .d.ts for all discovered components.
-     * This ensures TypeScript definitions are available for all components,
-     * not just exported ones, which is useful for type checking.
-     */
+  if (opts.types !== false) {
     await writeTsDefinitions(result.allComponentsForTypes, {
       outDir: "types",
       preamble: "",
-      ...opts?.typesOptions,
+      ...opts.typesOptions,
       exports: result.exports,
       inputDir,
       cache: result.cache,
@@ -275,56 +231,39 @@ export async function writeOutput(result: GenerateBundleResult, opts: PluginSvel
     } satisfies WriteTsDefinitionsOptions);
   }
 
-  if (opts?.json) {
-    /**
-     * Use components (exported only) for JSON metadata.
-     * JSON output should only include components that are actually exported,
-     * matching the public API surface.
-     */
+  if (opts.json) {
     await writeJson(result.components, {
       outFile: "COMPONENT_API.json",
-      ...opts?.jsonOptions,
+      ...opts.jsonOptions,
       inputDir,
       entryExports: result.entryExports,
     } satisfies WriteJsonOptions);
   }
 
-  if (opts?.markdown) {
-    /**
-     * Use components (exported only) for Markdown documentation.
-     * Documentation should only include exported components that are
-     * part of the public API.
-     */
+  if (opts.markdown) {
     await writeMarkdown(result.components, {
       outFile: "COMPONENT_INDEX.md",
-      ...opts?.markdownOptions,
+      ...opts.markdownOptions,
       entryExports: result.entryExports,
     } satisfies WriteMarkdownOptions);
   }
 }
 
-/**
- * Prints the single selected `json` / `markdown` document to stdout instead
- * of writing it to disk. CLI-only: the caller (`cli()`) is responsible for
- * enforcing that exactly one of those two options is set before calling
- * this.
- */
+/** Prints the `json` or `markdown` document to stdout. The CLI ensures exactly one is set. */
 export async function writeStdout(result: GenerateBundleResult, opts: PluginSveldOptions, input: string) {
-  const inputDir = dirname(input);
-
-  if (opts?.json) {
+  if (opts.json) {
     const rendered = renderJsonDocument(result.components, {
-      ...opts?.jsonOptions,
-      inputDir,
+      ...opts.jsonOptions,
+      inputDir: dirname(input),
       entryExports: result.entryExports,
     } satisfies Pick<WriteJsonOptions, "inputDir" | "entryExports" | "source">);
     process.stdout.write(rendered);
     return;
   }
 
-  if (opts?.markdown) {
+  if (opts.markdown) {
     const rendered = renderMarkdownDocument(result.components, {
-      ...opts?.markdownOptions,
+      ...opts.markdownOptions,
       entryExports: result.entryExports,
     } satisfies Pick<WriteMarkdownOptions, "entryExports" | "onAppend">);
     process.stdout.write(rendered);

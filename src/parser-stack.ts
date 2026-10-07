@@ -1,14 +1,9 @@
 /**
- * Lazily loads the parser stack (`./parser-stack-modules`) behind a dynamic
- * import: `ComponentParser`, the template and script parsers, and the JSDoc
- * helpers, which pull in sveast.
- *
- * A fully cached run never parses, so it never evaluates any of that.
- * Callers about to parse (`bundle.ts`, `parse-entry-exports.ts`, `watch.ts`)
- * await `loadParserStack()` once, then read it back with `getParserStack()`.
- * The load happens at most once per process.
+ * Lazily loads the parser stack (`./parser-stack-modules`), so a fully cached
+ * run never evaluates sveast. Callers about to parse await `loadParserStack()`
+ * once, then read it back with `getParserStack()`.
  */
-export type ParserStack = typeof import("./parser-stack-modules");
+type ParserStack = typeof import("./parser-stack-modules");
 
 let resolved: ParserStack | null = null;
 let pending: Promise<ParserStack> | null = null;
@@ -24,7 +19,6 @@ export function loadParserStack(): Promise<ParserStack> {
   return pending;
 }
 
-/** The stack from a prior, already-awaited `loadParserStack()` call. */
 export function getParserStack(): ParserStack {
   if (!resolved) {
     throw new Error("sveld: internal error, parser stack read before loadParserStack() resolved.");

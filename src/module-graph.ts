@@ -1,5 +1,4 @@
-import type { Dirent } from "node:fs";
-import { readFileSync, statSync } from "node:fs";
+import { type Dirent, readFileSync, type Stats, statSync } from "node:fs";
 import { basename, dirname, isAbsolute, join, resolve } from "node:path";
 import { type Program, parseModule as parseJavaScript } from "sveast";
 import { DirectoryListings } from "./fs-listing";
@@ -19,20 +18,19 @@ const TYPESCRIPT_COUNTERPART_EXTENSIONS: Record<string, string[]> = {
   ".cjs": [".cts", ".d.cts"],
 };
 
-/** Parsed-source context shared while walking a single module. */
 export interface ModuleSource {
   /** The file's full text, which the AST offsets index into. */
   text: string;
-  /** Absolute path of the parsed file. */
+  /** Absolute. */
   filePath: string;
-  /** Directory used to resolve relative imports. */
+  /** Resolves relative imports. */
   dir: string;
 }
 
 /** A module's text and top-level statements, or `null` when it can't be read or parsed. */
-export type ParsedModule = { source: ModuleSource; body: Program["body"] } | null;
+type ParsedModule = { source: ModuleSource; body: Program["body"] } | null;
 
-/** `./x`, `../x`, `.`, `..`, or an absolute path, as opposed to a bare package specifier. */
+/** As opposed to a bare package specifier. */
 function isPathSpecifier(specifier: string): boolean {
   return (
     specifier === "." ||
@@ -44,51 +42,31 @@ function isPathSpecifier(specifier: string): boolean {
 }
 
 /**
- * The files one project reads besides its components: how import
- * specifiers resolve to them, and their parses. Directory listings,
- * tsconfig/jsconfig `paths`, and parsed modules are cached for the
- * graph's lifetime, one build or watch session, so nothing a project read
- * leaks into the next.
- *
- * Export lookups build on {@link parse} in `module-exports.ts`; they're
- * cached per lookup rather than here, since an import cycle leaves one
- * lookup's view of a module incomplete.
+ * The files one project reads besides its components: specifier resolution
+ * and parses, cached for one build or watch session so nothing leaks into
+ * the next. Export lookups (`module-exports.ts`) are cached per lookup
+ * instead, since an import cycle leaves one lookup's view of a module incomplete.
  */
 export class ModuleGraph {
-  /** tsconfig/jsconfig `paths` mappings. */
   readonly aliases = new PathAliases();
   private readonly listings = new DirectoryListings();
-  /** Per file: its text and top-level statements, from the TypeScript-aware parser. */
+  /** From the TypeScript-aware parser. */
   private readonly modules = new Map<string, ParsedModule>();
-  /** Per file: the last plain-JavaScript AST read for it, reused while its source is unchanged. */
+  /** The last plain-JavaScript AST per file, reused while its source is unchanged. */
   private readonly programs = new Map<string, { source: string; ast: Program }>();
 
-  /** The entries of `dir`, or `null` when it can't be read. */
   listDirectory(dir: string): Dirent[] | null {
     return this.listings.entries(dir);
   }
 
-  /** Whether `filePath` exists, from its directory's listing. */
   exists(filePath: string): boolean {
     return this.listings.has(dirname(filePath), basename(filePath));
   }
 
   /**
-   * Resolves a module specifier to an on-disk source file.
-   *
-   * Tries the path verbatim, with each of `extensions`, then an
-   * `index.*` file when the specifier points at a directory, and finally the
-   * `.ts` file a missing `.js` specifier stands for. Only relative, absolute,
-   * and tsconfig/jsconfig path-alias specifiers resolve; a bare package
-   * specifier (`"helpers"`) never names a file next to the importer.
-   *
-   * @param fromDir - The importing file's directory.
-   * @param extensions - Probed in order when the path names no file.
-   *
-   * @example
-   * ```ts
-   * graph.resolve("./utils", "/abs/src") // "/abs/src/utils.ts"
-   * ```
+   * Resolves a relative, absolute, or path-alias specifier to a file: the
+   * path verbatim, then with each of `extensions`, then a directory's
+   * `index.*`, then the `.ts` file a missing `.js` specifier stands for.
    */
   resolve(specifier: string, fromDir: string, extensions: readonly string[] = MODULE_EXTENSIONS): string | null {
     const aliased = this.aliases.absolute(specifier, fromDir);
@@ -97,38 +75,31 @@ export class ModuleGraph {
     const parentDir = dirname(base);
     const baseName = basename(base);
 
-    if (this.listings.has(parentDir, baseName)) {
-      // The cached listing already knows the entry's type; only a symlink,
-      // whose target's type the listing doesn't record, or a name that
-      // matched by case/normalization variant (not in the listing under this
-      // exact name) still needs the `stat`.
+    const exists = this.listings.has(parentDir, baseName);
+    let stat: Dirent | Stats | undefined;
+    if (exists) {
+      // The listing knows the entry's type, except for a symlink's target or a
+      // name matched by case/normalization variant.
       const entry = this.listings.entry(parentDir, baseName);
-      const stat = entry && !entry.isSymbolicLink() ? entry : statSync(base, { throwIfNoEntry: false });
+      stat = entry && !entry.isSymbolicLink() ? entry : statSync(base, { throwIfNoEntry: false });
       if (stat?.isFile()) return base;
-
-      for (const ext of extensions) {
-        if (this.listings.has(parentDir, baseName + ext)) return base + ext;
-      }
-
-      if (stat?.isDirectory()) {
-        for (const ext of extensions) {
-          if (this.listings.has(base, `index${ext}`)) return join(base, `index${ext}`);
-        }
-      }
-      return null;
     }
 
     for (const ext of extensions) {
       if (this.listings.has(parentDir, baseName + ext)) return base + ext;
     }
 
-    return this.typeScriptCounterpart(base) ?? null;
+    if (!exists) return this.typeScriptCounterpart(base) ?? null;
+
+    if (stat?.isDirectory()) {
+      for (const ext of extensions) {
+        if (this.listings.has(base, `index${ext}`)) return join(base, `index${ext}`);
+      }
+    }
+    return null;
   }
 
-  /**
-   * `filePath`'s text and top-level statements (see {@link parseModule}),
-   * parsed once. Needs the parser stack loaded.
-   */
+  /** Needs the parser stack loaded. */
   parse(filePath: string): ParsedModule {
     let parsed = this.modules.get(filePath);
     if (parsed === undefined) {
@@ -138,10 +109,7 @@ export class ModuleGraph {
     return parsed;
   }
 
-  /**
-   * `source` parsed as plain JavaScript, as a component barrel is read
-   * (TypeScript syntax throws). Reused while `filePath`'s source is unchanged.
-   */
+  /** Plain JavaScript, as a component barrel is read (TypeScript syntax throws). */
   parseJavaScript(filePath: string, source: string): Program {
     const cached = this.programs.get(filePath);
     if (cached?.source === source) return cached.ast;
@@ -155,12 +123,7 @@ export class ModuleGraph {
     return ast;
   }
 
-  /**
-   * Forgets the parses of `filePaths`, and every directory listing: an edit
-   * can add or remove files anywhere, so the next lookups re-read the
-   * directories they probe. Watch mode calls this with each batch of
-   * changed files.
-   */
+  /** Also forgets every directory listing: an edit can add or remove files anywhere. */
   invalidate(...filePaths: string[]): void {
     this.listings.clear();
     for (const filePath of filePaths) {
@@ -189,13 +152,8 @@ export class ModuleGraph {
 }
 
 /**
- * Parses a module file into its top-level statements, with byte offsets into
- * the file's own text for verbatim text extraction.
- *
- * A plain module is parsed by sveast's `parseModule` with TypeScript on (a
- * `.js` file is valid input too). A `.svelte` file yields its module script
- * (`<script module>` / `<script context="module">`), the only place a
- * component declares exports other than its default.
+ * TypeScript on (`.js` is valid input too). A `.svelte` file yields its
+ * module script, the only place a component declares non-default exports.
  */
 function parseModule(filePath: string): ParsedModule {
   let text: string;
@@ -206,12 +164,9 @@ function parseModule(filePath: string): ParsedModule {
   }
 
   try {
-    let body: Program["body"];
-    if (filePath.endsWith(".svelte")) {
-      body = getParserStack().parseSvelteScripts(text).module?.content.body ?? [];
-    } else {
-      body = getParserStack().parseModule(text, { typescript: true }).body;
-    }
+    const body = filePath.endsWith(".svelte")
+      ? (getParserStack().parseSvelteScripts(text).module?.content.body ?? [])
+      : getParserStack().parseModule(text, { typescript: true }).body;
     return { source: { text, filePath, dir: dirname(filePath) }, body };
   } catch (error) {
     warn(`Warning: sveld couldn't parse ${filePath} to read its exports (${formatParseError(error)}); skipping it.`);

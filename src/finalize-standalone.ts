@@ -1,10 +1,5 @@
-/**
- * Finalize a standalone parse (`sveld/browser`, or `ComponentParser` used
- * directly), where nothing reads the other files a component imports from.
- */
-
 import { createDiagnostic, type SveldDiagnostic } from "./diagnostics";
-import type { ParsedComponent, ParsedComponentTypeScriptMetadata, SourceRange } from "./model";
+import type { ParsedComponent, SourceRange } from "./model";
 import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "./parsed-component-metadata";
 import { importPath } from "./parser/value-imports";
 
@@ -111,7 +106,6 @@ export function finalizeWithoutCrossFileResolution<T extends ParsedComponent>(
       candidate.calleeText,
       `\`${candidate.dispatcherName}\` is passed to \`${candidate.calleeText}\`, imported from "${candidate.importSource}"; reading the events it dispatches needs file access (generateBundle or the CLI), so they're omitted.`,
       candidate.source,
-      // `@sveld-ignore sveld/dispatch-escapes`: the author documented the helper's events with `@event`.
       candidate.ignored,
     );
   }
@@ -132,6 +126,6 @@ export function finalizeWithoutCrossFileResolution<T extends ParsedComponent>(
     ...component,
     diagnostics: [...(component.diagnostics ?? []), ...released, ...added],
   };
-  finalized[PARSED_COMPONENT_TYPE_SCRIPT_METADATA] = rest as ParsedComponentTypeScriptMetadata;
+  finalized[PARSED_COMPONENT_TYPE_SCRIPT_METADATA] = rest;
   return finalized;
 }

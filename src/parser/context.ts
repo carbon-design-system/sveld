@@ -46,21 +46,16 @@ export interface ParserContext {
   source?: string;
   parsed?: AST.Root;
 
-  /**
-   * Explicit `<svelte:options runes={...} />` value. When set, overrides rune-reference detection.
-   */
+  /** `<svelte:options runes={...} />`; overrides rune-reference detection. */
   runesOptionOverride?: boolean;
 
-  /** Line and column of an offset in `source`, created on the first `sourcePositionFromOffset`. */
+  /** Created lazily by `sourcePositionFromOffset`. */
   sourceLocator?: (offset: number) => SourcePosition;
-  /** Per-component memo of parsed JSDoc blocks keyed by their formatted comment text. */
+  /** Parsed JSDoc blocks keyed by their formatted comment text. */
   readonly parsedJsDocByText: Map<string, JSDocComment[]>;
   /** Every `/** *\/` block `parseCustomTypes` found in the source, keyed by absolute start offset. */
   readonly jsDocBlocksByStart: Map<number, JSDocComment>;
-  /**
-   * Start offsets of the JSDoc blocks that document a function (see `functionDocCommentStarts`
-   * in `./jsdoc.ts`). A `@template` in one is that function's own type parameter.
-   */
+  /** Starts of JSDoc blocks documenting a function, whose `@template` is the function's own. */
   functionDocCommentStarts: Set<number>;
 
   rest_props?: RestProps;
@@ -71,10 +66,7 @@ export interface ParserContext {
   componentCommentSource?: SourceRange;
   generics: ComponentGenerics;
 
-  /**
-   * Raw `generics` script attribute (with `lang="ts"` validated). Held until parse end so it can
-   * override JSDoc-derived {@link ParserContext.generics}.
-   */
+  /** `<script generics>`, held until parse end so it can override JSDoc-derived {@link ParserContext.generics}. */
   scriptGenericsAttribute?: { value: string; source?: SourceRange };
 
   readonly diagnosticRecords: SveldDiagnostic[];
@@ -86,7 +78,6 @@ export interface ParserContext {
   readonly reactive_vars: Set<string>;
   readonly funcDecls: Map<string, FunctionDeclaration>;
   readonly vars: Set<VariableDeclaration>;
-  /** Named value imports by local name, for cross-file call-default lookup. */
   readonly valueImportBindingsByLocalName: Map<string, ValueImportBinding>;
   /** CallExpression defaults that still need a return type after AST parsing. */
   readonly pendingCallDefaultCandidates: PendingCallDefaultCandidate[];
@@ -107,12 +98,7 @@ export interface ParserContext {
   readonly explicitVariableTypeNodesByName: Map<string, TSNode>;
   readonly typeImportBindingsByLocalName: Map<string, TypeImportBinding>;
   readonly localTypeDeclarationsByName: Map<string, LocalTypeDeclaration>;
-  /**
-   * TS type nodes read outside the whole-object `$props()` path (legacy
-   * annotations, runes per-prop annotations, accessor signatures) whose
-   * imported/local dependencies still need pulling into the `.d.ts` — see
-   * {@link buildTypeScriptMetadata}.
-   */
+  /** Type nodes read outside the whole-object `$props()` path whose dependencies the `.d.ts` still needs. */
   readonly additionalTypeDependencyNodes: TSNode[];
   readonly wholePropsLocals: Set<string>;
   readonly restPropLocals: Set<string>;
@@ -145,23 +131,14 @@ export interface ParserContext {
   readonly bindings: Map<string, ComponentPropBindings>;
   readonly contexts: Map<string, ComponentContext>;
   readonly typedefs: Map<string, TypeDef>;
-  /**
-   * Top-level members of each object `@typedef`, keyed by typedef name, so a
-   * `/** @type {Props} *\/ let { ... } = $props()` can type each prop.
-   */
+  /** So `/** @type {Props} *\/ let { ... } = $props()` can type each prop. */
   readonly typedefMembersByName: Map<string, TypedefMember[]>;
   /** No `type` for a variable whose JSDoc has no `@type` (a TS annotation may still type it). */
   variableInfoCache: Map<string, { type?: string; description?: string; internal?: boolean }>;
 
-  /** True after the per-component variable/JSDoc symbol table has populated {@link variableInfoCache}. */
   variableInfoCacheBuilt: boolean;
 
-  /**
-   * `@sveld-ignore <code>` codes collected from a prop/`@event`/context
-   * variable's JSDoc, keyed by `"<kind>:<name>"`. Populated by
-   * `recordSveldIgnore` before the corresponding `recordDiagnostic` call, so
-   * that call can mark its diagnostic `ignored` automatically.
-   */
+  /** `@sveld-ignore` codes keyed by `"<kind>:<name>"`; see `recordSveldIgnore`. */
   readonly sveldIgnoreDirectives: Map<string, Set<string>>;
 }
 

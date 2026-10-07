@@ -1,23 +1,12 @@
 import type { ParsedExports } from "./parse-exports";
 import { SVELTE_EXT_REGEX } from "./path";
 
-/**
- * Builds export statements from parsed export metadata.
- *
- * @example
- * ```ts
- * // Input:
- * { Button: { source: "./Button.svelte", default: true } }
- *
- * // Output:
- * // export { default as Button } from "./Button.svelte";
- * ```
- */
+/** `{ Button: { source: "./Button.svelte", default: true } }` gives `export { default as Button } from "./Button.svelte";`. */
 export function createExports(parsed_exports: ParsedExports): string {
   const groupedBySource = new Map<string, Array<{ id: string; exportee: ParsedExports[string] }>>();
 
   for (const [id, exportee] of Object.entries(parsed_exports)) {
-    const existing = groupedBySource.get(exportee.source) || [];
+    const existing = groupedBySource.get(exportee.source) ?? [];
     existing.push({ id, exportee });
     groupedBySource.set(exportee.source, existing);
   }
@@ -38,7 +27,6 @@ export function createExports(parsed_exports: ParsedExports): string {
     const defaultAsExports: string[] = [];
 
     for (const { id, exportee } of exports) {
-      // Explicit `export { default } from "..."` re-export.
       if (id === "default") {
         defaultExports.push(`export { default } from "${source}";`);
         continue;
@@ -82,17 +70,7 @@ export interface TypeExportEntry {
   names: string[];
 }
 
-/**
- * Builds `export type { ... } from "..."` statements, one per entry, in the
- * order given. Used by `typesOptions.indexTypes` to re-export generated
- * `Props`/`Exports` types from the barrel.
- *
- * @example
- * ```ts
- * createTypeExports([{ source: "./Button.svelte", names: ["ButtonProps"] }])
- * // Returns: 'export type { ButtonProps } from "./Button.svelte";'
- * ```
- */
+/** `export type { ... } from "..."` per entry, for `typesOptions.indexTypes`. */
 export function createTypeExports(entries: TypeExportEntry[]): string {
   return entries
     .filter((entry) => entry.names.length > 0)
@@ -100,26 +78,10 @@ export function createTypeExports(entries: TypeExportEntry[]): string {
     .join("\n");
 }
 
-/**
- * Strips the `.svelte` extension from a path.
- *
- * @example
- * ```ts
- * removeSvelteExt("./Button.svelte") // Returns: "./Button"
- * ```
- */
 export function removeSvelteExt(filePath: string): string {
   return filePath.replace(SVELTE_EXT_REGEX, "");
 }
 
-/**
- * Maps a `.svelte` path to its `.svelte.d.ts` definition path.
- *
- * @example
- * ```ts
- * convertSvelteExt("./Button.svelte") // Returns: "./Button.svelte.d.ts"
- * ```
- */
 export function convertSvelteExt(filePath: string): string {
   return filePath.replace(SVELTE_EXT_REGEX, ".svelte.d.ts");
 }

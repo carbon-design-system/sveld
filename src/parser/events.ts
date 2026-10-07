@@ -6,27 +6,23 @@ import { findTrackedVariableType } from "./contexts";
 import { inferVariableInitializerType, literalValueType } from "./props";
 import { isBoundInNestedScope } from "./scopes";
 import { sourceRangeFromNode } from "./source-position";
-import { assignValueOrUndefined, escapeCommentText } from "./utils";
+import { escapeCommentText } from "./utils";
 
 const NEWLINES_REGEX = /\n/g;
 const IDENTIFIER_REGEX = /^[A-Za-z_$][\w$]*$/;
 
 /**
- * What {@link deriveLiteralDetailType} reads identifier types through: the
- * component's parse ({@link componentDetailTypeSource}), or a stand-in for a
- * module sveld reads without one (an imported dispatch helper).
- * `variableType` is `undefined` for a variable it can't type.
+ * How {@link deriveLiteralDetailType} types identifiers: via the component's
+ * parse ({@link componentDetailTypeSource}), or a stand-in for a module read
+ * without one (an imported dispatch helper).
  */
 export type DetailTypeSource = {
   variableType(name: string): string | undefined;
 };
 
 /**
- * Types a detail's variables as a context value's are: a JSDoc `@type` or TS
- * annotation, else the initializer (`let count = 0` and `$state(0)` are
- * `number`). `nestedBoundNames` are names a parameter or nested declaration
- * binds at the dispatch; the script's variable or prop of that name isn't the
- * one dispatched, so they stay `any`.
+ * Types a detail's variables by annotation, else initializer. Names in
+ * `nestedBoundNames` are shadowed at the dispatch, so they stay untyped.
  */
 export function componentDetailTypeSource(
   ctx: ParserContext,
@@ -41,10 +37,9 @@ export function componentDetailTypeSource(
 }
 
 /**
- * The names in a detail argument (`count`, or the members of `{ count }` and
- * `[count]`) that a function, block or template scope binds where it's
- * dispatched. Read during the walk, while those scopes are live. `undefined`
- * when there are none, which is almost always.
+ * Names in a detail argument (`count`, `{ count }`, `[count]`) shadowed by a
+ * nested scope at the dispatch. Must run during the walk, while those scopes
+ * are live. `undefined` when there are none, which is almost always.
  */
 export function detailNamesBoundInNestedScope(
   ctx: ParserContext,
@@ -82,11 +77,10 @@ export function deriveDetailType(source: DetailTypeSource, node: unknown): strin
 }
 
 /**
- * Structurally infers a dispatched event's detail type from an object or array literal `dispatch()`
- * argument (`{ id: string }`, `number[]`), resolving identifier property values through the
- * existing variable-type lookup and falling back to `any` per property/element rather than for the
- * whole detail. Returns `undefined` for anything else so callers keep their own scalar-literal
- * narrowing (`dispatch("count", 5)` still types as `5`).
+ * Structural detail type of an object or array literal (`{ id: string }`,
+ * `number[]`), falling back to `any` per member rather than for the whole
+ * detail. `undefined` for anything else, so `dispatch("count", 5)` still
+ * types as `5`.
  */
 export function deriveLiteralDetailType(source: DetailTypeSource, node: unknown): string | undefined {
   if (!node || typeof node !== "object" || !("type" in node)) return undefined;
@@ -187,37 +181,30 @@ export function addDispatchedEvent(
 ) {
   if (name === undefined) return;
 
-  const default_detail = !has_argument && !detail ? "null" : assignValueOrUndefined(detail);
-  const event_description = description;
+  const default_detail = !has_argument && !detail ? "null" : detail || undefined;
   const existing_event = ctx.events.get(name);
   if (existing_event?.type === "forwarded") {
-    /**
-     * A dispatched event always takes precedence over a forwarded event of the same
-     * name, regardless of which was detected first during the walk (forwarding is
-     * recorded as soon as the template is visited, while createEventDispatcher()
-     * dispatches are only resolved after the whole walk completes). Non-conflicting
-     * metadata from the forwarded event is preserved as a fallback.
-     */
+    // Dispatched beats forwarded regardless of detection order (forwards are
+    // seen mid-walk, dispatches resolve after it); the forward's metadata is a fallback.
     ctx.events.set(name, {
       type: "dispatched",
       name,
       detail: default_detail,
-      description: event_description || existing_event.description,
+      description: description || existing_event.description,
       deprecated: deprecated ?? existing_event.deprecated,
       tags: tags ?? existing_event.tags,
       ...(internal || existing_event.internal ? { internal: true as const } : {}),
       source: source || existing_event.source,
     });
   } else if (existing_event) {
-    const merged_tags = existing_event.tags ?? tags;
     // An untyped `@event`'s `null` detail is only a fallback: the first dispatch replaces it.
     const replacesUntypedDetail = ctx.untypedJsDocEventNames.delete(name);
     ctx.events.set(name, {
       ...existing_event,
       detail: existing_event.detail === undefined || replacesUntypedDetail ? default_detail : existing_event.detail,
-      description: existing_event.description || event_description,
+      description: existing_event.description || description,
       deprecated: existing_event.deprecated ?? deprecated,
-      tags: merged_tags,
+      tags: existing_event.tags ?? tags,
       ...(existing_event.internal || internal ? { internal: true as const } : {}),
       source: source || existing_event.source,
     });
@@ -226,7 +213,7 @@ export function addDispatchedEvent(
       type: "dispatched",
       name,
       detail: default_detail,
-      description: event_description,
+      description,
       deprecated,
       tags,
       ...(internal ? { internal: true as const } : {}),
@@ -245,9 +232,8 @@ export interface HostDispatch {
 }
 
 /**
- * Detect `$host().dispatchEvent(new CustomEvent("name", { detail }))` (or `new Event(...)`),
- * mirroring `createEventDispatcher()` detection. Runs during the walk; the event is recorded
- * after it by {@link addHostDispatchedEvent}, once every variable the detail names is known.
+ * Detect `$host().dispatchEvent(new CustomEvent("name", { detail }))` (or `new Event(...)`).
+ * Recorded after the walk by {@link addHostDispatchedEvent}, once every variable is known.
  */
 export function parseHostDispatchEventCall(
   ctx: ParserContext,
@@ -297,7 +283,6 @@ export function addHostDispatchedEvent(ctx: ParserContext, dispatch: HostDispatc
 
 export function buildEventDetailFromProperties(
   properties: Array<{ name: string; type: string; description?: string; optional?: boolean; default?: string }>,
-  _eventName?: string,
   multiline = false,
 ): string {
   if (properties.length === 0) return "null";
@@ -307,14 +292,10 @@ export function buildEventDetailFromProperties(
       const optionalMarker = optional ? "?" : "";
       // `"a-b"` needs its quotes back; `[key: string]` is an index signature, not a key.
       const key = IDENTIFIER_REGEX.test(name) || name.startsWith("[") ? name : JSON.stringify(name);
-      let comment = description || "";
-
-      if (defaultValue && comment) {
-        comment = `${comment} @default ${defaultValue}`;
-      } else if (defaultValue) {
-        comment = `@default ${defaultValue}`;
-      }
-      comment = escapeCommentText(comment);
+      const defaultTag = defaultValue ? `@default ${defaultValue}` : "";
+      const comment = escapeCommentText(
+        description && defaultTag ? `${description} ${defaultTag}` : description || defaultTag,
+      );
 
       if (comment) {
         if (multiline) {

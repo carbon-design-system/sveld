@@ -66,48 +66,7 @@ export type SveldDiagnosticKind =
 /** `"error"` fails `--strict=errors`; `"warning"` only fails plain `--strict`. */
 export type SveldDiagnosticSeverity = "error" | "warning";
 
-/**
- * Stable, namespaced identifier for a {@link SveldDiagnosticKind}, e.g.
- * `"sveld/prop-unknown-type"`. Safe to match on in CI config or an
- * `ignore` matcher; `kind` is kept as the bare, un-namespaced form for
- * compatibility.
- */
-export const DIAGNOSTIC_CODES: Record<SveldDiagnosticKind, string> = {
-  "prop-unknown-type": "sveld/prop-unknown-type",
-  "context-any-type": "sveld/context-any-type",
-  "slot-missing-type": "sveld/slot-missing-type",
-  "event-no-source": "sveld/event-no-source",
-  "dispatch-escapes": "sveld/dispatch-escapes",
-  "example-compile-error": "sveld/example-compile-error",
-  "example-syntax-error": "sveld/example-syntax-error",
-  "syntax-skipped": "sveld/syntax-skipped",
-  "type-syntax-error": "sveld/type-syntax-error",
-  "rest-props-unresolved": "sveld/rest-props-unresolved",
-  "context-duplicate-key": "sveld/context-duplicate-key",
-  "context-key-unresolved": "sveld/context-key-unresolved",
-  "context-value-unresolved": "sveld/context-value-unresolved",
-  "spread-unresolved": "sveld/spread-unresolved",
-  "export-unresolved": "sveld/export-unresolved",
-  "module-export-conflict": "sveld/module-export-conflict",
-  "extend-props-target-missing": "sveld/extend-props-target-missing",
-  "extend-props-duplicate": "sveld/extend-props-duplicate",
-  "extend-props-override": "sveld/extend-props-override",
-  "jsdoc-unknown-tag": "sveld/jsdoc-unknown-tag",
-  "typedef-duplicate": "sveld/typedef-duplicate",
-  "property-duplicate": "sveld/property-duplicate",
-  "generics-conflict": "sveld/generics-conflict",
-  "event-description-ambiguous": "sveld/event-description-ambiguous",
-  "jsdoc-tag-dropped": "sveld/jsdoc-tag-dropped",
-  "internal-typedef-referenced": "sveld/internal-typedef-referenced",
-  "cross-file-unresolved": "sveld/cross-file-unresolved",
-  "export-ambiguous": "sveld/export-ambiguous",
-};
-
-/**
- * `example-compile-error`, `example-syntax-error`, `syntax-skipped`, and
- * `type-syntax-error` are errors (sveld emitted broken or unmodeled output); the rest are warnings
- * (a type fell back to `any`).
- */
+/** Errors: sveld emitted broken, unverified, or unmodeled output. Warnings: it fell back to a guess. */
 const DIAGNOSTIC_SEVERITIES: Record<SveldDiagnosticKind, SveldDiagnosticSeverity> = {
   "prop-unknown-type": "warning",
   "context-any-type": "warning",
@@ -139,9 +98,7 @@ const DIAGNOSTIC_SEVERITIES: Record<SveldDiagnosticKind, SveldDiagnosticSeverity
   "export-ambiguous": "warning",
 };
 
-/**
- * One place sveld had to guess a type instead of inferring it.
- */
+/** One place sveld had to guess a type instead of inferring it. */
 export interface SveldDiagnostic {
   /**
    * File this came from, e.g. `"./Button.svelte"`, or the entry barrel
@@ -169,7 +126,6 @@ export interface SveldDiagnostic {
 /** Fields recordable at the point a diagnostic is discovered; `code`/`severity` are derived from `kind`. */
 export type SveldDiagnosticInput = Omit<SveldDiagnostic, "code" | "severity">;
 
-/** Builds a {@link SveldDiagnostic}, filling in `code`/`severity` from `kind`. */
 export function createDiagnostic(input: SveldDiagnosticInput): SveldDiagnostic {
   return {
     ...input,
@@ -276,36 +232,19 @@ const KIND_LABELS: Record<SveldDiagnosticKind, string> = {
   "export-ambiguous": "Ambiguous `export *` names left out of the entry exports",
 };
 
-const KIND_ORDER: SveldDiagnosticKind[] = [
-  "prop-unknown-type",
-  "context-any-type",
-  "slot-missing-type",
-  "event-no-source",
-  "dispatch-escapes",
-  "example-compile-error",
-  "example-syntax-error",
-  "syntax-skipped",
-  "type-syntax-error",
-  "rest-props-unresolved",
-  "context-duplicate-key",
-  "context-key-unresolved",
-  "context-value-unresolved",
-  "spread-unresolved",
-  "export-unresolved",
-  "module-export-conflict",
-  "extend-props-target-missing",
-  "extend-props-duplicate",
-  "extend-props-override",
-  "jsdoc-unknown-tag",
-  "typedef-duplicate",
-  "property-duplicate",
-  "generics-conflict",
-  "event-description-ambiguous",
-  "jsdoc-tag-dropped",
-  "internal-typedef-referenced",
-  "cross-file-unresolved",
-  "export-ambiguous",
-];
+/** Summary display order. */
+const KIND_ORDER = Object.keys(KIND_LABELS) as SveldDiagnosticKind[];
+
+/**
+ * Stable, namespaced identifier for a {@link SveldDiagnosticKind}, e.g.
+ * `"sveld/prop-unknown-type"`. Safe to match on in CI config or an
+ * `ignore` matcher; `kind` is kept as the bare, un-namespaced form for
+ * compatibility.
+ */
+export const DIAGNOSTIC_CODES = Object.fromEntries(KIND_ORDER.map((kind) => [kind, `sveld/${kind}`])) as Record<
+  SveldDiagnosticKind,
+  string
+>;
 
 /**
  * Drop duplicates (same component, kind, and name). Each file is parsed twice
@@ -325,9 +264,7 @@ export function dedupeDiagnostics(diagnostics: SveldDiagnostic[]): SveldDiagnost
   return result;
 }
 
-/**
- * Group diagnostics by kind and component for CLI output.
- */
+/** Groups diagnostics by kind and component for CLI output. */
 export function formatDiagnosticsSummary(diagnostics: SveldDiagnostic[]): string {
   const active = diagnostics.filter((diagnostic) => !diagnostic.ignored);
   const ignoredCount = diagnostics.length - active.length;

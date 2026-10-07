@@ -4,7 +4,7 @@ import { type CrossFilePass, dropUnknownTypeDiagnostic, findCandidateProp, setRe
 import type { PendingConstDefaultCandidate } from "./model";
 import { findImportedExport, type InternalExport, type PrimitiveLiteral, type ResolveContext } from "./module-exports";
 
-export interface ConstDefaultResolution {
+interface ConstDefaultResolution {
   candidate: PendingConstDefaultCandidate;
   /** Present on success. */
   literal?: PrimitiveLiteral;
@@ -12,13 +12,8 @@ export interface ConstDefaultResolution {
   declaredType?: InternalExport["declaredType"];
 }
 
-/**
- * Read each candidate's imported value from its declaring module
- * ({@link findImportedExport} follows re-exports and namespace exports).
- * Only `export const` with a primitive literal counts; `let`/`var` exports
- * are live bindings. AST only, no `tsc`.
- */
-export function resolveConstDefaultCandidates(
+/** Only `export const` with a primitive literal counts; `let`/`var` exports are live bindings. */
+function resolveConstDefaultCandidates(
   componentFilePath: string,
   candidates: PendingConstDefaultCandidate[],
   ctx: ResolveContext,
@@ -37,10 +32,9 @@ export function resolveConstDefaultCandidates(
 }
 
 /**
- * Swap the imported identifier for its literal in `value`/`defaultValue`,
- * matching a same-file `const`. Type the prop from the const's declared
- * type, else the literal, only when nothing more explicit won, and drop the
- * parse-time `prop-unknown-type`.
+ * Swaps the imported identifier for its literal, as for a same-file `const`,
+ * and types the prop from the const's declared type, else the literal, only
+ * when nothing more explicit won.
  */
 function applyConstDefaultResolutions(component: ComponentDocApi, resolutions: ConstDefaultResolution[]): void {
   for (const { candidate, literal, declaredType } of resolutions) {
