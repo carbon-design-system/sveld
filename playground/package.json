@@ -8,12 +8,12 @@
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.3.1",
-    "carbon-components-svelte": "^0.112.0",
+    "carbon-components-svelte": "^0.113.0",
     "carbon-icons-svelte": "^13.16.0",
-    "carbon-preprocess-svelte": "^0.11.46",
-    "svelte": "^5.57.1",
+    "carbon-preprocess-svelte": "^0.11.49",
+    "svelte": "^5.57.2",
     "svelte-highlight": "^7.22.0",
     "typescript": "^7.0.2",
-    "vite": "^8.3.1"
+    "vite": "^8.3.3"
   }
 }
