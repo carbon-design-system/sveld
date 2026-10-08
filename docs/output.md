@@ -132,7 +132,7 @@ export default class Card extends SvelteComponentTyped<
 > {}
 ```
 
-The `(this: void, ...args: [Props]) => void` signature matches Svelte's `Snippet<T>`: `this: void` rules out a `this` context, and the tuple rejects array types.
+The `(this: void, ...args: [Props]) => void` signature matches Svelte's `Snippet<T>`: `this: void` rules out a `this` context, and the tuple rejects array types. A [tuple `@snippet` type](jsdoc-tags.md#slot--snippet) is the parameter list instead (`...args: [item: string, index: number]`), and that snippet has no legacy slot definition.
 
 ### Module-script classes
 
