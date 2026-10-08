@@ -23,7 +23,7 @@ import {
   templateTagParameters,
 } from "./jsdoc";
 import { parseObjectTypeLiteralMembers } from "./object-type-literal";
-import { addSlot } from "./slots";
+import { addSlot, slotKey } from "./slots";
 import { sourceRangeFromCommentTag } from "./source-position";
 import { formatParamList } from "./utils";
 
@@ -763,8 +763,8 @@ class CommentBlockReader {
 
   private readSlot(tagIndex: number, type: string) {
     const { tag, name: rawName, lines: tagSource } = this.tags[tagIndex];
-    // `@slot {Type} - description` describes the default slot.
-    const name = rawName === "-" ? undefined : rawName;
+    // `@slot {Type} - description` describes the default slot, as does `@snippet {Type} children`.
+    const name = rawName === "-" || (tag === "snippet" && rawName === "children") ? undefined : rawName;
     let slotDesc = this.orCommentDescription(this.getTagDescription(tagSource, this.tags[tagIndex + 1]));
     if (!slotDesc && this.pendingTags.length === 0) {
       slotDesc = this.takePrecedingDescription(tagIndex);
@@ -792,9 +792,9 @@ class CommentBlockReader {
     });
     this.pendingDeprecated = undefined;
     this.pendingInternal = false;
-    const slotKey = name === undefined || name === "" ? null : name;
+    const key = slotKey(name);
     this.attachTrailingTag = (trailingTag) => {
-      const slot = this.ctx.slots.get(slotKey);
+      const slot = this.ctx.slots.get(key);
       if (slot) slot.tags = [...(slot.tags ?? []), trailingTag];
     };
   }
