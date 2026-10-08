@@ -43,7 +43,7 @@
     "@typescript/typescript6": "^6.0.2",
     "ajv": "^8.20.0",
     "ostia": "^0.2.7",
-    "sveast": "^0.9.2",
+    "sveast": "^0.9.3",
     "svelte": "^5.57.1",
     "typescript": "^7.0.2"
   },
