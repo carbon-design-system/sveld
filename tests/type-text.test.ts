@@ -3,6 +3,7 @@ import {
   indexOfClosingBracket,
   indexOfTopLevel,
   indexOfTopLevelArrow,
+  isTupleType,
   returnTypeOfFunctionType,
   scanTypeText,
   splitTopLevel,
@@ -86,6 +87,21 @@ describe("indexOfClosingBracket", () => {
 
   test("returns -1 when the bracket never closes", () => {
     expect(indexOfClosingBracket("{ a: string", 0)).toBe(-1);
+  });
+});
+
+describe("isTupleType", () => {
+  test("accepts tuple types, labeled or not", () => {
+    expect(isTupleType("[number, string]")).toBe(true);
+    expect(isTupleType(" [item: string, index?: number] ")).toBe(true);
+    expect(isTupleType("[]")).toBe(true);
+  });
+
+  test("rejects arrays of tuples and non-tuple types", () => {
+    expect(isTupleType("[number, string][]")).toBe(false);
+    expect(isTupleType("[A] | [B]")).toBe(false);
+    expect(isTupleType("{ count: number }")).toBe(false);
+    expect(isTupleType("string[]")).toBe(false);
   });
 });
 
