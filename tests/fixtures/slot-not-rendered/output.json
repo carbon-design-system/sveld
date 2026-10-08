@@ -1,0 +1,52 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "title",
+      "kind": "let",
+      "description": "The first word of an inline description is read as the slot name.",
+      "type": "string",
+      "typeSource": "default",
+      "value": "\"\"",
+      "defaultValue": {
+        "raw": "\"\"",
+        "kind": "literal",
+        "value": ""
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>"
+    },
+    {
+      "name": "Page",
+      "default": false,
+      "slot_props": "Record<string, never>",
+      "description": "content rendered after the header."
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "slot-not-rendered/input.svelte",
+      "kind": "slot-not-rendered",
+      "name": "Page",
+      "message": "@slot \"Page\" has no matching <slot name=\"Page\"> in the component.",
+      "code": "sveld/slot-not-rendered",
+      "severity": "warning"
+    }
+  ]
+}

@@ -26,7 +26,14 @@ import {
   markReactivePropsFromMutationTarget,
   resolveIdentifierToReactiveProp,
 } from "./scopes";
-import { addSlot, buildSlotPropsFromObjectExpression, DEFAULT_SLOT_NAME, extractRenderTagInfo } from "./slots";
+import {
+  addSlot,
+  buildSlotPropsFromObjectExpression,
+  DEFAULT_SLOT_NAME,
+  extractRenderTagInfo,
+  renderTagCall,
+  slotKey,
+} from "./slots";
 import { sourceAtPos, sourceRangeFromNode } from "./source-position";
 import { collectValueImportBindings } from "./value-imports";
 import { isTypeOnlySubtree } from "./walk";
@@ -188,6 +195,7 @@ function addSlotElement(ctx: ParserContext, node: AST.SlotElement) {
     .join("")
     .trim();
 
+  ctx.renderedSlots.add(slotKey(slot_name));
   addSlot(ctx, {
     slot_name,
     slot_props,
@@ -199,7 +207,14 @@ function addSlotElement(ctx: ParserContext, node: AST.SlotElement) {
 /** `{@render name(...)}`: the snippet prop `name` becomes a slot, typed from an object argument. */
 function addRenderTagSlot(ctx: ParserContext, node: AST.RenderTag) {
   const renderInfo = extractRenderTagInfo(ctx, node.expression);
-  if (!renderInfo) return;
+  if (!renderInfo) {
+    // `{@render props[name]()}` may render any snippet prop.
+    const { callee } = renderTagCall(node.expression);
+    if (isMemberExpression(callee) && isIdentifier(callee.object) && ctx.wholePropsLocals.has(callee.object.name)) {
+      ctx.slotsUntracked = true;
+    }
+    return;
+  }
 
   // Positional arguments (`{@render row(item, index)}`) aren't slot props: the
   // snippet prop's own `Snippet<[...]>` type describes them.
@@ -215,6 +230,7 @@ function addRenderTagSlot(ctx: ParserContext, node: AST.RenderTag) {
   }
 
   const slot_name = renderInfo.publicName === "children" ? undefined : renderInfo.publicName;
+  ctx.renderedSlots.add(slotKey(slot_name));
 
   if (slot_props !== undefined) {
     addSlot(ctx, {
@@ -327,8 +343,13 @@ export function walkComponent(ctx: ParserContext): ComponentWalkResult {
           break;
         case "SpreadAttribute": {
           const name = node.expression.type === "Identifier" ? node.expression.name : undefined;
-          if (name === "$$restProps" || ctx.restPropLocals.has(name ?? "")) {
+          const isRestLocal = ctx.restPropLocals.has(name ?? "");
+          if (name === "$$restProps" || isRestLocal) {
             maybeSetRestProps(ctx, parent);
+          }
+          // `$$props` carries legacy slots, and a runes rest object carries snippet props.
+          if ((name === "$$props" || isRestLocal) && parent && isComponentLikeType(parent.type)) {
+            ctx.slotsUntracked = true;
           }
           break;
         }

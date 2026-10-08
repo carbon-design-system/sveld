@@ -396,6 +396,27 @@ function recordOrphanJsDocEvents(
 }
 
 /**
+ * `@slot`/`@snippet` with no `<slot>` or `{@render}` to match, often a
+ * description's first word read as the slot name. A declared snippet prop
+ * counts, since it may be passed on to a child.
+ */
+function recordUnrenderedJsDocSlots(ctx: ParserContext) {
+  if (ctx.slotsUntracked) return;
+  const runes = ctx.syntaxMode === "runes";
+  for (const [key, { tag, source }] of ctx.jsDocSlots) {
+    const prop = key ?? "children";
+    if (ctx.renderedSlots.has(key) || (runes && ctx.props.has(prop))) continue;
+    const slotElement = key === DEFAULT_SLOT_NAME ? "default <slot>" : `<slot name="${key}">`;
+    const expected = runes ? `{@render ${prop}()} or "${prop}" prop` : slotElement;
+    const message =
+      key === DEFAULT_SLOT_NAME
+        ? `@${tag} documents the default slot, but the component has no ${expected}.`
+        : `@${tag} "${key}" has no matching ${expected} in the component.`;
+    recordDiagnostic(ctx, "slot-not-rendered", key ?? "default", message, source);
+  }
+}
+
+/**
  * A public prop/typedef/event/slot/module-export/context-property whose type
  * text still names a now-excluded `@internal` typedef leaves a dangling
  * reference in the generated `.d.ts`. Cheap early-out: most components
@@ -495,6 +516,7 @@ export function finalizeComponent(ctx: ParserContext, walk: ComponentWalkResult)
 
   const unfollowableEscapes = queueDispatcherEscapes(ctx, walk);
   recordOrphanJsDocEvents(ctx, actuallyDispatchedEvents, unfollowableEscapes);
+  recordUnrenderedJsDocSlots(ctx);
 
   const { dispatcherName } = walk;
   for (const call of unfollowableEscapes) {

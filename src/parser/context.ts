@@ -109,6 +109,12 @@ export interface ParserContext {
 
   readonly slots: Map<string | null, InternalComponentSlot>;
   readonly snippetPropLocals: Set<string>;
+  /** `@slot`/`@snippet` tags by slot key, for `slot-not-rendered` diagnostics. */
+  readonly jsDocSlots: Map<string | null, { tag: string; source?: SourceRange }>;
+  /** Slot keys the template renders with `<slot>` or `{@render}`. */
+  readonly renderedSlots: Set<string | null>;
+  /** Set when slots may be forwarded or rendered where sveld can't see (`<Child {...$$props} />`). */
+  slotsUntracked: boolean;
 
   /** From component-level `@csspart` JSDoc tags. */
   readonly cssParts: ComponentCssPart[];
@@ -191,6 +197,9 @@ export function createParserContext(): ParserContext {
     activeScopes: [],
     slots: new Map(),
     snippetPropLocals: new Set(),
+    jsDocSlots: new Map(),
+    renderedSlots: new Set(),
+    slotsUntracked: false,
     cssParts: [],
     cssProperties: [],
     deferredSlotBlockGenerics: [],

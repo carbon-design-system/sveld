@@ -771,16 +771,19 @@ class CommentBlockReader {
     }
     this.isFirstTag = false;
     const slotType = type || "Record<string, never>";
+    const source = sourceRangeFromCommentTag(this.ctx, tagSource);
     if (!type) {
       recordDiagnostic(
         this.ctx,
         "slot-missing-type",
         name || "default",
         `@${tag}${name ? ` "${name}"` : ""} is missing a required {Type} annotation; falling back to "${slotType}".`,
-        sourceRangeFromCommentTag(this.ctx, tagSource),
+        source,
       );
     }
     const slotTags = this.pendingTags.splice(0);
+    const key = slotKey(name);
+    this.ctx.jsDocSlots.set(key, { tag, source });
     addSlot(this.ctx, {
       slot_name: name,
       slot_props: slotType,
@@ -788,11 +791,10 @@ class CommentBlockReader {
       slot_deprecated: this.pendingDeprecated,
       slot_tags: slotTags.length > 0 ? slotTags : undefined,
       slot_internal: this.pendingInternal || undefined,
-      source: sourceRangeFromCommentTag(this.ctx, tagSource),
+      source,
     });
     this.pendingDeprecated = undefined;
     this.pendingInternal = false;
-    const key = slotKey(name);
     this.attachTrailingTag = (trailingTag) => {
       const slot = this.ctx.slots.get(key);
       if (slot) slot.tags = [...(slot.tags ?? []), trailingTag];

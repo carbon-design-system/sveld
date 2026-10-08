@@ -326,6 +326,42 @@
       },
       "code": "sveld/event-no-source",
       "severity": "warning"
+    },
+    {
+      "component": "typedef-event-shared-block/input.svelte",
+      "kind": "slot-not-rendered",
+      "name": "break",
+      "message": "@slot \"break\" has no matching <slot name=\"break\"> in the component.",
+      "source": {
+        "start": {
+          "line": 26,
+          "column": 5
+        },
+        "end": {
+          "line": 26,
+          "column": 21
+        }
+      },
+      "code": "sveld/slot-not-rendered",
+      "severity": "warning"
+    },
+    {
+      "component": "typedef-event-shared-block/input.svelte",
+      "kind": "slot-not-rendered",
+      "name": "inline-slot",
+      "message": "@slot \"inline-slot\" has no matching <slot name=\"inline-slot\"> in the component.",
+      "source": {
+        "start": {
+          "line": 27,
+          "column": 5
+        },
+        "end": {
+          "line": 27,
+          "column": 45
+        }
+      },
+      "code": "sveld/slot-not-rendered",
+      "severity": "warning"
     }
   ]
 }

@@ -142,6 +142,148 @@ describe("ComponentParser diagnostics", () => {
     expect(slots.find((s) => s.name === "named")).toMatchObject({ slot_props: "Record<string, never>" });
   });
 
+  describe("slot-not-rendered", () => {
+    const slotNotRendered = (source: string) =>
+      new ComponentParser()
+        .parseSvelteComponent(source, parseContext)
+        .diagnostics?.filter((d) => d.kind === "slot-not-rendered");
+
+    test("flags a documented named slot with no matching <slot>", () => {
+      const diagnostics = slotNotRendered(`
+        <script>
+          /**
+           * @slot {{}} Page content rendered after the header.
+           */
+        </script>
+        <slot />
+      `);
+
+      expect(diagnostics).toEqual([
+        expect.objectContaining({
+          code: "sveld/slot-not-rendered",
+          severity: "warning",
+          name: "Page",
+          message: '@slot "Page" has no matching <slot name="Page"> in the component.',
+          source: { start: { line: 4, column: 13 }, end: { line: 4, column: 63 } },
+        }),
+      ]);
+    });
+
+    test("flags a documented default slot with no default <slot>", () => {
+      const diagnostics = slotNotRendered(`
+        <script>
+          /** @slot {{}} - Meter label. */
+          export let value = 0;
+        </script>
+        <meter {value} />
+      `);
+
+      expect(diagnostics).toEqual([
+        expect.objectContaining({
+          name: "default",
+          message: "@slot documents the default slot, but the component has no default <slot>.",
+        }),
+      ]);
+    });
+
+    test("flags an undeclared, unrendered snippet in runes mode", () => {
+      const diagnostics = slotNotRendered(`
+        <script>
+          /**
+           * @snippet {{}} header
+           * @snippet {{}} - Body.
+           */
+          let { footer } = $props();
+        </script>
+        {@render footer?.()}
+      `);
+
+      expect(diagnostics?.map((d) => d.message)).toEqual([
+        '@snippet "header" has no matching {@render header()} or "header" prop in the component.',
+        '@snippet documents the default slot, but the component has no {@render children()} or "children" prop.',
+      ]);
+    });
+
+    test("accepts slots rendered by <slot>, {@render}, or passed on as a declared snippet prop", () => {
+      expect(
+        slotNotRendered(`
+          <script>
+            /**
+             * @slot {{}} - Body.
+             * @slot {{}} default
+             * @slot {{ title: string }} title
+             */
+          </script>
+          <slot name="title" title="" />
+          <slot />
+        `),
+      ).toEqual([]);
+
+      expect(
+        slotNotRendered(`
+          <script>
+            import Child from "./Child.svelte";
+            /**
+             * @snippet {{}} children - Body.
+             * @snippet {[number]} row
+             * @snippet {{}} footer
+             */
+            let { children, row, footer } = $props();
+          </script>
+          {@render children?.()}
+          {@render row?.(1)}
+          <Child {footer} />
+        `),
+      ).toEqual([]);
+    });
+
+    test("skips components that may forward slots where sveld can't see", () => {
+      expect(
+        slotNotRendered(`
+          <script>
+            import Child from "./Child.svelte";
+            /** @slot {{}} title */
+          </script>
+          <Child {...$$props} />
+        `),
+      ).toEqual([]);
+
+      expect(
+        slotNotRendered(`
+          <script>
+            import Child from "./Child.svelte";
+            /** @snippet {{}} title */
+            let { ...rest } = $props();
+          </script>
+          <Child {...rest} />
+        `),
+      ).toEqual([]);
+
+      expect(
+        slotNotRendered(`
+          <script>
+            /** @snippet {{}} title */
+            let props = $props();
+            let name = "title";
+          </script>
+          {@render props[name]?.()}
+        `),
+      ).toEqual([]);
+    });
+
+    test("still checks a runes component that spreads rest props onto an element", () => {
+      const diagnostics = slotNotRendered(`
+        <script>
+          /** @snippet {{}} title */
+          let { ...rest } = $props();
+        </script>
+        <div {...rest}></div>
+      `);
+
+      expect(diagnostics?.map((d) => d.name)).toEqual(["title"]);
+    });
+  });
+
   test("flags @event tags with no matching dispatch or callback prop", () => {
     const parser = new ComponentParser();
     const source = `
