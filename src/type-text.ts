@@ -122,6 +122,12 @@ export function indexOfClosingBracket(text: string, openIndex: number): number {
   return found;
 }
 
+/** Whether `text` is a tuple type (`[A, B]`), not an array of one (`[A, B][]`). */
+export function isTupleType(text: string): boolean {
+  const trimmed = text.trim();
+  return trimmed.startsWith("[") && indexOfClosingBracket(trimmed, 0) === trimmed.length - 1;
+}
+
 /** Return type of a function type (`(a: A) => () => B` gives `() => B`), or `undefined` without a top-level arrow. */
 export function returnTypeOfFunctionType(type: string | undefined): string | undefined {
   if (!type) return undefined;

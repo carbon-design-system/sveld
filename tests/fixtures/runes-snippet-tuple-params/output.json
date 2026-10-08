@@ -1,0 +1,25 @@
+{
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "footer",
+      "default": false,
+      "slot_props": "{ count: number }",
+      "description": "Below the list."
+    },
+    {
+      "name": "row",
+      "default": false,
+      "slot_props": "[item: string, index: number]",
+      "description": "One row per item."
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}

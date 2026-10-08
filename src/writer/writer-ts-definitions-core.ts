@@ -2,7 +2,7 @@ import type { ComponentClassMember, ComponentProp, DeprecatedValue } from "../mo
 import { getParsedComponentTypeScriptMetadata } from "../parsed-component-metadata";
 import { escapeCommentText, formatParamList } from "../parser/utils";
 import type { ComponentDocApi } from "../plugin";
-import { splitTopLevel } from "../type-text";
+import { isTupleType, splitTopLevel } from "../type-text";
 import { formatGeneratedTypeScript } from "./format-generated-ts";
 
 const ANY_TYPE = "any";
@@ -258,14 +258,15 @@ function wrapCommentInJSDoc(commentLines: string): string {
   return commentLines.length > 0 ? `/**\n${escapeCommentText(commentLines)}*/` : EMPTY_STR;
 }
 
-/** Svelte 5 type-checks slot content through snippet props. */
+/**
+ * Svelte 5 type-checks slot content through snippet props. Slot props are the
+ * snippet's one argument; a tuple (`@snippet {[A, B]}`) is its parameter list.
+ */
 function genSnippetProp(key: string, slot: ComponentDocApi["slots"][number]): string {
   const comment = formatSlotJsDoc(slot.description, slot.tags, slot.deprecated);
   const description = comment ? `${comment}\n      ` : "";
-  const snippetType =
-    slot.slot_props && slot.slot_props !== EMPTY_OBJECT
-      ? `(this: void, ...args: [${slot.slot_props}]) => void`
-      : "(this: void) => void";
+  const args = !slot.slot_props || slot.slot_props === EMPTY_OBJECT ? "[]" : snippetArgs(slot.slot_props);
+  const snippetType = args === "[]" ? "(this: void) => void" : `(this: void, ...args: ${args}) => void`;
   return `
       ${description}${key}?: ${snippetType};`;
 }
@@ -439,10 +440,16 @@ function genPropDef(
   return { props_name, prop_def };
 }
 
-function genSlotDef(def: Pick<ComponentDocApi, "slots">) {
-  if (def.slots.length === 0) return EMPTY_OBJECT;
+function snippetArgs(slot_props: string) {
+  return isTupleType(slot_props) ? slot_props : `[${slot_props}]`;
+}
 
-  const slotDefs = def.slots
+/** Legacy slots take one props object, so a snippet with positional parameters has no slot form. */
+function genSlotDef(def: Pick<ComponentDocApi, "slots">) {
+  const slots = def.slots.filter((slot) => !isTupleType(slot.slot_props ?? ""));
+  if (slots.length === 0) return EMPTY_OBJECT;
+
+  const slotDefs = slots
     .map(({ name, slot_props, ...rest }) => {
       const key = rest.default || name === null ? "default" : formatKey(name ?? "");
       const slotDefComment = formatSlotJsDoc(rest.description, rest.tags, rest.deprecated);
@@ -452,7 +459,7 @@ function genSlotDef(def: Pick<ComponentDocApi, "slots">) {
     .join("\n");
 
   // Force multiline when count > 1 (matches interface body formatting).
-  return def.slots.length === 1 ? `{${slotDefs}}` : `{\n${slotDefs}\n}`;
+  return slots.length === 1 ? `{${slotDefs}}` : `{\n${slotDefs}\n}`;
 }
 
 const STANDARD_DOM_EVENTS = new Set([
