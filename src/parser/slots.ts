@@ -117,8 +117,12 @@ function resolveRenderTagPropReference(
   return publicName ? { publicName, trackingName: publicName } : null;
 }
 
+export function renderTagCall(expression: AST.RenderTag["expression"]) {
+  return expression.type === "ChainExpression" ? expression.expression : expression;
+}
+
 export function extractRenderTagInfo(ctx: ParserContext, expression: AST.RenderTag["expression"]) {
-  const call = expression.type === "ChainExpression" ? expression.expression : expression;
+  const call = renderTagCall(expression);
   const propReference = resolveRenderTagPropReference(ctx, call.callee);
   return propReference && { ...propReference, arguments: call.arguments };
 }

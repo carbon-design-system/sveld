@@ -7,6 +7,7 @@ import type { ParsedComponent, SourceRange } from "./model";
  * - `prop-unknown-type`: prop `typeSource` is `"unknown"`.
  * - `context-any-type`: `setContext` value inferred as `any`.
  * - `slot-missing-type`: `@slot`/`@snippet` tag omitted the required `{Type}` annotation.
+ * - `slot-not-rendered`: a `@slot`/`@snippet` tag names a slot the component never renders, e.g. a description's first word read as the slot name.
  * - `event-no-source`: `@event` with no dispatch, forward, or callback prop.
  * - `dispatch-escapes`: the `createEventDispatcher()` result is passed to a function sveld can't read the dispatched events of; they must be documented with `@event`.
  * - `example-compile-error`: a TS/JS `@example` block failed to type-check (opt-in, `checkExamples`).
@@ -37,6 +38,7 @@ export type SveldDiagnosticKind =
   | "prop-unknown-type"
   | "context-any-type"
   | "slot-missing-type"
+  | "slot-not-rendered"
   | "event-no-source"
   | "dispatch-escapes"
   | "example-compile-error"
@@ -71,6 +73,7 @@ const DIAGNOSTIC_SEVERITIES: Record<SveldDiagnosticKind, SveldDiagnosticSeverity
   "prop-unknown-type": "warning",
   "context-any-type": "warning",
   "slot-missing-type": "warning",
+  "slot-not-rendered": "warning",
   "event-no-source": "warning",
   "dispatch-escapes": "warning",
   "example-compile-error": "error",
@@ -205,6 +208,7 @@ const KIND_LABELS: Record<SveldDiagnosticKind, string> = {
   "prop-unknown-type": "Props without inferred types",
   "context-any-type": "Context values typed as `any`",
   "slot-missing-type": "@slot/@snippet tags missing a {Type} annotation",
+  "slot-not-rendered": "@slot/@snippet tags for slots the component doesn't render",
   "event-no-source": "@event tags with no dispatch or callback",
   "dispatch-escapes": "Dispatchers passed to functions sveld can't follow",
   "example-compile-error": "@example blocks that failed to compile",
