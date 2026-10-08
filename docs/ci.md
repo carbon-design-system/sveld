@@ -111,6 +111,7 @@ Codes are stable, so use them (not `message`) in config and scripts.
 | `sveld/prop-unknown-type` | `warning` | Add a TypeScript annotation, a `@type` tag, or an initializer sveld can infer a type from. |
 | `sveld/context-any-type` | `warning` | Annotate the `setContext` value's declaration with `@type` or a TypeScript type. |
 | `sveld/slot-missing-type` | `warning` | Add the `{Type}` to the `@slot`/`@snippet` tag (e.g. `@slot {{}} name`). Until then it's `Record<string, never>`. |
+| `sveld/slot-not-rendered` | `warning` | Render the slot (`<slot name>` or `{@render}`), or remove the stale `@slot`/`@snippet` tag. If the name is the first word of a default slot's description, write `@slot {{}} - description`. |
 | `sveld/event-no-source` | `warning` | Dispatch the event, forward it (`on:name`), or add a matching `on<name>` callback prop. Otherwise remove the stale `@event` tag. |
 | `sveld/dispatch-escapes` | `warning` | The dispatcher is passed somewhere sveld can't follow (a package import, a local function, a computed event name, or passed on again). Document its events with `@event`, then add `@sveld-ignore sveld/dispatch-escapes` to the dispatcher's JSDoc. |
 | `sveld/example-compile-error` | `error` | Fix the `@example` TS/JS block so it type-checks, or remove it. |
