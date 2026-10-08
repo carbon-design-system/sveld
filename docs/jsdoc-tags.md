@@ -403,6 +403,30 @@ Each slot becomes both a snippet prop and a legacy slot definition in the `.d.ts
 
 In runes components, `{@render ...}` calls are mapped back into the same slot metadata as `<slot>`. Positional snippet calls such as `{@render row?.(item, index)}` stay typed props when the prop has an explicit type like `Snippet<[Item, number]>`.
 
+`{Type}` is the snippet's one argument. For positional parameters, use a tuple type instead. It becomes the parameter list, and the snippet gets no legacy slot definition, since a slot takes one props object:
+
+```svelte
+<script>
+  /**
+   * @snippet {[item: string, index: number]} row - One row per item.
+   */
+  let { row } = $props();
+</script>
+
+{#each items as item, index}
+  {@render row?.(item, index)}
+{/each}
+```
+
+```ts
+/** One row per item. */
+row?: (this: void, ...args: [item: string, index: number]) => void;
+```
+
+A snippet that takes one tuple argument needs it wrapped: `@snippet {[[number, string]]} pair`.
+
+When `$props()` has a TypeScript annotation, the `.d.ts` keeps that annotation, and `@snippet` only documents the slot in JSON and Markdown.
+
 A `@slot` / `@snippet` tag with no matching `<slot name>` or `{@render}` in the component raises [`sveld/slot-not-rendered`](ci.md#diagnostic-codes). In runes components, a declared snippet prop also counts, since it may be passed on to a child.
 
 ### Describing the default slot
