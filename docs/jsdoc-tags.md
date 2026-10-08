@@ -403,6 +403,29 @@ Each slot becomes both a snippet prop and a legacy slot definition in the `.d.ts
 
 In runes components, `{@render ...}` calls are mapped back into the same slot metadata as `<slot>`. Positional snippet calls such as `{@render row?.(item, index)}` stay typed props when the prop has an explicit type like `Snippet<[Item, number]>`.
 
+A `@slot` / `@snippet` tag with no matching `<slot name>` or `{@render}` in the component raises [`sveld/slot-not-rendered`](ci.md#diagnostic-codes). In runes components, a declared snippet prop also counts, since it may be passed on to a child.
+
+### Describing the default slot
+
+The slot name and description are both optional, so the first word after `{Type}` is read as the name: `@slot {{}} Page content` documents a slot named `Page`. To describe the default slot inline, put `-` where the name goes:
+
+```js
+/**
+ * @slot {{}} - Page content rendered after the header.
+ */
+```
+
+Or put the description on the line above the tag:
+
+```js
+/**
+ * Page content rendered after the header.
+ * @slot {{}}
+ */
+```
+
+`default` also names the default slot (`@slot {{}} default - Page content`), as does `children` on `@snippet`.
+
 ### Description and extra tags
 
 Put the slot's description, then any extra tags, then the `@slot` / `@snippet` line last. Tags such as `@example`, `@see`, and `@since` before the slot line are copied to the `.d.ts`, JSON (`tags`), and Markdown. `@deprecated` in that position marks the slot deprecated. Tags after `@slot` in the same comment are not tied to that slot.
