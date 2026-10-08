@@ -11,6 +11,11 @@ import { findVariableTypeAndDescription } from "./variable-jsdoc";
 
 export const DEFAULT_SLOT_NAME = null;
 
+/** `ctx.slots` key for a slot name; `default` is the default slot, as in Svelte. */
+export function slotKey(slot_name: string | undefined) {
+  return !slot_name || slot_name === "default" ? DEFAULT_SLOT_NAME : slot_name;
+}
+
 function inferSlotPropValueFromExpression(ctx: ParserContext, expression: Property["value"]): SlotPropValue {
   const slot_prop_value: SlotPropValue = { value: undefined, replace: false };
 
@@ -142,7 +147,7 @@ export function addSlot(
     source?: SourceRange;
   },
 ) {
-  const name = slot_name || DEFAULT_SLOT_NAME;
+  const name = slotKey(slot_name);
   const default_slot = name === DEFAULT_SLOT_NAME;
   const fallback = slot_fallback || undefined;
   const props = slot_props === undefined || slot_props === "" ? undefined : slot_props;

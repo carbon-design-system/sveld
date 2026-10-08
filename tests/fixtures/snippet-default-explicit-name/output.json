@@ -1,0 +1,19 @@
+{
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>",
+      "description": "Body content."
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}

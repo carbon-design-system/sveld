@@ -1,0 +1,37 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "count",
+      "kind": "let",
+      "type": "number",
+      "typeSource": "default",
+      "value": "0",
+      "defaultValue": {
+        "raw": "0",
+        "kind": "literal",
+        "value": 0
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ count: number }",
+      "description": "Page content rendered after the header."
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
