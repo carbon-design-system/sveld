@@ -762,7 +762,9 @@ class CommentBlockReader {
   }
 
   private readSlot(tagIndex: number, type: string) {
-    const { tag, name, lines: tagSource } = this.tags[tagIndex];
+    const { tag, name: rawName, lines: tagSource } = this.tags[tagIndex];
+    // `@slot {Type} - description` describes the default slot.
+    const name = rawName === "-" ? undefined : rawName;
     let slotDesc = this.orCommentDescription(this.getTagDescription(tagSource, this.tags[tagIndex + 1]));
     if (!slotDesc && this.pendingTags.length === 0) {
       slotDesc = this.takePrecedingDescription(tagIndex);
