@@ -22,7 +22,7 @@
   "scripts": {
     "test": "bun test --parallel",
     "test:update": "SVELD_UPDATE_FIXTURES=1 bun test tests/fixtures.test.ts",
-    "test:fixtures-types": "tsc --project tsconfig.fixtures.json",
+    "test:fixtures-types": "bun check -p tsconfig.fixtures.json",
     "test:types-matrix": "bun scripts/typecheck-option-matrix.ts",
     "test:svelte-versions": "bun scripts/typecheck-svelte-versions.ts",
     "test:e2e": "bun tests/test-e2e.ts",
@@ -34,7 +34,7 @@
     "bench": "bun scripts/bench.ts",
     "bench:cache": "bun scripts/bench.ts --cache",
     "bench:ostia": "ostia bench scripts/bench-ostia.ts",
-    "typecheck": "tsc --noEmit && tsc --project tsconfig.excluded.json"
+    "typecheck": "bun check && bun check -p tsconfig.excluded.json"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",

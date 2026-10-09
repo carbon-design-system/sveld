@@ -40,7 +40,7 @@ bun install
 | `bun test` | Unit and fixture snapshot tests (`bun test --parallel`). |
 | `bun run test:update` | Rewrite the fixture outputs (`tests/fixtures/**`) to match the current parser and writers. |
 | `bun run build` | Bundle `src/index.ts`, `src/cli-entry.ts`, and `src/browser.ts` to `dist/`, emit `.d.ts`, write a publish-ready `dist/package.json`. Add `-w` / `--watch` for watch mode. |
-| `bun run typecheck` | `tsc --noEmit` over `src/` and `tests/`. |
+| `bun run typecheck` | `bun check` over `src/` and `tests/`. |
 | `bun run test:fixtures-types` | Type-check the generated fixture outputs (`tests/fixtures/**`). |
 | `bun run test:types-matrix` | Regenerate every fixture's `.d.ts` under a matrix of `typesOptions` combinations and type-check each set. Add `--keep` to keep the temp output. |
 | `bun run test:svelte-versions` | Type-check every legacy fixture's `class`-format `.d.ts` against Svelte 3 and Svelte 4 (installed into a temp dir). |
@@ -132,7 +132,7 @@ Name cases after the behavior under test, grouping by feature prefix to match th
 
 ### Type checks
 
-- `bun run typecheck` — `tsc --noEmit` over `src/` and `tests/`.
+- `bun run typecheck` — `bun check` over `src/` and `tests/`.
 - `bun run test:fixtures-types` — type-checks the generated fixture outputs through [`tsconfig.fixtures.json`](tsconfig.fixtures.json), so a `.d.ts` that compiles in isolation but is wrong as a type is caught.
 - `bun run test:types-matrix` — the same check for non-default options. [`scripts/typecheck-option-matrix.ts`](scripts/typecheck-option-matrix.ts) regenerates every fixture's `.d.ts` under each set in `OPTION_MATRIX` (currently one per `format`) and runs one `tsc` per set. A writer path that only one option reaches, such as `format: "component"`, is covered here and nowhere else. **When you add an emit option to `WriteTsDefinitionOptions`,** add a set for it.
 - `bun run test:svelte-versions` — the `class` format promises Svelte 3, 4, and 5 support; [`scripts/typecheck-svelte-versions.ts`](scripts/typecheck-svelte-versions.ts) checks every legacy fixture's output against Svelte 3 and 4 as well.
