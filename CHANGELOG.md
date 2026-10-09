@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.38.2](https://github.com/carbon-design-system/sveld/releases/tag/v0.38.2) - 2026-10-08
+
+**Features**
+
+- type a tuple `@snippet` as positional parameters (88ca316)
+- warn on documented slots the component never renders (3078ec8)
+- upgrade sveast to 0.9.3 for ~5% faster parsing (0f75b49, #513)
+- upgrade sveast to 0.9.1 for ~4% faster parsing (a665ac0, #506)
+- use sveast's `parseSections`, `lexComponent`, and `createLocator` (700653a)
+
+**Fixes**
+
+- merge an explicit `default` slot into the default slot (6d15b06)
+- read a `-` slot name as the default slot (711ece5)
+- see every return when inferring a literal type for module exports (5600d35)
+
 ## [0.38.1](https://github.com/carbon-design-system/sveld/releases/tag/v0.38.1) - 2026-10-01
 
 **Features**
