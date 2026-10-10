@@ -201,7 +201,11 @@ function buildProps(ctx: ParserContext): ComponentProp[] {
     .map((prop) => {
       const reactive = prop.reactive || ctx.reactive_vars.has(prop.name);
       const binding = ctx.bindings.get(prop.name);
-      if (!binding) return { ...prop, reactive };
+      if (!binding || binding.target === "mixed") return { ...prop, reactive };
+      // `refs[key]` into an object map (`= {}`) isn't an array.
+      if (binding.target === "indexed" && prop.type !== undefined && !prop.type.endsWith("[]")) {
+        return { ...prop, reactive };
+      }
 
       const boundTypes = [
         ...binding.elements
@@ -209,7 +213,8 @@ function buildProps(ctx: ParserContext): ComponentProp[] {
           .map(({ tag, namespace }) => getElementByTag(tag, namespace)),
         ...binding.components.sort().map(componentInstanceType),
       ].join(" | ");
-      return { ...prop, type: `null | ${boundTypes}`, typeSource: "inferred" as const, reactive };
+      const type = binding.target === "indexed" ? `(null | ${boundTypes})[]` : `null | ${boundTypes}`;
+      return { ...prop, type, typeSource: "inferred" as const, reactive };
     });
 }
 

@@ -2357,4 +2357,138 @@ describe("ComponentParser", () => {
       `),
     ).toEqual({ size: '"sm" | "md"' });
   });
+
+  test("types `bind:this={refs[i]}` on an element as an array of the element", () => {
+    const source = `
+      <script>
+        export let itemRefs = [];
+        export let keyedRefs = [];
+        export let items = ["a"];
+      </script>
+
+      {#each items as item, i}
+        <li bind:this={itemRefs[i]}>{item}</li>
+        <span bind:this={keyedRefs[item]} />
+      {/each}
+    `;
+
+    const { props } = new ComponentParser().parseSvelteComponent(source, diagnostics);
+    const byName = Object.fromEntries(props.map((prop) => [prop.name, prop]));
+
+    expect(byName.itemRefs).toMatchObject({ type: "(null | HTMLLIElement)[]", typeSource: "inferred", reactive: true });
+    expect(byName.keyedRefs).toMatchObject({ type: "(null | HTMLSpanElement)[]", reactive: true });
+    expect(byName.items).toMatchObject({ type: "string[]", reactive: false });
+  });
+
+  test("types `bind:this={refs[i]}` inside `<svg>` as an array of the SVG element", () => {
+    const source = `
+      <script>
+        export let circleRefs = [];
+      </script>
+
+      <svg>
+        {#each [1, 2] as r, i}
+          <circle bind:this={circleRefs[i]} {r} />
+        {/each}
+      </svg>
+    `;
+
+    const { props } = new ComponentParser().parseSvelteComponent(source, diagnostics);
+
+    expect(props[0]?.type).toBe("(null | SVGCircleElement)[]");
+  });
+
+  test("types `bind:this={refs[i]}` on an imported component as an array of its instance", () => {
+    const source = `
+      <script>
+        import Modal from "./Modal.svelte";
+
+        export let modalRefs = [];
+      </script>
+
+      {#each [1, 2] as _, i}
+        <Modal bind:this={modalRefs[i]} />
+      {/each}
+    `;
+
+    const result = new ComponentParser().parseSvelteComponent(source, diagnostics);
+
+    expect(result.props[0]?.type).toBe(
+      "(null | (typeof Modal extends abstract new (...args: any) => infer I ? I : typeof Modal extends (...args: any) => infer R ? R : never))[]",
+    );
+    expect(getParsedComponentTypeScriptMetadata(result)?.typeImportStatements).toEqual([
+      'import type { default as Modal } from "./Modal.svelte";',
+    ]);
+  });
+
+  test("types a runes `$bindable([])` prop bound by index as an array of the element", () => {
+    const source = `
+      <script>
+        let { itemRefs = $bindable([]), items = [] } = $props();
+      </script>
+
+      {#each items as item, i}
+        <li bind:this={itemRefs[i]}>{item}</li>
+      {/each}
+    `;
+
+    const { props } = new ComponentParser().parseSvelteComponent(source, diagnostics);
+
+    expect(props.find((prop) => prop.name === "itemRefs")?.type).toBe("(null | HTMLLIElement)[]");
+  });
+
+  test("leaves the type of a prop bound both directly and by index", () => {
+    const source = `
+      <script>
+        export let refs = [];
+      </script>
+
+      <div bind:this={refs} />
+      {#each [1] as _, i}
+        <li bind:this={refs[i]} />
+      {/each}
+    `;
+
+    const { props } = new ComponentParser().parseSvelteComponent(source, diagnostics);
+
+    expect(props[0]).toMatchObject({ type: "any[]", reactive: true });
+  });
+
+  test("leaves the type of a prop bound by index when its default isn't an array", () => {
+    const source = `
+      <script>
+        export let refsById = {};
+      </script>
+
+      {#each [{ id: "a" }] as item}
+        <li bind:this={refsById[item.id]} />
+      {/each}
+    `;
+
+    const { props } = new ComponentParser().parseSvelteComponent(source, diagnostics);
+
+    expect(props[0]).toMatchObject({ type: "{}", reactive: true });
+  });
+
+  test("ignores `bind:this` on a non-indexed member, a nested member, or a local", () => {
+    const source = `
+      <script>
+        export let named = [];
+        export let nested = { a: [] };
+        let local = [];
+      </script>
+
+      <div bind:this={named.first} />
+      {#each [1] as _, i}
+        <li bind:this={nested.a[i]} />
+        <li bind:this={local[i]} />
+      {/each}
+    `;
+
+    const { props } = new ComponentParser().parseSvelteComponent(source, diagnostics);
+    const byName = Object.fromEntries(props.map((prop) => [prop.name, prop]));
+
+    expect(byName.named).toMatchObject({ type: "any[]", reactive: false });
+    expect(byName.nested).toMatchObject({ type: "{ a: any[] }", reactive: false });
+  });
 });
