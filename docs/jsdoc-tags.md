@@ -770,7 +770,7 @@ A variable sveld can't type gives `any` with [`sveld/context-any-type`](ci.md#di
 
 ## `@restProps`
 
-sveld detects the elements `$$restProps` (or a runes `...rest` binding) is spread onto and types the component's rest props from them. It can't see through a child component, so name the elements with `@restProps`:
+sveld detects the elements `$$restProps` (or a runes `...rest` binding) is spread onto, directly or through a local object that spreads it (`$: props = { ...$$restProps, class }`), and types the component's rest props from them. It can't see through a child component, so name the elements with `@restProps`:
 
 ```js
 /**
@@ -796,15 +796,17 @@ sveld detects the elements `$$restProps` (or a runes `...rest` binding) is sprea
 {/if}
 ```
 
-For a `<svelte:element>` whose tag is only known at runtime, use `@restProps {svelte:element}`. It types the rest props as `HTMLAttributes<HTMLElement>`, which is what sveld infers for a direct spread onto that element. You only need it when the spread goes through something sveld can't follow, like a local object:
+For a `<svelte:element>` whose tag is only known at runtime, use `@restProps {svelte:element}`. It types the rest props as `HTMLAttributes<HTMLElement>`, which is what sveld infers for a spread onto that element. You only need it when the spread goes through something sveld can't follow, like a function call or an object that spreads another local object:
 
 ```svelte
 <script>
   /** @restProps {svelte:element} */
 
+  import { withStackClass } from "./stack";
+
   export let tag = "div";
 
-  $: props = { ...$$restProps, class: ["stack", $$restProps.class].join(" ") };
+  $: props = withStackClass($$restProps);
 </script>
 
 <svelte:element this={tag} {...props}>
