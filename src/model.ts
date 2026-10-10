@@ -4,6 +4,7 @@
  */
 import type { TSNode } from "sveast";
 import type { SveldDiagnostic } from "./diagnostics";
+import type { ElementNamespace } from "./element-tag-map";
 import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "./parsed-component-metadata";
 
 /** Structured JSDoc tag (e.g. `{ name: "since", body: "1.2.0" }`). */
@@ -570,7 +571,7 @@ export interface ComponentCssProperty {
 }
 
 export interface ComponentPropBindings {
-  elements: string[];
+  elements: Array<{ tag: string; namespace: ElementNamespace }>;
 }
 
 export interface ComponentContextProp {

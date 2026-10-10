@@ -137,8 +137,8 @@ function buildProps(ctx: ParserContext): ComponentProp[] {
       if (!binding) return { ...prop, reactive };
 
       const elementTypes = binding.elements
-        .sort()
-        .map((element) => getElementByTag(element))
+        .sort((a, b) => (a.tag < b.tag ? -1 : a.tag > b.tag ? 1 : 0))
+        .map(({ tag, namespace }) => getElementByTag(tag, namespace))
         .join(" | ");
       return { ...prop, type: `null | ${elementTypes}`, typeSource: "inferred" as const, reactive };
     });

@@ -7,6 +7,26 @@ test("getElementByTag", () => {
   expect(getElementByTag("body")).toEqual("HTMLBodyElement");
 });
 
+test("getElementByTag types SVG elements", () => {
+  expect(getElementByTag("svg")).toEqual("SVGSVGElement");
+  expect(getElementByTag("path")).toEqual("SVGPathElement");
+  expect(getElementByTag("foreignObject")).toEqual("SVGForeignObjectElement");
+  expect(getElementByTag("unknown-element", "svg")).toEqual("SVGElement");
+});
+
+test("getElementByTag reads a tag both namespaces define by namespace", () => {
+  for (const [tag, html, svg] of [
+    ["a", "HTMLAnchorElement", "SVGAElement"],
+    ["script", "HTMLScriptElement", "SVGScriptElement"],
+    ["style", "HTMLStyleElement", "SVGStyleElement"],
+    ["title", "HTMLTitleElement", "SVGTitleElement"],
+  ]) {
+    expect(getElementByTag(tag)).toEqual(html);
+    expect(getElementByTag(tag, "html")).toEqual(html);
+    expect(getElementByTag(tag, "svg")).toEqual(svg);
+  }
+});
+
 /** `"tag": Type;` members of `interface name` in a `lib.dom.d.ts`. */
 function tagNameMap(libDom: string, name: string): Map<string, string> {
   const body = libDom.match(new RegExp(`interface ${name} \\{([^}]*)\\}`))?.[1];
@@ -23,10 +43,13 @@ test("getElementByTag matches TypeScript's lib.dom.d.ts", async () => {
   const sources = await Promise.all(libDoms.map(async (path) => [path, await Bun.file(path).text()] as const));
   for (const [path, libDom] of sources) {
     for (const [tag, type] of tagNameMap(libDom, "HTMLElementTagNameMap")) {
-      expect({ path, tag, type: getElementByTag(tag) }).toEqual({ path, tag, type });
+      expect({ path, tag, type: getElementByTag(tag, "html") }).toEqual({ path, tag, type });
     }
     for (const [tag, type] of tagNameMap(libDom, "HTMLElementDeprecatedTagNameMap")) {
-      expect({ path, tag, type: getElementByTag(tag) }).toEqual({ path, tag, type });
+      expect({ path, tag, type: getElementByTag(tag, "html") }).toEqual({ path, tag, type });
+    }
+    for (const [tag, type] of tagNameMap(libDom, "SVGElementTagNameMap")) {
+      expect({ path, tag, type: getElementByTag(tag, "svg") }).toEqual({ path, tag, type });
     }
   }
 });
