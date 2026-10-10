@@ -51,7 +51,7 @@ export type ExplicitDefaultNoDuplicateProps = {
    * List of items.
    * @default ["a", "b", "c"]
    */
-  items?: ["a", "b", "c"];
+  items?: string[];
 
   /**
    * Starting offset.

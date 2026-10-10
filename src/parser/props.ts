@@ -28,7 +28,7 @@ import type {
 import { returnTypeOfFunctionType } from "../type-text";
 import type { ParserContext } from "./context";
 import { trackPropLocalName } from "./context";
-import { NEWLINE_CR_REGEX, nodeSourceText, sourceAtPos, sourceForExpression } from "./source-position";
+import { nodeSourceText, sourceAtPos, sourceForExpression } from "./source-position";
 import { trackAdditionalTypeDependencyNode } from "./type-resolution";
 import { formatParamList } from "./utils";
 import { importedMemberBinding } from "./value-imports";
@@ -99,10 +99,7 @@ export function processInitializer(ctx: ParserContext, init: unknown, depth = 0)
     if (init.type === "BinaryExpression") {
       type = inferExpressionType(ctx, init, depth);
     } else if (init.type === "ObjectExpression" || init.type === "ArrayExpression") {
-      // The literal's own text doubles as its type (`{ dense: true }`, `[1, 2]`)
-      // only when every member is itself a literal; `{ x: a }` isn't a type.
-      const { start, end } = init as { start?: number; end?: number };
-      type = isLiteralTypeText(init) ? literalTypeText(ctx, start, end, value) : undefined;
+      type = literalType(init, true);
     } else if (isFunction) {
       type = inferFunctionTypeFromNode(init as ArrowFunctionExpression | FunctionExpression);
       value = conciseFunctionDefaultText(ctx, init as ArrowFunctionExpression | FunctionExpression);
@@ -351,70 +348,78 @@ function unionOfBranchTypes(types: Array<string | undefined>): string | undefine
 }
 
 /**
- * An object or array literal's one-line `text` as a type, with its comments
- * dropped: once newlines are collapsed, a `// note` would comment out the
- * rest of the type.
+ * The type of an object or array literal default, or `undefined` unless every
+ * member is a string, number, boolean, bigint, regex, or `null` literal (or a
+ * negated number), `undefined`, a template literal with no substitutions, or
+ * a nested literal of the same kind, under plain keys.
+ *
+ * Widened, it's what TypeScript infers for `let x = <literal>`: `{ sm: false }`
+ * is `{ sm: boolean }` and `[]` is `any[]`, so a consumer can pass any value
+ * of the same shape. Unwidened, it keeps each member's literal type
+ * (`{ close: "close" }`, `[1, 2]`), for a `const` the consumer can't replace.
  */
-function literalTypeText(
-  ctx: ParserContext,
-  start: number | undefined,
-  end: number | undefined,
-  text: string | undefined,
-): string | undefined {
-  if (text === undefined || start === undefined || end === undefined) return text;
-  const comments = ctx.parsed?.comments ?? [];
-  let withoutComments = "";
-  let position = start;
-  for (const comment of comments) {
-    if (comment.start < start || comment.end > end) continue;
-    withoutComments += sourceAtPos(ctx, position, comment.start) ?? "";
-    position = comment.end;
-  }
-  if (position === start) return text;
-  withoutComments += sourceAtPos(ctx, position, end) ?? "";
-  return withoutComments.replace(NEWLINE_CR_REGEX, " ");
-}
-
-/**
- * Whether an object or array literal's source text is also a valid type:
- * every member a string, number, boolean, bigint, or `null` literal (or a
- * negated number), `undefined`, a template literal with no substitutions,
- * or a nested literal of the same kind, under plain keys.
- */
-function isLiteralTypeText(node: unknown): boolean {
-  if (!node || typeof node !== "object" || !("type" in node)) return false;
+export function literalType(node: unknown, widen: boolean): string | undefined {
+  if (!node || typeof node !== "object" || !("type" in node)) return undefined;
 
   switch (node.type) {
-    case "Literal":
-      return !("regex" in node && node.regex);
-    case "TemplateLiteral":
-      return (node as TemplateLiteral).expressions.length === 0;
+    case "Literal": {
+      const literal = node as Literal;
+      if ("regex" in literal && literal.regex) return "RegExp";
+      if (literal.value === null) return "null";
+      return widen ? literalValueType(literal) : (literal.raw ?? undefined);
+    }
+    case "TemplateLiteral": {
+      if ((node as TemplateLiteral).expressions.length > 0) return undefined;
+      return widen ? "string" : `\`${(node as TemplateLiteral).quasis[0]?.value.raw ?? ""}\``;
+    }
     case "Identifier":
-      return (node as Identifier).name === "undefined";
+      return (node as Identifier).name === "undefined" ? "undefined" : undefined;
     case "UnaryExpression": {
       const unary = node as UnaryExpression;
       const argument = unary.argument as Literal | undefined;
-      return (
-        unary.operator === "-" &&
-        argument?.type === "Literal" &&
-        (typeof argument.value === "number" || typeof argument.value === "bigint")
-      );
+      if (unary.operator !== "-" || argument?.type !== "Literal") return undefined;
+      const type = literalValueType(argument);
+      if (type !== "number" && type !== "bigint") return undefined;
+      return widen ? type : `-${argument.raw}`;
     }
-    case "ArrayExpression":
-      return (node as ArrayExpression).elements.every((element) => element !== null && isLiteralTypeText(element));
-    case "ObjectExpression":
-      return (node as ObjectExpression).properties.every(
-        (property) =>
-          property.type === "Property" &&
-          property.kind === "init" &&
-          !property.computed &&
-          !property.method &&
-          !property.shorthand &&
-          (property.key.type === "Identifier" || property.key.type === "Literal") &&
-          isLiteralTypeText(property.value),
-      );
+    case "ArrayExpression": {
+      const elements: string[] = [];
+      for (const element of (node as ArrayExpression).elements) {
+        const type = element === null ? undefined : literalType(element, widen);
+        if (type === undefined) return undefined;
+        elements.push(type);
+      }
+      if (!widen) return `[${elements.join(", ")}]`;
+      const members = new Set(elements);
+      if (members.size === 0) return "any[]";
+      const element = [...members].join(" | ");
+      return members.size === 1 ? `${element}[]` : `(${element})[]`;
+    }
+    case "ObjectExpression": {
+      // A repeated key keeps its last value, as at runtime.
+      const members = new Map<string, string>();
+      for (const property of (node as ObjectExpression).properties) {
+        if (
+          property.type !== "Property" ||
+          property.kind !== "init" ||
+          property.computed ||
+          property.method ||
+          property.shorthand
+        ) {
+          return undefined;
+        }
+        const { key } = property;
+        const keyText = key.type === "Identifier" ? key.name : key.type === "Literal" ? key.raw : undefined;
+        const type = literalType(property.value, widen);
+        if (keyText === undefined || type === undefined) return undefined;
+        members.delete(keyText);
+        members.set(keyText, type);
+      }
+      if (members.size === 0) return "{}";
+      return `{ ${[...members].map(([key, type]) => `${key}: ${type}`).join("; ")} }`;
+    }
     default:
-      return false;
+      return undefined;
   }
 }
 

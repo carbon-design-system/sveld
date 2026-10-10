@@ -4,7 +4,7 @@ export type ForwardedStandardEventCustomDetailProps = {
   /**
    * @default []
    */
-  files?: [];
+  files?: any[];
 };
 
 export type ForwardedStandardEventCustomDetailExports = Record<string, never>;

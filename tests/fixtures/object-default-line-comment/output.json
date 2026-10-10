@@ -6,7 +6,7 @@
       "name": "spacing",
       "kind": "let",
       "description": "Spacing scale",
-      "type": "{     small: 4,      large: 16 ,   }",
+      "type": "{ small: number; large: number }",
       "typeSource": "default",
       "value": "{     small: 4, // px     large: 16 /* px */,   }",
       "defaultValue": {
@@ -27,7 +27,7 @@
       "name": "breakpoints",
       "kind": "let",
       "description": "Breakpoints",
-      "type": "[     320,      768,   ]",
+      "type": "number[]",
       "typeSource": "default",
       "value": "[     320, // phone     768,   ]",
       "defaultValue": {

@@ -6,7 +6,7 @@
       "name": "data",
       "kind": "let",
       "description": "Array of data items",
-      "type": "[]",
+      "type": "any[]",
       "typeSource": "default",
       "value": "[]",
       "defaultValue": {

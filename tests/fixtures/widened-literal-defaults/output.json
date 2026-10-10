@@ -1,0 +1,223 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "sizes",
+      "kind": "let",
+      "type": "{ sm: boolean; md: boolean }",
+      "typeSource": "default",
+      "value": "{ sm: false, md: true }",
+      "defaultValue": {
+        "raw": "{ sm: false, md: true }",
+        "kind": "object",
+        "value": {
+          "sm": false,
+          "md": true
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "rows",
+      "kind": "let",
+      "type": "{ id: number; label: string }[]",
+      "typeSource": "default",
+      "value": "[{ id: 1, label: \"a\" }]",
+      "defaultValue": {
+        "raw": "[{ id: 1, label: \"a\" }]",
+        "kind": "array",
+        "value": [
+          {
+            "id": 1,
+            "label": "a"
+          }
+        ]
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "matrix",
+      "kind": "let",
+      "type": "number[][]",
+      "typeSource": "default",
+      "value": "[[1, 2], [3]]",
+      "defaultValue": {
+        "raw": "[[1, 2], [3]]",
+        "kind": "array",
+        "value": [
+          [
+            1,
+            2
+          ],
+          [
+            3
+          ]
+        ]
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "mixed",
+      "kind": "let",
+      "type": "(number | string | null)[]",
+      "typeSource": "default",
+      "value": "[1, \"two\", null]",
+      "defaultValue": {
+        "raw": "[1, \"two\", null]",
+        "kind": "array",
+        "value": [
+          1,
+          "two",
+          null
+        ]
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "members",
+      "kind": "let",
+      "type": "{ none: null; missing: undefined; pattern: RegExp; big: bigint; offset: number; text: string }",
+      "typeSource": "default",
+      "value": "{ none: null, missing: undefined, pattern: /a+/, big: 10n, offset: -1, text: `t` }",
+      "defaultValue": {
+        "raw": "{ none: null, missing: undefined, pattern: /a+/, big: 10n, offset: -1, text: `t` }",
+        "kind": "object"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "quoted",
+      "kind": "let",
+      "type": "{ \"data-id\": string; 0: number }",
+      "typeSource": "default",
+      "value": "{ \"data-id\": \"x\", 0: 1 }",
+      "defaultValue": {
+        "raw": "{ \"data-id\": \"x\", 0: 1 }",
+        "kind": "object",
+        "value": {
+          "0": 1,
+          "data-id": "x"
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "nested",
+      "kind": "let",
+      "type": "{ list: any[]; map: {} }",
+      "typeSource": "default",
+      "value": "{ list: [], map: {} }",
+      "defaultValue": {
+        "raw": "{ list: [], map: {} }",
+        "kind": "object",
+        "value": {
+          "list": [],
+          "map": {}
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "ids",
+      "kind": "const",
+      "type": "{ close: \"close\"; open: \"open\" }",
+      "typeSource": "default",
+      "value": "{ close: \"close\", open: \"open\" }",
+      "defaultValue": {
+        "raw": "{ close: \"close\", open: \"open\" }",
+        "kind": "object",
+        "value": {
+          "close": "close",
+          "open": "open"
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false
+    },
+    {
+      "name": "steps",
+      "kind": "const",
+      "type": "[1, -2, `three`, null]",
+      "typeSource": "default",
+      "value": "[1, -2, `three`, null]",
+      "defaultValue": {
+        "raw": "[1, -2, `three`, null]",
+        "kind": "array",
+        "value": [
+          1,
+          -2,
+          "three",
+          null
+        ]
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false
+    },
+    {
+      "name": "shorthand",
+      "kind": "let",
+      "typeSource": "unknown",
+      "value": "{ fallback }",
+      "defaultValue": {
+        "raw": "{ fallback }",
+        "kind": "object"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "widened-literal-defaults/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "shorthand",
+      "message": "Prop \"shorthand\" type could not be inferred; falling back to \"any\".",
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
+    }
+  ]
+}

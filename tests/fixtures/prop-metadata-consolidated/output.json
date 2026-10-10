@@ -68,7 +68,7 @@
     {
       "name": "arrayDefault",
       "kind": "let",
-      "type": "[1, \"two\", false]",
+      "type": "(number | string | boolean)[]",
       "typeSource": "default",
       "value": "[1, \"two\", false]",
       "defaultValue": {
@@ -89,7 +89,7 @@
     {
       "name": "objectDefault",
       "kind": "let",
-      "type": "{ size: \"md\", count: 2 }",
+      "type": "{ size: string; count: number }",
       "typeSource": "default",
       "value": "{ size: \"md\", count: 2 }",
       "defaultValue": {

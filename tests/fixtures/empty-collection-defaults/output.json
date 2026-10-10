@@ -5,7 +5,7 @@
     {
       "name": "items",
       "kind": "let",
-      "type": "[]",
+      "type": "any[]",
       "typeSource": "default",
       "value": "[]",
       "defaultValue": {
@@ -73,7 +73,7 @@
     {
       "name": "nested",
       "kind": "let",
-      "type": "{ items: [], meta: {} }",
+      "type": "{ items: any[]; meta: {} }",
       "typeSource": "default",
       "value": "{ items: [], meta: {} }",
       "defaultValue": {

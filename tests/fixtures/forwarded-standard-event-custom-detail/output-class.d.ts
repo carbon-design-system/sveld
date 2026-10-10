@@ -4,7 +4,7 @@ export type ForwardedStandardEventCustomDetailProps = {
   /**
    * @default []
    */
-  files?: [];
+  files?: any[];
 };
 
 export default class ForwardedStandardEventCustomDetail extends SvelteComponentTyped<

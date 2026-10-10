@@ -133,7 +133,7 @@
       "name": "items",
       "kind": "let",
       "description": "List of items.",
-      "type": "[\"a\", \"b\", \"c\"]",
+      "type": "string[]",
       "typeSource": "default",
       "value": "[\"a\", \"b\", \"c\"]",
       "defaultValue": {

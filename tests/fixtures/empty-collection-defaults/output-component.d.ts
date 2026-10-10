@@ -4,7 +4,7 @@ export type EmptyCollectionDefaultsProps = {
   /**
    * @default []
    */
-  items?: [];
+  items?: any[];
 
   /**
    * @default {}
@@ -24,7 +24,10 @@ export type EmptyCollectionDefaultsProps = {
   /**
    * @default { items: [], meta: {} }
    */
-  nested?: { items: [], meta: {} };
+  nested?: {
+    items: any[];
+    meta: {}
+  };
 };
 
 export type EmptyCollectionDefaultsExports = Record<string, never>;

@@ -21,7 +21,7 @@ import type { ParserContext } from "./context";
 import { recordDiagnostic, recordSveldIgnore } from "./diagnostics";
 import { processNodeJSDoc } from "./jsdoc";
 import { resolvePropTypeAndDocs } from "./prop-shared";
-import { addProp, processInitializer, queuePendingCrossFileDefault } from "./props";
+import { addProp, literalType, processInitializer, queuePendingCrossFileDefault } from "./props";
 import { collectPatternIdentifiers } from "./scopes";
 import { sourceRangeFromNode } from "./source-position";
 import { buildFunctionDeclarationSignature } from "./type-resolution";
@@ -279,7 +279,11 @@ export function collectExportDeclarators(
     const localPropName = id.name;
     const declaratorPropName = specifier?.exportedName ?? localPropName;
     const initResult = init == null ? { isFunction: false } : processInitializer(ctx, init);
-    const { value, type: typeSeed, isFunction: initializerIsFunction, defaultValue } = initResult;
+    const { value, isFunction: initializerIsFunction, defaultValue } = initResult;
+    // A `const` can't be replaced, so an object or array literal keeps its members' literal types.
+    const keepsLiteralTypes =
+      kind === "const" && (init?.type === "ObjectExpression" || init?.type === "ArrayExpression");
+    const typeSeed = (keepsLiteralTypes ? literalType(init, false) : undefined) ?? initResult.type;
     queuePendingCrossFileDefault(ctx, initResult, declaratorPropName, location);
 
     declarators.push({
