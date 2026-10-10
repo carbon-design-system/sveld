@@ -339,7 +339,7 @@ describe("ComponentParser", () => {
     const result = parser.parseSvelteComponent(source, diagnostics);
     const prop = result.props.find((prop) => prop.name === "type");
 
-    expect(prop?.type).toBe("string");
+    expect(prop?.type).toBe('"button"');
     expect(prop?.typeSource).toBe("default");
     expect(prop?.defaultValue).toMatchObject({ kind: "literal", value: "button" });
   });
@@ -2179,5 +2179,45 @@ describe("ComponentParser", () => {
       const result = parser.parseSvelteComponent(source, diagnostics);
       expect(result.props.find((prop) => prop.name === "icon")?.type).toBe('"😀" | "b"');
     });
+  });
+
+  test("types an `as const` default as TypeScript's const assertion does", () => {
+    const source = `
+      <script lang="ts">
+        export let sizes = { sm: false, md: true } as const;
+        export let items = ["a", "b"] as const;
+        export let nested = { steps: [1, -2] } as const;
+        export let size = "sm" as const;
+        export let legacyAssertion = <const>["x"];
+        export let widened = { sm: false };
+        export const ids = { close: "close" } as const;
+      </script>
+    `;
+
+    const { props } = new ComponentParser().parseSvelteComponent(source, diagnostics);
+    const types = Object.fromEntries(props.map((prop) => [prop.name, prop.type]));
+
+    expect(types).toEqual({
+      sizes: "{ readonly sm: false; readonly md: true }",
+      items: 'readonly ["a", "b"]',
+      nested: "{ readonly steps: readonly [1, -2] }",
+      size: '"sm"',
+      legacyAssertion: 'readonly ["x"]',
+      widened: "{ sm: boolean }",
+      ids: '{ readonly close: "close" }',
+    });
+  });
+
+  test("types an `as const` runes prop default as TypeScript's const assertion does", () => {
+    const source = `
+      <script lang="ts">
+        let { sizes = { sm: false } as const, size = "sm" as const } = $props();
+      </script>
+    `;
+
+    const { props } = new ComponentParser().parseSvelteComponent(source, diagnostics);
+    const types = Object.fromEntries(props.map((prop) => [prop.name, prop.type]));
+
+    expect(types).toEqual({ sizes: "{ readonly sm: false }", size: '"sm"' });
   });
 });

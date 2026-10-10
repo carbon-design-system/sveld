@@ -135,6 +135,8 @@ export interface ParserContext {
   readonly jsDocEventSources: Map<string, SourceRange | undefined>;
 
   readonly bindings: Map<string, ComponentPropBindings>;
+  /** Expressions written with `as const`, whose wrapper was stripped. */
+  readonly constAssertions: WeakSet<object>;
   readonly contexts: Map<string, ComponentContext>;
   readonly typedefs: Map<string, TypeDef>;
   /** So `/** @type {Props} *\/ let { ... } = $props()` can type each prop. */
@@ -210,6 +212,7 @@ export function createParserContext(): ParserContext {
     untypedJsDocEventNames: new Set(),
     jsDocEventSources: new Map(),
     bindings: new Map(),
+    constAssertions: new WeakSet(),
     contexts: new Map(),
     typedefs: new Map(),
     typedefMembersByName: new Map(),

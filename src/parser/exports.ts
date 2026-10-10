@@ -282,8 +282,10 @@ export function collectExportDeclarators(
     const { value, isFunction: initializerIsFunction, defaultValue } = initResult;
     // A `const` can't be replaced, so an object or array literal keeps its members' literal types.
     const keepsLiteralTypes =
-      kind === "const" && (init?.type === "ObjectExpression" || init?.type === "ArrayExpression");
-    const typeSeed = (keepsLiteralTypes ? literalType(init, false) : undefined) ?? initResult.type;
+      kind === "const" &&
+      (init?.type === "ObjectExpression" || init?.type === "ArrayExpression") &&
+      !ctx.constAssertions.has(init);
+    const typeSeed = (keepsLiteralTypes ? literalType(init, "literal") : undefined) ?? initResult.type;
     queuePendingCrossFileDefault(ctx, initResult, declaratorPropName, location);
 
     declarators.push({

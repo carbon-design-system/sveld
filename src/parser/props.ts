@@ -75,7 +75,18 @@ const NEW_EXPRESSION_TYPES = new Map([
   ["Error", "Error"],
 ]);
 
+/**
+ * The default text, type, and metadata of an initializer. A value written
+ * with `as const` is typed as TypeScript types the assertion.
+ */
 export function processInitializer(ctx: ParserContext, init: unknown, depth = 0): ProcessedInitializer {
+  const result = processInitializerWithoutAssertion(ctx, init, depth);
+  const constType =
+    init && typeof init === "object" && ctx.constAssertions.has(init) ? literalType(init, "const") : undefined;
+  return constType === undefined ? result : { ...result, type: constType };
+}
+
+function processInitializerWithoutAssertion(ctx: ParserContext, init: unknown, depth: number): ProcessedInitializer {
   let value: string | undefined;
   let type: string | undefined;
   let isFunction = false;
@@ -99,7 +110,7 @@ export function processInitializer(ctx: ParserContext, init: unknown, depth = 0)
     if (init.type === "BinaryExpression") {
       type = inferExpressionType(ctx, init, depth);
     } else if (init.type === "ObjectExpression" || init.type === "ArrayExpression") {
-      type = literalType(init, true);
+      type = literalType(init, "widen");
     } else if (isFunction) {
       type = inferFunctionTypeFromNode(init as ArrowFunctionExpression | FunctionExpression);
       value = conciseFunctionDefaultText(ctx, init as ArrowFunctionExpression | FunctionExpression);
@@ -348,18 +359,25 @@ function unionOfBranchTypes(types: Array<string | undefined>): string | undefine
 }
 
 /**
- * The type of an object or array literal default, or `undefined` unless every
- * member is a string, number, boolean, bigint, regex, or `null` literal (or a
- * negated number), `undefined`, a template literal with no substitutions, or
- * a nested literal of the same kind, under plain keys.
- *
- * Widened, it's what TypeScript infers for `let x = <literal>`: `{ sm: false }`
- * is `{ sm: boolean }` and `[]` is `any[]`, so a consumer can pass any value
- * of the same shape. Unwidened, it keeps each member's literal type
- * (`{ close: "close" }`, `[1, 2]`), for a `const` the consumer can't replace.
+ * How {@link literalType} types a literal's members. `"widen"` is what
+ * TypeScript infers for `let x = <literal>`: `{ sm: false }` is
+ * `{ sm: boolean }` and `[]` is `any[]`, so a consumer can pass any value of
+ * the same shape. `"literal"` keeps each member's literal type
+ * (`{ close: "close" }`, `[1, 2]`), for a `const` the consumer can't
+ * replace. `"const"` is what `as const` gives: literal types, `readonly`
+ * members, and readonly tuples.
  */
-export function literalType(node: unknown, widen: boolean): string | undefined {
+export type LiteralTypeMode = "widen" | "literal" | "const";
+
+/**
+ * The type of a literal default, or `undefined` unless it and every member is
+ * a string, number, boolean, bigint, regex, or `null` literal (or a negated
+ * number), `undefined`, a template literal with no substitutions, or an object
+ * or array literal of the same kind under plain keys.
+ */
+export function literalType(node: unknown, mode: LiteralTypeMode): string | undefined {
   if (!node || typeof node !== "object" || !("type" in node)) return undefined;
+  const widen = mode === "widen";
 
   switch (node.type) {
     case "Literal": {
@@ -385,11 +403,12 @@ export function literalType(node: unknown, widen: boolean): string | undefined {
     case "ArrayExpression": {
       const elements: string[] = [];
       for (const element of (node as ArrayExpression).elements) {
-        const type = element === null ? undefined : literalType(element, widen);
+        const type = element === null ? undefined : literalType(element, mode);
         if (type === undefined) return undefined;
         elements.push(type);
       }
-      if (!widen) return `[${elements.join(", ")}]`;
+      if (mode === "literal") return `[${elements.join(", ")}]`;
+      if (mode === "const") return `readonly [${elements.join(", ")}]`;
       const members = new Set(elements);
       if (members.size === 0) return "any[]";
       const element = [...members].join(" | ");
@@ -410,13 +429,14 @@ export function literalType(node: unknown, widen: boolean): string | undefined {
         }
         const { key } = property;
         const keyText = key.type === "Identifier" ? key.name : key.type === "Literal" ? key.raw : undefined;
-        const type = literalType(property.value, widen);
+        const type = literalType(property.value, mode);
         if (keyText === undefined || type === undefined) return undefined;
         members.delete(keyText);
         members.set(keyText, type);
       }
       if (members.size === 0) return "{}";
-      return `{ ${[...members].map(([key, type]) => `${key}: ${type}`).join("; ")} }`;
+      const readonly = mode === "const" ? "readonly " : "";
+      return `{ ${[...members].map(([key, type]) => `${readonly}${key}: ${type}`).join("; ")} }`;
     }
     default:
       return undefined;
