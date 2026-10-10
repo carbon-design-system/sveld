@@ -45,6 +45,7 @@ bun install
 | `bun run test:types-matrix` | Regenerate every fixture's `.d.ts` under a matrix of `typesOptions` combinations and type-check each set. Add `--keep` to keep the temp output. |
 | `bun run test:svelte-versions` | Type-check every legacy fixture's `class`-format `.d.ts` against Svelte 3 and Svelte 4 (installed into a temp dir). |
 | `bun run test:e2e` | Link sveld into the downstream packages under `tests/e2e/`, run `sveld` (or `build` for Vite fixtures), and `typecheck` generated types where configured. |
+| `bun run test:inferred-types` | Write each inferred prop type back into its component and svelte-check it (run after `test:e2e`, which installs svelte-check). |
 | `bun run bench` | Time the parse/write pipeline against the carbon e2e fixture. Flags: `--runs <n>`, `--cache`, `--entry <path>`. Output goes to a temp dir; compare medians from one invocation, not absolute times across sessions. |
 | `bun run lint:fix:changed` | Lint, format, and organize imports for files changed vs `main` (`biome check --write --unsafe --changed`). Use this while iterating. |
 | `bun run lint` | Lint, format, and import-order check across the repo, same as CI (`biome check --error-on-warnings`). No writes. |
@@ -136,6 +137,7 @@ Name cases after the behavior under test, grouping by feature prefix to match th
 - `bun run test:fixtures-types` — type-checks the generated fixture outputs through [`tsconfig.fixtures.json`](tsconfig.fixtures.json), so a `.d.ts` that compiles in isolation but is wrong as a type is caught.
 - `bun run test:types-matrix` — the same check for non-default options. [`scripts/typecheck-option-matrix.ts`](scripts/typecheck-option-matrix.ts) regenerates every fixture's `.d.ts` under each set in `OPTION_MATRIX` (currently one per `format`) and runs one `tsc` per set. A writer path that only one option reaches, such as `format: "component"`, is covered here and nowhere else. **When you add an emit option to `WriteTsDefinitionOptions`,** add a set for it.
 - `bun run test:svelte-versions` — the `class` format promises Svelte 3, 4, and 5 support; [`scripts/typecheck-svelte-versions.ts`](scripts/typecheck-svelte-versions.ts) checks every legacy fixture's output against Svelte 3 and 4 as well.
+- `bun run test:inferred-types` — checks that an inferred prop type holds for its own component. [`scripts/check-inferred-types.ts`](scripts/check-inferred-types.ts) writes each type sveld inferred from a default or a `bind:this` back into a copy of the fixture (and of the carbon e2e project) as `@type`, runs svelte-check, and reports any default, `bind:this`, or assignment the type rejects. A `.d.ts` can compile and still be wrong this way: `<svg bind:this>` typed `HTMLElement`, or `["a"]` typed as the tuple `["a"]`.
 
 ### End-to-end tests
 
@@ -184,6 +186,7 @@ It imports the parser and writers from `../src` directly (see [`playground/vite.
 5. `bun run test:fixtures-types`
 6. `bun run test:types-matrix`
 7. `bun run test:e2e`
+8. `bun run test:inferred-types`
 
 Run those locally before pushing. The cross-platform matrix is why path normalization is non-negotiable — a separator bug passes on macOS and fails on Windows.
 

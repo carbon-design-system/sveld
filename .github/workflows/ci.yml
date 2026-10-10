@@ -60,6 +60,11 @@ jobs:
         run: |
           git diff --exit-code -I '"(version|svelteVersion)": ' -- tests
 
+      - name: Check inferred prop types against their components
+        # Uses the svelte-check the e2e run installed for the carbon project.
+        if: matrix.os == 'ubuntu-latest'
+        run: bun run test:inferred-types
+
       - name: Deploy docs
         # Only trigger deploy if previous steps pass on main branch.
         # Only fire once per branch push.
