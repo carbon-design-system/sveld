@@ -7,6 +7,7 @@
 import type { AST, CallExpression, Expression, SimpleCallExpression, TSNode } from "sveast";
 import { SKIP, type Visitor, walk as walkTree } from "sveast/walk";
 import { isCallExpressionNamed, isIdentifier, isMemberExpression } from "../ast-guards";
+import type { ElementNamespace } from "../element-tag-map";
 import type { ComponentElement, ComponentInlineElement, SlotProps, SlotPropValue } from "../model";
 import { resolveMemberExpressionType } from "./bindings";
 import type { ParserContext } from "./context";
@@ -281,7 +282,12 @@ function addForwardedEvent(ctx: ParserContext, node: AST.OnDirective, parent: AS
 }
 
 /** `bind:*` marks props reactive; `bind:this` on elements also narrows the prop type. */
-function recordBindDirective(ctx: ParserContext, node: AST.BindDirective, parent: AST.SvelteNode | null) {
+function recordBindDirective(
+  ctx: ParserContext,
+  node: AST.BindDirective,
+  parent: AST.SvelteNode | null,
+  namespace: ElementNamespace,
+) {
   if (!parent || !(isElementLikeType(parent.type) || isComponentLikeType(parent.type))) return;
   if (node.expression.type !== "Identifier") return;
 
@@ -292,12 +298,12 @@ function recordBindDirective(ctx: ParserContext, node: AST.BindDirective, parent
   if (node.name !== "this" || !isElementLikeType(parent.type) || !("name" in parent)) return;
   if (typeof parent.name !== "string") return;
 
-  const element_name = parent.name;
+  const element = { tag: parent.name, namespace };
   const existing = ctx.bindings.get(prop_name);
   if (!existing) {
-    ctx.bindings.set(prop_name, { elements: [element_name] });
-  } else if (!existing.elements.includes(element_name)) {
-    ctx.bindings.set(prop_name, { ...existing, elements: [...existing.elements, element_name] });
+    ctx.bindings.set(prop_name, { elements: [element] });
+  } else if (!existing.elements.some((other) => other.tag === element.tag && other.namespace === namespace)) {
+    ctx.bindings.set(prop_name, { ...existing, elements: [...existing.elements, element] });
   }
 }
 
@@ -319,6 +325,11 @@ export function walkComponent(ctx: ParserContext): ComponentWalkResult {
   ctx.activeScopes.push(ctx.componentScope);
   const scopeWalkState = createScopeWalkState(ctx);
 
+  // An element's namespace, and the namespace its children are created in:
+  // `<svg>` switches to SVG and `<foreignObject>` back to HTML for its children.
+  const elementNamespaces = new WeakMap<AST.SvelteNode, ElementNamespace>();
+  const childNamespaces: ElementNamespace[] = [ctx.parsed?.options?.namespace === "svg" ? "svg" : "html"];
+
   const visitor: Visitor = {
     enter(node, parent) {
       // Everything this walk acts on is value-level, and type-level TS
@@ -328,6 +339,13 @@ export function walkComponent(ctx: ParserContext): ComponentWalkResult {
       // Scope declaration is fused into this walk.
       const nodeScope = enterNestedScopeDeclarationNode(ctx, scopeWalkState, node);
       if (nodeScope) ctx.activeScopes.push(nodeScope);
+
+      if (isElementLikeType(node.type)) {
+        const name = "name" in node ? node.name : undefined;
+        const namespace = name === "svg" ? "svg" : childNamespaces[childNamespaces.length - 1];
+        elementNamespaces.set(node, namespace);
+        childNamespaces.push(name === "foreignObject" ? "html" : namespace);
+      }
 
       if (!MAIN_WALK_NODE_TYPES.has(node.type)) return;
 
@@ -389,11 +407,12 @@ export function walkComponent(ctx: ParserContext): ComponentWalkResult {
           addForwardedEvent(ctx, node, parent);
           break;
         case "BindDirective":
-          recordBindDirective(ctx, node, parent);
+          recordBindDirective(ctx, node, parent, (parent && elementNamespaces.get(parent)) ?? "html");
           break;
       }
     },
     leave(node) {
+      if (isElementLikeType(node.type)) childNamespaces.pop();
       // `enter` pushes a scope for exactly the scope-owner nodes.
       if (isScopeOwner(node)) {
         ctx.activeScopes.pop();

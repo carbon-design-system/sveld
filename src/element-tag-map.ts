@@ -131,12 +131,86 @@ const tag_map = {
   xmp: "HTMLPreElement",
 } satisfies Record<string, string>;
 
-type ElementTag = keyof typeof tag_map;
+/** SVG tag-to-DOM-type map from TypeScript's `lib.dom.d.ts`. */
+const svg_tag_map = {
+  a: "SVGAElement",
+  animate: "SVGAnimateElement",
+  animateMotion: "SVGAnimateMotionElement",
+  animateTransform: "SVGAnimateTransformElement",
+  circle: "SVGCircleElement",
+  clipPath: "SVGClipPathElement",
+  defs: "SVGDefsElement",
+  desc: "SVGDescElement",
+  ellipse: "SVGEllipseElement",
+  feBlend: "SVGFEBlendElement",
+  feColorMatrix: "SVGFEColorMatrixElement",
+  feComponentTransfer: "SVGFEComponentTransferElement",
+  feComposite: "SVGFECompositeElement",
+  feConvolveMatrix: "SVGFEConvolveMatrixElement",
+  feDiffuseLighting: "SVGFEDiffuseLightingElement",
+  feDisplacementMap: "SVGFEDisplacementMapElement",
+  feDistantLight: "SVGFEDistantLightElement",
+  feDropShadow: "SVGFEDropShadowElement",
+  feFlood: "SVGFEFloodElement",
+  feFuncA: "SVGFEFuncAElement",
+  feFuncB: "SVGFEFuncBElement",
+  feFuncG: "SVGFEFuncGElement",
+  feFuncR: "SVGFEFuncRElement",
+  feGaussianBlur: "SVGFEGaussianBlurElement",
+  feImage: "SVGFEImageElement",
+  feMerge: "SVGFEMergeElement",
+  feMergeNode: "SVGFEMergeNodeElement",
+  feMorphology: "SVGFEMorphologyElement",
+  feOffset: "SVGFEOffsetElement",
+  fePointLight: "SVGFEPointLightElement",
+  feSpecularLighting: "SVGFESpecularLightingElement",
+  feSpotLight: "SVGFESpotLightElement",
+  feTile: "SVGFETileElement",
+  feTurbulence: "SVGFETurbulenceElement",
+  filter: "SVGFilterElement",
+  foreignObject: "SVGForeignObjectElement",
+  g: "SVGGElement",
+  image: "SVGImageElement",
+  line: "SVGLineElement",
+  linearGradient: "SVGLinearGradientElement",
+  marker: "SVGMarkerElement",
+  mask: "SVGMaskElement",
+  metadata: "SVGMetadataElement",
+  mpath: "SVGMPathElement",
+  path: "SVGPathElement",
+  pattern: "SVGPatternElement",
+  polygon: "SVGPolygonElement",
+  polyline: "SVGPolylineElement",
+  radialGradient: "SVGRadialGradientElement",
+  rect: "SVGRectElement",
+  script: "SVGScriptElement",
+  set: "SVGSetElement",
+  stop: "SVGStopElement",
+  style: "SVGStyleElement",
+  svg: "SVGSVGElement",
+  switch: "SVGSwitchElement",
+  symbol: "SVGSymbolElement",
+  text: "SVGTextElement",
+  textPath: "SVGTextPathElement",
+  title: "SVGTitleElement",
+  tspan: "SVGTSpanElement",
+  use: "SVGUseElement",
+  view: "SVGViewElement",
+} satisfies Record<string, string>;
 
-function isElementTag(element: string): element is ElementTag {
-  return element in tag_map;
+/** The namespace an element is created in: SVG inside `<svg>`, HTML elsewhere. */
+export type ElementNamespace = "html" | "svg";
+
+function lookup(map: Record<string, string>, tag: string): string | undefined {
+  return Object.hasOwn(map, tag) ? map[tag] : undefined;
 }
 
-export function getElementByTag(element: string): string {
-  return isElementTag(element) ? tag_map[element] : "HTMLElement";
+/**
+ * The DOM type of an element. A tag both namespaces define (`a`, `title`)
+ * reads from `namespace`; an SVG-only tag (`path`) is SVG even outside an
+ * `<svg>`, since Svelte creates it in the SVG namespace.
+ */
+export function getElementByTag(element: string, namespace: ElementNamespace = "html"): string {
+  if (namespace === "svg") return lookup(svg_tag_map, element) ?? "SVGElement";
+  return lookup(tag_map, element) ?? lookup(svg_tag_map, element) ?? "HTMLElement";
 }
