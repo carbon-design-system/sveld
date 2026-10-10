@@ -26,6 +26,7 @@
     "test:types-matrix": "bun scripts/typecheck-option-matrix.ts",
     "test:svelte-versions": "bun scripts/typecheck-svelte-versions.ts",
     "test:e2e": "bun tests/test-e2e.ts",
+    "test:inferred-types": "bun scripts/check-inferred-types.ts",
     "format": "biome format --write .",
     "lint": "biome check --error-on-warnings .",
     "lint:fix": "biome check --write --unsafe .",
