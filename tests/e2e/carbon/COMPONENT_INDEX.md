@@ -1410,6 +1410,7 @@ export interface HeaderActionSlideTransition { delay?: number; duration?: number
 | :- | :- | :- | :- |
 | click | forwarded | -- | -- |
 | close | dispatched | <code>null</code> | -- |
+| open | dispatched | <code>null</code> | -- |
 
 ## `HeaderActionLink`
 
@@ -2881,10 +2882,12 @@ None.
 | Event name | Type | Detail | Description |
 | :- | :- | :- | :- |
 | click | forwarded | -- | -- |
+| deselect | dispatched | <code>string</code> | -- |
 | keydown | forwarded | -- | -- |
 | mouseenter | forwarded | -- | -- |
 | mouseleave | forwarded | -- | -- |
 | mouseover | forwarded | -- | -- |
+| select | dispatched | <code>string</code> | -- |
 
 ## `SelectItem`
 
@@ -4174,7 +4177,9 @@ None.
 | Event name | Type | Detail | Description |
 | :- | :- | :- | :- |
 | click | forwarded | -- | -- |
+| close | dispatched | <code>null</code> | -- |
 | mousedown | forwarded | -- | -- |
+| open | dispatched | <code>null</code> | -- |
 
 ## `TooltipDefinition`
 

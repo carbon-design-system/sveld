@@ -12363,12 +12363,27 @@
           "detail": "null",
           "source": {
             "start": {
-              "line": 47,
+              "line": 63,
               "column": 6
             },
             "end": {
-              "line": 47,
-              "column": 23
+              "line": 63,
+              "column": 41
+            }
+          }
+        },
+        {
+          "type": "dispatched",
+          "name": "open",
+          "detail": "null",
+          "source": {
+            "start": {
+              "line": 63,
+              "column": 6
+            },
+            "end": {
+              "line": 63,
+              "column": 41
             }
           }
         }
@@ -13758,12 +13773,12 @@
           "detail": "any",
           "source": {
             "start": {
-              "line": 4,
+              "line": 49,
               "column": 5
             },
             "end": {
-              "line": 4,
-              "column": 24
+              "line": 49,
+              "column": 45
             }
           }
         },
@@ -13833,12 +13848,12 @@
           "detail": "any",
           "source": {
             "start": {
-              "line": 5,
+              "line": 49,
               "column": 5
             },
             "end": {
-              "line": 5,
-              "column": 26
+              "line": 49,
+              "column": 45
             }
           }
         },
@@ -26382,6 +26397,21 @@
           }
         },
         {
+          "type": "dispatched",
+          "name": "deselect",
+          "detail": "string",
+          "source": {
+            "start": {
+              "line": 37,
+              "column": 5
+            },
+            "end": {
+              "line": 37,
+              "column": 51
+            }
+          }
+        },
+        {
           "type": "forwarded",
           "name": "keydown",
           "element": "label",
@@ -26438,6 +26468,21 @@
             "end": {
               "line": 63,
               "column": 14
+            }
+          }
+        },
+        {
+          "type": "dispatched",
+          "name": "select",
+          "detail": "string",
+          "source": {
+            "start": {
+              "line": 37,
+              "column": 5
+            },
+            "end": {
+              "line": 37,
+              "column": 51
             }
           }
         }
@@ -37113,6 +37158,21 @@
           }
         },
         {
+          "type": "dispatched",
+          "name": "close",
+          "detail": "null",
+          "source": {
+            "start": {
+              "line": 145,
+              "column": 5
+            },
+            "end": {
+              "line": 145,
+              "column": 38
+            }
+          }
+        },
+        {
           "type": "forwarded",
           "name": "mousedown",
           "element": "div",
@@ -37124,6 +37184,21 @@
             "end": {
               "line": 232,
               "column": 36
+            }
+          }
+        },
+        {
+          "type": "dispatched",
+          "name": "open",
+          "detail": "null",
+          "source": {
+            "start": {
+              "line": 145,
+              "column": 5
+            },
+            "end": {
+              "line": 145,
+              "column": 38
             }
           }
         }

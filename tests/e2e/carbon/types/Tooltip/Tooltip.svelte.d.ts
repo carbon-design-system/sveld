@@ -100,7 +100,9 @@ export default class Tooltip extends SvelteComponentTyped<
   TooltipProps,
   {
     click: WindowEventMap["click"];
+    close: CustomEvent<null>;
     mousedown: WindowEventMap["mousedown"];
+    open: CustomEvent<null>;
   },
   {
     default: Record<string, never>;
