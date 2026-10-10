@@ -680,7 +680,7 @@ class CommentBlockReader {
             optional: optional === true,
             ...(description ? { description } : {}),
           }))
-      : parseObjectTypeLiteralMembers(typedefType);
+      : parseObjectTypeLiteralMembers(typedefType, { skipIndexSignatures: true });
     if (members) ctx.typedefMembersByName.set(this.typedefName, members);
 
     addTypedef(ctx, {

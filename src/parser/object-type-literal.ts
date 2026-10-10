@@ -2,6 +2,7 @@ import { indexOfTopLevel, splitTopLevel } from "../type-text";
 
 const OBJECT_TYPE_LITERAL_REGEX = /^\{([\s\S]*)\}$/;
 const MEMBER_NAME_REGEX = /^[A-Za-z_$][\w$]*$/;
+const INDEX_SIGNATURE_REGEX = /^\[[\w$]+\s*:[^\]]+\]$/;
 
 export interface ObjectTypeLiteralMember {
   name: string;
@@ -14,8 +15,13 @@ export interface ObjectTypeLiteralMember {
  * into its member list. Returns `null` when `typeText` isn't an object-type literal,
  * or when a member can't be split into `name: type` (index signatures, mapped types,
  * computed names) so the caller can fall back to treating the type as unresolved.
+ * With `skipIndexSignatures`, an index signature (`[key: string]: any`) is left out
+ * instead, for a caller that only reads the named members.
  */
-export function parseObjectTypeLiteralMembers(typeText: string): ObjectTypeLiteralMember[] | null {
+export function parseObjectTypeLiteralMembers(
+  typeText: string,
+  { skipIndexSignatures = false } = {},
+): ObjectTypeLiteralMember[] | null {
   const trimmed = typeText.trim();
   const match = OBJECT_TYPE_LITERAL_REGEX.exec(trimmed);
   if (!match) return null;
@@ -35,6 +41,7 @@ export function parseObjectTypeLiteralMembers(typeText: string): ObjectTypeLiter
     let name = member.slice(0, colonIndex).trim();
     const type = member.slice(colonIndex + 1).trim();
     if (!type) return null;
+    if (skipIndexSignatures && INDEX_SIGNATURE_REGEX.test(name)) continue;
 
     let optional = false;
     if (name.endsWith("?")) {
