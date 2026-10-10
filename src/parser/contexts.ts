@@ -21,24 +21,10 @@ import { parseObjectTypeLiteralMembers } from "./object-type-literal";
 import { inferVariableInitializerType, literalValueType, resolveConstInitializer } from "./props";
 import { isBoundInNestedScope, isCalleeBoundInNestedScope } from "./scopes";
 import { sourceForExpression, sourceRangeFromNode } from "./source-position";
-import { trackAdditionalTypeDependencyNode } from "./type-resolution";
 import { importedMemberBinding, importPath } from "./value-imports";
-import { findVariableJsDoc, findVariableTypeAndDescription } from "./variable-jsdoc";
+import { findTrackedVariableType, findVariableJsDoc } from "./variable-jsdoc";
 
-type VariableTypeInfo = NonNullable<ReturnType<typeof findVariableTypeAndDescription>>;
-
-/**
- * {@link findVariableTypeAndDescription} for a variable whose type ends up in a
- * generated type (a context, an event detail), so its TS annotation's
- * dependencies are pulled into the `.d.ts`.
- */
-export function findTrackedVariableType(ctx: ParserContext, name: string): VariableTypeInfo | null {
-  const varInfo = findVariableTypeAndDescription(ctx, name);
-  if (varInfo && varInfo.type === ctx.explicitVariableTypesByName.get(name)) {
-    trackAdditionalTypeDependencyNode(ctx, ctx.explicitVariableTypeNodesByName.get(name));
-  }
-  return varInfo;
-}
+type VariableTypeInfo = NonNullable<ReturnType<typeof findTrackedVariableType>>;
 
 /**
  * {@link findTrackedVariableType}, else with `inferFromInitializer` typed from

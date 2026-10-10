@@ -2,6 +2,7 @@ import type { AST, Program } from "sveast";
 import { getPropByLocalOrPublic, type ParserContext } from "./context";
 import { recordSveldIgnore } from "./diagnostics";
 import { aliasType, getCommentTags, isJsDocGap, parseCommentText, processNodeJSDoc, typeTagDescription } from "./jsdoc";
+import { trackAdditionalTypeDependencyNode } from "./type-resolution";
 
 interface ScriptComment {
   /** Offsets into the full component source, delimiters included. */
@@ -141,6 +142,19 @@ export function findVariableTypeAndDescription(
   // A JSDoc block without `@type` only types a TS-annotated variable (above).
   if (!cached?.type) return null;
   return { type: cached.type, description: cached.description, internal: cached.internal };
+}
+
+/**
+ * {@link findVariableTypeAndDescription} for a variable whose type ends up in a
+ * generated type (a context, an event detail), so its TS annotation's
+ * dependencies are pulled into the `.d.ts`.
+ */
+export function findTrackedVariableType(ctx: ParserContext, name: string) {
+  const varInfo = findVariableTypeAndDescription(ctx, name);
+  if (varInfo && varInfo.type === ctx.explicitVariableTypesByName.get(name)) {
+    trackAdditionalTypeDependencyNode(ctx, ctx.explicitVariableTypeNodesByName.get(name));
+  }
+  return varInfo;
 }
 
 /** The description and `@internal` flag of the JSDoc above `varName`, with or without `@type`. */

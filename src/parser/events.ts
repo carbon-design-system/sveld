@@ -2,11 +2,11 @@ import type { ArrayExpression, CallExpression, ObjectExpression, Property } from
 import { getPropertyName, isIdentifier, isLiteral, isNewExpressionNamed, isObjectExpression } from "../ast-guards";
 import type { DispatchedEvent } from "../model";
 import type { ParserContext } from "./context";
-import { findTrackedVariableType } from "./contexts";
 import { inferVariableInitializerType, literalValueType } from "./props";
 import { isBoundInNestedScope } from "./scopes";
 import { sourceRangeFromNode } from "./source-position";
 import { escapeCommentText } from "./utils";
+import { findTrackedVariableType } from "./variable-jsdoc";
 
 const NEWLINES_REGEX = /\n/g;
 const IDENTIFIER_REGEX = /^[A-Za-z_$][\w$]*$/;
