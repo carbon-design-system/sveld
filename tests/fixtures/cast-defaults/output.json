@@ -1,0 +1,85 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "ts",
+  "props": [
+    {
+      "name": "attributes",
+      "kind": "let",
+      "type": "HTMLButtonAttributes",
+      "typeSource": "default",
+      "value": "{ type: \"button\" }",
+      "defaultValue": {
+        "raw": "{ type: \"button\" }",
+        "kind": "object",
+        "value": {
+          "type": "button"
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "size",
+      "kind": "let",
+      "type": "Size",
+      "typeSource": "default",
+      "value": "\"sm\"",
+      "defaultValue": {
+        "raw": "\"sm\"",
+        "kind": "literal",
+        "value": "sm"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "sizes",
+      "kind": "let",
+      "type": "Size[]",
+      "typeSource": "default",
+      "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "checked",
+      "kind": "let",
+      "type": "{ type: string }",
+      "typeSource": "default",
+      "value": "{ type: \"button\" }",
+      "defaultValue": {
+        "raw": "{ type: \"button\" }",
+        "kind": "object",
+        "value": {
+          "type": "button"
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
