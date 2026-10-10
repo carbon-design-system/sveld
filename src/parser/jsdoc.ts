@@ -134,6 +134,12 @@ export function extractJsDocReturnType(commentValue: string): string | undefined
   return returnsTag ? aliasType(returnsTag.type) : undefined;
 }
 
+/** `@type` type from raw JSDoc text, like {@link extractJsDocReturnType}. */
+export function extractJsDocType(commentValue: string): string | undefined {
+  const { type: typeTag } = getCommentTags(parseComments(formatComment(commentValue)));
+  return typeTag ? aliasType(typeTag.type) : undefined;
+}
+
 /**
  * `@deprecated`, passthrough tags, and `@ignore`/`@internal` from raw JSDoc text.
  * Context-free, like {@link extractJsDocReturnType}.

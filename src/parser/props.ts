@@ -28,6 +28,7 @@ import type {
 import { returnTypeOfFunctionType } from "../type-text";
 import type { ParserContext } from "./context";
 import { trackPropLocalName } from "./context";
+import { extractJsDocType } from "./jsdoc";
 import { nodeSourceText, sourceAtPos, sourceForExpression } from "./source-position";
 import { trackAdditionalTypeDependencyNode } from "./type-resolution";
 import { formatParamList } from "./utils";
@@ -86,7 +87,6 @@ export function processInitializer(ctx: ParserContext, init: unknown, depth = 0)
   return castType === undefined ? result : { ...result, type: castType };
 }
 
-const JSDOC_TYPE_TAG_REGEX = /^\*\s*@type\s*\{/;
 const OPEN_PAREN_BETWEEN_REGEX = /^\s*\(\s*$/;
 
 /** The type a cast gives `init`, or `undefined` when it has none. */
@@ -103,32 +103,14 @@ function initializerCastType(ctx: ParserContext, init: object): string | undefin
   return jsdocCastType(ctx, init);
 }
 
-/**
- * `T` from a JSDoc cast, `/** @type {T} *\/ (init)`: a block comment holding
- * only an `@type` tag, then `(`, right before `init`.
- */
+/** `T` from a JSDoc cast: `/** @type {T} *\/ (init)`. */
 function jsdocCastType(ctx: ParserContext, init: object): string | undefined {
   const start = "start" in init && typeof init.start === "number" ? init.start : undefined;
   if (start === undefined) return undefined;
-
-  let cast: { value: string; end: number } | undefined;
-  for (const comment of ctx.parsed?.comments ?? []) {
-    if (comment.type === "Block" && comment.end <= start && (cast === undefined || comment.end > cast.end)) {
-      cast = comment;
-    }
-  }
-  if (!cast || !JSDOC_TYPE_TAG_REGEX.test(cast.value)) return undefined;
+  const cast = ctx.parsed?.comments.findLast((comment) => comment.end <= start);
+  if (cast?.type !== "Block" || !cast.value.startsWith("*")) return undefined;
   if (!OPEN_PAREN_BETWEEN_REGEX.test(sourceAtPos(ctx, cast.end, start) ?? "")) return undefined;
-
-  const typeStart = cast.value.indexOf("{") + 1;
-  let depth = 1;
-  for (let index = typeStart; index < cast.value.length; index++) {
-    if (cast.value[index] === "{") depth++;
-    else if (cast.value[index] === "}" && --depth === 0) {
-      return cast.value.slice(typeStart, index).trim() || undefined;
-    }
-  }
-  return undefined;
+  return extractJsDocType(cast.value);
 }
 
 function processInitializerWithoutAssertion(ctx: ParserContext, init: unknown, depth: number): ProcessedInitializer {
