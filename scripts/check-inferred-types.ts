@@ -36,6 +36,7 @@ import {
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { $ } from "bun";
+import { escapeRegExp } from "../src/parser/utils";
 
 const ROOT = path.join(import.meta.dir, "..");
 const FIXTURES_DIR = path.join(ROOT, "tests", "fixtures");
@@ -94,10 +95,6 @@ interface Finding {
   workspace: string;
   location: string;
   message: string;
-}
-
-function escapeRegExp(text: string): string {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 /** The source with each inferred prop type written in, and the names annotated. */
