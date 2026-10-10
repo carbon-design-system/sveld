@@ -1,4 +1,10 @@
 const COMMENT_CLOSE_REGEX = /\*\//g;
+const REGEX_SPECIAL_CHARS_REGEX = /[.*+?^${}()|[\]\\]/g;
+
+/** `text` matched literally inside a `RegExp`. */
+export function escapeRegExp(text: string): string {
+  return text.replace(REGEX_SPECIAL_CHARS_REGEX, "\\$&");
+}
 
 /**
  * Makes text safe to place inside a generated `/** ... *\/` comment: a `*\/`

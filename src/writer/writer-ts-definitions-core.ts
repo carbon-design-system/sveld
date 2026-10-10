@@ -1,6 +1,6 @@
 import type { ComponentClassMember, ComponentProp, DeprecatedValue } from "../model";
 import { getParsedComponentTypeScriptMetadata } from "../parsed-component-metadata";
-import { escapeCommentText, formatParamList } from "../parser/utils";
+import { escapeCommentText, escapeRegExp, formatParamList } from "../parser/utils";
 import type { ComponentDocApi } from "../plugin";
 import { isTupleType, splitTopLevel } from "../type-text";
 import { formatGeneratedTypeScript } from "./format-generated-ts";
@@ -25,7 +25,6 @@ const BLANK_COMMENT_LINE_REGEX = /^([ \t]*\*) +$/gm;
 const WHITESPACE_REGEX = /\s+/g;
 const SNIPPET_TYPE_REFERENCE_REGEX = /(^|[^.\w])Snippet(?:\s*<|\b)/;
 const PRESERVED_SNIPPET_IMPORT_REGEX = /import\s+type\s+[^;]*\bSnippet\b[^;]*from\s+"svelte";/;
-const REGEX_METACHARS = /[.*+?^${}()|[\]\\]/g;
 const LEADING_CONST_MODIFIER_REGEX = /^const\s+/;
 const LEADING_EXPORT_REGEX = /^export /;
 const NON_IDENTIFIER_CHAR_REGEX = /[^\w$]/g;
@@ -135,8 +134,7 @@ const referencesGenericRegexCache = new Map<string, RegExp>();
 function referencesGeneric(propType: string, name: string): boolean {
   let regex = referencesGenericRegexCache.get(name);
   if (regex === undefined) {
-    const escapedName = name.replace(REGEX_METACHARS, "\\$&");
-    regex = new RegExp(`\\b${escapedName}\\b`);
+    regex = new RegExp(`\\b${escapeRegExp(name)}\\b`);
     referencesGenericRegexCache.set(name, regex);
   }
   return regex.test(propType);

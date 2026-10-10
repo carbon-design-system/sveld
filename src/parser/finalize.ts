@@ -41,6 +41,7 @@ import { normalizeRunesCallbackProps, registerTypedDispatcherEvents } from "./ru
 import { DEFAULT_SLOT_NAME } from "./slots";
 import { sourceForExpression, sourceRangeFromNode, sourceRangeFromOffsets } from "./source-position";
 import { buildPendingCrossFileCandidates, buildTypeScriptMetadata } from "./type-resolution";
+import { escapeRegExp } from "./utils";
 import { importedCalleeBinding } from "./value-imports";
 import { resolveLocalVarJSDoc } from "./variable-jsdoc";
 
@@ -65,8 +66,6 @@ interface DispatchEventNames {
   dynamic: boolean;
 }
 
-const REGEX_SPECIAL_CHARS_REGEX = /[.*+?^${}()|[\]\\]/g;
-
 function collectDispatchEventNames(node: unknown, out: DispatchEventNames) {
   if (!node || typeof node !== "object" || !("type" in node)) {
     out.dynamic = true;
@@ -81,11 +80,9 @@ function collectDispatchEventNames(node: unknown, out: DispatchEventNames) {
     collectDispatchEventNames(conditional.consequent, out);
     collectDispatchEventNames(conditional.alternate, out);
   } else if (node.type === "TemplateLiteral") {
-    const quasis = (node as TemplateLiteral).quasis.map((quasi) =>
-      (quasi.value.cooked ?? quasi.value.raw).replace(REGEX_SPECIAL_CHARS_REGEX, "\\$&"),
-    );
-    if (quasis.length === 1) out.names.push((node as TemplateLiteral).quasis[0].value.cooked ?? "");
-    else out.patterns.push(new RegExp(`^${quasis.join("[^]*")}$`));
+    const quasis = (node as TemplateLiteral).quasis.map((quasi) => quasi.value.cooked ?? quasi.value.raw);
+    if (quasis.length === 1) out.names.push(quasis[0]);
+    else out.patterns.push(new RegExp(`^${quasis.map(escapeRegExp).join("[^]*")}$`));
   } else {
     out.dynamic = true;
   }
@@ -276,8 +273,7 @@ function resolveGenerics(ctx: ParserContext, props: ComponentProp[], slots: Comp
       ...slots.map((slot) => slot.slot_props ?? ""),
     ].join("\n");
     for (const { name, constraint } of ctx.deferredSlotBlockGenerics) {
-      const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      if (!new RegExp(`\\b${escapedName}\\b`).test(referencedTypeText)) continue;
+      if (!new RegExp(`\\b${escapeRegExp(name)}\\b`).test(referencedTypeText)) continue;
       accumulateGeneric(ctx, name, constraint);
     }
   }
