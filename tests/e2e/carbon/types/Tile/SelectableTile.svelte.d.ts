@@ -69,10 +69,12 @@ export default class SelectableTile extends SvelteComponentTyped<
   SelectableTileProps,
   {
     click: WindowEventMap["click"];
+    deselect: CustomEvent<string>;
     keydown: WindowEventMap["keydown"];
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
     mouseover: WindowEventMap["mouseover"];
+    select: CustomEvent<string>;
   },
   { default: Record<string, never> }
 > {}
