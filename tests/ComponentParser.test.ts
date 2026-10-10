@@ -2120,6 +2120,98 @@ describe("ComponentParser", () => {
     });
   });
 
+  describe("context values typed from their declarations", () => {
+    const contextTypes = (script: string, lang = "") => {
+      const result = new ComponentParser().parseSvelteComponent(`<script${lang}>${script}</script>`, diagnostics);
+      return {
+        types: Object.fromEntries((result.contexts?.[0].properties ?? []).map((prop) => [prop.name, prop.type])),
+        anyTyped: (result.diagnostics ?? [])
+          .filter((diagnostic) => diagnostic.kind === "context-any-type")
+          .map((diagnostic) => diagnostic.name),
+      };
+    };
+
+    test("types a function declaration like a function prop default", () => {
+      const { types, anyTyped } = contextTypes(`
+        import { setContext } from "svelte";
+        function notifyOpen(id) {}
+        function reset() {}
+        /**
+         * @param {string} id
+         * @returns {boolean}
+         */
+        function claim(id) {
+          return true;
+        }
+        setContext("k", { notifyOpen, reset, claim });
+      `);
+      expect(types).toEqual({
+        notifyOpen: "(id: any) => any",
+        reset: "(...args: any[]) => any",
+        claim: "(id: string) => boolean",
+      });
+      expect(anyTyped).toEqual([]);
+    });
+
+    test("types an arrow const from its JSDoc params", () => {
+      const { types } = contextTypes(`
+        import { setContext } from "svelte";
+        /** @param {number} index */
+        const select = (index) => {};
+        const label = () => "label";
+        const close = /** @type {(force?: boolean) => void} */ (() => {});
+        setContext("k", { select, label, close });
+      `);
+      expect(types).toEqual({
+        select: "(index: number) => any",
+        label: "(...args: any[]) => string",
+        close: "(force?: boolean) => void",
+      });
+    });
+
+    test("prefers a script variable's initializer over a nested function by the same name", () => {
+      const { types } = contextTypes(`
+        import { setContext } from "svelte";
+        const reset = 0;
+        function setup() {
+          function reset() {}
+        }
+        setContext("k", { reset });
+      `);
+      expect(types).toEqual({ reset: "number" });
+    });
+
+    test("types a TS function from its annotations", () => {
+      const { types } = contextTypes(
+        `
+        import { setContext } from "svelte";
+        function select(id: string, focus?: boolean): void {}
+        /** @param {number} index */
+        const remove = (index: number) => {};
+        setContext("k", { select, remove });
+      `,
+        ' lang="ts"',
+      );
+      expect(types).toEqual({
+        select: "(id: string, focus?: boolean) => void",
+        remove: "(index: number) => any",
+      });
+    });
+
+    test("leaves a value it can't derive as `any`", () => {
+      const { types, anyTyped } = contextTypes(`
+        import { setContext } from "svelte";
+        import { uniqueId } from "./utils";
+        import { writable } from "./my-store";
+        const fallbackName = uniqueId();
+        const custom = writable(0);
+        setContext("k", { fallbackName, custom });
+      `);
+      expect(types).toEqual({ fallbackName: "any", custom: "any" });
+      expect(anyTyped).toEqual(["fallbackName", "custom"]);
+    });
+  });
+
   test('ignores the generics script attribute without lang="ts" and reports syntax-skipped', () => {
     const parser = new ComponentParser();
     const source = `
