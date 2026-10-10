@@ -1,4 +1,4 @@
-/** Tag-to-DOM-type map from TypeScript's `lib.dom.d.ts`. */
+/** HTML tag-to-DOM-type map from TypeScript's `lib.dom.d.ts`, deprecated tags included. */
 const tag_map = {
   a: "HTMLAnchorElement",
   abbr: "HTMLElement",
@@ -13,6 +13,8 @@ const tag_map = {
   basefont: "HTMLElement",
   bdi: "HTMLElement",
   bdo: "HTMLElement",
+  bgsound: "HTMLUnknownElement",
+  blink: "HTMLUnknownElement",
   blockquote: "HTMLQuoteElement",
   body: "HTMLBodyElement",
   br: "HTMLBRElement",
@@ -60,11 +62,14 @@ const tag_map = {
   img: "HTMLImageElement",
   input: "HTMLInputElement",
   ins: "HTMLModElement",
+  isindex: "HTMLUnknownElement",
   kbd: "HTMLElement",
+  keygen: "HTMLUnknownElement",
   label: "HTMLLabelElement",
   legend: "HTMLLegendElement",
   li: "HTMLLIElement",
   link: "HTMLLinkElement",
+  listing: "HTMLPreElement",
   main: "HTMLElement",
   map: "HTMLMapElement",
   mark: "HTMLElement",
@@ -72,7 +77,9 @@ const tag_map = {
   menu: "HTMLMenuElement",
   meta: "HTMLMetaElement",
   meter: "HTMLMeterElement",
+  multicol: "HTMLUnknownElement",
   nav: "HTMLElement",
+  nextid: "HTMLUnknownElement",
   noscript: "HTMLElement",
   object: "HTMLObjectElement",
   ol: "HTMLOListElement",
@@ -97,6 +104,7 @@ const tag_map = {
   slot: "HTMLSlotElement",
   small: "HTMLElement",
   source: "HTMLSourceElement",
+  spacer: "HTMLUnknownElement",
   span: "HTMLSpanElement",
   strong: "HTMLElement",
   style: "HTMLStyleElement",
@@ -120,6 +128,7 @@ const tag_map = {
   var: "HTMLElement",
   video: "HTMLVideoElement",
   wbr: "HTMLElement",
+  xmp: "HTMLPreElement",
 } satisfies Record<string, string>;
 
 type ElementTag = keyof typeof tag_map;
