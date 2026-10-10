@@ -77,13 +77,58 @@ const NEW_EXPRESSION_TYPES = new Map([
 
 /**
  * The default text, type, and metadata of an initializer. A value written
- * with `as const` is typed as TypeScript types the assertion.
+ * with a cast (`as const`, `as T`, `/** @type {T} *\/ (value)`) is typed as
+ * the cast says.
  */
 export function processInitializer(ctx: ParserContext, init: unknown, depth = 0): ProcessedInitializer {
   const result = processInitializerWithoutAssertion(ctx, init, depth);
-  const constType =
-    init && typeof init === "object" && ctx.constAssertions.has(init) ? literalType(init, "const") : undefined;
-  return constType === undefined ? result : { ...result, type: constType };
+  const castType = init && typeof init === "object" ? initializerCastType(ctx, init) : undefined;
+  return castType === undefined ? result : { ...result, type: castType };
+}
+
+const JSDOC_TYPE_TAG_REGEX = /^\*\s*@type\s*\{/;
+const OPEN_PAREN_BETWEEN_REGEX = /^\s*\(\s*$/;
+
+/** The type a cast gives `init`, or `undefined` when it has none. */
+function initializerCastType(ctx: ParserContext, init: object): string | undefined {
+  const { constAssertions, typeAssertions } = ctx.typeCasts;
+  if (constAssertions.has(init)) return literalType(init, "const");
+
+  const annotation = typeAssertions.get(init);
+  if (annotation) {
+    trackAdditionalTypeDependencyNode(ctx, annotation);
+    return sourceForExpression(ctx, annotation);
+  }
+
+  return jsdocCastType(ctx, init);
+}
+
+/**
+ * `T` from a JSDoc cast, `/** @type {T} *\/ (init)`: a block comment holding
+ * only an `@type` tag, then `(`, right before `init`.
+ */
+function jsdocCastType(ctx: ParserContext, init: object): string | undefined {
+  const start = "start" in init && typeof init.start === "number" ? init.start : undefined;
+  if (start === undefined) return undefined;
+
+  let cast: { value: string; end: number } | undefined;
+  for (const comment of ctx.parsed?.comments ?? []) {
+    if (comment.type === "Block" && comment.end <= start && (cast === undefined || comment.end > cast.end)) {
+      cast = comment;
+    }
+  }
+  if (!cast || !JSDOC_TYPE_TAG_REGEX.test(cast.value)) return undefined;
+  if (!OPEN_PAREN_BETWEEN_REGEX.test(sourceAtPos(ctx, cast.end, start) ?? "")) return undefined;
+
+  const typeStart = cast.value.indexOf("{") + 1;
+  let depth = 1;
+  for (let index = typeStart; index < cast.value.length; index++) {
+    if (cast.value[index] === "{") depth++;
+    else if (cast.value[index] === "}" && --depth === 0) {
+      return cast.value.slice(typeStart, index).trim() || undefined;
+    }
+  }
+  return undefined;
 }
 
 function processInitializerWithoutAssertion(ctx: ParserContext, init: unknown, depth: number): ProcessedInitializer {

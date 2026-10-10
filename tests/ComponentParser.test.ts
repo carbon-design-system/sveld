@@ -2220,4 +2220,38 @@ describe("ComponentParser", () => {
 
     expect(types).toEqual({ sizes: "{ readonly sm: false }", size: '"sm"' });
   });
+
+  test("types a default cast with a JSDoc `@type` as the cast type", () => {
+    const source = `
+      <script>
+        /** @typedef {{ id: string; label?: string }} Item */
+
+        export let item = /** @type {Item} */ ({ id: "1" });
+        export let items = /** @type {Item[]} */ ([]);
+        export let plain = { id: "1" };
+      </script>
+    `;
+
+    const { props } = new ComponentParser().parseSvelteComponent(source, diagnostics);
+    const types = Object.fromEntries(props.map((prop) => [prop.name, prop.type]));
+
+    expect(types).toEqual({ item: "Item", items: "Item[]", plain: "{ id: string }" });
+  });
+
+  test("types a default cast with `as` as the cast type", () => {
+    const source = `
+      <script lang="ts">
+        type Item = { id: string; label?: string };
+
+        export let item = { id: "1" } as Item;
+        export let items = <Item[]>[];
+        export let checked = { id: "1" } satisfies Item;
+      </script>
+    `;
+
+    const { props } = new ComponentParser().parseSvelteComponent(source, diagnostics);
+    const types = Object.fromEntries(props.map((prop) => [prop.name, prop.type]));
+
+    expect(types).toEqual({ item: "Item", items: "Item[]", checked: "{ id: string }" });
+  });
 });

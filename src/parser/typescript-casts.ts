@@ -1,4 +1,4 @@
-import type { AST } from "sveast";
+import type { AST, TSNode } from "sveast";
 import { walk } from "sveast/walk";
 
 /**
@@ -26,20 +26,38 @@ function isConstAssertion(node: AST.SvelteNode): boolean {
   );
 }
 
+/** What a stripped cast said about the expression under it. */
+export interface TypeCasts {
+  /** Expressions written with `as const`. */
+  constAssertions: WeakSet<object>;
+  /** Expressions written with `as T` or `<T>`, and the outermost `T`. */
+  typeAssertions: WeakMap<object, TSNode>;
+}
+
 /**
  * Returning the replacement from `enter` makes `walk` write it to the parent
  * and enter it next, so `a as B as C` unwraps one layer per call down to `a`.
- * The expression under an `as const` goes into `constAssertions`, since its
- * type is no longer the widened one once the wrapper is gone.
+ * The casts are recorded in `casts`, since the expression's type is the cast
+ * type, not its own, once the wrapper is gone. The outermost cast wins, and
+ * passes through `!` and `satisfies`, which don't change the type.
  */
-export function stripTypeCastWrappers(root: AST.SvelteNode | undefined, constAssertions: WeakSet<object>): void {
+export function stripTypeCastWrappers(root: AST.SvelteNode | undefined, casts: TypeCasts): void {
   if (!root) return;
   walk(root, {
     enter(node) {
-      if (TYPE_CAST_WRAPPER_TYPES.has(node.type) && "expression" in node && node.expression) {
-        if (isConstAssertion(node) && typeof node.expression === "object") constAssertions.add(node.expression);
-        return node.expression;
+      if (!TYPE_CAST_WRAPPER_TYPES.has(node.type) || !("expression" in node) || !node.expression) return;
+      const { expression } = node;
+      if (typeof expression !== "object") return expression;
+
+      const outer = casts.typeAssertions.get(node);
+      if (casts.constAssertions.has(node) || (outer === undefined && isConstAssertion(node))) {
+        casts.constAssertions.add(expression);
+      } else if (outer !== undefined) {
+        casts.typeAssertions.set(expression, outer);
+      } else if ((node.type === "TSAsExpression" || node.type === "TSTypeAssertion") && "typeAnnotation" in node) {
+        casts.typeAssertions.set(expression, node.typeAnnotation as TSNode);
       }
+      return expression;
     },
   });
 }
