@@ -37,9 +37,8 @@ export interface TypeCasts {
 /**
  * Returning the replacement from `enter` makes `walk` write it to the parent
  * and enter it next, so `a as B as C` unwraps one layer per call down to `a`.
- * The casts are recorded in `casts`, since the expression's type is the cast
- * type, not its own, once the wrapper is gone. The outermost cast wins, and
- * passes through `!` and `satisfies`, which don't change the type.
+ * Each cast is kept in `casts` for the expression under it. The outermost
+ * cast wins, and passes through `!` and `satisfies`, which don't change the type.
  */
 export function stripTypeCastWrappers(root: AST.SvelteNode | undefined, casts: TypeCasts): void {
   if (!root) return;

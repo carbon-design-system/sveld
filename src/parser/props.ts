@@ -386,22 +386,14 @@ function unionOfBranchTypes(types: Array<string | undefined>): string | undefine
 }
 
 /**
- * How {@link literalType} types a literal's members. `"widen"` is what
- * TypeScript infers for `let x = <literal>`: `{ sm: false }` is
- * `{ sm: boolean }` and `[]` is `any[]`, so a consumer can pass any value of
- * the same shape. `"literal"` keeps each member's literal type
- * (`{ close: "close" }`, `[1, 2]`), for a `const` the consumer can't
- * replace. `"const"` is what `as const` gives: literal types, `readonly`
- * members, and readonly tuples.
+ * How {@link literalType} types members, as TypeScript would:
+ * - `"widen"`: `let x = ...`, so `{ sm: false }` is `{ sm: boolean }` and `[]` is `any[]`.
+ * - `"literal"`: a `const` export, so `{ close: "close" }` and `[1, 2]` keep their literals.
+ * - `"const"`: `as const`, so literals plus `readonly` members and tuples.
  */
 export type LiteralTypeMode = "widen" | "literal" | "const";
 
-/**
- * The type of a literal default, or `undefined` unless it and every member is
- * a string, number, boolean, bigint, regex, or `null` literal (or a negated
- * number), `undefined`, a template literal with no substitutions, or an object
- * or array literal of the same kind under plain keys.
- */
+/** The type of a default built only from literals, or `undefined` if any part isn't one. */
 export function literalType(node: unknown, mode: LiteralTypeMode): string | undefined {
   if (!node || typeof node !== "object" || !("type" in node)) return undefined;
   const widen = mode === "widen";
