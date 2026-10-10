@@ -1830,7 +1830,7 @@ export type ListBoxFieldTranslationId = "close" | "open";
 | tabindex | No | <code>let</code> | No | -- | <code>string</code> | <code>"-1"</code> | Specify the tabindex |
 | translateWithId | No | <code>let</code> | No | -- | <code>(id: ListBoxFieldTranslationId) => string</code> | <code>(id) => defaultTranslations[id]</code> | Override the default translation ids |
 | id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the top-level element |
-| translationIds | No | <code>accessor</code> | No | -- | <code>{ close: "close", open: "open" }</code> | <code>{ close: "close", open: "open" }</code> | Default translation ids |
+| translationIds | No | <code>accessor</code> | No | -- | <code>{ close: "close"; open: "open" }</code> | <code>{ close: "close", open: "open" }</code> | Default translation ids |
 
 ### Slots
 
@@ -1884,7 +1884,7 @@ export type ListBoxMenuIconTranslationId = "close" | "open";
 | :- | :- | :- | :- | :- | :- | :- | :- |
 | open | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to open the list box menu icon |
 | translateWithId | No | <code>let</code> | No | -- | <code>(id: ListBoxMenuIconTranslationId) => string</code> | <code>(id) => defaultTranslations[id]</code> | Override the default translation ids |
-| translationIds | No | <code>accessor</code> | No | -- | <code>{ close: "close", open: "open" }</code> | <code>{ close: "close", open: "open" }</code> | Default translation ids |
+| translationIds | No | <code>accessor</code> | No | -- | <code>{ close: "close"; open: "open" }</code> | <code>{ close: "close", open: "open" }</code> | Default translation ids |
 
 ### Slots
 
@@ -1935,7 +1935,7 @@ export type ListBoxSelectionTranslationId = "clearAll" | "clearSelection";
 | selectionCount | No | <code>let</code> | No | -- | <code>any</code> | <code>undefined</code> | Specify the number of selected items |
 | disabled | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to disable the list box selection |
 | translateWithId | No | <code>let</code> | No | -- | <code>(id: ListBoxSelectionTranslationId) => string</code> | <code>(id) => defaultTranslations[id]</code> | Override the default translation ids |
-| translationIds | No | <code>accessor</code> | No | -- | <code>{     clearAll: "clearAll",     clearSelection: "clearSelection",   }</code> | <code>{     clearAll: "clearAll",     clearSelection: "clearSelection",   }</code> | Default translation ids |
+| translationIds | No | <code>accessor</code> | No | -- | <code>{ clearAll: "clearAll"; clearSelection: "clearSelection" }</code> | <code>{     clearAll: "clearAll",     clearSelection: "clearSelection",   }</code> | Default translation ids |
 
 ### Slots
 
