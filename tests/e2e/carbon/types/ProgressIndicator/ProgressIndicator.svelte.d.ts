@@ -2,8 +2,8 @@ import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
 export type ProgressIndicatorContext = {
-  steps: any;
-  stepsById: any;
+  steps: import("svelte/store").Writable<any[]>;
+  stepsById: import("svelte/store").Readable<any>;
   add: (step: any) => any;
   change: (index: any) => any;
 };

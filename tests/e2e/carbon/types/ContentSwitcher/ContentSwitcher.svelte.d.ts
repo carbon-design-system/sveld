@@ -2,7 +2,7 @@ import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
 export type ContentSwitcherContext = {
-  currentId: any;
+  currentId: import("svelte/store").Writable<any>;
   add: (arg: any) => any;
   update: (id: any) => any;
   change: (direction: any) => any;

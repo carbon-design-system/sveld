@@ -2,9 +2,9 @@ import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
 export type DatePickerContext = {
-  range: any;
-  inputValue: any;
-  hasCalendar: any;
+  range: import("svelte/store").Readable<any>;
+  inputValue: import("svelte/store").Writable<number | string>;
+  hasCalendar: import("svelte/store").Readable<any>;
   add: (data: any) => any;
   declareRef: (arg: any) => any;
   updateValue: (arg: any) => any;

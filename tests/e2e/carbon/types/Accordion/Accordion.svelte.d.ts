@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 import type { AccordionSkeletonProps } from "./AccordionSkeleton.svelte";
 
 export type AccordionContext = {
-  disableItems: any;
+  disableItems: import("svelte/store").Writable<boolean>;
 };
 
 type $RestProps = SvelteHTMLElements["ul"];

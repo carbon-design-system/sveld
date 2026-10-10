@@ -2,7 +2,7 @@ import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
 export type OverflowMenuContext = {
-  focusedId: any;
+  focusedId: import("svelte/store").Writable<any>;
   add: (arg: any) => any;
   update: (id: any) => any;
   change: (direction: any) => any;

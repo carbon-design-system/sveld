@@ -18,7 +18,7 @@ import type { ParserContext } from "./context";
 import { generateContextTypeName } from "./context-type-name";
 import { recordDiagnostic } from "./diagnostics";
 import { parseObjectTypeLiteralMembers } from "./object-type-literal";
-import { inferVariableInitializerType, literalValueType, resolveConstInitializer } from "./props";
+import { inferVariableInitializerType, literalValueType, resolveConstInitializer, svelteStoreType } from "./props";
 import { isBoundInNestedScope, isCalleeBoundInNestedScope } from "./scopes";
 import { sourceForExpression, sourceRangeFromNode } from "./source-position";
 import { importedMemberBinding, importPath } from "./value-imports";
@@ -112,7 +112,8 @@ function describeContextValue(
   if (isLiteral(value)) {
     return { type: literalValueType(value) ?? "null" };
   }
-  return { type: "any" };
+  const storeType = value?.type === "CallExpression" ? svelteStoreType(ctx, value) : undefined;
+  return { type: storeType ?? "any" };
 }
 
 function parseContextObjectProperties(

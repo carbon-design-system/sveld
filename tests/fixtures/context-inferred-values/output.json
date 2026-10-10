@@ -1,0 +1,129 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "size",
+      "kind": "let",
+      "type": "\"sm\" | \"md\" | \"lg\"",
+      "typeSource": "jsdoc",
+      "value": "\"md\"",
+      "defaultValue": {
+        "raw": "\"md\"",
+        "kind": "literal",
+        "value": "md"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "disabled",
+      "kind": "let",
+      "type": "boolean",
+      "typeSource": "default",
+      "value": "false",
+      "defaultValue": {
+        "raw": "false",
+        "kind": "literal",
+        "value": false
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "Menu",
+      "typeName": "MenuContext",
+      "properties": [
+        {
+          "name": "query",
+          "type": "import(\"svelte/store\").Writable<string>",
+          "optional": false
+        },
+        {
+          "name": "size",
+          "type": "import(\"svelte/store\").Writable<\"sm\" | \"md\" | \"lg\">",
+          "optional": false
+        },
+        {
+          "name": "disabled",
+          "type": "import(\"svelte/store\").Writable<boolean>",
+          "optional": false
+        },
+        {
+          "name": "highlightedId",
+          "type": "import(\"svelte/store\").Writable<string | null>",
+          "optional": false
+        },
+        {
+          "name": "items",
+          "type": "import(\"svelte/store\").Writable<any[]>",
+          "optional": false
+        },
+        {
+          "name": "hasItems",
+          "type": "import(\"svelte/store\").Readable<any>",
+          "optional": false
+        },
+        {
+          "name": "isEmpty",
+          "type": "import(\"svelte/store\").Readable<boolean>",
+          "optional": false
+        },
+        {
+          "name": "max",
+          "type": "import(\"svelte/store\").Readable<number>",
+          "optional": false
+        },
+        {
+          "name": "fallbackName",
+          "type": "any",
+          "optional": false
+        },
+        {
+          "name": "notifyOpen",
+          "type": "(id: any) => any",
+          "optional": false
+        },
+        {
+          "name": "claim",
+          "type": "(id: string) => boolean",
+          "optional": false
+        },
+        {
+          "name": "reset",
+          "type": "(...args: any[]) => any",
+          "optional": false
+        }
+      ]
+    }
+  ],
+  "diagnostics": [
+    {
+      "component": "context-inferred-values/input.svelte",
+      "kind": "context-any-type",
+      "name": "fallbackName",
+      "message": "Context \"Menu\" property \"fallbackName\" has no type annotation; defaulted to \"any\".",
+      "code": "sveld/context-any-type",
+      "severity": "warning"
+    }
+  ]
+}

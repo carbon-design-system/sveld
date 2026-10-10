@@ -40,9 +40,9 @@ export interface DataTableCell {
   display?: (item: Value, row: DataTableRow) => DataTableValue;
 }
 
-export type DataTableContext = {
-  batchSelectedIds: any;
-  tableRows: any;
+export type DataTableContext<Row extends DataTableRow = DataTableRow> = {
+  batchSelectedIds: import("svelte/store").Writable<boolean>;
+  tableRows: import("svelte/store").Writable<ReadonlyArray<Row>>;
   resetSelectedRowIds: () => any;
 };
 

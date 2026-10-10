@@ -2,7 +2,7 @@ import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
 export type TileGroupContext = {
-  selectedValue: any;
+  selectedValue: import("svelte/store").Writable<string>;
   add: (arg: any) => any;
   update: (value: any) => any;
 };
