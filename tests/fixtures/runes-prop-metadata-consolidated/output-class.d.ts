@@ -16,12 +16,12 @@ export type RunesPropMetadataConsolidatedProps = {
   /**
    * @default [1, 2]
    */
-  items?: [1, 2];
+  items?: number[];
 
   /**
    * @default { dense: true }
    */
-  options?: { dense: true };
+  options?: { dense: boolean };
 
   /**
    * @default () => {}

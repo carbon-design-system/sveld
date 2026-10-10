@@ -6,7 +6,7 @@
       "name": "node",
       "kind": "let",
       "description": "@generics {Node extends { id: string | number } = { id: string | number }} Node",
-      "type": "{ id: \"1\" }",
+      "type": "{ id: string }",
       "typeSource": "default",
       "value": "{ id: \"1\" }",
       "defaultValue": {

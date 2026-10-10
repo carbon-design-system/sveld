@@ -5,7 +5,7 @@ export type GenericsTemplateFunctionScopedProps<Node extends { id: string | numb
    * @generics {Node extends { id: string | number } = { id: string | number }} Node
    * @default { id: "1" }
    */
-  node?: { id: "1" };
+  node?: { id: string };
 };
 
 export default class GenericsTemplateFunctionScoped<Node extends { id: string | number } = { id: string | number }> extends SvelteComponentTyped<

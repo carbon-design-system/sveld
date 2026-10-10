@@ -5,7 +5,7 @@
     {
       "name": "files",
       "kind": "let",
-      "type": "[]",
+      "type": "any[]",
       "typeSource": "default",
       "value": "[]",
       "defaultValue": {

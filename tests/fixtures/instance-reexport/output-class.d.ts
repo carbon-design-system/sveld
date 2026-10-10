@@ -5,7 +5,7 @@ export type InstanceReexportProps = {
    * Array of data items
    * @default []
    */
-  data?: [];
+  data?: any[];
 
   /**
    * Whether to show details

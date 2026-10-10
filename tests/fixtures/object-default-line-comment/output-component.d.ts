@@ -5,13 +5,16 @@ export type ObjectDefaultLineCommentProps = {
    * Spacing scale
    * @default { small: 4, // px large: 16 /* px *\/, }
    */
-  spacing?: { small: 4, large: 16 , };
+  spacing?: {
+    small: number;
+    large: number
+  };
 
   /**
    * Breakpoints
    * @default [ 320, // phone 768, ]
    */
-  breakpoints?: [ 320, 768, ];
+  breakpoints?: number[];
 };
 
 export type ObjectDefaultLineCommentExports = Record<string, never>;

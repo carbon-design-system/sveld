@@ -52,7 +52,7 @@
     {
       "name": "items",
       "kind": "let",
-      "type": "[1, 2]",
+      "type": "number[]",
       "typeSource": "default",
       "value": "[1, 2]",
       "defaultValue": {
@@ -72,7 +72,7 @@
     {
       "name": "options",
       "kind": "let",
-      "type": "{ dense: true }",
+      "type": "{ dense: boolean }",
       "typeSource": "default",
       "value": "{ dense: true }",
       "defaultValue": {

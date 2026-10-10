@@ -22,12 +22,15 @@ export type PropMetadataConsolidatedProps = {
   /**
    * @default [1, "two", false]
    */
-  arrayDefault?: [1, "two", false];
+  arrayDefault?: (number | string | boolean)[];
 
   /**
    * @default { size: "md", count: 2 }
    */
-  objectDefault?: { size: "md", count: 2 };
+  objectDefault?: {
+    size: string;
+    count: number
+  };
 
   /**
    * @default (value: string) => value.toUpperCase()
