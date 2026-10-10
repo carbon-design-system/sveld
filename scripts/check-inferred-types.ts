@@ -1,26 +1,14 @@
 /**
- * Checks that the prop types sveld infers hold for the component they came
- * from. Each inferred `export let` type (from a default value or a
- * `bind:this`) is written back into a copy of the source as `@type` (or a TS
- * annotation), and svelte-check runs over the copies and the originals. A
- * new error where a value flows into an annotated prop, at its default, a
- * `bind:this`, or a plain `prop = value`, means sveld's type rejects a value
- * the component itself gives the prop.
+ * Checks that each prop type sveld infers holds for its own component: the
+ * type is written back into a copy of the source as `@type` (or a TS
+ * annotation) on each `export let`, or on the whole `$props()` destructure,
+ * and svelte-check runs over the copies and the originals. A new
+ * error at the prop's default, a `bind:this`, or a `prop = value` is a finding.
+ * Other new errors only mean the component's own reads got stricter.
  *
- * Errors elsewhere are ignored: an annotation also makes the component's own
- * reads stricter (`'ref' is possibly 'null'`), which says nothing about the
- * type sveld emits. So is svelte-check typing a `bind:this` element by tag
- * name alone: it calls `<a>` in `<svg>` an `HTMLAnchorElement`, where the
- * browser (and sveld) make it an `SVGAElement`.
- *
- * Runs over `tests/fixtures` and the carbon e2e project, using the
- * snapshots they commit (`output.json`, `COMPONENT_API.json`), and the
- * svelte-check installed for the carbon e2e project.
- *
- * Usage:
- *   bun run test:inferred-types   (after `bun run test:e2e` has installed it)
- *
- * Exits non-zero on any finding.
+ * Covers `tests/fixtures` and the carbon e2e project, from their committed
+ * snapshots, with the svelte-check `bun run test:e2e` installs. Exits non-zero
+ * on any finding.
  */
 import {
   cpSync,
@@ -36,6 +24,7 @@ import {
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { $ } from "bun";
+import { escapeRegExp } from "../src/parser/utils";
 
 const ROOT = path.join(import.meta.dir, "..");
 const FIXTURES_DIR = path.join(ROOT, "tests", "fixtures");
@@ -65,6 +54,10 @@ const MACHINE_ERROR_REGEX = /^\d+ ERROR "([^"]+)" (\d+):(\d+) "(.*)"$/;
 const IDENTIFIER_REGEX = /^[\w$]+/;
 const BIND_THIS_BEFORE_REGEX = /bind:this=\{?\s*$/;
 const ASSIGNMENT_AFTER_REGEX = /^\s*=(?!=)/;
+const PROPS_CALL_REGEX = /=\s*\$props\(\)/;
+const RENAMED_BINDING_REGEX = /([\w$]+)\s*:\s*([\w$]+)/g;
+/** `let ` (with any JSDoc right before it) ending where a destructure starts. */
+const LET_BEFORE_REGEX = /(\/\*\*(?:(?!\*\/)[\s\S])*\*\/\s*)?((?:let|const)\s*)$/;
 /** svelte-check's HTML type for an element sveld (rightly) puts in the SVG or MathML namespace. */
 const NAMESPACE_BLIND_ELEMENT_REGEX =
   /^Type 'HTML\w*Element' is (?:missing the following properties from|not assignable to) type '(?:SVG|MathML)\w*Element'/;
@@ -74,6 +67,7 @@ interface Prop {
   kind: string;
   type?: string;
   typeSource?: string;
+  isRequired?: boolean;
 }
 
 interface Component {
@@ -96,17 +90,60 @@ interface Finding {
   message: string;
 }
 
-function escapeRegExp(text: string): string {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const isInferred = (prop: Prop) => prop.type !== undefined && INFERRED_TYPE_SOURCES.has(prop.typeSource ?? "");
+
+/**
+ * An untyped `let { ... } = $props()` typed as an object of every prop, or
+ * `undefined` when there's none (or it's already typed).
+ */
+function annotateRunesProps(
+  source: string,
+  props: Prop[],
+  isTs: boolean,
+): { text: string; destructure: string } | undefined {
+  const call = source.search(PROPS_CALL_REGEX);
+  if (call === -1) return undefined;
+  // Walk back from the destructure's closing `}` to its opening `{`.
+  let close = call;
+  while (close > 0 && source[close] !== "}") close--;
+  if (source.slice(close + 1, call).trim() !== "") return undefined;
+  let depth = 0;
+  let open = close;
+  for (; open >= 0; open--) {
+    if (source[open] === "}") depth++;
+    else if (source[open] === "{" && --depth === 0) break;
+  }
+  const declaration = source.slice(0, open).match(LET_BEFORE_REGEX);
+  if (!declaration || declaration[1]?.includes("@type")) return undefined;
+
+  const members = props.map(
+    (prop) => `${JSON.stringify(prop.name)}${prop.isRequired ? "" : "?"}: ${prop.type ?? "any"}`,
+  );
+  if (source.slice(open, close).includes("...")) members.push("[key: string]: any");
+  const type = `{ ${members.join("; ")} }`;
+  const letStart = open - declaration[2].length;
+  const text = isTs
+    ? `${source.slice(0, close + 1)}: ${type} ${source.slice(close + 1)}`
+    : `${source.slice(0, letStart)}/** @type {${type}} */ ${source.slice(letStart)}`;
+  return { text, destructure: source.slice(open, close + 1) };
 }
 
 /** The source with each inferred prop type written in, and the names annotated. */
 function annotate({ source, props }: Component): { text: string; names: Set<string> } {
   const isTs = SCRIPT_LANG_TS_REGEX.test(source);
   const names = new Set<string>();
+  const runes = annotateRunesProps(source, props, isTs);
+  if (runes !== undefined) {
+    // A renamed prop (`count: initialCount = 0`) is reported at its local name.
+    const localNames = new Map(
+      [...runes.destructure.matchAll(RENAMED_BINDING_REGEX)].map(([, from, to]) => [from, to]),
+    );
+    for (const prop of props.filter(isInferred)) names.add(localNames.get(prop.name) ?? prop.name);
+    return { text: runes.text, names };
+  }
   let text = source;
   for (const prop of props) {
-    if (prop.kind !== "let" || !prop.type || !INFERRED_TYPE_SOURCES.has(prop.typeSource ?? "")) continue;
+    if (prop.kind !== "let" || !isInferred(prop)) continue;
     // A lone, unannotated declarator: `export let name = ...`, `export let name;`.
     const declaration = new RegExp(`export let ${escapeRegExp(prop.name)}\\b(?!\\s*:)(?=\\s*[=;\\n])`);
     if (!declaration.test(text)) continue;

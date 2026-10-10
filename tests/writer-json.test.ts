@@ -16,6 +16,8 @@ describe("writeJson", () => {
   let errorSpy: ReturnType<typeof jest.spyOn>;
 
   beforeEach(() => {
+    // Another test file's run can leave the logger quiet.
+    setQuiet(false);
     errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
   });
 

@@ -36,7 +36,7 @@ import {
   slotKey,
 } from "./slots";
 import { sourceAtPos, sourceRangeFromNode } from "./source-position";
-import { collectValueImportBindings, importedCalleeBinding } from "./value-imports";
+import { collectValueImportBindings, importedBindingByName } from "./value-imports";
 import { isTypeOnlySubtree } from "./walk";
 
 const COMPONENT_COMMENT_REGEX = /^@component/;
@@ -307,9 +307,8 @@ function recordBindDirective(
     }
   } else {
     // Only an imported component can be named in the `.d.ts`: not `UI.Modal`, `<svelte:self>`, or a local.
-    const imported =
-      parent.type === "Component" ? importedCalleeBinding(ctx, { type: "Identifier", name: parent.name }) : undefined;
-    if (!imported || imported.members) return;
+    const imported = parent.type === "Component" ? importedBindingByName(ctx, parent.name) : undefined;
+    if (!imported) return;
     if (!binding.components.includes(parent.name)) binding.components = [...binding.components, parent.name];
     ctx.additionalImportedTypes.set(parent.name, { localName: parent.name, ...imported });
   }

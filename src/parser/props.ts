@@ -28,6 +28,7 @@ import type {
 import { returnTypeOfFunctionType } from "../type-text";
 import type { ParserContext } from "./context";
 import { trackPropLocalName } from "./context";
+import { extractJsDocType } from "./jsdoc";
 import { nodeSourceText, sourceAtPos, sourceForExpression } from "./source-position";
 import { trackAdditionalTypeDependencyNode } from "./type-resolution";
 import { formatParamList } from "./utils";
@@ -86,7 +87,6 @@ export function processInitializer(ctx: ParserContext, init: unknown, depth = 0)
   return castType === undefined ? result : { ...result, type: castType };
 }
 
-const JSDOC_TYPE_TAG_REGEX = /^\*\s*@type\s*\{/;
 const OPEN_PAREN_BETWEEN_REGEX = /^\s*\(\s*$/;
 
 /** The type a cast gives `init`, or `undefined` when it has none. */
@@ -103,32 +103,14 @@ function initializerCastType(ctx: ParserContext, init: object): string | undefin
   return jsdocCastType(ctx, init);
 }
 
-/**
- * `T` from a JSDoc cast, `/** @type {T} *\/ (init)`: a block comment holding
- * only an `@type` tag, then `(`, right before `init`.
- */
+/** `T` from a JSDoc cast: `/** @type {T} *\/ (init)`. */
 function jsdocCastType(ctx: ParserContext, init: object): string | undefined {
   const start = "start" in init && typeof init.start === "number" ? init.start : undefined;
   if (start === undefined) return undefined;
-
-  let cast: { value: string; end: number } | undefined;
-  for (const comment of ctx.parsed?.comments ?? []) {
-    if (comment.type === "Block" && comment.end <= start && (cast === undefined || comment.end > cast.end)) {
-      cast = comment;
-    }
-  }
-  if (!cast || !JSDOC_TYPE_TAG_REGEX.test(cast.value)) return undefined;
+  const cast = ctx.parsed?.comments.findLast((comment) => comment.end <= start);
+  if (cast?.type !== "Block" || !cast.value.startsWith("*")) return undefined;
   if (!OPEN_PAREN_BETWEEN_REGEX.test(sourceAtPos(ctx, cast.end, start) ?? "")) return undefined;
-
-  const typeStart = cast.value.indexOf("{") + 1;
-  let depth = 1;
-  for (let index = typeStart; index < cast.value.length; index++) {
-    if (cast.value[index] === "{") depth++;
-    else if (cast.value[index] === "}" && --depth === 0) {
-      return cast.value.slice(typeStart, index).trim() || undefined;
-    }
-  }
-  return undefined;
+  return extractJsDocType(cast.value);
 }
 
 function processInitializerWithoutAssertion(ctx: ParserContext, init: unknown, depth: number): ProcessedInitializer {
@@ -404,22 +386,14 @@ function unionOfBranchTypes(types: Array<string | undefined>): string | undefine
 }
 
 /**
- * How {@link literalType} types a literal's members. `"widen"` is what
- * TypeScript infers for `let x = <literal>`: `{ sm: false }` is
- * `{ sm: boolean }` and `[]` is `any[]`, so a consumer can pass any value of
- * the same shape. `"literal"` keeps each member's literal type
- * (`{ close: "close" }`, `[1, 2]`), for a `const` the consumer can't
- * replace. `"const"` is what `as const` gives: literal types, `readonly`
- * members, and readonly tuples.
+ * How {@link literalType} types members, as TypeScript would:
+ * - `"widen"`: `let x = ...`, so `{ sm: false }` is `{ sm: boolean }` and `[]` is `any[]`.
+ * - `"literal"`: a `const` export, so `{ close: "close" }` and `[1, 2]` keep their literals.
+ * - `"const"`: `as const`, so literals plus `readonly` members and tuples.
  */
 export type LiteralTypeMode = "widen" | "literal" | "const";
 
-/**
- * The type of a literal default, or `undefined` unless it and every member is
- * a string, number, boolean, bigint, regex, or `null` literal (or a negated
- * number), `undefined`, a template literal with no substitutions, or an object
- * or array literal of the same kind under plain keys.
- */
+/** The type of a default built only from literals, or `undefined` if any part isn't one. */
 export function literalType(node: unknown, mode: LiteralTypeMode): string | undefined {
   if (!node || typeof node !== "object" || !("type" in node)) return undefined;
   const widen = mode === "widen";
