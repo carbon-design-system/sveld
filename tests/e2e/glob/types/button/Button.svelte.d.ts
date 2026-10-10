@@ -16,7 +16,7 @@ type $Props = {
   /**
    * @default "button"
    */
-  type?: string;
+  type?: "button";
 
   /**
    * @default false

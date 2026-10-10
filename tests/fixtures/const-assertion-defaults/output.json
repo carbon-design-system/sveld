@@ -1,0 +1,130 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "ts",
+  "props": [
+    {
+      "name": "sizes",
+      "kind": "let",
+      "type": "{ readonly sm: false; readonly md: true }",
+      "typeSource": "default",
+      "value": "{ sm: false, md: true }",
+      "defaultValue": {
+        "raw": "{ sm: false, md: true }",
+        "kind": "object",
+        "value": {
+          "sm": false,
+          "md": true
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "items",
+      "kind": "let",
+      "type": "readonly [\"a\", \"b\"]",
+      "typeSource": "default",
+      "value": "[\"a\", \"b\"]",
+      "defaultValue": {
+        "raw": "[\"a\", \"b\"]",
+        "kind": "array",
+        "value": [
+          "a",
+          "b"
+        ]
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "nested",
+      "kind": "let",
+      "type": "{ readonly steps: readonly [1, 2] }",
+      "typeSource": "default",
+      "value": "{ steps: [1, 2] }",
+      "defaultValue": {
+        "raw": "{ steps: [1, 2] }",
+        "kind": "object",
+        "value": {
+          "steps": [
+            1,
+            2
+          ]
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "size",
+      "kind": "let",
+      "type": "\"sm\"",
+      "typeSource": "default",
+      "value": "\"sm\"",
+      "defaultValue": {
+        "raw": "\"sm\"",
+        "kind": "literal",
+        "value": "sm"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "widened",
+      "kind": "let",
+      "type": "{ sm: boolean }",
+      "typeSource": "default",
+      "value": "{ sm: false }",
+      "defaultValue": {
+        "raw": "{ sm: false }",
+        "kind": "object",
+        "value": {
+          "sm": false
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "ids",
+      "kind": "const",
+      "type": "{ readonly close: \"close\" }",
+      "typeSource": "default",
+      "value": "{ close: \"close\" }",
+      "defaultValue": {
+        "raw": "{ close: \"close\" }",
+        "kind": "object",
+        "value": {
+          "close": "close"
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}

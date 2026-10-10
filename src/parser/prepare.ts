@@ -51,9 +51,9 @@ export function prepareComponent(ctx: ParserContext, source: string, filePath: s
 
   // svelte's compile() strips TS-only wrappers (`as`, `satisfies`, `!`, ...); parse() leaves them.
   if (ctx.scriptLanguage === "ts") {
-    stripTypeCastWrappers(parsed.module);
-    stripTypeCastWrappers(parsed.instance);
-    stripTypeCastWrappers(parsed.fragment);
+    stripTypeCastWrappers(parsed.module, ctx.constAssertions);
+    stripTypeCastWrappers(parsed.instance, ctx.constAssertions);
+    stripTypeCastWrappers(parsed.fragment, ctx.constAssertions);
   }
 
   ctx.syntaxMode = detectSyntaxMode(ctx);
