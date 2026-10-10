@@ -1,0 +1,34 @@
+{
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "size",
+      "kind": "let",
+      "type": "\"sm\" | \"md\"",
+      "typeSource": "jsdoc",
+      "value": "\"md\"",
+      "defaultValue": {
+        "raw": "\"md\"",
+        "kind": "literal",
+        "value": "md"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "rest_props": {
+    "type": "Element",
+    "name": "button"
+  },
+  "contexts": [],
+  "diagnostics": []
+}

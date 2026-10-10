@@ -2491,4 +2491,108 @@ describe("ComponentParser", () => {
     expect(byName.named).toMatchObject({ type: "any[]", reactive: false });
     expect(byName.nested).toMatchObject({ type: "{ a: any[] }", reactive: false });
   });
+
+  describe("rest props spread through a local object", () => {
+    const restPropsOf = (source: string) => new ComponentParser().parseSvelteComponent(source, diagnostics).rest_props;
+
+    test("follows a `$:` object that spreads $$restProps onto a dynamic element", () => {
+      const source = `
+        <script>
+          export let tag = "div";
+          $: props = { ...$$restProps, class: ["stack", $$restProps.class].join(" ") };
+        </script>
+
+        <svelte:element this={tag} {...props}><slot /></svelte:element>
+      `;
+
+      expect(restPropsOf(source)).toEqual({ type: "Element", name: "svelte:element" });
+    });
+
+    test("follows a const object, through a type cast, onto an element or component", () => {
+      const element = `
+        <script lang="ts">
+          const attrs = { role: "group", ...$$restProps } as Record<string, unknown>;
+        </script>
+
+        <div {...attrs} />
+      `;
+      const component = `
+        <script>
+          import Button from "./Button.svelte";
+          let attrs = { ...$$restProps, kind: "ghost" };
+        </script>
+
+        <Button {...attrs} />
+      `;
+
+      expect(restPropsOf(element)).toEqual({ type: "Element", name: "div" });
+      expect(restPropsOf(component)).toEqual({ type: "InlineComponent", name: "Button" });
+    });
+
+    test("follows a runes `$derived` object that spreads the rest local", () => {
+      const source = `
+        <script>
+          import Child from "./Child.svelte";
+          /** @snippet {{}} title */
+          let { size = "md", ...rest } = $props();
+          const props = $derived({ ...rest, class: \`btn-\${size}\` });
+          const childProps = $derived({ ...rest });
+        </script>
+
+        <Child {...childProps} />
+        <button {...props}>Go</button>
+      `;
+
+      const result = new ComponentParser().parseSvelteComponent(source, diagnostics);
+
+      expect(result.rest_props).toEqual({ type: "Element", name: "button" });
+      // The rest object carries snippet props, so `<Child>` may render `title`.
+      expect(result.diagnostics?.some((d) => d.kind === "slot-not-rendered")).toBe(false);
+    });
+
+    test("doesn't follow chains, calls, objects without a rest spread, or shadowed names", () => {
+      const sources = [
+        `<script>
+          $: base = { ...$$restProps };
+          $: props = { ...base, class: "x" };
+        </script>
+        <div {...props} />`,
+        `<script>
+          const props = Object.assign({}, $$restProps);
+        </script>
+        <div {...props} />`,
+        `<script>
+          $: props = { ...$$props, class: "x" };
+        </script>
+        <div {...props} />`,
+        `<script>
+          export let items = [];
+          $: props = { ...$$restProps };
+        </script>
+        {#each items as props}<div {...props} />{/each}`,
+        `<script>
+          function build() {
+            const props = { ...$$restProps };
+            return props;
+          }
+        </script>
+        <div {...props} />`,
+      ];
+
+      expect(sources.map(restPropsOf)).toEqual([undefined, undefined, undefined, undefined, undefined]);
+    });
+
+    test("lets an explicit @restProps tag win", () => {
+      const source = `
+        <script>
+          /** @restProps {span} */
+          $: props = { ...$$restProps };
+        </script>
+
+        <div {...props} />
+      `;
+
+      expect(restPropsOf(source)).toMatchObject({ type: "Element", name: "span" });
+    });
+  });
 });
