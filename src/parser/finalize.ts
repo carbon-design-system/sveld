@@ -178,6 +178,15 @@ function resolveDispatchedEvents(ctx: ParserContext, walk: ComponentWalkResult):
   };
 }
 
+/**
+ * What `bind:this` gives for a component: the instance of a class component
+ * (Svelte 4, or a `class`-format `.d.ts`), or the exports a Svelte 5
+ * `Component` returns.
+ */
+function componentInstanceType(name: string): string {
+  return `(typeof ${name} extends abstract new (...args: any) => infer I ? I : typeof ${name} extends (...args: any) => infer R ? R : never)`;
+}
+
 /** Props in output form: `bind:this` element types applied, and snippet props left to their slots. */
 function buildProps(ctx: ParserContext): ComponentProp[] {
   const snippetPropNames =
@@ -197,11 +206,13 @@ function buildProps(ctx: ParserContext): ComponentProp[] {
       const binding = ctx.bindings.get(prop.name);
       if (!binding) return { ...prop, reactive };
 
-      const elementTypes = binding.elements
-        .sort((a, b) => (a.tag < b.tag ? -1 : a.tag > b.tag ? 1 : 0))
-        .map(({ tag, namespace }) => getElementByTag(tag, namespace))
-        .join(" | ");
-      return { ...prop, type: `null | ${elementTypes}`, typeSource: "inferred" as const, reactive };
+      const boundTypes = [
+        ...binding.elements
+          .sort((a, b) => (a.tag < b.tag ? -1 : a.tag > b.tag ? 1 : 0))
+          .map(({ tag, namespace }) => getElementByTag(tag, namespace)),
+        ...binding.components.sort().map(componentInstanceType),
+      ].join(" | ");
+      return { ...prop, type: `null | ${boundTypes}`, typeSource: "inferred" as const, reactive };
     });
 }
 

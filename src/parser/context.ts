@@ -101,6 +101,8 @@ export interface ParserContext {
   readonly localTypeDeclarationsByName: Map<string, LocalTypeDeclaration>;
   /** Type nodes read outside the whole-object `$props()` path whose dependencies the `.d.ts` still needs. */
   readonly additionalTypeDependencyNodes: TSNode[];
+  /** Imports the `.d.ts` needs that no type node names, like a component a prop is `bind:this`'d to. */
+  readonly additionalImportedTypes: Map<string, ValueImportBinding>;
   readonly wholePropsLocals: Set<string>;
   readonly restPropLocals: Set<string>;
 
@@ -193,6 +195,7 @@ export function createParserContext(): ParserContext {
     typeImportBindingsByLocalName: new Map(),
     localTypeDeclarationsByName: new Map(),
     additionalTypeDependencyNodes: [],
+    additionalImportedTypes: new Map(),
     wholePropsLocals: new Set(),
     restPropLocals: new Set(),
     componentScope: new Map(),

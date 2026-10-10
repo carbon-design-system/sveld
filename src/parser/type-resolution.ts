@@ -111,7 +111,9 @@ function buildTypeImportStatements(ctx: ParserContext, referencedImportedTypes: 
 
   for (const importedType of Array.from(referencedImportedTypes).sort()) {
     const typeBinding = ctx.typeImportBindingsByLocalName.get(importedType);
-    const valueBinding = typeBinding ? undefined : ctx.valueImportBindingsByLocalName.get(importedType);
+    const valueBinding = typeBinding
+      ? undefined
+      : (ctx.valueImportBindingsByLocalName.get(importedType) ?? ctx.additionalImportedTypes.get(importedType));
     const binding: TypeImportBinding | undefined =
       typeBinding ??
       (valueBinding
@@ -376,6 +378,7 @@ export function buildTypeScriptMetadata(ctx: ParserContext): ParsedComponentType
   for (const typeNode of ctx.additionalTypeDependencyNodes) {
     collectReferencedTypeDependencies(ctx, typeNode, referencedImportedTypes, referencedLocalTypes);
   }
+  for (const name of ctx.additionalImportedTypes.keys()) referencedImportedTypes.add(name);
 
   // A type the module script exports is part of the component's module API,
   // so it's emitted (exported) whether or not a prop references it.
