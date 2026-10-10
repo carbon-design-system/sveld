@@ -2,7 +2,7 @@ import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
 export type SelectContext = {
-  selectedValue: any;
+  selectedValue: import("svelte/store").Writable<string>;
 };
 
 type $RestProps = SvelteHTMLElements["div"];

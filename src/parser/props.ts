@@ -33,7 +33,7 @@ import { nodeSourceText, sourceAtPos, sourceForExpression } from "./source-posit
 import { buildFunctionDeclarationSignature, trackAdditionalTypeDependencyNode } from "./type-resolution";
 import { formatParamList } from "./utils";
 import { importedMemberBinding } from "./value-imports";
-import { findVariableTypeAndDescription, resolveLocalVarJSDoc } from "./variable-jsdoc";
+import { findTrackedVariableType, findVariableTypeAndDescription, resolveLocalVarJSDoc } from "./variable-jsdoc";
 import { collectReturnArguments } from "./walk";
 
 type FunctionNode = FunctionDeclaration | FunctionExpression | ArrowFunctionExpression;
@@ -465,8 +465,8 @@ export function literalType(node: unknown, mode: LiteralTypeMode): string | unde
 /**
  * Type of an unannotated script variable from its initializer, the way a
  * prop default is typed: `let count = 0`, `let count = $state(0)`,
- * `$state.raw([1])`, `$derived(count * 2)`. A rune's type argument
- * (`$state<number>(0)`) wins over its argument. A function
+ * `$state.raw([1])`, `$derived(count * 2)`, `writable(0)`. A rune's type
+ * argument (`$state<number>(0)`) wins over its argument. A function
  * declaration is typed as a function default is. `undefined` when unknown.
  */
 export function inferVariableInitializerType(ctx: ParserContext, name: string): string | undefined {
@@ -484,6 +484,9 @@ export function inferVariableInitializerType(ctx: ParserContext, name: string): 
 
   if (init.type === "CallExpression") {
     const call = init as CallExpression;
+    const storeType = svelteStoreType(ctx, call);
+    if (storeType) return storeType;
+
     const callee = sourceForExpression(ctx, call.callee);
     if (callee === "$state" || callee === "$state.raw" || callee === "$derived") {
       const typeArgument = call.typeArguments?.params[0];
@@ -507,6 +510,42 @@ function localFunctionType(ctx: ParserContext, name: string, node: FunctionNode)
   if (annotated.hasAnnotations) return annotated.signature;
   const jsdoc = resolveLocalVarJSDoc(ctx, name);
   return jsdoc?.type ?? buildFunctionTypeFromParts(jsdoc, node);
+}
+
+const SVELTE_STORE_TYPES = new Map([
+  ["writable", "Writable"],
+  ["readable", "Readable"],
+  ["derived", "Readable"],
+]);
+
+/**
+ * `import("svelte/store").Writable<T>` for `writable(value)`, `Readable<T>`
+ * for `readable(value)` or `derived(stores, fn)`; `undefined` for any other
+ * call. `T` is the type argument, else the initial value's type, else `any`.
+ */
+export function svelteStoreType(ctx: ParserContext, call: CallExpression): string | undefined {
+  const binding = isIdentifier(call.callee) ? ctx.valueImportBindingsByLocalName.get(call.callee.name) : undefined;
+  const store = binding?.source === "svelte/store" ? SVELTE_STORE_TYPES.get(binding.importedName) : undefined;
+  if (!store) return undefined;
+
+  const isDerived = binding?.importedName === "derived";
+  const typeArgument = call.typeArguments?.params[isDerived ? 1 : 0];
+  let valueType: string | undefined;
+  if (typeArgument) {
+    trackAdditionalTypeDependencyNode(ctx, typeArgument);
+    valueType = sourceForExpression(ctx, typeArgument);
+  } else if (isDerived) {
+    // A callback that takes `set` reports its value through it, not its return.
+    const callback = call.arguments[1];
+    const isFunction = callback?.type === "ArrowFunctionExpression" || callback?.type === "FunctionExpression";
+    valueType = isFunction && callback.params.length < 2 ? inferReturnTypeFromNode(callback) : undefined;
+  } else {
+    const [value] = call.arguments;
+    valueType =
+      (isIdentifier(value) ? findTrackedVariableType(ctx, value.name)?.type : undefined) ??
+      inferExpressionType(ctx, value, 0);
+  }
+  return `import("svelte/store").${store}<${valueType ?? "any"}>`;
 }
 
 function resolveLocalVarInitializer(ctx: ParserContext, name: string, constOnly = false): unknown {

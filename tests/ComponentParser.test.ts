@@ -2198,6 +2198,69 @@ describe("ComponentParser", () => {
       });
     });
 
+    test("types svelte/store stores from their initial value", () => {
+      const { types, anyTyped } = contextTypes(`
+        import { setContext } from "svelte";
+        import { writable, readable as constant, derived } from "svelte/store";
+        /** @type {"sm" | "lg"} */
+        export let size = "sm";
+        export let disabled = false;
+        const query = writable("");
+        const sharedSize = writable(size);
+        const sharedDisabled = writable(disabled);
+        const highlightedId = writable(/** @type {string | null} */ (null));
+        const items = writable([]);
+        const label = writable(undefined);
+        const count = constant(0);
+        const hasItems = derived(items, () => true);
+        const byId = derived(items, (_) => keyBy(_));
+        const pushed = derived(items, (_, set) => set(1));
+        setContext("k", { query, size: sharedSize, sharedDisabled, highlightedId, items, label, count, hasItems, byId, pushed });
+      `);
+      expect(types).toEqual({
+        query: 'import("svelte/store").Writable<string>',
+        size: 'import("svelte/store").Writable<"sm" | "lg">',
+        sharedDisabled: 'import("svelte/store").Writable<boolean>',
+        highlightedId: 'import("svelte/store").Writable<string | null>',
+        items: 'import("svelte/store").Writable<any[]>',
+        label: 'import("svelte/store").Writable<any>',
+        count: 'import("svelte/store").Readable<number>',
+        hasItems: 'import("svelte/store").Readable<boolean>',
+        byId: 'import("svelte/store").Readable<any>',
+        pushed: 'import("svelte/store").Readable<any>',
+      });
+      expect(anyTyped).toEqual([]);
+    });
+
+    test("types a store from its type argument", () => {
+      const { types } = contextTypes(
+        `
+        import { setContext } from "svelte";
+        import { writable, derived } from "svelte/store";
+        const ids = writable<string[]>([]);
+        const total = derived<typeof ids, number>(ids, (list) => list.length);
+        setContext("k", { ids, total });
+      `,
+        ' lang="ts"',
+      );
+      expect(types).toEqual({
+        ids: 'import("svelte/store").Writable<string[]>',
+        total: 'import("svelte/store").Readable<number>',
+      });
+    });
+
+    test("types a store written inline in the context object", () => {
+      const { types } = contextTypes(`
+        import { setContext } from "svelte";
+        import { readable } from "svelte/store";
+        setContext("k", { items: readable([]), max: readable(0) });
+      `);
+      expect(types).toEqual({
+        items: 'import("svelte/store").Readable<any[]>',
+        max: 'import("svelte/store").Readable<number>',
+      });
+    });
+
     test("leaves a value it can't derive as `any`", () => {
       const { types, anyTyped } = contextTypes(`
         import { setContext } from "svelte";

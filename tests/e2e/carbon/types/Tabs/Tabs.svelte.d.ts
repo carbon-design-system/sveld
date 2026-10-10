@@ -2,10 +2,10 @@ import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
 export type TabsContext = {
-  tabs: any;
-  contentById: any;
-  selectedTab: any;
-  selectedContent: any;
+  tabs: import("svelte/store").Writable<any[]>;
+  contentById: import("svelte/store").Readable<any>;
+  selectedTab: import("svelte/store").Writable<any>;
+  selectedContent: import("svelte/store").Writable<any>;
   add: (data: any) => any;
   addContent: (data: any) => any;
   update: (id: any) => any;

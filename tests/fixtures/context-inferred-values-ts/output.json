@@ -1,0 +1,40 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "ts",
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "Picker",
+      "typeName": "PickerContext",
+      "properties": [
+        {
+          "name": "selectedItem",
+          "type": "import(\"svelte/store\").Writable<Item | null>",
+          "optional": false
+        },
+        {
+          "name": "items",
+          "type": "import(\"svelte/store\").Writable<Item[]>",
+          "optional": false
+        },
+        {
+          "name": "select",
+          "type": "(item: Item, focus?: boolean) => void",
+          "optional": false
+        }
+      ]
+    }
+  ],
+  "diagnostics": []
+}

@@ -2,7 +2,7 @@ import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
 export type ToolbarContext = {
-  overflowVisible: any;
+  overflowVisible: import("svelte/store").Writable<boolean>;
   setOverflowVisible: (visible: any) => any;
 };
 

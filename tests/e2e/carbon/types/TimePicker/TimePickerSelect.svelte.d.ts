@@ -2,7 +2,7 @@ import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
 export type TimePickerSelectContext = {
-  selectedValue: any;
+  selectedValue: import("svelte/store").Writable<number | string>;
 };
 
 type $RestProps = SvelteHTMLElements["div"];

@@ -2,7 +2,7 @@ import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
 export type StructuredListWrapperContext = {
-  selectedValue: any;
+  selectedValue: import("svelte/store").Writable<string>;
   update: (value: any) => any;
 };
 
