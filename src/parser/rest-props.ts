@@ -1,3 +1,5 @@
+import type { AST, Expression } from "sveast";
+import { isCallExpressionNamed, isIdentifier, isObjectExpression, unwrapTypeCastExpression } from "../ast-guards";
 import type { ComponentElement, RestProps } from "../model";
 import type { ParserContext } from "./context";
 import { isComponentLikeType, isElementLikeType } from "./element-kind";
@@ -38,4 +40,48 @@ export function maybeSetRestProps(ctx: ParserContext, parent: unknown) {
   if (ctx.rest_props.type === "InlineComponent" && restProps.type === "Element") {
     ctx.rest_props = restProps;
   }
+}
+
+/** The rest props name (`$$restProps` or a runes rest local) an object literal initializer spreads. */
+function restPropsSpreadIn(ctx: ParserContext, init: Expression | null | undefined): string | undefined {
+  let value = unwrapTypeCastExpression(init);
+  if (isCallExpressionNamed(value, "$derived")) value = unwrapTypeCastExpression(value.arguments[0] as Expression);
+  if (!isObjectExpression(value)) return undefined;
+
+  for (const property of value.properties) {
+    if (property.type !== "SpreadElement" || !isIdentifier(property.argument)) continue;
+    const { name } = property.argument;
+    if (name === "$$restProps" || ctx.restPropLocals.has(name)) return name;
+  }
+  return undefined;
+}
+
+/**
+ * Top-level locals whose object literal spreads rest props, mapped to the rest
+ * name spread: `props` in `$: props = { ...$$restProps, class }`, which the
+ * template then spreads in turn. One level only: an object spreading such a
+ * local isn't followed. Reads `ctx.restPropLocals`, so call it once the
+ * instance script has been walked.
+ */
+export function collectRestPropsObjectLocals(ctx: ParserContext, instance: AST.Script | undefined) {
+  const locals = new Map<string, string>();
+  for (const statement of instance?.content.body ?? []) {
+    if (statement.type === "VariableDeclaration") {
+      for (const { id, init } of statement.declarations) {
+        const restName = isIdentifier(id) ? restPropsSpreadIn(ctx, init) : undefined;
+        if (restName && isIdentifier(id)) locals.set(id.name, restName);
+      }
+      continue;
+    }
+
+    if (statement.type !== "LabeledStatement" || statement.label.name !== "$") continue;
+    if (statement.body.type !== "ExpressionStatement") continue;
+    const assignment = statement.body.expression;
+    if (assignment.type !== "AssignmentExpression" || assignment.operator !== "=" || !isIdentifier(assignment.left)) {
+      continue;
+    }
+    const restName = restPropsSpreadIn(ctx, assignment.right);
+    if (restName) locals.set(assignment.left.name, restName);
+  }
+  return locals;
 }

@@ -15,12 +15,13 @@ import { parseSetContextCall } from "./contexts";
 import { isComponentLikeType, isElementLikeType } from "./element-kind";
 import { detailNamesBoundInNestedScope, type HostDispatch, parseHostDispatchEventCall } from "./events";
 import { addInstanceExports } from "./exports";
-import { maybeSetRestProps } from "./rest-props";
+import { collectRestPropsObjectLocals, maybeSetRestProps } from "./rest-props";
 import { parseRunesPropsDeclaration } from "./runes-props";
 import {
   createScopeWalkState,
   enterNestedScopeDeclarationNode,
   initComponentScope,
+  isBoundInNestedScope,
   isCalleeBoundInNestedScope,
   isScopeOwner,
   leaveNestedScopeDeclarationNode,
@@ -361,6 +362,9 @@ export function walkComponent(ctx: ParserContext): ComponentWalkResult {
     optionsNamespace === "svg" || optionsNamespace === "mathml" ? optionsNamespace : "html",
   ];
 
+  // Read by template spreads; filled once the script walk has found the runes rest locals.
+  let restPropsObjectLocals = new Map<string, string>();
+
   const visitor: Visitor = {
     enter(node, parent) {
       // Everything this walk acts on is value-level, and type-level TS
@@ -392,7 +396,12 @@ export function walkComponent(ctx: ParserContext): ComponentWalkResult {
           enterCallExpression(ctx, walk, node, parent);
           break;
         case "SpreadAttribute": {
-          const name = node.expression.type === "Identifier" ? node.expression.name : undefined;
+          const spreadName = node.expression.type === "Identifier" ? node.expression.name : undefined;
+          // `{...props}` where `props = { ...$$restProps, class }` spreads rest props too.
+          const name =
+            (spreadName !== undefined && !isBoundInNestedScope(ctx, spreadName)
+              ? restPropsObjectLocals.get(spreadName)
+              : undefined) ?? spreadName;
           const isRestLocal = ctx.restPropLocals.has(name ?? "");
           if (name === "$$restProps" || isRestLocal) {
             maybeSetRestProps(ctx, parent);
@@ -454,6 +463,7 @@ export function walkComponent(ctx: ParserContext): ComponentWalkResult {
   };
   // One pass: the script's scopes stay live while the template is walked.
   if (ctx.parsed?.instance) walkTree(ctx.parsed.instance, visitor);
+  restPropsObjectLocals = collectRestPropsObjectLocals(ctx, ctx.parsed?.instance);
   if (ctx.parsed?.fragment) walkTree(ctx.parsed.fragment, visitor);
 
   return walk;
