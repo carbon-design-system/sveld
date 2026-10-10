@@ -198,19 +198,58 @@ const svg_tag_map = {
   view: "SVGViewElement",
 } satisfies Record<string, string>;
 
-/** The namespace an element is created in: SVG inside `<svg>`, HTML elsewhere. */
-export type ElementNamespace = "html" | "svg";
+/** MathML tag-to-DOM-type map from TypeScript's `lib.dom.d.ts`. */
+const mathml_tag_map = {
+  a: "MathMLElement",
+  annotation: "MathMLElement",
+  "annotation-xml": "MathMLElement",
+  maction: "MathMLElement",
+  math: "MathMLElement",
+  merror: "MathMLElement",
+  mfrac: "MathMLElement",
+  mi: "MathMLElement",
+  mmultiscripts: "MathMLElement",
+  mn: "MathMLElement",
+  mo: "MathMLElement",
+  mover: "MathMLElement",
+  mpadded: "MathMLElement",
+  mphantom: "MathMLElement",
+  mprescripts: "MathMLElement",
+  mroot: "MathMLElement",
+  mrow: "MathMLElement",
+  ms: "MathMLElement",
+  mspace: "MathMLElement",
+  msqrt: "MathMLElement",
+  mstyle: "MathMLElement",
+  msub: "MathMLElement",
+  msubsup: "MathMLElement",
+  msup: "MathMLElement",
+  mtable: "MathMLElement",
+  mtd: "MathMLElement",
+  mtext: "MathMLElement",
+  mtr: "MathMLElement",
+  munder: "MathMLElement",
+  munderover: "MathMLElement",
+  semantics: "MathMLElement",
+} satisfies Record<string, string>;
+
+/** The namespace an element is created in: SVG inside `<svg>`, MathML inside `<math>`, HTML elsewhere. */
+export type ElementNamespace = "html" | "svg" | "mathml";
 
 function lookup(map: Record<string, string>, tag: string): string | undefined {
   return Object.hasOwn(map, tag) ? map[tag] : undefined;
 }
 
 /**
- * The DOM type of an element. A tag both namespaces define (`a`, `title`)
- * reads from `namespace`; an SVG-only tag (`path`) is SVG even outside an
- * `<svg>`, since Svelte creates it in the SVG namespace.
+ * The DOM type of an element. A tag more than one namespace defines (`a`,
+ * `title`) reads from `namespace`; an SVG- or MathML-only tag (`path`,
+ * `mfrac`) keeps its namespace even outside `<svg>` or `<math>`, since Svelte
+ * creates it there. HTML inside MathML (`<mtext><span>`) is still HTML.
  */
 export function getElementByTag(element: string, namespace: ElementNamespace = "html"): string {
   if (namespace === "svg") return lookup(svg_tag_map, element) ?? "SVGElement";
-  return lookup(tag_map, element) ?? lookup(svg_tag_map, element) ?? "HTMLElement";
+  if (namespace === "mathml") {
+    return lookup(mathml_tag_map, element) ?? lookup(tag_map, element) ?? "MathMLElement";
+  }
+  return lookup(tag_map, element) ?? lookup(svg_tag_map, element) ?? lookup(mathml_tag_map, element) ?? "HTMLElement";
 }

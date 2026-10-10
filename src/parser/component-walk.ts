@@ -326,9 +326,13 @@ export function walkComponent(ctx: ParserContext): ComponentWalkResult {
   const scopeWalkState = createScopeWalkState(ctx);
 
   // An element's namespace, and the namespace its children are created in:
-  // `<svg>` switches to SVG and `<foreignObject>` back to HTML for its children.
+  // `<svg>` and `<math>` switch to SVG and MathML, and `<foreignObject>`
+  // switches back to HTML for its children.
   const elementNamespaces = new WeakMap<AST.SvelteNode, ElementNamespace>();
-  const childNamespaces: ElementNamespace[] = [ctx.parsed?.options?.namespace === "svg" ? "svg" : "html"];
+  const optionsNamespace = ctx.parsed?.options?.namespace;
+  const childNamespaces: ElementNamespace[] = [
+    optionsNamespace === "svg" || optionsNamespace === "mathml" ? optionsNamespace : "html",
+  ];
 
   const visitor: Visitor = {
     enter(node, parent) {
@@ -342,7 +346,8 @@ export function walkComponent(ctx: ParserContext): ComponentWalkResult {
 
       if (isElementLikeType(node.type)) {
         const name = "name" in node ? node.name : undefined;
-        const namespace = name === "svg" ? "svg" : childNamespaces[childNamespaces.length - 1];
+        const namespace =
+          name === "svg" ? "svg" : name === "math" ? "mathml" : childNamespaces[childNamespaces.length - 1];
         elementNamespaces.set(node, namespace);
         childNamespaces.push(name === "foreignObject" ? "html" : namespace);
       }
