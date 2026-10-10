@@ -2270,4 +2270,58 @@ describe("ComponentParser", () => {
 
     expect(props.find((prop) => prop.name === "ref")?.type).toBe("null | MathMLElement");
   });
+
+  test("types `bind:this` on an imported component as its instance", () => {
+    const source = `
+      <script>
+        import Modal from "./Modal.svelte";
+        import { Tooltip } from "./ui";
+
+        export let modalRef = null;
+        export let tooltipRef = null;
+        export let elementOrModal = null;
+      </script>
+
+      <Modal bind:this={modalRef} />
+      <Tooltip bind:this={tooltipRef} />
+      {#if modalRef}
+        <div bind:this={elementOrModal} />
+      {:else}
+        <Modal bind:this={elementOrModal} />
+      {/if}
+    `;
+
+    const result = new ComponentParser().parseSvelteComponent(source, diagnostics);
+    const types = Object.fromEntries(result.props.map((prop) => [prop.name, prop.type]));
+    const instance = (name: string) =>
+      `(typeof ${name} extends abstract new (...args: any) => infer I ? I : typeof ${name} extends (...args: any) => infer R ? R : never)`;
+
+    expect(types).toEqual({
+      modalRef: `null | ${instance("Modal")}`,
+      tooltipRef: `null | ${instance("Tooltip")}`,
+      elementOrModal: `null | HTMLDivElement | ${instance("Modal")}`,
+    });
+    expect(getParsedComponentTypeScriptMetadata(result)?.typeImportStatements).toEqual([
+      'import type { default as Modal } from "./Modal.svelte";',
+      'import type { Tooltip } from "./ui";',
+    ]);
+  });
+
+  test("leaves `bind:this` on a component it can't name untyped", () => {
+    const source = `
+      <script>
+        import * as UI from "./ui";
+
+        export let namespacedRef = null;
+        export let selfRef = null;
+      </script>
+
+      <UI.Modal bind:this={namespacedRef} />
+      <svelte:self bind:this={selfRef} />
+    `;
+
+    const { props } = new ComponentParser().parseSvelteComponent(source, diagnostics);
+
+    expect(props.map((prop) => prop.type)).toEqual([undefined, undefined]);
+  });
 });

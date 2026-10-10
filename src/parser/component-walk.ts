@@ -36,7 +36,7 @@ import {
   slotKey,
 } from "./slots";
 import { sourceAtPos, sourceRangeFromNode } from "./source-position";
-import { collectValueImportBindings } from "./value-imports";
+import { collectValueImportBindings, importedCalleeBinding } from "./value-imports";
 import { isTypeOnlySubtree } from "./walk";
 
 const COMPONENT_COMMENT_REGEX = /^@component/;
@@ -281,7 +281,10 @@ function addForwardedEvent(ctx: ParserContext, node: AST.OnDirective, parent: AS
   }
 }
 
-/** `bind:*` marks props reactive; `bind:this` on elements also narrows the prop type. */
+/**
+ * `bind:*` marks props reactive. `bind:this` also narrows the prop type: to
+ * the element, or to the instance of an imported component.
+ */
 function recordBindDirective(
   ctx: ParserContext,
   node: AST.BindDirective,
@@ -295,16 +298,22 @@ function recordBindDirective(
   if (!prop_name) return;
   ctx.reactive_vars.add(prop_name);
 
-  if (node.name !== "this" || !isElementLikeType(parent.type) || !("name" in parent)) return;
-  if (typeof parent.name !== "string") return;
+  if (node.name !== "this" || !("name" in parent) || typeof parent.name !== "string") return;
+  const binding = ctx.bindings.get(prop_name) ?? { elements: [], components: [] };
 
-  const element = { tag: parent.name, namespace };
-  const existing = ctx.bindings.get(prop_name);
-  if (!existing) {
-    ctx.bindings.set(prop_name, { elements: [element] });
-  } else if (!existing.elements.some((other) => other.tag === element.tag && other.namespace === namespace)) {
-    ctx.bindings.set(prop_name, { ...existing, elements: [...existing.elements, element] });
+  if (isElementLikeType(parent.type)) {
+    if (!binding.elements.some((other) => other.tag === parent.name && other.namespace === namespace)) {
+      binding.elements = [...binding.elements, { tag: parent.name, namespace }];
+    }
+  } else {
+    // Only an imported component can be named in the `.d.ts`: not `UI.Modal`, `<svelte:self>`, or a local.
+    const imported =
+      parent.type === "Component" ? importedCalleeBinding(ctx, { type: "Identifier", name: parent.name }) : undefined;
+    if (!imported || imported.members) return;
+    if (!binding.components.includes(parent.name)) binding.components = [...binding.components, parent.name];
+    ctx.additionalImportedTypes.set(parent.name, { localName: parent.name, ...imported });
   }
+  ctx.bindings.set(prop_name, binding);
 }
 
 /** Walks the instance script and the template in one pass, with the component's scopes live. */

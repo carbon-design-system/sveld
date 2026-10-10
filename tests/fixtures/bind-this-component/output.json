@@ -1,0 +1,47 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "modalRef",
+      "kind": "let",
+      "type": "null | (typeof Modal extends abstract new (...args: any) => infer I ? I : typeof Modal extends (...args: any) => infer R ? R : never)",
+      "typeSource": "inferred",
+      "value": "null",
+      "defaultValue": {
+        "raw": "null",
+        "kind": "literal",
+        "value": null
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    },
+    {
+      "name": "tooltipRef",
+      "kind": "let",
+      "type": "null | (typeof Tooltip extends abstract new (...args: any) => infer I ? I : typeof Tooltip extends (...args: any) => infer R ? R : never)",
+      "typeSource": "inferred",
+      "value": "null",
+      "defaultValue": {
+        "raw": "null",
+        "kind": "literal",
+        "value": null
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
