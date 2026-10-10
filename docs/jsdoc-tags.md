@@ -796,6 +796,22 @@ sveld detects the elements `$$restProps` (or a runes `...rest` binding) is sprea
 {/if}
 ```
 
+For a `<svelte:element>` whose tag is only known at runtime, use `@restProps {svelte:element}`. It types the rest props as `HTMLAttributes<HTMLElement>`, which is what sveld infers for a direct spread onto that element. You only need it when the spread goes through something sveld can't follow, like a local object:
+
+```svelte
+<script>
+  /** @restProps {svelte:element} */
+
+  export let tag = "div";
+
+  $: props = { ...$$restProps, class: ["stack", $$restProps.class].join(" ") };
+</script>
+
+<svelte:element this={tag} {...props}>
+  <slot />
+</svelte:element>
+```
+
 A spread onto a component without `@restProps` raises [`sveld/rest-props-unresolved`](ci.md#diagnostic-codes).
 
 ## `@extendProps`

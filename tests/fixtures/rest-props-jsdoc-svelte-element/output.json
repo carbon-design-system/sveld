@@ -1,0 +1,40 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "tag",
+      "kind": "let",
+      "type": "keyof HTMLElementTagNameMap",
+      "typeSource": "jsdoc",
+      "value": "\"div\"",
+      "defaultValue": {
+        "raw": "\"div\"",
+        "kind": "literal",
+        "value": "div"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "rest_props": {
+    "type": "Element",
+    "name": "svelte:element"
+  },
+  "contexts": [],
+  "diagnostics": []
+}
