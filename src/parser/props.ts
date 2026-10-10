@@ -30,7 +30,7 @@ import type { ParserContext } from "./context";
 import { trackPropLocalName } from "./context";
 import { extractJsDocType } from "./jsdoc";
 import { nodeSourceText, sourceAtPos, sourceForExpression } from "./source-position";
-import { trackAdditionalTypeDependencyNode } from "./type-resolution";
+import { buildFunctionDeclarationSignature, trackAdditionalTypeDependencyNode } from "./type-resolution";
 import { formatParamList } from "./utils";
 import { importedMemberBinding } from "./value-imports";
 import { findVariableTypeAndDescription, resolveLocalVarJSDoc } from "./variable-jsdoc";
@@ -466,11 +466,21 @@ export function literalType(node: unknown, mode: LiteralTypeMode): string | unde
  * Type of an unannotated script variable from its initializer, the way a
  * prop default is typed: `let count = 0`, `let count = $state(0)`,
  * `$state.raw([1])`, `$derived(count * 2)`. A rune's type argument
- * (`$state<number>(0)`) wins over its argument. `undefined` when unknown.
+ * (`$state<number>(0)`) wins over its argument. A function
+ * declaration is typed as a function default is. `undefined` when unknown.
  */
 export function inferVariableInitializerType(ctx: ParserContext, name: string): string | undefined {
   const init = resolveLocalVarInitializer(ctx, name);
+  if (init === undefined) {
+    const funcDecl = ctx.funcDecls.get(name);
+    return funcDecl && localFunctionType(ctx, name, funcDecl);
+  }
   if (!init || typeof init !== "object" || !("type" in init)) return undefined;
+
+  if (init.type === "ArrowFunctionExpression" || init.type === "FunctionExpression") {
+    const fn = init as ArrowFunctionExpression | FunctionExpression;
+    return initializerCastType(ctx, fn) ?? localFunctionType(ctx, name, fn);
+  }
 
   if (init.type === "CallExpression") {
     const call = init as CallExpression;
@@ -486,6 +496,17 @@ export function inferVariableInitializerType(ctx: ParserContext, name: string): 
   }
 
   return processInitializer(ctx, init).type;
+}
+
+/**
+ * Type of the function `node` declared as `name`: its TS annotations, else
+ * its JSDoc, else what {@link inferFunctionTypeFromNode} reads off the node.
+ */
+function localFunctionType(ctx: ParserContext, name: string, node: FunctionNode): string {
+  const annotated = buildFunctionDeclarationSignature(ctx, node);
+  if (annotated.hasAnnotations) return annotated.signature;
+  const jsdoc = resolveLocalVarJSDoc(ctx, name);
+  return jsdoc?.type ?? buildFunctionTypeFromParts(jsdoc, node);
 }
 
 function resolveLocalVarInitializer(ctx: ParserContext, name: string, constOnly = false): unknown {
