@@ -1,26 +1,13 @@
 /**
- * Checks that the prop types sveld infers hold for the component they came
- * from. Each inferred `export let` type (from a default value or a
- * `bind:this`) is written back into a copy of the source as `@type` (or a TS
- * annotation), and svelte-check runs over the copies and the originals. A
- * new error where a value flows into an annotated prop, at its default, a
- * `bind:this`, or a plain `prop = value`, means sveld's type rejects a value
- * the component itself gives the prop.
+ * Checks that each prop type sveld infers holds for its own component: the
+ * type is written back into a copy of the source as `@type` (or a TS
+ * annotation), and svelte-check runs over the copies and the originals. A new
+ * error at the prop's default, a `bind:this`, or a `prop = value` is a finding.
+ * Other new errors only mean the component's own reads got stricter.
  *
- * Errors elsewhere are ignored: an annotation also makes the component's own
- * reads stricter (`'ref' is possibly 'null'`), which says nothing about the
- * type sveld emits. So is svelte-check typing a `bind:this` element by tag
- * name alone: it calls `<a>` in `<svg>` an `HTMLAnchorElement`, where the
- * browser (and sveld) make it an `SVGAElement`.
- *
- * Runs over `tests/fixtures` and the carbon e2e project, using the
- * snapshots they commit (`output.json`, `COMPONENT_API.json`), and the
- * svelte-check installed for the carbon e2e project.
- *
- * Usage:
- *   bun run test:inferred-types   (after `bun run test:e2e` has installed it)
- *
- * Exits non-zero on any finding.
+ * Covers `tests/fixtures` and the carbon e2e project, from their committed
+ * snapshots, with the svelte-check `bun run test:e2e` installs. Exits non-zero
+ * on any finding.
  */
 import {
   cpSync,
