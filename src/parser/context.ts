@@ -30,6 +30,7 @@ import type {
   ValueImportBinding,
 } from "../model";
 import type { JSDocComment } from "./comment-parser";
+import type { TypeCasts } from "./typescript-casts";
 
 /** One top-level member of an object `@typedef`, from a `@property` tag or an inline `{ ... }` type. */
 export interface TypedefMember {
@@ -135,8 +136,8 @@ export interface ParserContext {
   readonly jsDocEventSources: Map<string, SourceRange | undefined>;
 
   readonly bindings: Map<string, ComponentPropBindings>;
-  /** Expressions written with `as const`, whose wrapper was stripped. */
-  readonly constAssertions: WeakSet<object>;
+  /** The `as const`/`as T` casts stripped from the scripts. */
+  readonly typeCasts: TypeCasts;
   readonly contexts: Map<string, ComponentContext>;
   readonly typedefs: Map<string, TypeDef>;
   /** So `/** @type {Props} *\/ let { ... } = $props()` can type each prop. */
@@ -212,7 +213,7 @@ export function createParserContext(): ParserContext {
     untypedJsDocEventNames: new Set(),
     jsDocEventSources: new Map(),
     bindings: new Map(),
-    constAssertions: new WeakSet(),
+    typeCasts: { constAssertions: new WeakSet(), typeAssertions: new WeakMap() },
     contexts: new Map(),
     typedefs: new Map(),
     typedefMembersByName: new Map(),

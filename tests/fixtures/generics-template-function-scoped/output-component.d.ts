@@ -5,7 +5,7 @@ export type GenericsTemplateFunctionScopedProps<Node extends { id: string | numb
    * @generics {Node extends { id: string | number } = { id: string | number }} Node
    * @default { id: "1" }
    */
-  node?: { id: string };
+  node?: Node;
 };
 
 export type GenericsTemplateFunctionScopedExports = Record<string, never>;

@@ -284,7 +284,7 @@ export function collectExportDeclarators(
     const keepsLiteralTypes =
       kind === "const" &&
       (init?.type === "ObjectExpression" || init?.type === "ArrayExpression") &&
-      !ctx.constAssertions.has(init);
+      !ctx.typeCasts.constAssertions.has(init);
     const typeSeed = (keepsLiteralTypes ? literalType(init, "literal") : undefined) ?? initResult.type;
     queuePendingCrossFileDefault(ctx, initResult, declaratorPropName, location);
 
