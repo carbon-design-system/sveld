@@ -1,7 +1,8 @@
 /**
  * Checks that each prop type sveld infers holds for its own component: the
  * type is written back into a copy of the source as `@type` (or a TS
- * annotation), and svelte-check runs over the copies and the originals. A new
+ * annotation) on each `export let`, or on the whole `$props()` destructure,
+ * and svelte-check runs over the copies and the originals. A new
  * error at the prop's default, a `bind:this`, or a `prop = value` is a finding.
  * Other new errors only mean the component's own reads got stricter.
  *
@@ -53,6 +54,10 @@ const MACHINE_ERROR_REGEX = /^\d+ ERROR "([^"]+)" (\d+):(\d+) "(.*)"$/;
 const IDENTIFIER_REGEX = /^[\w$]+/;
 const BIND_THIS_BEFORE_REGEX = /bind:this=\{?\s*$/;
 const ASSIGNMENT_AFTER_REGEX = /^\s*=(?!=)/;
+const PROPS_CALL_REGEX = /=\s*\$props\(\)/;
+const RENAMED_BINDING_REGEX = /([\w$]+)\s*:\s*([\w$]+)/g;
+/** `let ` (with any JSDoc right before it) ending where a destructure starts. */
+const LET_BEFORE_REGEX = /(\/\*\*(?:(?!\*\/)[\s\S])*\*\/\s*)?((?:let|const)\s*)$/;
 /** svelte-check's HTML type for an element sveld (rightly) puts in the SVG or MathML namespace. */
 const NAMESPACE_BLIND_ELEMENT_REGEX =
   /^Type 'HTML\w*Element' is (?:missing the following properties from|not assignable to) type '(?:SVG|MathML)\w*Element'/;
@@ -62,6 +67,7 @@ interface Prop {
   kind: string;
   type?: string;
   typeSource?: string;
+  isRequired?: boolean;
 }
 
 interface Component {
@@ -84,13 +90,60 @@ interface Finding {
   message: string;
 }
 
+const isInferred = (prop: Prop) => prop.type !== undefined && INFERRED_TYPE_SOURCES.has(prop.typeSource ?? "");
+
+/**
+ * An untyped `let { ... } = $props()` typed as an object of every prop, or
+ * `undefined` when there's none (or it's already typed).
+ */
+function annotateRunesProps(
+  source: string,
+  props: Prop[],
+  isTs: boolean,
+): { text: string; destructure: string } | undefined {
+  const call = source.search(PROPS_CALL_REGEX);
+  if (call === -1) return undefined;
+  // Walk back from the destructure's closing `}` to its opening `{`.
+  let close = call;
+  while (close > 0 && source[close] !== "}") close--;
+  if (source.slice(close + 1, call).trim() !== "") return undefined;
+  let depth = 0;
+  let open = close;
+  for (; open >= 0; open--) {
+    if (source[open] === "}") depth++;
+    else if (source[open] === "{" && --depth === 0) break;
+  }
+  const declaration = source.slice(0, open).match(LET_BEFORE_REGEX);
+  if (!declaration || declaration[1]?.includes("@type")) return undefined;
+
+  const members = props.map(
+    (prop) => `${JSON.stringify(prop.name)}${prop.isRequired ? "" : "?"}: ${prop.type ?? "any"}`,
+  );
+  if (source.slice(open, close).includes("...")) members.push("[key: string]: any");
+  const type = `{ ${members.join("; ")} }`;
+  const letStart = open - declaration[2].length;
+  const text = isTs
+    ? `${source.slice(0, close + 1)}: ${type} ${source.slice(close + 1)}`
+    : `${source.slice(0, letStart)}/** @type {${type}} */ ${source.slice(letStart)}`;
+  return { text, destructure: source.slice(open, close + 1) };
+}
+
 /** The source with each inferred prop type written in, and the names annotated. */
 function annotate({ source, props }: Component): { text: string; names: Set<string> } {
   const isTs = SCRIPT_LANG_TS_REGEX.test(source);
   const names = new Set<string>();
+  const runes = annotateRunesProps(source, props, isTs);
+  if (runes !== undefined) {
+    // A renamed prop (`count: initialCount = 0`) is reported at its local name.
+    const localNames = new Map(
+      [...runes.destructure.matchAll(RENAMED_BINDING_REGEX)].map(([, from, to]) => [from, to]),
+    );
+    for (const prop of props.filter(isInferred)) names.add(localNames.get(prop.name) ?? prop.name);
+    return { text: runes.text, names };
+  }
   let text = source;
   for (const prop of props) {
-    if (prop.kind !== "let" || !prop.type || !INFERRED_TYPE_SOURCES.has(prop.typeSource ?? "")) continue;
+    if (prop.kind !== "let" || !isInferred(prop)) continue;
     // A lone, unannotated declarator: `export let name = ...`, `export let name;`.
     const declaration = new RegExp(`export let ${escapeRegExp(prop.name)}\\b(?!\\s*:)(?=\\s*[=;\\n])`);
     if (!declaration.test(text)) continue;
