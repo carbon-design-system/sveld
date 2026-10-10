@@ -2254,4 +2254,20 @@ describe("ComponentParser", () => {
 
     expect(types).toEqual({ item: "Item", items: "Item[]", checked: "{ id: string }" });
   });
+
+  test('types `bind:this` on an unknown element in a `namespace="mathml"` component as MathML', () => {
+    const source = `
+      <svelte:options namespace="mathml" />
+
+      <script>
+        export let ref = null;
+      </script>
+
+      <m-custom bind:this={ref} />
+    `;
+
+    const { props } = new ComponentParser().parseSvelteComponent(source, diagnostics);
+
+    expect(props.find((prop) => prop.name === "ref")?.type).toBe("null | MathMLElement");
+  });
 });

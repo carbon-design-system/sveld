@@ -27,6 +27,16 @@ test("getElementByTag reads a tag both namespaces define by namespace", () => {
   }
 });
 
+test("getElementByTag types MathML elements", () => {
+  expect(getElementByTag("math")).toEqual("MathMLElement");
+  expect(getElementByTag("mfrac")).toEqual("MathMLElement");
+  expect(getElementByTag("unknown-element", "mathml")).toEqual("MathMLElement");
+  // `a` is a MathML element too.
+  expect(getElementByTag("a", "mathml")).toEqual("MathMLElement");
+  // HTML in a MathML text element (`<mtext><span>`) is still HTML.
+  expect(getElementByTag("span", "mathml")).toEqual("HTMLSpanElement");
+});
+
 /** `"tag": Type;` members of `interface name` in a `lib.dom.d.ts`. */
 function tagNameMap(libDom: string, name: string): Map<string, string> {
   const body = libDom.match(new RegExp(`interface ${name} \\{([^}]*)\\}`))?.[1];
@@ -50,6 +60,9 @@ test("getElementByTag matches TypeScript's lib.dom.d.ts", async () => {
     }
     for (const [tag, type] of tagNameMap(libDom, "SVGElementTagNameMap")) {
       expect({ path, tag, type: getElementByTag(tag, "svg") }).toEqual({ path, tag, type });
+    }
+    for (const [tag, type] of tagNameMap(libDom, "MathMLElementTagNameMap")) {
+      expect({ path, tag, type: getElementByTag(tag, "mathml") }).toEqual({ path, tag, type });
     }
   }
 });
