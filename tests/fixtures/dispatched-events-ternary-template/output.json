@@ -1,0 +1,60 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "open",
+      "kind": "let",
+      "type": "boolean",
+      "typeSource": "default",
+      "value": "false",
+      "defaultValue": {
+        "raw": "false",
+        "kind": "literal",
+        "value": false
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "close",
+      "detail": "{ trigger: string; }"
+    },
+    {
+      "type": "dispatched",
+      "name": "mouseenter:trigger",
+      "detail": "MouseEvent"
+    },
+    {
+      "type": "dispatched",
+      "name": "open",
+      "detail": "{ trigger: string; }"
+    },
+    {
+      "type": "dispatched",
+      "name": "stale",
+      "detail": "null"
+    }
+  ],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "dispatched-events-ternary-template/input.svelte",
+      "kind": "event-no-source",
+      "name": "stale",
+      "message": "@event \"stale\" has no matching dispatch or callback prop.",
+      "code": "sveld/event-no-source",
+      "severity": "warning"
+    }
+  ]
+}

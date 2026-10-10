@@ -3,7 +3,13 @@
  * events, slot prop types, generics), record the diagnostics that need
  * the whole component, and build the {@link ParsedComponent}.
  */
-import { type CallExpression, isValidType as isOneType, type Literal } from "sveast";
+import {
+  type CallExpression,
+  type ConditionalExpression,
+  isValidType as isOneType,
+  type Literal,
+  type TemplateLiteral,
+} from "sveast";
 import { getElementByTag } from "../element-tag-map";
 import type {
   ComponentContext,
@@ -49,14 +55,60 @@ function literalValue(node: unknown): Literal["value"] | undefined {
   return node && typeof node === "object" && "value" in node ? (node as Literal).value : undefined;
 }
 
+/** What a dispatcher call's event-name argument can evaluate to. */
+interface DispatchEventNames {
+  /** Names read off string literals, including each branch of `open ? "open" : "close"`. */
+  names: string[];
+  /** Names built from a template, like `${name}:trigger`. */
+  patterns: RegExp[];
+  /** Some branch is a value sveld can't read, so it could be any name. */
+  dynamic: boolean;
+}
+
+const REGEX_SPECIAL_CHARS_REGEX = /[.*+?^${}()|[\]\\]/g;
+
+function collectDispatchEventNames(node: unknown, out: DispatchEventNames) {
+  if (!node || typeof node !== "object" || !("type" in node)) {
+    out.dynamic = true;
+    return;
+  }
+  if (node.type === "Literal") {
+    const { value } = node as Literal;
+    if (typeof value === "string" || typeof value === "number") out.names.push(String(value));
+    else out.dynamic = true;
+  } else if (node.type === "ConditionalExpression") {
+    const conditional = node as ConditionalExpression;
+    collectDispatchEventNames(conditional.consequent, out);
+    collectDispatchEventNames(conditional.alternate, out);
+  } else if (node.type === "TemplateLiteral") {
+    const quasis = (node as TemplateLiteral).quasis.map((quasi) =>
+      (quasi.value.cooked ?? quasi.value.raw).replace(REGEX_SPECIAL_CHARS_REGEX, "\\$&"),
+    );
+    if (quasis.length === 1) out.names.push((node as TemplateLiteral).quasis[0].value.cooked ?? "");
+    else out.patterns.push(new RegExp(`^${quasis.join("[^]*")}$`));
+  } else {
+    out.dynamic = true;
+  }
+}
+
+/** The events a component dispatches, by name or by a pattern its dispatcher calls can match. */
+interface DispatchedEventNames {
+  names: Set<string>;
+  /** Whether a dispatch may emit `name` without naming it: a template or an unreadable value. */
+  mayDispatch(name: string): boolean;
+}
+
 /**
  * Adds the events the dispatcher and `$host().dispatchEvent()` dispatch, and
  * turns a JSDoc `@event` that's only forwarded with `on:` into a forwarded
  * event. Returns the names actually dispatched.
  */
-function resolveDispatchedEvents(ctx: ParserContext, walk: ComponentWalkResult): Set<string> {
+function resolveDispatchedEvents(ctx: ParserContext, walk: ComponentWalkResult): DispatchedEventNames {
   const { dispatcherName, callees } = walk;
   const actuallyDispatchedEvents = new Set<string>(walk.hostDispatchedEventNames);
+  // Dispatches whose name isn't a plain string: templates, and values sveld can't read.
+  const namePatterns: RegExp[] = [];
+  let dynamicName = false;
 
   for (const hostDispatch of walk.hostDispatches) addHostDispatchedEvent(ctx, hostDispatch);
 
@@ -69,27 +121,33 @@ function resolveDispatchedEvents(ctx: ParserContext, walk: ComponentWalkResult):
     );
 
     for (const callee of callees) {
-      if (callee.name !== dispatcherName) continue;
-      const event_name = literalValue(callee.arguments[0]);
+      if (callee.name !== dispatcherName || callee.arguments.length === 0) continue;
+      const eventNames: DispatchEventNames = { names: [], patterns: [], dynamic: false };
+      collectDispatchEventNames(callee.arguments[0], eventNames);
+      namePatterns.push(...eventNames.patterns);
+      dynamicName ||= eventNames.dynamic;
+      if (eventNames.names.length === 0) continue;
+
       const event_argument = callee.arguments[1];
       const structuralDetail = deriveDetailType(
         componentDetailTypeSource(ctx, callee.nestedBoundDetailNames),
         event_argument,
       );
-      if (event_name == null) continue;
       const event_detail = structuralDetail === undefined ? literalValue(event_argument) : undefined;
       // A `null` value is also how a regex/bigint literal the runtime can't build looks, so check `raw`.
       const isNullLiteral = event_detail === null && (event_argument as Literal).raw === "null";
 
-      addDispatchedEvent(ctx, {
-        name: String(event_name),
-        detail:
-          structuralDetail ??
-          (isNullLiteral ? "null" : event_detail == null ? "" : literalDetailToTypeText(event_detail)),
-        has_argument: Boolean(event_argument),
-        source: sourceRangeFromNode(ctx, callee.node),
-      });
-      actuallyDispatchedEvents.add(String(event_name));
+      for (const event_name of eventNames.names) {
+        addDispatchedEvent(ctx, {
+          name: event_name,
+          detail:
+            structuralDetail ??
+            (isNullLiteral ? "null" : event_detail == null ? "" : literalDetailToTypeText(event_detail)),
+          has_argument: Boolean(event_argument),
+          source: sourceRangeFromNode(ctx, callee.node),
+        });
+        actuallyDispatchedEvents.add(event_name);
+      }
     }
   }
 
@@ -114,7 +172,10 @@ function resolveDispatchedEvents(ctx: ParserContext, walk: ComponentWalkResult):
     }
   });
 
-  return actuallyDispatchedEvents;
+  return {
+    names: actuallyDispatchedEvents,
+    mayDispatch: (name) => dynamicName || namePatterns.some((pattern) => pattern.test(name)),
+  };
 }
 
 /** Props in output form: `bind:this` element types applied, and snippet props left to their slots. */
@@ -372,11 +433,11 @@ function queueDispatcherEscapes(ctx: ParserContext, walk: ComponentWalkResult): 
  */
 function recordOrphanJsDocEvents(
   ctx: ParserContext,
-  actuallyDispatchedEvents: Set<string>,
+  dispatchedEvents: DispatchedEventNames,
   unfollowableEscapes: CallExpression[],
 ) {
   for (const eventName of ctx.jsDocEventNames) {
-    if (actuallyDispatchedEvents.has(eventName)) continue;
+    if (dispatchedEvents.names.has(eventName) || dispatchedEvents.mayDispatch(eventName)) continue;
     if (ctx.forwardedEvents.has(eventName)) continue;
     if (ctx.props.has(`on${eventName}`)) continue;
     if (unfollowableEscapes.length > 0) continue;
@@ -494,9 +555,9 @@ function recordInternalTypedefReferences(
 
 /** Builds the parse result from `ctx` and what {@link walkComponent} collected. */
 export function finalizeComponent(ctx: ParserContext, walk: ComponentWalkResult): ComponentParseResult {
-  const actuallyDispatchedEvents = resolveDispatchedEvents(ctx, walk);
+  const dispatchedEvents = resolveDispatchedEvents(ctx, walk);
 
-  normalizeRunesCallbackProps(ctx, actuallyDispatchedEvents);
+  normalizeRunesCallbackProps(ctx, dispatchedEvents.names);
 
   const props = buildProps(ctx);
 
@@ -515,7 +576,7 @@ export function finalizeComponent(ctx: ParserContext, walk: ComponentWalkResult)
   replaceInvalidTypes(ctx, props, events, slots, typedefs);
 
   const unfollowableEscapes = queueDispatcherEscapes(ctx, walk);
-  recordOrphanJsDocEvents(ctx, actuallyDispatchedEvents, unfollowableEscapes);
+  recordOrphanJsDocEvents(ctx, dispatchedEvents, unfollowableEscapes);
   recordUnrenderedJsDocSlots(ctx);
 
   const { dispatcherName } = walk;
