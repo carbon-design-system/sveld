@@ -364,7 +364,9 @@ function getJsDocPropsMembers(
 ): Map<string, TypedefMember> | undefined {
   const text = typeText?.trim();
   if (!text) return undefined;
-  const members = ctx.typedefMembersByName.get(text) ?? parseObjectTypeLiteralMembers(text);
+  // Props are the named members; a `[key: string]: any` only types what `...rest` collects.
+  const members =
+    ctx.typedefMembersByName.get(text) ?? parseObjectTypeLiteralMembers(text, { skipIndexSignatures: true });
   return members ? new Map(members.map((member) => [member.name, member])) : undefined;
 }
 

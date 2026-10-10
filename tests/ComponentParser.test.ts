@@ -2324,4 +2324,37 @@ describe("ComponentParser", () => {
 
     expect(props.map((prop) => prop.type)).toEqual([undefined, undefined]);
   });
+
+  test("types runes props from a JSDoc object type with an index signature", () => {
+    const parse = (source: string) =>
+      Object.fromEntries(
+        new ComponentParser().parseSvelteComponent(source, diagnostics).props.map((prop) => [prop.name, prop.type]),
+      );
+
+    expect(
+      parse(`
+        <script>
+          /** @type {{ size?: "sm" | "md"; [key: string]: any }} */
+          let { size, ...rest } = $props();
+        </script>
+      `),
+    ).toEqual({ size: '"sm" | "md"' });
+    expect(
+      parse(`
+        <script>
+          /** @type {{ size?: "sm" | "md"; label: string; [key: string]: unknown }} */
+          let { size, label } = $props();
+        </script>
+      `),
+    ).toEqual({ size: '"sm" | "md"', label: "string" });
+    expect(
+      parse(`
+        <script>
+          /** @typedef {{ size?: "sm" | "md"; [key: string]: any }} Props */
+          /** @type {Props} */
+          let { size, ...rest } = $props();
+        </script>
+      `),
+    ).toEqual({ size: '"sm" | "md"' });
+  });
 });
