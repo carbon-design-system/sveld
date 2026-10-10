@@ -9,7 +9,9 @@
  *
  * Errors elsewhere are ignored: an annotation also makes the component's own
  * reads stricter (`'ref' is possibly 'null'`), which says nothing about the
- * type sveld emits.
+ * type sveld emits. So is svelte-check typing a `bind:this` element by tag
+ * name alone: it calls `<a>` in `<svg>` an `HTMLAnchorElement`, where the
+ * browser (and sveld) make it an `SVGAElement`.
  *
  * Runs over `tests/fixtures` and the carbon e2e project, using the
  * snapshots they commit (`output.json`, `COMPONENT_API.json`), and the
@@ -63,6 +65,9 @@ const MACHINE_ERROR_REGEX = /^\d+ ERROR "([^"]+)" (\d+):(\d+) "(.*)"$/;
 const IDENTIFIER_REGEX = /^[\w$]+/;
 const BIND_THIS_BEFORE_REGEX = /bind:this=\{?\s*$/;
 const ASSIGNMENT_AFTER_REGEX = /^\s*=(?!=)/;
+/** svelte-check's HTML type for an element sveld (rightly) puts in the SVG or MathML namespace. */
+const NAMESPACE_BLIND_ELEMENT_REGEX =
+  /^Type 'HTML\w*Element' is (?:missing the following properties from|not assignable to) type '(?:SVG|MathML)\w*Element'/;
 
 interface Prop {
   name: string;
@@ -171,6 +176,7 @@ async function checkWorkspace(root: string, workspace: Workspace): Promise<Findi
     const isBinding = BIND_THIS_BEFORE_REGEX.test(before);
     const isAssignment = ASSIGNMENT_AFTER_REGEX.test(after);
     if (!isDefault && !isBinding && !isAssignment) continue;
+    if (isBinding && NAMESPACE_BLIND_ELEMENT_REGEX.test(message)) continue;
 
     findings.push({
       workspace: workspace.name,
