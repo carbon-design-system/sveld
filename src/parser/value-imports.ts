@@ -45,8 +45,15 @@ export function importedCalleeBinding(ctx: ParserContext, callee: unknown): Impo
     node = node.object;
   }
   if (!isIdentifier(node)) return undefined;
-  const localName = node.name;
+  return importedBindingByName(ctx, node.name, members);
+}
 
+/** The import `localName` names, with `members` read off it (`["b"]` for `a.b`). */
+export function importedBindingByName(
+  ctx: ParserContext,
+  localName: string,
+  members: string[] = [],
+): ImportedBinding | undefined {
   const binding = (source: string, importedName: string, rest: string[]) =>
     rest.length > 0 ? { source, importedName, members: rest } : { source, importedName };
 
