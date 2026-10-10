@@ -31,5 +31,8 @@ export default class ListBoxMenuIcon extends SvelteComponentTyped<
   /**
    * Default translation ids
    */
-  translationIds: { close: "close", open: "open" };
+  translationIds: {
+    close: "close";
+    open: "open"
+  };
 }

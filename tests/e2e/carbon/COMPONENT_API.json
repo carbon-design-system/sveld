@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "generator": {
     "name": "sveld",
-    "version": "0.37.5",
-    "svelteVersion": "5.57.0"
+    "version": "0.38.2",
+    "svelteVersion": "5.57.1"
   },
   "total": 156,
   "components": [
@@ -15489,7 +15489,7 @@
           "name": "translationIds",
           "kind": "const",
           "description": "Default translation ids",
-          "type": "{ close: \"close\", open: \"open\" }",
+          "type": "{ close: \"close\"; open: \"open\" }",
           "typeSource": "default",
           "value": "{ close: \"close\", open: \"open\" }",
           "defaultValue": {
@@ -15896,7 +15896,7 @@
           "name": "translationIds",
           "kind": "const",
           "description": "Default translation ids",
-          "type": "{ close: \"close\", open: \"open\" }",
+          "type": "{ close: \"close\"; open: \"open\" }",
           "typeSource": "default",
           "value": "{ close: \"close\", open: \"open\" }",
           "defaultValue": {
@@ -16215,7 +16215,7 @@
           "name": "translationIds",
           "kind": "const",
           "description": "Default translation ids",
-          "type": "{     clearAll: \"clearAll\",     clearSelection: \"clearSelection\",   }",
+          "type": "{ clearAll: \"clearAll\"; clearSelection: \"clearSelection\" }",
           "typeSource": "default",
           "value": "{     clearAll: \"clearAll\",     clearSelection: \"clearSelection\",   }",
           "defaultValue": {
