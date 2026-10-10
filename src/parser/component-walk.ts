@@ -281,9 +281,25 @@ function addForwardedEvent(ctx: ParserContext, node: AST.OnDirective, parent: AS
   }
 }
 
+/** The variable a `bind:` writes: `ref`, or `refs` in `bind:this={refs[i]}`. */
+function bindTarget(node: AST.BindDirective): { name: string; indexed: boolean } | undefined {
+  const { expression } = node;
+  if (expression.type === "Identifier") return { name: expression.name, indexed: false };
+  if (
+    node.name === "this" &&
+    expression.type === "MemberExpression" &&
+    expression.computed &&
+    expression.object.type === "Identifier"
+  ) {
+    return { name: expression.object.name, indexed: true };
+  }
+  return undefined;
+}
+
 /**
  * `bind:*` marks props reactive. `bind:this` also narrows the prop type: to
- * the element, or to the instance of an imported component.
+ * the element, or to the instance of an imported component, or an array of
+ * either when bound by index.
  */
 function recordBindDirective(
   ctx: ParserContext,
@@ -292,14 +308,17 @@ function recordBindDirective(
   namespace: ElementNamespace,
 ) {
   if (!parent || !(isElementLikeType(parent.type) || isComponentLikeType(parent.type))) return;
-  if (node.expression.type !== "Identifier") return;
+  const bound = bindTarget(node);
+  if (!bound) return;
 
-  const prop_name = resolveIdentifierToReactiveProp(ctx, node.expression.name);
+  const prop_name = resolveIdentifierToReactiveProp(ctx, bound.name);
   if (!prop_name) return;
   ctx.reactive_vars.add(prop_name);
 
   if (node.name !== "this" || !("name" in parent) || typeof parent.name !== "string") return;
-  const binding = ctx.bindings.get(prop_name) ?? { elements: [], components: [] };
+  const target = bound.indexed ? "indexed" : "direct";
+  const binding = ctx.bindings.get(prop_name) ?? { elements: [], components: [], target };
+  if (binding.target !== target) binding.target = "mixed";
 
   if (isElementLikeType(parent.type)) {
     if (!binding.elements.some((other) => other.tag === parent.name && other.namespace === namespace)) {

@@ -574,6 +574,11 @@ export interface ComponentPropBindings {
   elements: Array<{ tag: string; namespace: ElementNamespace }>;
   /** Local names of imported components the prop is bound to. */
   components: string[];
+  /**
+   * `bind:this={ref}` (`"direct"`), `bind:this={refs[i]}` (`"indexed"`), or
+   * both (`"mixed"`), which no one type fits, so the prop keeps its own.
+   */
+  target: "direct" | "indexed" | "mixed";
 }
 
 export interface ComponentContextProp {
