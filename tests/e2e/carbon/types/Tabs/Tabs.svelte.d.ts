@@ -6,10 +6,10 @@ export type TabsContext = {
   contentById: import("svelte/store").Readable<any>;
   selectedTab: import("svelte/store").Writable<any>;
   selectedContent: import("svelte/store").Writable<any>;
-  add: (data: any) => any;
-  addContent: (data: any) => any;
-  update: (id: any) => any;
-  change: (direction: any) => any;
+  add: (data: any) => void;
+  addContent: (data: any) => void;
+  update: (id: any) => void;
+  change: (direction: any) => void;
 };
 
 type $RestProps = SvelteHTMLElements["div"];

@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 export type StructuredListWrapperContext = {
   selectedValue: import("svelte/store").Writable<string>;
-  update: (value: any) => any;
+  update: (value: any) => void;
 };
 
 type $RestProps = SvelteHTMLElements["div"];

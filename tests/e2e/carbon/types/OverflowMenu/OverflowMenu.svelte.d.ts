@@ -3,9 +3,9 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 export type OverflowMenuContext = {
   focusedId: import("svelte/store").Writable<any>;
-  add: (arg0: any) => any;
-  update: (id: any) => any;
-  change: (direction: any) => any;
+  add: (arg: any) => void;
+  update: (id: any) => void;
+  change: (direction: any) => void;
 };
 
 type $RestProps = SvelteHTMLElements["button"];

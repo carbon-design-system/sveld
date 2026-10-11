@@ -2,9 +2,9 @@ import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
 export type ComposedModalContext = {
-  closeModal: () => any;
-  submit: () => any;
-  declareRef: (ref: any) => any;
+  closeModal: () => void;
+  submit: () => void;
+  declareRef: (ref: any) => void;
 };
 
 type $RestProps = SvelteHTMLElements["div"];

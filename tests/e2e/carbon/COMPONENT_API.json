@@ -4991,17 +4991,17 @@
           "properties": [
             {
               "name": "closeModal",
-              "type": "() => any",
+              "type": "() => void",
               "optional": false
             },
             {
               "name": "submit",
-              "type": "() => any",
+              "type": "() => void",
               "optional": false
             },
             {
               "name": "declareRef",
-              "type": "(ref: any) => any",
+              "type": "(ref: any) => void",
               "optional": false
             }
           ],
@@ -5304,17 +5304,17 @@
             },
             {
               "name": "add",
-              "type": "(arg0: any) => any",
+              "type": "(arg: any) => void",
               "optional": false
             },
             {
               "name": "update",
-              "type": "(id: any) => any",
+              "type": "(id: any) => void",
               "optional": false
             },
             {
               "name": "change",
-              "type": "(direction: any) => any",
+              "type": "(direction: any) => void",
               "optional": false
             }
           ],
@@ -6610,7 +6610,7 @@
             },
             {
               "name": "resetSelectedRowIds",
-              "type": "() => any",
+              "type": "() => void",
               "optional": false
             }
           ],
@@ -7332,32 +7332,32 @@
             },
             {
               "name": "add",
-              "type": "(data: any) => any",
+              "type": "(data: any) => void",
               "optional": false
             },
             {
               "name": "declareRef",
-              "type": "(arg0: any) => any",
+              "type": "(arg: any) => void",
               "optional": false
             },
             {
               "name": "updateValue",
-              "type": "(arg0: any) => any",
+              "type": "(arg: any) => void",
               "optional": false
             },
             {
               "name": "blurInput",
-              "type": "(relatedTarget: any) => any",
+              "type": "(relatedTarget: any) => void",
               "optional": false
             },
             {
               "name": "openCalendar",
-              "type": "() => any",
+              "type": "() => void",
               "optional": false
             },
             {
               "name": "focusCalendar",
-              "type": "() => any",
+              "type": "() => void",
               "optional": false
             }
           ],
@@ -18806,7 +18806,7 @@
           "properties": [
             {
               "name": "declareRef",
-              "type": "(arg0: any) => any",
+              "type": "(arg: any) => void",
               "optional": false
             }
           ],
@@ -21057,17 +21057,17 @@
             },
             {
               "name": "add",
-              "type": "(arg0: any) => any",
+              "type": "(arg: any) => void",
               "optional": false
             },
             {
               "name": "update",
-              "type": "(id: any) => any",
+              "type": "(id: any) => void",
               "optional": false
             },
             {
               "name": "change",
-              "type": "(direction: any) => any",
+              "type": "(direction: any) => void",
               "optional": false
             }
           ],
@@ -23142,12 +23142,12 @@
             },
             {
               "name": "add",
-              "type": "(step: any) => any",
+              "type": "(step: any) => void",
               "optional": false
             },
             {
               "name": "change",
-              "type": "(index: any) => any",
+              "type": "(index: any) => void",
               "optional": false
             }
           ],
@@ -24215,12 +24215,12 @@
             },
             {
               "name": "add",
-              "type": "(arg0: any) => any",
+              "type": "(arg: any) => void",
               "optional": false
             },
             {
               "name": "update",
-              "type": "(value: any) => any",
+              "type": "(value: any) => void",
               "optional": false
             }
           ],
@@ -28830,7 +28830,7 @@
             },
             {
               "name": "update",
-              "type": "(value: any) => any",
+              "type": "(value: any) => void",
               "optional": false
             }
           ],
@@ -31481,22 +31481,22 @@
             },
             {
               "name": "add",
-              "type": "(data: any) => any",
+              "type": "(data: any) => void",
               "optional": false
             },
             {
               "name": "addContent",
-              "type": "(data: any) => any",
+              "type": "(data: any) => void",
               "optional": false
             },
             {
               "name": "update",
-              "type": "(id: any) => any",
+              "type": "(id: any) => void",
               "optional": false
             },
             {
               "name": "change",
-              "type": "(direction: any) => any",
+              "type": "(direction: any) => void",
               "optional": false
             }
           ],
@@ -33753,12 +33753,12 @@
             },
             {
               "name": "add",
-              "type": "(arg0: any) => any",
+              "type": "(arg: any) => void",
               "optional": false
             },
             {
               "name": "update",
-              "type": "(value: any) => any",
+              "type": "(value: any) => void",
               "optional": false
             }
           ],
@@ -36205,7 +36205,7 @@
             },
             {
               "name": "setOverflowVisible",
-              "type": "(visible: any) => any",
+              "type": "(visible: any) => void",
               "optional": false
             }
           ],

@@ -43,7 +43,7 @@ export interface DataTableCell {
 export type DataTableContext<Row extends DataTableRow = DataTableRow> = {
   batchSelectedIds: import("svelte/store").Writable<boolean>;
   tableRows: import("svelte/store").Writable<ReadonlyArray<Row>>;
-  resetSelectedRowIds: () => any;
+  resetSelectedRowIds: () => void;
 };
 
 type $RestProps = SvelteHTMLElements["div"];
