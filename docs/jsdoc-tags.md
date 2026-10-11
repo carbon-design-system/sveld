@@ -946,7 +946,7 @@ A `@bindable writable` prop (or a runes `$bindable(...)` prop) is listed in the 
 
 ## `@deprecated`
 
-`@deprecated` works on props, exported functions, events, slots, and entry exports. An optional message can name a replacement.
+`@deprecated` works on props, exported functions, events, slots, typedefs, and entry exports. An optional message can name a replacement.
 
 ```svelte
 <script>
@@ -969,9 +969,9 @@ A `@bindable writable` prop (or a runes `$bindable(...)` prop) is listed in the 
 </script>
 ```
 
-Placement: for slots, before the `@slot` / `@snippet` line; for events, after the `@event` line; everywhere else, in the JSDoc directly above the declaration.
+Placement: for slots, before the `@slot` / `@snippet` line; for events, after the `@event` line (before it also works); for typedefs and callbacks, after the `@typedef` / `@callback` line; everywhere else, in the JSDoc directly above the declaration. A `@deprecated` that has nothing to attach to is reported as `jsdoc-tag-dropped`.
 
-The `.d.ts` gets an `@deprecated` line, so editors strike the symbol through. JSON adds `deprecated` (the message, or `true` with no message). Markdown strikes through the name and adds a **Deprecated** badge.
+The `.d.ts` gets an `@deprecated` line, so editors strike the symbol through. JSON adds `deprecated` (the message, or `true` with no message); a typedef keeps it in `tags` instead. Markdown strikes through the name and adds a **Deprecated** badge.
 
 ## `@ignore` / `@internal`
 
