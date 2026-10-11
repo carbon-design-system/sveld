@@ -9,7 +9,10 @@
    */
   const close = () => {};
 
+  let mutableKey = "modal";
+
   setContext(dynamicKey, { close });
+  setContext(mutableKey, { close });
 </script>
 
 <div class="modal"><slot /></div>

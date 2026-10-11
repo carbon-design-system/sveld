@@ -8,19 +8,24 @@
    */
 
   /**
+   * Log a message to the console
+   * @type {(message: string) => void}
+   */
+  const log = (message) => {
+    console.log(message);
+  };
+
+  /**
    * Modal API object
    * @type {ModalAPI}
    */
   const modalAPI = {
-    open: () => {
-      console.log("Opening modal");
-    },
-    close: () => {
-      console.log("Closing modal");
-    },
+    open: () => {},
+    close: () => {},
   };
 
+  setContext("my-logger", log);
   setContext("modal", modalAPI);
 </script>
 
-<div class="modal-wrapper"><slot /></div>
+<div><slot /></div>

@@ -11,7 +11,13 @@
     }
   ],
   "events": [],
-  "typedefs": [],
+  "typedefs": [
+    {
+      "type": "{\n  open: () => void;\n  close: () => void;\n}",
+      "name": "ModalAPI",
+      "ts": "type ModalAPI = {\n  open: () => void;\n  close: () => void;\n};"
+    }
+  ],
   "generics": null,
   "contexts": [
     {
@@ -20,6 +26,13 @@
       "type": "(message: string) => void",
       "properties": [],
       "description": "Log a message to the console"
+    },
+    {
+      "key": "modal",
+      "typeName": "ModalContext",
+      "type": "ModalAPI",
+      "properties": [],
+      "description": "Modal API object"
     }
   ],
   "diagnostics": []
