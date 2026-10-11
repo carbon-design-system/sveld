@@ -5,6 +5,18 @@
   "moduleExports": [],
   "slots": [
     {
+      "name": "body",
+      "default": false,
+      "slot_props": "{ n: number }",
+      "description": "Body slot uses a generic from `@template`; that tag must not appear on the slot in output."
+    },
+    {
+      "name": "item",
+      "default": false,
+      "slot_props": "{ id: string }",
+      "description": "`@enum` shares blocks with typedefs/slots in some codebases; it must not attach to the slot."
+    },
+    {
       "name": "row",
       "default": false,
       "slot_props": "{ flag: boolean }",

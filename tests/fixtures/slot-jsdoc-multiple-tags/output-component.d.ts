@@ -10,6 +10,7 @@ export type SlotJsdocMultipleTagsProps = {
    *   <a {...props} href="/">Home</a>
    * </BreadcrumbItem>
    * ```
+   * @since 1.2.0
    * @deprecated Prefer the `link` snippet.
    */
   children?: (this: void, ...args: [{

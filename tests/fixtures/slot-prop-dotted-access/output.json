@@ -21,6 +21,22 @@
       "isRequired": false,
       "constant": false,
       "reactive": false
+    },
+    {
+      "name": "item",
+      "kind": "let",
+      "type": "{ onClick: (e: MouseEvent) => void; label: string }",
+      "typeSource": "jsdoc",
+      "value": "{ onClick: () => {}, label: \"\" }",
+      "defaultValue": {
+        "raw": "{ onClick: () => {}, label: \"\" }",
+        "kind": "object"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -28,7 +44,13 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "{\n  a: string;\n  b: string;\n  c: number;\n  d: string;\n  e: \"pending\" | \"done\" | \"error\";\n  f: { deep: number };\n  g: Array<string>;\n  h: any;\n  i: number;\n}"
+      "slot_props": "{\n  a: string;\n  b: string;\n  c: number;\n  d: string;\n  e: \"pending\" | \"done\" | \"error\";\n  f: { deep: number };\n  g: Array<string>;\n  h: any;\n  i: number;\n  j: string;\n  computed: any;\n  chained: any;\n}"
+    },
+    {
+      "name": "typed",
+      "default": false,
+      "slot_props": "{ item: \"override\" }",
+      "description": "A `@slot` type wins over the type a dotted access would resolve to."
     }
   ],
   "events": [],
