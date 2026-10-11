@@ -18,6 +18,17 @@
   }
 
   /**
+   * Show a notification built from its parts.
+   * @param {object} options
+   * @param {string} options.title - Heading text
+   * @param {"error" | "info"} [options.kind]
+   * @returns {string} The notification id
+   */
+  export function show(options) {
+    return add(options);
+  }
+
+  /**
    * Remove a notification by id.
    * @param {string} id
    * @returns {boolean} True if the notification was found and removed

@@ -17,6 +17,14 @@ export type AccessorParamReturnsExports = {
   add: (notification: NotificationData) => string;
 
   /**
+   * Show a notification built from its parts.
+   */
+  show: (options: {
+      title: string;
+      kind?: "error" | "info"
+    }) => string;
+
+  /**
    * Remove a notification by id.
    */
   remove: (id: string) => boolean;
