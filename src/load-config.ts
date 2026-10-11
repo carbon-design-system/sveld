@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { isObject } from "./ast-guards";
 import { closestMatch } from "./levenshtein";
@@ -117,6 +117,23 @@ export async function loadConfigFrom(configPath: string): Promise<SveldConfig> {
 export async function loadConfig(cwd: string = process.cwd()): Promise<SveldConfig> {
   const configPath = resolveConfigPath(cwd);
   return configPath === null ? {} : loadConfigFrom(configPath);
+}
+
+/**
+ * The config a `config` option asks for: a path (relative to `cwd`) loads that file and
+ * must exist, `true` discovers one in `cwd`, `false` loads none, and unset does `discover`.
+ */
+export async function loadConfigOption(
+  config: boolean | string | undefined,
+  cwd: string,
+  discover: boolean,
+): Promise<SveldConfig> {
+  if (typeof config === "string") {
+    const configPath = resolve(cwd, config);
+    if (!existsSync(configPath)) throw new Error(`sveld: config file "${config}" does not exist.`);
+    return loadConfigFrom(configPath);
+  }
+  return (config ?? discover) ? loadConfig(cwd) : {};
 }
 
 /**

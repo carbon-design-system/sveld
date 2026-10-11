@@ -1,4 +1,4 @@
-import { dirname, resolve } from "node:path";
+import { dirname } from "node:path";
 import {
   type GenerateBundleOptions,
   type GenerateBundleResult,
@@ -6,7 +6,7 @@ import {
   toGenerateBundleOptions,
 } from "./bundle";
 import { getSvelteEntry, UNRESOLVED_ENTRY_MESSAGE } from "./get-svelte-entry";
-import { loadConfig, loadConfigFrom, mergeConfig, validateOptions } from "./load-config";
+import { loadConfigOption, mergeConfig, validateOptions } from "./load-config";
 import { setQuiet } from "./logger";
 import { WATCH_RELEVANT_EXT_REGEX } from "./path";
 import { createSveldBundle, type SveldBundle } from "./watch";
@@ -32,7 +32,8 @@ export interface PluginSveldOptions extends Pick<GenerateBundleOptions, "cache" 
    * Load `sveld.config.{js,mjs,ts}` and merge it with these options; these
    * options win when a key is set in both. `true` resolves the config from
    * the Vite project root (or `process.cwd()` if the plugin isn't running
-   * under Vite); a string is an explicit path to the config file itself.
+   * under Vite); a string is an explicit path to the config file itself,
+   * which must exist.
    * @default false
    */
   config?: boolean | string;
@@ -156,9 +157,7 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
     },
     async buildStart() {
       if (opts?.config) {
-        const cwd = root ?? process.cwd();
-        const fileConfig =
-          typeof opts.config === "string" ? await loadConfigFrom(resolve(cwd, opts.config)) : await loadConfig(cwd);
+        const fileConfig = await loadConfigOption(opts.config, root ?? process.cwd(), false);
         mergedOpts = mergeConfig<PluginSveldOptions>(fileConfig, opts);
       }
       validateOptions(mergedOpts);

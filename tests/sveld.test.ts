@@ -7,6 +7,7 @@ import { mockComponentDocApi } from "./test-brands";
 
 const ENTRY_ERROR = /entry/i;
 const INPUT_RENAMED_ERROR = /renamed to `entry`/;
+const CONFIG_PATH_ERROR = /`config` takes `true` or `false`/;
 
 describe("sveld() entry resolution failures", () => {
   let dir: string;
@@ -31,6 +32,11 @@ describe("sveld() entry resolution failures", () => {
 
   test("throws when no entry is given and package.json#svelte is absent", async () => {
     await expect(sveld()).rejects.toThrow(ENTRY_ERROR);
+  });
+
+  test("rejects a `config` path, which only the CLI and plugin take", async () => {
+    const pathOpts = { config: "sveld.config.js" } as unknown as Parameters<typeof sveld>[0];
+    await expect(sveld(pathOpts)).rejects.toThrow(CONFIG_PATH_ERROR);
   });
 
   test("throws when the removed `input` option is passed", async () => {

@@ -23,5 +23,5 @@ export type { SvelteEntryPoint } from "./get-svelte-entry";
 export { defineConfig, type SveldConfig, type SveldRuntimeOptions } from "./load-config";
 export type { SerializedComponentEvent } from "./model";
 export { default, type JsonOptions, type MarkdownOptions, type TypesOptions } from "./plugin";
-export { type SveldResult, sveld } from "./sveld";
+export { type SveldOptions, type SveldResult, sveld } from "./sveld";
 export { buildComponentApiDocument, type ComponentApiDocument } from "./writer/document-model";
