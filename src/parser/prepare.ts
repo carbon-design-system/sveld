@@ -8,7 +8,7 @@ import { parse as parseModernAst } from "../svelte-template-parse";
 import { parseCustomTypes } from "./component-tags";
 import type { ParserContext } from "./context";
 import { detectSyntaxMode } from "./runes-detection";
-import { buildRunesPropTypeMetadata } from "./runes-props";
+import { collectScriptTypeInfo } from "./runes-props";
 import { stripTypeCastWrappers } from "./typescript-casts";
 import { collectHoistedScriptBindings } from "./value-imports";
 
@@ -46,7 +46,7 @@ export function prepareComponent(ctx: ParserContext, source: string, filePath: s
   ctx.source = cleanedSource;
 
   const parsed = parseModernAst(cleanedSource);
-  buildRunesPropTypeMetadata(ctx, parsed);
+  collectScriptTypeInfo(ctx, parsed);
   ctx.parsed = parsed;
 
   // svelte's compile() strips TS-only wrappers (`as`, `satisfies`, `!`, ...); parse() leaves them.

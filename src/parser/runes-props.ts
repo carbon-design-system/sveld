@@ -219,13 +219,14 @@ function collectScriptTypeDeclaration(
 }
 
 /**
- * Reads type imports, local types, explicit `export let` annotations, and
- * `$props()` metadata off `parsed`. Same tree the caller assigns
- * to `ctx.parsed`. `localTypeDeclarationsByName` holds a live `node` from
- * this tree, read only during this call. After that, only the extracted
- * `.code` string is used.
+ * Reads the script `lang`, `<svelte:options>`, type imports, local types,
+ * explicit `export let` annotations, and `$props()` metadata off `parsed`
+ * (the tree the caller then assigns to `ctx.parsed`), before any walk.
+ * `localTypeDeclarationsByName` holds a live `node` from this tree, read
+ * only during this call. After that, only the extracted `.code` string is
+ * used.
  */
-export function buildRunesPropTypeMetadata(ctx: ParserContext, parsed: AST.Root) {
+export function collectScriptTypeInfo(ctx: ParserContext, parsed: AST.Root) {
   ctx.runesPropsDeclarationMetadataByDeclaratorStart.clear();
   ctx.explicitPropTypesByName.clear();
   ctx.explicitVariableTypesByName.clear();
