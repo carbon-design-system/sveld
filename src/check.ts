@@ -12,6 +12,7 @@ import {
   type ComponentApiDocument,
 } from "./writer/document-model";
 
+/** The `:` or `=` that ends a parameter's name. */
 const PARAM_NAME_SPLIT_REGEX = /[:=]/;
 
 type Prop = ComponentDocApi["props"][number];

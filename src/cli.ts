@@ -106,6 +106,7 @@ const SHORT_FLAGS = new Map([
   ["-q", "--quiet"],
 ]);
 
+/** Each uppercase letter, for camelCase to kebab-case flag names. */
 const UPPERCASE_RE = /[A-Z]/g;
 
 /** Boolean flags that never consume a following argument as a value. */

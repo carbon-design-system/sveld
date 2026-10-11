@@ -1,6 +1,7 @@
 import path, { sep } from "node:path";
 import type { NormalizedPath } from "./brands";
 
+/** A trailing `.svelte` extension. */
 export const SVELTE_EXT_REGEX = /\.svelte$/;
 
 /** Probed in order for a specifier without an extension and for a directory's `index` file. */

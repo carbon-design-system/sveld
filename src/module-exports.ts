@@ -22,6 +22,7 @@ import { collectReturnArguments } from "./parser/walk";
 import { getParserStack } from "./parser-stack";
 import { returnTypeOfFunctionType } from "./type-text";
 
+/** A line break, LF or CRLF. */
 const NEWLINE_REGEX = /\r?\n/;
 /** The leading `*` of a JSDoc block's line. */
 const JSDOC_LINE_PREFIX_REGEX = /^\s*\*+/;
@@ -240,6 +241,7 @@ const PORTABLE_TYPE_KEYWORDS = new Set([
   "unknown",
   "void",
 ]);
+/** A quoted string in type text, whose contents aren't type names. */
 const TYPE_STRING_LITERAL_REGEX = /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/g;
 /** An identifier in type text that isn't an object type's property key. */
 const TYPE_NAME_REGEX = /(?<![\w$.])[A-Za-z_$][\w$]*(?![\w$]|\s*\??:)/g;

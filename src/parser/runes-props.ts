@@ -39,6 +39,7 @@ import {
 import { importSpecifierImportedName } from "./value-imports";
 import { resolveLocalVarJSDoc } from "./variable-jsdoc";
 
+/** Each identifier in type text. */
 const IDENTIFIER_TOKEN_REGEX = /[A-Za-z_$][\w$]*/g;
 
 /**
@@ -507,9 +508,13 @@ function extractEventDispatcherGenericText(typeText: string): string | undefined
   return closeIndex === -1 ? undefined : typeText.slice(index + 1, closeIndex);
 }
 
+/** A quoted member name's opening and closing quote. */
 const QUOTED_MEMBER_NAME_REGEX = /^["']|["']$/g;
+/** An optional member name's trailing `?`. */
 const OPTIONAL_MEMBER_NAME_SUFFIX_REGEX = /\?$/;
+/** A leading `{`. */
 const LEADING_BRACE_REGEX = /^\{/;
+/** A trailing `}`. */
 const TRAILING_BRACE_REGEX = /\}$/;
 
 /** Splits a `name: Type` (or `name?: Type`) member on its top-level `:`, skipping a quoted name's own colons. */

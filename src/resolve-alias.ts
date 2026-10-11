@@ -8,7 +8,9 @@ const CONFIG_FILE_NAMES = ["tsconfig.json", "jsconfig.json"];
 
 const pathPatternRegexCache = new Map<string, RegExp>();
 
+/** A block or line comment, stripped before parsing a tsconfig/jsconfig as JSON. */
 const COMMENT_PATTERN = /\/\*[\s\S]*?\*\/|\/\/.*/g;
+/** Each character with a special meaning in a regular expression (`*` is split on first). */
 const REGEX_SPECIAL_CHARS = /[.+?^${}()|[\]\\]/g;
 
 const ALIAS_CANDIDATE_EXTENSIONS = [".svelte", ...MODULE_EXTENSIONS];

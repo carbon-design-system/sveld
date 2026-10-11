@@ -6,7 +6,9 @@ const INLINE_WIDTH_BUDGET = 120;
 // `interface` bodies always expand, unlike plain `{...}` type literals.
 const INTERFACE_HEADER_REGEX = /\binterface\s+[A-Za-z_$][\w$]*(\s*<[^{};]*>)?\s*$/;
 const INTERFACE_HEADER_TAIL_LENGTH = 200;
+/** One whitespace character. */
 const WHITESPACE_CHAR_REGEX = /\s/;
+/** Two whitespace characters in a row, or any but a space: text {@link flattenToOneLine} changes. */
 const NEEDS_FLATTEN_REGEX = /\s{2}|[^\S ]/;
 
 // Scanners jump between hits via `lastIndex` instead of testing every char in JS;

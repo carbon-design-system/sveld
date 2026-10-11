@@ -77,6 +77,7 @@ export function processInitializer(ctx: ParserContext, init: unknown, depth = 0)
   return castType === undefined ? result : { ...result, type: castType };
 }
 
+/** Only the `(` of a JSDoc cast, between its comment and expression. */
 const OPEN_PAREN_BETWEEN_REGEX = /^\s*\(\s*$/;
 
 /** The type a cast gives `init`, or `undefined` when it has none. */

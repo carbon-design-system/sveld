@@ -8,6 +8,7 @@ import { getParserStack } from "./parser-stack";
 import { MODULE_EXTENSIONS } from "./path";
 import { PathAliases } from "./resolve-alias";
 
+/** A `.js`/`.jsx`/`.mjs`/`.cjs` extension. */
 const JS_FAMILY_EXTENSION_REGEX = /\.[mc]?jsx?$/;
 
 /** What each `.js`-family extension maps to under TypeScript's module resolution, in the order `tsc` tries them. */

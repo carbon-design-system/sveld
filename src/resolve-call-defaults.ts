@@ -14,6 +14,7 @@ interface CallDefaultResolution {
   failureReason?: CallDefaultFailureReason;
 }
 
+/** A file path's extension. */
 const FILE_EXTENSION_REGEX = /\.[^./\\]+$/;
 
 function siblingDeclarationFile(resolvedFile: string, graph: ModuleGraph): string | null {
