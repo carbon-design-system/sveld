@@ -25,7 +25,8 @@ const FUNCTION_TYPE_START_REGEX = /^\s*[(<]/;
 const DESCRIPTION_DEFAULT_TAG_REGEX = /(?:^|\n)@default\b/;
 /** A comment line of only `*` plus trailing spaces, capturing all but the spaces. */
 const BLANK_COMMENT_LINE_REGEX = /^([ \t]*\*) +$/gm;
-const WHITESPACE_REGEX = /\s+/g;
+/** A line break plus the indentation around it, folded to one space so `@default` stays on one line. */
+const LINE_BREAK_WITH_INDENT_REGEX = /[^\S\r\n]*[\r\n]\s*/g;
 /** A reference to the `Snippet` type, not as a member (`x.Snippet`) or part of a longer name. */
 const SNIPPET_TYPE_REFERENCE_REGEX = /(^|[^.\w])Snippet(?:\s*<|\b)/;
 /** A preserved `import type { Snippet } from "svelte"`. */
@@ -260,7 +261,8 @@ function genPropDef(
     : nonAccessorProps;
 
   const members = ownProps.map((prop) => {
-    const defaultValue = typeof prop.value === "string" ? prop.value.replace(WHITESPACE_REGEX, " ") : prop.value;
+    const defaultValue =
+      typeof prop.value === "string" ? prop.value.replace(LINE_BREAK_WITH_INDENT_REGEX, " ") : prop.value;
 
     /**
      * Function props only carry a `value` when a concise default was inferred

@@ -1,4 +1,5 @@
-import { createLocator } from "sveast/walk";
+import type { AST } from "sveast";
+import { createLocator, walk } from "sveast/walk";
 import { isObject } from "../ast-guards";
 import type { SourcePosition, SourceRange } from "../model";
 import type { ParserContext } from "./context";
@@ -81,35 +82,52 @@ export function sourceForExpression(ctx: ParserContext, node: unknown) {
   return nodeSourceText(ctx, node)?.replace(NEWLINE_CR_REGEX, " ");
 }
 
+/** A line break inside a template literal's text. */
+const TEMPLATE_LINE_BREAK_REGEX = /\r?\n/g;
+
 /**
  * `node`'s source on one line with its comments dropped, for a literal default
  * shown as `@default`: a `// px` folded onto one line would comment out the rest.
+ * Whitespace runs collapse to one space outside string, template, and regex
+ * literals, whose text stays as written (a template's line break as `\n`, which
+ * reads the same). Comments and literals come from the AST, not a rescan of
+ * the text, so `/\/\//` or `/"/` isn't misread as a comment or a string.
  */
 export function compactSourceText(ctx: ParserContext, node: unknown) {
-  const text = nodeSourceText(ctx, node);
-  return text === undefined ? undefined : stripComments(text).replace(WHITESPACE_RUN_REGEX, " ");
-}
+  const { source } = ctx;
+  const { start, end } = nodeOffsets(node);
+  if (source === undefined || start === undefined || end === undefined) return undefined;
 
-/** Removes `//` and `/* *\/` comments outside string and template literals. */
-function stripComments(text: string): string {
-  let result = "";
-  let quote: string | undefined;
-  for (let index = 0; index < text.length; index++) {
-    const char = text[index];
-    if (quote) {
-      result += char;
-      if (char === "\\") result += text[++index] ?? "";
-      else if (char === quote) quote = undefined;
-    } else if (char === "/" && text[index + 1] === "/") {
-      const lineEnd = text.indexOf("\n", index);
-      index = (lineEnd === -1 ? text.length : lineEnd) - 1;
-    } else if (char === "/" && text[index + 1] === "*") {
-      const commentEnd = text.indexOf("*/", index + 2);
-      index = commentEnd === -1 ? text.length : commentEnd + 1;
-    } else {
-      if (char === '"' || char === "'" || char === "`") quote = char;
-      result += char;
-    }
+  // `text` is a literal's, kept as is; a segment without one is a comment.
+  const segments: Array<{ start: number; end: number; text?: string }> = [];
+  for (const comment of ctx.parsed?.comments ?? []) {
+    if (comment.start >= start && comment.end <= end) segments.push({ start: comment.start, end: comment.end });
   }
-  return result;
+  walk(node as AST.SvelteNode, {
+    enter(child) {
+      if (child.type === "TemplateElement") {
+        const text = source.slice(child.start, child.end).replace(TEMPLATE_LINE_BREAK_REGEX, "\\n");
+        segments.push({ start: child.start, end: child.end, text });
+      } else if (child.type === "Literal" && (typeof child.value === "string" || "regex" in child)) {
+        segments.push({ start: child.start, end: child.end, text: source.slice(child.start, child.end) });
+      }
+    },
+  });
+  segments.sort((a, b) => a.start - b.start);
+
+  let result = "";
+  let between = "";
+  let cursor = start;
+  for (const segment of segments) {
+    between += source.slice(cursor, segment.start);
+    cursor = segment.end;
+    // A comment reads as a space, so it can't join the tokens on either side.
+    if (segment.text === undefined) {
+      between += " ";
+      continue;
+    }
+    result += between.replace(WHITESPACE_RUN_REGEX, " ") + segment.text;
+    between = "";
+  }
+  return result + `${between}${source.slice(cursor, end)}`.replace(WHITESPACE_RUN_REGEX, " ");
 }

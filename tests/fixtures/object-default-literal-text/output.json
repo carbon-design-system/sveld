@@ -1,0 +1,52 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "patterns",
+      "kind": "let",
+      "description": "URL patterns",
+      "type": "{ url: RegExp; quote: RegExp }",
+      "typeSource": "default",
+      "value": "{ url: /https?:\\/\\//, quote: /\"/, }",
+      "defaultValue": {
+        "raw": "{     url: /https?:\\/\\//, // scheme and slashes     quote: /\"/,   }",
+        "kind": "object"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "separators",
+      "kind": "let",
+      "description": "Separators",
+      "type": "string[]",
+      "typeSource": "default",
+      "value": "[ \"  \", \"a // b\", `one\\ntwo`, ]",
+      "defaultValue": {
+        "raw": "[     \"  \", // two spaces     \"a // b\",     `one two`,   ]",
+        "kind": "array",
+        "value": [
+          "  ",
+          "a // b",
+          "one\ntwo"
+        ]
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
