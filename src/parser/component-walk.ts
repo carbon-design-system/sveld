@@ -407,7 +407,7 @@ export function walkComponent(ctx: ParserContext): ComponentWalkResult {
               : undefined) ?? spreadName;
           const isRestLocal = ctx.restPropLocals.has(name ?? "");
           if (name === "$$restProps" || isRestLocal) {
-            maybeSetRestProps(ctx, parent);
+            maybeSetRestProps(ctx, parent, node);
           }
           // `$$props` carries legacy slots, and a runes rest object carries snippet props.
           if ((name === "$$props" || isRestLocal) && parent && isComponentLikeType(parent.type)) {

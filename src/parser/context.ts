@@ -62,6 +62,8 @@ export interface ParserContext {
   rest_props?: RestProps;
   /** The local a `<svelte:element this={tag}>` rest props target names as its tag. */
   restPropsTagLocal?: string;
+  /** Where the rest props target was spread, for diagnostics. */
+  restPropsSource?: SourceRange;
   extends?: Extends;
   customElementTag?: string;
   customElement?: CustomElementOptions;

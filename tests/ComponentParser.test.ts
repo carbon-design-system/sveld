@@ -2859,4 +2859,14 @@ describe("ComponentParser", () => {
 
     expect(props.find((prop) => prop.name === "ref")?.type).toBe("null | HTMLElementTagNameMap[Tag]");
   });
+
+  test("locates a rest props spread onto a component", () => {
+    const result = new ComponentParser().parseSvelteComponent(
+      `<script>\n  import Link from "./Link.svelte";\n</script>\n\n<Link {...$$restProps} />\n`,
+      diagnostics,
+    );
+    const diagnostic = result.diagnostics?.find(({ kind }) => kind === "rest-props-unresolved");
+
+    expect(diagnostic?.source?.start).toEqual({ line: 5, column: 6 });
+  });
 });

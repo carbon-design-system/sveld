@@ -676,6 +676,7 @@ export function finalizeComponent(ctx: ParserContext, walk: ComponentWalkResult)
       "rest-props-unresolved",
       "$$restProps",
       `$$restProps is only spread onto component "${ctx.rest_props.name}"; sveld cannot infer its rest-prop type. Spread onto a plain element or add an @restProps tag.`,
+      ctx.restPropsSource,
     );
   }
 
