@@ -1,9 +1,7 @@
 import { SvelteComponentTyped } from "svelte";
 import type { LinkProps } from "./Link.svelte";
 
-type $Props = {};
-
-export type ExtendPropsRestSpreadProps = Omit<LinkProps, keyof $Props> & $Props;
+export type ExtendPropsRestSpreadProps = LinkProps;
 
 export default class ExtendPropsRestSpread extends SvelteComponentTyped<
   ExtendPropsRestSpreadProps,
