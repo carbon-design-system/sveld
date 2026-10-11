@@ -47,7 +47,7 @@
       "typeSource": "jsdoc",
       "value": "{ sm: false, md: false, lg: false, xlg: false, max: false, }",
       "defaultValue": {
-        "raw": "{     sm: false,     md: false,     lg: false,     xlg: false,     max: false,   }",
+        "raw": "{ sm: false, md: false, lg: false, xlg: false, max: false, }",
         "kind": "object",
         "value": {
           "sm": false,

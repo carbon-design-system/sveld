@@ -797,7 +797,11 @@ function classifyDefaultValue(
   ctx: ParserContext,
   node: Expression | FunctionDeclaration,
 ): ComponentPropDefaultValue | undefined {
-  const raw = sourceForExpression(ctx, node);
+  // An object or array's `// comment` would comment out the rest once on one line.
+  const raw =
+    node.type === "ObjectExpression" || node.type === "ArrayExpression"
+      ? compactSourceText(ctx, node)
+      : sourceForExpression(ctx, node);
   if (!raw) return undefined;
 
   const kind = defaultValueKind(node);

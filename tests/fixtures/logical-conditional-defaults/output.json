@@ -77,7 +77,7 @@
       "typeSource": "default",
       "value": "theme === \"dark\" ? \"light-text-on-dark-background\" : theme === \"light\" ? \"dark-text-on-light-background\" : \"neutral\"",
       "defaultValue": {
-        "raw": "theme === \"dark\"       ? \"light-text-on-dark-background\"       : theme === \"light\"         ? \"dark-text-on-light-background\"         : \"neutral\"",
+        "raw": "theme === \"dark\" ? \"light-text-on-dark-background\" : theme === \"light\" ? \"dark-text-on-light-background\" : \"neutral\"",
         "kind": "expression"
       },
       "isFunction": false,
