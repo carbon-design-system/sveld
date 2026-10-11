@@ -1,6 +1,6 @@
-import type { Component } from "svelte";
+import { SvelteComponentTyped } from "svelte";
 
-export type RequiredProps = {
+export type JsdocRequiredTagProps = {
   /**
    * @required
    * @default true
@@ -26,11 +26,15 @@ export type RequiredProps = {
       }]) => void;
 };
 
-export type RequiredExports = Record<string, never>;
-
-declare const Required: Component<
-  RequiredProps,
-  RequiredExports,
-  ""
->;
-export default Required;
+export default class JsdocRequiredTag extends SvelteComponentTyped<
+  JsdocRequiredTagProps,
+  Record<string, any>,
+  {
+    default: {
+      prop: boolean;
+      prop1: boolean | string;
+      prop2: any;
+      prop3: boolean;
+    };
+  }
+> {}
