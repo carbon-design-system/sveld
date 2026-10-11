@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.38.3](https://github.com/carbon-design-system/sveld/releases/tag/v0.38.3) - 2026-10-10
+
+**Features**
+
+- type `svelte/store` context values (f8fc4e9)
+- type context functions from their declarations (02c41a1)
+- infer rest props spread through a local object (507b834)
+- type `bind:this={refs[i]}` props as arrays (5e6c8d2)
+- type `bind:this` on an imported component (9cc41fe)
+
+**Fixes**
+
+- type runes props from a JSDoc type with an index signature (c8b86e7)
+- read ternary and template `dispatch` event names (e5b30f2)
+- type `bind:this` on MathML elements (d414b4b)
+- type `bind:this` on SVG elements (d95ebf5)
+- add the deprecated HTML tags the element map was missing (5f996aa)
+- type a cast default as the cast type (801ca08)
+- type `as const` defaults as const assertions (76fd31a)
+- widen object and array literal prop defaults (9bf2fec)
+
 ## [0.38.2](https://github.com/carbon-design-system/sveld/releases/tag/v0.38.2) - 2026-10-08
 
 **Features**
