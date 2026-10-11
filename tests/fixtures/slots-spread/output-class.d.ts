@@ -1,16 +1,16 @@
 import { SvelteComponentTyped } from "svelte";
 
 export type SlotsSpreadProps = {
-  text?: (this: void) => void;
+  text?: (this: void, ...args: [{ a: 4 }]) => void;
 
-  children?: (this: void) => void;
+  children?: (this: void, ...args: [{ a: 4 }]) => void;
 };
 
 export default class SlotsSpread extends SvelteComponentTyped<
   SlotsSpreadProps,
   Record<string, any>,
   {
-    default: Record<string, never>;
-    text: Record<string, never>;
+    default: { a: 4 };
+    text: { a: 4 };
   }
 > {}

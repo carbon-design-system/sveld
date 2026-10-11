@@ -8,12 +8,12 @@
       "name": null,
       "default": true,
       "fallback": "Default text",
-      "slot_props": "Record<string, never>"
+      "slot_props": "{ a: 4 }"
     },
     {
       "name": "text",
       "default": false,
-      "slot_props": "Record<string, never>"
+      "slot_props": "{ a: 4 }"
     }
   ],
   "events": [],

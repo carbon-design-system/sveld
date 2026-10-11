@@ -63,6 +63,31 @@ function resolveSlotSpreadShape(ctx: ParserContext, argument: unknown): SlotProp
   return slot_props;
 }
 
+/**
+ * Merges what a spread (`{...props}` on a `<slot>`, or in a `{@render x({...})}` argument)
+ * adds to `slot_props`. Returns `false`, after reporting it, when the spread can't be resolved.
+ */
+export function mergeSlotPropsSpread(
+  ctx: ParserContext,
+  slot_props: SlotProps,
+  argument: unknown,
+  node: { start: number; end: number },
+): boolean {
+  const merged = resolveSlotSpreadShape(ctx, argument);
+  if (merged) {
+    Object.assign(slot_props, merged);
+    return true;
+  }
+  recordDiagnostic(
+    ctx,
+    "spread-unresolved",
+    "slot_props",
+    'Slot props spread a value sveld can\'t resolve; its shape is widened to "Record<string, any>".',
+    sourceRangeFromNode(ctx, node),
+  );
+  return false;
+}
+
 export function buildSlotPropsFromObjectExpression(
   ctx: ParserContext,
   expression: ObjectExpression,
@@ -72,19 +97,7 @@ export function buildSlotPropsFromObjectExpression(
 
   for (const property of expression.properties) {
     if (property.type === "SpreadElement") {
-      const merged = resolveSlotSpreadShape(ctx, property.argument);
-      if (merged) {
-        Object.assign(slot_props, merged);
-      } else {
-        hasUnresolvedSpread = true;
-        recordDiagnostic(
-          ctx,
-          "spread-unresolved",
-          "slot_props",
-          'Slot props spread a value sveld can\'t resolve; its shape is widened to "Record<string, any>".',
-          sourceRangeFromNode(ctx, property),
-        );
-      }
+      if (!mergeSlotPropsSpread(ctx, slot_props, property.argument, property)) hasUnresolvedSpread = true;
       continue;
     }
 
