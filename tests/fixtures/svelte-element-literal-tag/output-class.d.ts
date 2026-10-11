@@ -7,10 +7,10 @@ type $Props = {
   [key: `data-${string}`]: unknown;
 };
 
-export type SvelteElementHardcodedButtonProps = Omit<$RestProps, keyof $Props> & $Props;
+export type SvelteElementLiteralTagProps = Omit<$RestProps, keyof $Props> & $Props;
 
-export default class SvelteElementHardcodedButton extends SvelteComponentTyped<
-  SvelteElementHardcodedButtonProps,
+export default class SvelteElementLiteralTag extends SvelteComponentTyped<
+  SvelteElementLiteralTagProps,
   Record<string, any>,
   Record<string, never>
 > {}
