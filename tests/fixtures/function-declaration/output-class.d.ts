@@ -12,7 +12,7 @@ export default class FunctionDeclaration extends SvelteComponentTyped<
   Record<string, any>,
   Record<string, never>
 > {
-  fnB: (...args: any[]) => any;
+  fnB: () => void;
 
   add: (a: any, b: any) => any;
 

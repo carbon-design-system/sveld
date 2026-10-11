@@ -298,7 +298,12 @@ export function collectExportDeclarators(
       kind === "const" &&
       (init?.type === "ObjectExpression" || init?.type === "ArrayExpression") &&
       !ctx.typeCasts.constAssertions.has(init);
-    const typeSeed = (keepsLiteralTypes ? literalType(init, "literal") : undefined) ?? initResult.type;
+    // A `const` function is the value consumers call, like an `export function`, not a default.
+    const constFunction =
+      kind === "const" && (init?.type === "ArrowFunctionExpression" || init?.type === "FunctionExpression")
+        ? inferFunctionValueType(ctx, init)
+        : undefined;
+    const typeSeed = constFunction ?? (keepsLiteralTypes ? literalType(init, "literal") : undefined) ?? initResult.type;
     queuePendingCrossFileDefault(ctx, initResult, declaratorPropName, location);
 
     declarators.push({

@@ -92,7 +92,7 @@
     {
       "name": "b",
       "kind": "const",
-      "type": "(...args: any[]) => any",
+      "type": "() => void",
       "typeSource": "default",
       "value": "() => {}",
       "defaultValue": {
@@ -108,7 +108,7 @@
     {
       "name": "b2",
       "kind": "const",
-      "type": "(...args: any[]) => any",
+      "type": "() => any",
       "typeSource": "default",
       "value": "() => () => {}",
       "defaultValue": {

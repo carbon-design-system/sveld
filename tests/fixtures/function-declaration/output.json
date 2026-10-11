@@ -21,7 +21,7 @@
     {
       "name": "fnB",
       "kind": "const",
-      "type": "(...args: any[]) => any",
+      "type": "() => void",
       "typeSource": "default",
       "value": "() => {}",
       "defaultValue": {
