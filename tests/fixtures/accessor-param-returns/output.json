@@ -24,6 +24,27 @@
       "reactive": false
     },
     {
+      "name": "show",
+      "kind": "function",
+      "description": "Show a notification built from its parts.",
+      "type": "(options: { title: string; kind?: \"error\" | \"info\" }) => string",
+      "typeSource": "jsdoc",
+      "params": [
+        {
+          "name": "options",
+          "type": "{ title: string; kind?: \"error\" | \"info\" }",
+          "description": "",
+          "optional": false
+        }
+      ],
+      "returnType": "string",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
       "name": "remove",
       "kind": "function",
       "description": "Remove a notification by id.",

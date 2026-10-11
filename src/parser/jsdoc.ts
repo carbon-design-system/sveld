@@ -382,6 +382,36 @@ export function templateTagParameters(tag: JSDocTag, type: string): Array<{ name
   return parameters;
 }
 
+/** Param types that `@param name.member` tags fill in with an object type. */
+const OBJECT_PLACEHOLDER_TYPES = new Set(["", "any", "object", "Object"]);
+
+/**
+ * `@param` tags as params. `@param options.label` tags become members of `options`' type
+ * (`{ label: string }`) when it's only declared `{object}`, as TypeScript reads them.
+ */
+function paramsWithNestedMembers(paramTags: JSDocTag[]): ComponentPropParam[] {
+  const membersByParam = new Map<string, string[]>();
+  for (const { name, type, optional } of paramTags) {
+    const [param, member, ...deeper] = name.split(".");
+    if (member === undefined || deeper.length > 0) continue;
+    const members = membersByParam.get(param) ?? [];
+    members.push(`${member}${optional ? "?" : ""}: ${aliasType(type) || "any"}`);
+    membersByParam.set(param, members);
+  }
+  return paramTags
+    .filter((tag) => !tag.name.includes("."))
+    .map((tag) => {
+      const members = membersByParam.get(tag.name);
+      const type = aliasType(tag.type);
+      return {
+        name: tag.name,
+        type: members && OBJECT_PLACEHOLDER_TYPES.has(type) ? `{ ${members.join("; ")} }` : type,
+        description: cleanDescription(joinDescriptionLines(tag.description.split("\n"))),
+        optional: tag.optional,
+      };
+    });
+}
+
 function processJSDocComment(ctx: ParserContext, jsdocComment: LeadingJSDocComment): NodeJsDoc | undefined {
   const comment = parsedSourceBlock(ctx, jsdocComment) ?? parseCommentText(ctx, formatComment(jsdocComment.value));
   // A block declaring component-level items (`@slot`, `@event`, `@typedef`, ...) documents
@@ -389,17 +419,7 @@ function processJSDocComment(ctx: ParserContext, jsdocComment: LeadingJSDocComme
   if (comment[0]?.tags.some(({ tag }) => COMPONENT_LEVEL_TAGS.has(tag))) return undefined;
   const tags = getCommentTags(comment);
 
-  const params: ComponentPropParam[] | undefined =
-    tags.param.length > 0
-      ? tags.param
-          .filter((tag) => !tag.name.includes("."))
-          .map((tag) => ({
-            name: tag.name,
-            type: aliasType(tag.type),
-            description: cleanDescription(joinDescriptionLines(tag.description.split("\n"))),
-            optional: tag.optional,
-          }))
-      : undefined;
+  const params = tags.param.length > 0 ? paramsWithNestedMembers(tags.param) : undefined;
 
   // A function's own `@template`s become its type parameters; anywhere else they (and
   // `@generics`) declare component generics. Neither is description text.
