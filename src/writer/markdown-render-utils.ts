@@ -23,7 +23,7 @@ import {
   SLOT_TABLE_HEADER,
   WHITESPACE_REGEX,
 } from "./markdown-format-utils";
-import { getTypeDefs } from "./writer-ts-definitions-core";
+import { getTypeDefs, isAccessorProp } from "./writer-ts-definitions-core";
 
 /**
  * The part of `MarkdownDocument` the renderers call. `renderComponentsToMarkdown`
@@ -88,11 +88,6 @@ function renderExports(document: MarkdownRenderTarget, entryExports: EntryExport
 
   document.append("raw", "\n");
   document.append("divider");
-}
-
-/** Mirrors the `.d.ts` writer's `genAccessors` filter. */
-function isAccessorProp(prop: ComponentProp): boolean {
-  return prop.kind === "const" || prop.isFunctionDeclaration;
 }
 
 function renderModuleExports(document: MarkdownRenderTarget, moduleExports: ComponentProp[]) {

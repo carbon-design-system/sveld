@@ -6,7 +6,6 @@ import { isTupleType, splitTopLevel } from "../type-text";
 import { formatGeneratedTypeScript } from "./format-generated-ts";
 
 const ANY_TYPE = "any";
-const EMPTY_STR = "";
 
 /** Svelte 4 rejects `{}`; use `Record<string, any>` for empty events. */
 const EMPTY_EVENTS = "Record<string, any>";
@@ -40,7 +39,7 @@ type JsDocTags = Array<{ name: string; body: string }> | undefined;
 
 /** A `/** ... *\/` block with one ` * ` line per entry, or `""` without lines. */
 function formatJsDocBlock(lines: string[]): string {
-  if (lines.length === 0) return EMPTY_STR;
+  if (lines.length === 0) return "";
   return `/**\n * ${escapeCommentText(lines.join("\n * "))}\n */`;
 }
 
@@ -92,7 +91,7 @@ export function formatTsProps(props?: string) {
 }
 
 export function getTypeDefs(def: Pick<ComponentDocApi, "typedefs">) {
-  if (def.typedefs.length === 0) return EMPTY_STR;
+  if (def.typedefs.length === 0) return "";
   return def.typedefs
     .map((typedef) => {
       const comment = formatJsDocBlock([
@@ -149,7 +148,7 @@ function getGenericParams(generics: ComponentDocApi["generics"]): Array<{ name: 
 function computeReferencedGenerics(generics: ComponentDocApi["generics"], text: string) {
   const referenced = getGenericParams(generics).filter(({ name }) => referencesGeneric(text, name));
 
-  if (referenced.length === 0) return { declSuffix: EMPTY_STR, refSuffix: EMPTY_STR };
+  if (referenced.length === 0) return { declSuffix: "", refSuffix: "" };
 
   return {
     declSuffix: `<${referenced.map(({ constraint }) => stripConstModifierForTypeAlias(constraint)).join(", ")}>`,
@@ -170,7 +169,7 @@ function computeReferencedGenerics(generics: ComponentDocApi["generics"], text: 
  * ```
  */
 export function getContextDefs(def: Pick<ComponentDocApi, "contexts" | "generics">) {
-  if (!def.contexts || def.contexts.length === 0) return EMPTY_STR;
+  if (!def.contexts || def.contexts.length === 0) return "";
 
   return def.contexts
     .map((context) => {
@@ -243,8 +242,7 @@ function genPropDef(
     canonicalPropsType?: string;
   },
 ) {
-  // Accessor-style exports (`export function` / `export const`) render via `genAccessors`.
-  const nonAccessorProps = def.props.filter((prop) => !prop.isFunctionDeclaration && prop.kind !== "const");
+  const nonAccessorProps = def.props.filter((prop) => !isAccessorProp(prop));
   // Slot snippet props must not collide with real props.
   const existingPropNames = new Set([
     ...nonAccessorProps.map((prop) => prop.name),
@@ -302,103 +300,68 @@ function genPropDef(
   const genericsNameRef = def.generics ? `<${def.generics[0]}>` : "";
   const extendsPrefix =
     def.extends === undefined ? "" : `Omit<${def.extends.interface}, keyof $Props${genericsNameRef}> & `;
+  const propsRef = `${extendsPrefix}$Props${genericsNameRef}`;
+  const exportProps = (type: string) => `export type ${props_name}${genericsName} = ${type};`;
+  const ownMembers = `{${props}\n}`;
 
-  if (def.rest_props?.type === "Element") {
-    const { name, thisValue, thisType, description } = def.rest_props;
-    let restPropsType: string;
-    if (name !== "svelte:element") {
-      restPropsType = name
-        .split("|")
-        .map((element) => `SvelteHTMLElements["${element.trim()}"]`)
-        .join(" & ");
-    } else if (thisValue) {
-      restPropsType = `SvelteHTMLElements["${thisValue}"]`;
-    } else if (thisType) {
-      // `NoInfer` keeps the other props from inferring the tag, so no `tag` means its default.
-      restPropsType = `NoInfer<SvelteHTMLElements[${thisType}]>`;
+  if (def.rest_props?.type !== "Element") {
+    let declarations: string[];
+    if (def.canonicalPropsType) {
+      const own = props.trim() === "" ? "" : ` & ${ownMembers}`;
+      declarations = [`type $Props${genericsName} = ${def.canonicalPropsType}${own};`, exportProps(propsRef)];
+    } else if (def.extends === undefined) {
+      // Never emit `{}`: Svelte 4 rejects it and Biome bans it.
+      declarations = [exportProps(props.trim() === "" ? EMPTY_OBJECT : ownMembers)];
     } else {
-      // Dynamic `this`: the element type is unknown at compile time.
-      restPropsType = "HTMLAttributes<HTMLElement>";
+      declarations = [`type $Props${genericsName} = ${ownMembers};`, exportProps(propsRef)];
     }
-
-    // Preserves `data-*` attrs for Svelte 3 HTML-extending components.
-    // See https://github.com/sveltejs/language-tools/issues/1825
-    /**
-     * biome-ignore lint/suspicious/noTemplateCurlyInString: type generation
-     * Template literal is required for TypeScript's template literal type syntax.
-     */
-    const dataAttributes = "[key: `data-${string}`]: unknown;";
-
-    const restPropsComment = description ? `${formatComment(description)}\n    ` : "";
-    const propsDecl = def.canonicalPropsType
-      ? `type $Props${genericsName} = (${def.canonicalPropsType}) & {${props}
-
-      ${dataAttributes}
-    };`
-      : `type $Props${genericsName} = {
-      ${props}
-
-      ${dataAttributes}
-    };`;
-    // A tag typed by a type parameter needs the component's type parameters in scope.
-    const restPropsGenerics = thisType ? { name: genericsName, ref: genericsNameRef } : { name: "", ref: "" };
-    const omittedKeys =
-      def.extends === undefined
-        ? `keyof $Props${genericsNameRef}`
-        : `keyof ($Props${genericsNameRef} & ${def.extends.interface})`;
-    const omittedRestProps = `Omit<$RestProps${restPropsGenerics.ref}, ${omittedKeys}>`;
-    // Omitting from a union of element types (`tag: "div" | "section"`) is too
-    // complex for TypeScript, so omit from each element type in turn.
-    const restPropsSide = thisType ? `(${thisType} extends any ? ${omittedRestProps} : never)` : omittedRestProps;
-
-    return {
-      props_name,
-      prop_def: `
-    ${restPropsComment}type $RestProps${restPropsGenerics.name} = ${restPropsType};\n
-    ${propsDecl}
-
-    export type ${props_name}${genericsName} = ${restPropsSide} & ${extendsPrefix}$Props${genericsNameRef};
-  `,
-    };
+    return { props_name, prop_def: declarations.join("\n\n"), elementsImport: undefined };
   }
 
-  let prop_def: string;
-  if (def.canonicalPropsType) {
-    const propsDecl = `
-    type $Props${genericsName} = ${def.canonicalPropsType}${
-      props.trim() === ""
-        ? ""
-        : ` & {${props}
-    }`
-    };
-  `;
-    prop_def = `
-    ${propsDecl}
-    export type ${props_name}${genericsName} = ${extendsPrefix}$Props${genericsNameRef};
-  `;
-  } else if (def.extends === undefined) {
-    // Never emit `{}`: Svelte 4 rejects it and Biome bans it.
-    prop_def =
-      props.trim() === ""
-        ? `
-    export type ${props_name}${genericsName} = ${EMPTY_OBJECT};
-  `
-        : `
-    export type ${props_name}${genericsName} = {
-      ${props}
-    };
-  `;
+  const { name, thisValue, thisType, description } = def.rest_props;
+  let restPropsType: string;
+  if (name !== "svelte:element") {
+    restPropsType = name
+      .split("|")
+      .map((element) => `SvelteHTMLElements["${element.trim()}"]`)
+      .join(" & ");
+  } else if (thisValue) {
+    restPropsType = `SvelteHTMLElements["${thisValue}"]`;
+  } else if (thisType) {
+    // `NoInfer` keeps the other props from inferring the tag, so no `tag` means its default.
+    restPropsType = `NoInfer<SvelteHTMLElements[${thisType}]>`;
   } else {
-    prop_def = `
-    type $Props${genericsName} = {
-      ${props}
-    };
-
-    export type ${props_name}${genericsName} = ${extendsPrefix}$Props${genericsNameRef};
-  `;
+    // Dynamic `this`: the element type is unknown at compile time.
+    restPropsType = "HTMLAttributes<HTMLElement>";
   }
 
-  return { props_name, prop_def };
+  // Preserves `data-*` attrs for Svelte 3 HTML-extending components.
+  // See https://github.com/sveltejs/language-tools/issues/1825
+  // biome-ignore lint/suspicious/noTemplateCurlyInString: a TypeScript template literal type
+  const dataAttributes = "[key: `data-${string}`]: unknown;";
+
+  const restPropsComment = description ? `${formatComment(description)}\n` : "";
+  const canonicalPrefix = def.canonicalPropsType ? `(${def.canonicalPropsType}) & ` : "";
+  // A tag typed by a type parameter needs the component's type parameters in scope.
+  const restPropsGenerics = thisType ? { name: genericsName, ref: genericsNameRef } : { name: "", ref: "" };
+  const omittedKeys =
+    def.extends === undefined
+      ? `keyof $Props${genericsNameRef}`
+      : `keyof ($Props${genericsNameRef} & ${def.extends.interface})`;
+  const omittedRestProps = `Omit<$RestProps${restPropsGenerics.ref}, ${omittedKeys}>`;
+  // Omitting from a union of element types (`tag: "div" | "section"`) is too
+  // complex for TypeScript, so omit from each element type in turn.
+  const restPropsSide = thisType ? `(${thisType} extends any ? ${omittedRestProps} : never)` : omittedRestProps;
+
+  return {
+    props_name,
+    prop_def: [
+      `${restPropsComment}type $RestProps${restPropsGenerics.name} = ${restPropsType};`,
+      `type $Props${genericsName} = ${canonicalPrefix}{${props}\n\n${dataAttributes}\n};`,
+      exportProps(`${restPropsSide} & ${propsRef}`),
+    ].join("\n\n"),
+    elementsImport: restPropsType.startsWith("HTMLAttributes") ? "HTMLAttributes" : "SvelteHTMLElements",
+  };
 }
 
 function snippetArgs(slot_props: string) {
@@ -572,14 +535,19 @@ function generateFunctionType(prop: {
   return prop.type || ANY_TYPE;
 }
 
+/** `export function` / `export const` in the instance script: a class member or `Exports` entry, not a prop. */
+export function isAccessorProp(prop: ComponentProp): boolean {
+  return prop.isFunctionDeclaration === true || prop.kind === "const";
+}
+
 function genAccessors(def: Pick<ComponentDocApi, "props">) {
   return def.props
-    .filter((prop) => prop.isFunctionDeclaration || prop.kind === "const")
-    .map((prop) => {
-      return `
+    .filter(isAccessorProp)
+    .map(
+      (prop) => `
     ${formatJsDocBlock(memberJsDocLines(prop.description, prop.deprecated, prop.tags))}
-    ${formatKey(prop.name)}: ${generateFunctionType(prop)};`;
-    })
+    ${formatKey(prop.name)}: ${generateFunctionType(prop)};`,
+    )
     .join("\n");
 }
 
@@ -593,7 +561,6 @@ function genExportsDef(def: Pick<ComponentDocApi, "props" | "moduleName" | "gene
 
   if (accessors.trim() === "") {
     return {
-      exports_name,
       exports_ref: exports_name,
       exports_def: `export type ${exports_name} = ${EMPTY_OBJECT};`,
     };
@@ -602,18 +569,17 @@ function genExportsDef(def: Pick<ComponentDocApi, "props" | "moduleName" | "gene
   const { declSuffix, refSuffix } = computeReferencedGenerics(def.generics, accessors);
 
   return {
-    exports_name,
     exports_ref: `${exports_name}${refSuffix}`,
     exports_def: `export type ${exports_name}${declSuffix} = {${accessors}\n  };`,
   };
 }
 
-/** `"component"` format's `Bindings` union: `$bindable(...)` or `@bindable writable` prop names. */
+/** `"component"` format's `Bindings` union: `$bindable(...)` or `@bindable writable` prop names, else `""`. */
 function genBindingsUnion(def: Pick<ComponentDocApi, "props">): string {
-  return def.props
+  const names = def.props
     .filter((prop) => prop.bindable === true || prop.binding === "writable")
-    .map((prop) => JSON.stringify(prop.name))
-    .join(" | ");
+    .map((prop) => JSON.stringify(prop.name));
+  return names.length > 0 ? names.join(" | ") : '""';
 }
 
 /** An anonymous default export (`moduleName` "default") still needs a declaration name. */
@@ -623,12 +589,11 @@ function componentIdentifier(moduleName: string): string {
 
 function genComponentDeclaration(def: { moduleName: string; propsRef: string; exportsRef: string; bindings: string }) {
   const identifier = componentIdentifier(def.moduleName);
-  const bindingsLiteral = def.bindings === EMPTY_STR ? '""' : def.bindings;
 
   return `declare const ${identifier}: Component<
       ${def.propsRef},
       ${def.exportsRef},
-      ${bindingsLiteral}
+      ${def.bindings}
     >;
     export default ${identifier};`;
 }
@@ -651,7 +616,6 @@ function genComponentInterfaceDeclaration(def: {
 }) {
   const identifier = componentIdentifier(def.moduleName);
   const interfaceName = `${identifier}Component`;
-  const bindingsLiteral = def.bindings === EMPTY_STR ? '""' : def.bindings;
   const onSignature = def.eventsRef
     ? `$on?<K extends keyof ${def.eventsRef} & string>(type: K, callback: (e: ${def.eventsRef}[K]) => void): () => void;`
     : "$on?(type: string, callback: (e: any) => void): () => void;";
@@ -669,7 +633,7 @@ function genComponentInterfaceDeclaration(def: {
         $set?(props: Partial<${def.propsRef}>): void;
       } & ${def.exportsRef};
       element?: typeof HTMLElement;
-      z_$$bindings?: ${bindingsLiteral};
+      z_$$bindings?: ${def.bindings};
     }
     declare const ${identifier}: ${interfaceName};
     export default ${identifier};`;
@@ -919,7 +883,7 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
   const useComponentFormat = options?.format === "component";
   const isGenericComponent = generics !== null;
 
-  const { props_name, prop_def } = genPropDef({
+  const { props_name, prop_def, elementsImport } = genPropDef({
     moduleName,
     props,
     rest_props,
@@ -948,26 +912,14 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
 
   const { exports_ref, exports_def } = useComponentFormat
     ? genExportsDef({ props, moduleName, generics })
-    : { exports_ref: EMPTY_STR, exports_def: EMPTY_STR };
-  const bindings = useComponentFormat ? genBindingsUnion({ props }) : EMPTY_STR;
+    : { exports_ref: "", exports_def: "" };
+  const bindings = useComponentFormat ? genBindingsUnion({ props }) : "";
 
   const snippetImportNeeded =
     !PRESERVED_SNIPPET_IMPORT_REGEX.test(preservedTypeImports) &&
-    (SNIPPET_TYPE_REFERENCE_REGEX.test(prop_def) ||
-      SNIPPET_TYPE_REFERENCE_REGEX.test(moduleExportsDef) ||
-      SNIPPET_TYPE_REFERENCE_REGEX.test(typeDefs) ||
-      SNIPPET_TYPE_REFERENCE_REGEX.test(contextDefs) ||
-      SNIPPET_TYPE_REFERENCE_REGEX.test(preservedLocalTypeDeclarations) ||
-      SNIPPET_TYPE_REFERENCE_REGEX.test(exports_def));
-
-  const needsSvelteHTMLElements =
-    rest_props?.type === "Element" &&
-    (rest_props.name !== "svelte:element" || rest_props.thisValue || rest_props.thisType);
-  const needsHTMLAttributes =
-    rest_props?.type === "Element" &&
-    rest_props.name === "svelte:element" &&
-    !rest_props.thisValue &&
-    !rest_props.thisType;
+    [prop_def, moduleExportsDef, typeDefs, contextDefs, preservedLocalTypeDeclarations, exports_def].some((section) =>
+      SNIPPET_TYPE_REFERENCE_REGEX.test(section),
+    );
 
   const componentTypeImport = useComponentFormat
     ? useComponentInterface
@@ -977,8 +929,7 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
 
   const importSection = [
     componentTypeImport,
-    needsSvelteHTMLElements ? `import type { SvelteHTMLElements } from "svelte/elements";` : "",
-    needsHTMLAttributes ? `import type { HTMLAttributes } from "svelte/elements";` : "",
+    elementsImport ? `import type { ${elementsImport} } from "svelte/elements";` : "",
     preservedTypeImports,
     genImports({ extends: _extends }),
   ]
