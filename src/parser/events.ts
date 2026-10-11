@@ -71,7 +71,7 @@ export function detailNamesBoundInNestedScope(
  * an object or array literal structurally, a variable by its type. `undefined`
  * for anything else, so callers keep their scalar-literal narrowing.
  */
-export function deriveDetailType(source: DetailTypeSource, node: unknown): string | undefined {
+function deriveDetailType(source: DetailTypeSource, node: unknown): string | undefined {
   if (isIdentifier(node)) return source.variableType(node.name);
   return deriveLiteralDetailType(source, node);
 }
@@ -90,15 +90,18 @@ export function deriveLiteralDetailType(source: DetailTypeSource, node: unknown)
 }
 
 function inferLiteralMemberType(source: DetailTypeSource, node: unknown): string {
-  if (!node || typeof node !== "object" || !("type" in node)) return "any";
-  if (isIdentifier(node)) return source.variableType(node.name) ?? "any";
+  return deriveDetailType(source, node) ?? (isLiteral(node) ? (literalValueType(node) ?? "null") : "any");
+}
 
-  if (isLiteral(node)) return literalValueType(node) ?? "null";
-
-  if (isObjectExpression(node)) return buildObjectLiteralDetailType(source, node);
-  if (node.type === "ArrayExpression") return buildArrayLiteralDetailType(source, node as ArrayExpression);
-
-  return "any";
+/**
+ * Detail type text of a dispatch's detail argument: {@link deriveDetailType},
+ * else a scalar literal's type, else `""` (typed by `addDispatchedEvent`).
+ */
+export function dispatchDetailText(source: DetailTypeSource, detail: unknown): string {
+  const typed = deriveDetailType(source, detail);
+  if (typed !== undefined) return typed;
+  const literal = isLiteral(detail) ? detail.value : undefined;
+  return literal == null ? "" : literalDetailToTypeText(literal);
 }
 
 /**
@@ -179,8 +182,6 @@ export function addDispatchedEvent(
     has_argument: boolean;
   },
 ) {
-  if (name === undefined) return;
-
   const default_detail = !has_argument && !detail ? "null" : detail || undefined;
   const existing_event = ctx.events.get(name);
   if (existing_event?.type === "forwarded") {
@@ -271,11 +272,9 @@ export function parseHostDispatchEventCall(
 
 /** Records a {@link parseHostDispatchEventCall} event, its detail typed as a `dispatch()` detail is. */
 export function addHostDispatchedEvent(ctx: ParserContext, dispatch: HostDispatch) {
-  const typed = deriveDetailType(componentDetailTypeSource(ctx, dispatch.nestedBoundNames), dispatch.detail);
-  const literal = typed === undefined && isLiteral(dispatch.detail) ? dispatch.detail.value : undefined;
   addDispatchedEvent(ctx, {
     name: dispatch.name,
-    detail: typed ?? (literal == null ? "" : literalDetailToTypeText(literal)),
+    detail: dispatchDetailText(componentDetailTypeSource(ctx, dispatch.nestedBoundNames), dispatch.detail),
     has_argument: dispatch.hasArgument,
     source: dispatch.source,
   });
