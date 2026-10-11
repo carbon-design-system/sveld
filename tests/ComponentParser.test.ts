@@ -2625,7 +2625,7 @@ describe("ComponentParser", () => {
     expect(props[0]).toMatchObject({ type: "{}", reactive: true });
   });
 
-  test("ignores `bind:this` on a non-indexed member, a nested member, or a local", () => {
+  test("doesn't type a prop from `bind:this` on a non-indexed member, a nested member, or a local", () => {
     const source = `
       <script>
         export let named = [];
@@ -2643,8 +2643,9 @@ describe("ComponentParser", () => {
     const { props } = new ComponentParser().parseSvelteComponent(source, diagnostics);
     const byName = Object.fromEntries(props.map((prop) => [prop.name, prop]));
 
-    expect(byName.named).toMatchObject({ type: "any[]", reactive: false });
-    expect(byName.nested).toMatchObject({ type: "{ a: any[] }", reactive: false });
+    // Still reactive: the binding writes into the prop.
+    expect(byName.named).toMatchObject({ type: "any[]", reactive: true });
+    expect(byName.nested).toMatchObject({ type: "{ a: any[] }", reactive: true });
   });
 
   describe("rest props spread through a local object", () => {
@@ -2914,5 +2915,30 @@ describe("ComponentParser", () => {
       { name: "register", type: "(id: string) => void", description: "Adds an item to the group.", optional: false },
     ]);
     expect(result.diagnostics?.filter(({ kind }) => kind === "context-any-type")).toEqual([]);
+  });
+
+  test("marks a prop bound through an index or member reactive", () => {
+    const { props } = new ComponentParser().parseSvelteComponent(
+      `
+        <script>
+          export let values = ["a"];
+          export let settings = { name: "" };
+          export let rows = [{ label: "" }];
+        </script>
+
+        {#each values as _, i}
+          <input bind:value={values[i]} />
+        {/each}
+        <input bind:value={settings.name} />
+        <input bind:value={rows[0].label} />
+      `,
+      diagnostics,
+    );
+
+    expect(Object.fromEntries(props.map(({ name, reactive, type }) => [name, { reactive, type }]))).toEqual({
+      values: { reactive: true, type: "string[]" },
+      settings: { reactive: true, type: "{ name: string }" },
+      rows: { reactive: true, type: "{ label: string }[]" },
+    });
   });
 });

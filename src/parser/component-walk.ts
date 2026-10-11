@@ -282,19 +282,21 @@ function addForwardedEvent(ctx: ParserContext, node: AST.OnDirective, parent: AS
   }
 }
 
-/** The variable a `bind:` writes: `ref`, or `refs` in `bind:this={refs[i]}`. */
+/**
+ * The variable a `bind:` writes: `ref`, or the root of `values[i]` or
+ * `settings.name`. `indexed` is `bind:this={refs[i]}`, the one member form
+ * that also types the prop.
+ */
 function bindTarget(node: AST.BindDirective): { name: string; indexed: boolean } | undefined {
   const { expression } = node;
   if (expression.type === "Identifier") return { name: expression.name, indexed: false };
-  if (
-    node.name === "this" &&
-    expression.type === "MemberExpression" &&
-    expression.computed &&
-    expression.object.type === "Identifier"
-  ) {
-    return { name: expression.object.name, indexed: true };
-  }
-  return undefined;
+  if (expression.type !== "MemberExpression") return undefined;
+
+  let root: Expression = expression;
+  while (root.type === "MemberExpression") root = root.object as Expression;
+  if (root.type !== "Identifier") return undefined;
+  const indexed = node.name === "this" && expression.computed && expression.object.type === "Identifier";
+  return { name: root.name, indexed };
 }
 
 /**
@@ -316,7 +318,10 @@ function recordBindDirective(
   if (!prop_name) return;
   ctx.reactive_vars.add(prop_name);
 
-  if (node.name !== "this" || !("name" in parent) || typeof parent.name !== "string") return;
+  // `bind:this={refs.foo}` or `{obj.a[i]}` mutates the prop but says nothing about its type.
+  const isMember = node.expression.type === "MemberExpression";
+  if (node.name !== "this" || (isMember && !bound.indexed)) return;
+  if (!("name" in parent) || typeof parent.name !== "string") return;
   const target = bound.indexed ? "indexed" : "direct";
   const binding = ctx.bindings.get(prop_name) ?? { elements: [], components: [], target };
   if (binding.target !== target) binding.target = "mixed";
