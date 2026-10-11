@@ -15,7 +15,6 @@ import {
 } from "../ast-guards";
 import type { ElementNamespace } from "../element-tag-map";
 import type { ComponentElement, ComponentInlineElement, SlotProps, SlotPropValue } from "../model";
-import { resolveMemberExpressionType } from "./bindings";
 import type { ParserContext } from "./context";
 import { parseSetContextCall } from "./contexts";
 import { detailNamesBoundInNestedScope, type HostDispatch, parseHostDispatchEventCall } from "./events";
@@ -40,6 +39,7 @@ import {
   extractRenderTagInfo,
   renderTagCall,
   slotKey,
+  slotPropValueFromExpression,
 } from "./slots";
 import { sourceAtPos, sourceRangeFromNode } from "./source-position";
 import { collectValueImportBindings, importedBindingByName } from "./value-imports";
@@ -152,35 +152,12 @@ function enterCallExpression(
 }
 
 /** The `value` of a `<slot>` attribute as a slot prop. */
-function slotPropValueFromAttribute(
-  ctx: ParserContext,
-  name: string,
-  value: Exclude<AST.Attribute["value"], true>,
-): SlotPropValue {
-  const slot_prop_value: SlotPropValue = { value: undefined, replace: false };
+function slotPropValueFromAttribute(ctx: ParserContext, value: Exclude<AST.Attribute["value"], true>): SlotPropValue {
   // Quoted or multi-chunk values are an array; `name={expr}` and `{name}` are a bare tag.
   const first = Array.isArray(value) ? value[0] : value;
-
-  if (first?.type === "Text") {
-    slot_prop_value.value = JSON.stringify(first.raw);
-  } else if (first?.type === "ExpressionTag") {
-    const { expression } = first;
-    if (expression.type === "Identifier") {
-      if (!Array.isArray(value) && expression.name === name) {
-        slot_prop_value.value = expression.name;
-        slot_prop_value.replace = true;
-      }
-    } else if (expression.type === "Literal") {
-      slot_prop_value.value =
-        typeof expression.value === "string" ? JSON.stringify(expression.value) : String(expression.value);
-    } else if (expression.type === "MemberExpression") {
-      slot_prop_value.value = resolveMemberExpressionType(ctx, expression);
-    } else if (expression.type === "ObjectExpression" || expression.type === "TemplateLiteral") {
-      // The tag's range includes its braces.
-      slot_prop_value.value = sourceAtPos(ctx, first.start + 1, first.end - 1);
-    }
-  }
-  return slot_prop_value;
+  if (first?.type === "Text") return { value: JSON.stringify(first.raw), replace: false };
+  if (first?.type === "ExpressionTag") return slotPropValueFromExpression(ctx, first.expression);
+  return { value: undefined, replace: false };
 }
 
 function addSlotElement(ctx: ParserContext, node: AST.SlotElement) {
@@ -193,7 +170,7 @@ function addSlotElement(ctx: ParserContext, node: AST.SlotElement) {
   for (const attr of node.attributes) {
     // Only attributes and `style:` directives have a `value`.
     if (!("value" in attr) || attr.name === "name" || attr.value === true) continue;
-    slot_props[attr.name] = slotPropValueFromAttribute(ctx, attr.name, attr.value);
+    slot_props[attr.name] = slotPropValueFromAttribute(ctx, attr.value);
   }
 
   const fallback = node.fragment.nodes

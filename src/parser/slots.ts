@@ -16,21 +16,25 @@ export function slotKey(slot_name: string | undefined) {
   return !slot_name || slot_name === "default" ? DEFAULT_SLOT_NAME : slot_name;
 }
 
-function inferSlotPropValueFromExpression(ctx: ParserContext, expression: Property["value"]): SlotPropValue {
-  const slot_prop_value: SlotPropValue = { value: undefined, replace: false };
-
-  if (expression.type === "Identifier") {
-    slot_prop_value.value = expression.name;
-    slot_prop_value.replace = true;
-  } else if (expression.type === "Literal") {
-    slot_prop_value.value = String(expression.value);
-  } else if (expression.type === "MemberExpression") {
-    slot_prop_value.value = resolveMemberExpressionType(ctx, expression);
-  } else if (expression.type === "ObjectExpression" || expression.type === "TemplateLiteral") {
-    slot_prop_value.value = sourceAtPos(ctx, expression.start, expression.end);
+/** A slot prop's type from the expression passed for it, in `<slot name={expr}>` or `{@render x({ name: expr })}`. */
+export function slotPropValueFromExpression(ctx: ParserContext, expression: Property["value"]): SlotPropValue {
+  switch (expression.type) {
+    case "Identifier":
+      // Typed from the prop it names, if any, once props are known.
+      return { value: expression.name, replace: true };
+    case "Literal":
+      return {
+        value: typeof expression.value === "string" ? JSON.stringify(expression.value) : String(expression.value),
+        replace: false,
+      };
+    case "MemberExpression":
+      return { value: resolveMemberExpressionType(ctx, expression), replace: false };
+    case "ObjectExpression":
+    case "TemplateLiteral":
+      return { value: sourceAtPos(ctx, expression.start, expression.end), replace: false };
+    default:
+      return { value: undefined, replace: false };
   }
-
-  return slot_prop_value;
 }
 
 /**
@@ -88,7 +92,7 @@ export function buildSlotPropsFromObjectExpression(
 
     const propName = getPropertyName(property.key);
     if (!propName) continue;
-    slot_props[propName] = inferSlotPropValueFromExpression(ctx, property.value);
+    slot_props[propName] = slotPropValueFromExpression(ctx, property.value);
   }
 
   return { slot_props, hasUnresolvedSpread };
