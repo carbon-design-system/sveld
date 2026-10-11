@@ -31,7 +31,11 @@ import {
 } from "./props";
 import { collectPatternIdentifiers } from "./scopes";
 import { sourceRangeFromNode } from "./source-position";
-import { buildFunctionDeclarationSignature } from "./type-resolution";
+import {
+  buildFunctionDeclarationSignature,
+  getTypeAnnotationText,
+  trackAdditionalTypeDependencyNode,
+} from "./type-resolution";
 
 /** Name of an export/import specifier's `local`/`exported`/`imported` (an identifier or a string literal). */
 export function moduleExportName(node: Identifier | Literal | undefined): string | undefined {
@@ -303,7 +307,7 @@ export function collectExportDeclarators(
       isFunctionDeclaration: false,
       value,
       typeSeed,
-      explicitType: ctx.explicitPropTypesByName.get(localPropName),
+      explicitType: declaredType(ctx, id),
       initializerIsFunction,
       isRequired: kind === "let" && init == null,
       localName: localPropName,
@@ -314,6 +318,16 @@ export function collectExportDeclarators(
   }
 
   return declarators;
+}
+
+/**
+ * A variable's own `: T` annotation, which a cast in its initializer doesn't
+ * override (`export const x: T = y as any`). Tracked, so the `.d.ts` keeps the
+ * types it names.
+ */
+function declaredType(ctx: ParserContext, id: Identifier): string | undefined {
+  trackAdditionalTypeDependencyNode(ctx, id.typeAnnotation?.typeAnnotation);
+  return getTypeAnnotationText(ctx, id.typeAnnotation);
 }
 
 /** Type, description, and signature of one exported binding, merging its JSDoc with what its initializer gave. */
