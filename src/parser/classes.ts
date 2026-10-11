@@ -107,6 +107,19 @@ export function readClassDeclaration(
   let constructorIndex = -1;
 
   for (const member of classDecl.body.body) {
+    if (member.type === "TSIndexSignature") {
+      const [parameter] = member.parameters;
+      if (!parameter) continue;
+      trackAdditionalTypeDependencyNode(ctx, member.typeAnnotation?.typeAnnotation);
+      members.push({
+        kind: "index",
+        name: `[${parameter.name}: ${getTypeAnnotationText(ctx, parameter.typeAnnotation) ?? "string"}]`,
+        type: getTypeAnnotationText(ctx, member.typeAnnotation) ?? "any",
+        ...(member.static ? { static: true as const } : {}),
+        ...(member.readonly ? { readonly: true as const } : {}),
+      });
+      continue;
+    }
     if (member.type !== "MethodDefinition" && member.type !== "PropertyDefinition") continue;
     if (isHidden(member.accessibility)) continue;
     const name = memberName(member);

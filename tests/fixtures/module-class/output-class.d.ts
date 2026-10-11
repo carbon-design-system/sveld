@@ -15,6 +15,8 @@ export declare class Store<T extends object = Record<string, unknown>> {
 
   label?: string;
 
+  [key: string]: unknown;
+
   constructor(initial: T, name?: string, options?: Options);
 
   readonly name: string;

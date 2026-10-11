@@ -16,8 +16,9 @@ store.mode = "b";
 Store.count = 1;
 // @ts-expect-error `size` has no setter
 store.size = 2;
-// @ts-expect-error private members are left out
-store.hidden;
+// @ts-expect-error private members are left out, so only the index signature types `hidden`
+const hidden: number = store.hidden;
+const extra: unknown = store.anything;
 // @ts-expect-error `@internal` members are left out
 store.reset();
 
@@ -28,4 +29,4 @@ class Impl extends Base {
 
 new ComponentFormatStore({}).snapshot().at satisfies number;
 
-export { count, created, formatted, Impl, id, loaded, name, size, unsubscribe };
+export { count, created, extra, formatted, hidden, Impl, id, loaded, name, size, unsubscribe };
