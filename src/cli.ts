@@ -2,15 +2,7 @@ import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 import pkg from "../package.json" with { type: "json" };
 import { asSvelteEntryPoint } from "./brands";
-import {
-  type CheckResult,
-  formatCheckReport,
-  formatCheckReportJson,
-  resolveCheckSnapshotFile,
-  runCheck,
-  writesCheckSnapshot,
-} from "./check";
-import { filterSpeculativeDiagnostics, formatDiagnosticsSummary, formatDiagnosticsSummaryJson } from "./diagnostics";
+import { formatCheckReport, formatCheckReportJson } from "./check";
 import { resolveSvelteEntry } from "./get-svelte-entry";
 import { closestMatch } from "./levenshtein";
 import {
@@ -23,9 +15,8 @@ import {
 } from "./load-config";
 import { setQuiet } from "./logger";
 import { normalizeSeparators } from "./path";
-import { generateBundle, toGenerateBundleOptions, writeOutput, writeStdout } from "./plugin";
 import { UnresolvedModuleError } from "./resolve-alias";
-import { resolveExitCode } from "./sveld";
+import { buildAndWrite, reportRun } from "./sveld";
 
 /** Used only when nothing configures an entry. */
 const FALLBACK_ENTRY = "src/index.js";
@@ -368,26 +359,9 @@ export async function cli(process: NodeJS.Process) {
     return usageError(`sveld: ${resolution.message}`);
   }
 
-  let result: Awaited<ReturnType<typeof generateBundle>>;
-  let checkResult: CheckResult | undefined;
-
+  let run: Awaited<ReturnType<typeof buildAndWrite>>;
   try {
-    result = await generateBundle(input, options.glob === true, toGenerateBundleOptions(options));
-
-    // Read the committed snapshot before `writeOutput` can overwrite it.
-    if (options.check) {
-      checkResult = await runCheck(result.components, resolveCheckSnapshotFile(options), {
-        entryExports: result.entryExports,
-      });
-    }
-
-    if (options.stdout) {
-      await writeStdout(result, options, input);
-    } else {
-      await writeOutput(result, options, input);
-      // generateBundle() saved parses only; this adds the `.d.ts` text writeOutput cached.
-      result.cache?.save();
-    }
+    run = await buildAndWrite(input, options, options.stdout === true);
   } catch (error) {
     if (error instanceof UnresolvedModuleError) return usageError(`sveld: ${error.message}`);
     console.error(error instanceof Error ? error.message : String(error));
@@ -395,33 +369,17 @@ export async function cli(process: NodeJS.Process) {
     return;
   }
 
-  const shouldReport = options.reportDiagnostics || options.strict;
-  const diagnostics = filterSpeculativeDiagnostics(result.diagnostics, shouldReport);
+  const { result, check } = run;
+  const { exitCode } = reportRun(result, check, options);
 
-  if (shouldReport && diagnostics.length > 0) {
+  if (check) {
     if (options.format === "json") {
-      process.stderr.write(formatDiagnosticsSummaryJson(diagnostics));
+      process.stdout.write(formatCheckReportJson(check));
     } else {
-      console.error(formatDiagnosticsSummary(diagnostics));
+      console.log(formatCheckReport(check));
     }
   }
 
-  if (checkResult) {
-    if (options.format === "json") {
-      process.stdout.write(formatCheckReportJson(checkResult));
-    } else {
-      console.log(formatCheckReport(checkResult));
-    }
-  }
-
-  // Every failure is still reported above; the lowest applicable code wins.
-  const exitCode = resolveExitCode({
-    errors: result.errors,
-    check: checkResult,
-    writesSnapshot: checkResult ? writesCheckSnapshot(options, checkResult.snapshotFile) : false,
-    checkLevel: options.checkLevel,
-    diagnostics,
-    strict: options.strict,
-  });
+  // Every failure is reported above; the lowest applicable code wins.
   if (exitCode !== EXIT_CODES.SUCCESS) process.exitCode = exitCode;
 }

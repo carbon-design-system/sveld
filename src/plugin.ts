@@ -19,7 +19,7 @@ import writeMarkdown, {
 import writeTsDefinitions, { type TypesOptions, type WriteTsDefinitionsOptions } from "./writer/writer-ts-definitions";
 
 export type { ComponentDocApi, ComponentDocs, GenerateBundleResult } from "./bundle";
-export { generateBundle, toGenerateBundleOptions } from "./bundle";
+export { generateBundle } from "./bundle";
 export type { JsonOptions, MarkdownOptions, TypesOptions };
 
 export interface PluginSveldOptions extends Pick<GenerateBundleOptions, "cache" | "checkExamples" | "diagnostics"> {
@@ -92,8 +92,6 @@ interface SveldPlugin {
   /** Rollup/Vite watch hook (build `--watch`). */
   watchChange?(id: string): void;
 }
-
-/** Matches `sveld()`'s thrown message. */
 
 /**
  * `sveld.config` keys that only the CLI and `sveld()` act on: the plugin

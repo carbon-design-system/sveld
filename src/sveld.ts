@@ -1,5 +1,5 @@
 import { dirname } from "node:path";
-import type { ComponentParseError } from "./bundle";
+import { type ComponentParseError, type GenerateBundleResult, generateBundle, toGenerateBundleOptions } from "./bundle";
 import {
   bumpMeetsLevel,
   type CheckLevel,
@@ -18,7 +18,7 @@ import {
 import { getSvelteEntry, UNRESOLVED_ENTRY_MESSAGE } from "./get-svelte-entry";
 import { loadConfig, mergeConfig, type SveldRuntimeOptions, validateOptions } from "./load-config";
 import { setQuiet } from "./logger";
-import { generateBundle, toGenerateBundleOptions, writeOutput } from "./plugin";
+import { writeOutput, writeStdout } from "./plugin";
 import type { ComponentApiDocument } from "./writer/document-model";
 import { buildJsonDocument } from "./writer/writer-json";
 
@@ -53,7 +53,7 @@ type ExitCode = 0 | 1 | 2 | 3 | 4;
  * component failed to parse, `3` when `check` finds a change at or above
  * `checkLevel`, `4` when `strict` diagnostics exist.
  */
-export function resolveExitCode(run: {
+function resolveExitCode(run: {
   errors: readonly unknown[];
   check?: CheckResult;
   /** From {@link writesCheckSnapshot}. */
@@ -68,6 +68,63 @@ export function resolveExitCode(run: {
   if (run.check && bumpMeetsLevel(run.check.bump, run.checkLevel ?? "major")) return 3;
   if (failingDiagnostics(run.diagnostics, run.strict).length > 0) return 4;
   return 0;
+}
+
+/**
+ * Generates the bundle and writes its output (or prints the one document,
+ * with `toStdout`). With `check`, the committed snapshot is diffed first,
+ * before `writeOutput` can overwrite it.
+ */
+export async function buildAndWrite(
+  input: string,
+  options: SveldRuntimeOptions,
+  toStdout = false,
+): Promise<{ result: GenerateBundleResult; check?: CheckResult }> {
+  const result = await generateBundle(input, options.glob === true, toGenerateBundleOptions(options));
+  const check = options.check
+    ? await runCheck(result.components, resolveCheckSnapshotFile(options), { entryExports: result.entryExports })
+    : undefined;
+
+  if (toStdout) {
+    await writeStdout(result, options, input);
+  } else {
+    await writeOutput(result, options, input);
+    // generateBundle() saved parses only; this adds the `.d.ts` text writeOutput cached.
+    result.cache?.save();
+  }
+  return { result, check };
+}
+
+/**
+ * Prints the run's diagnostics summary to stderr when `reportDiagnostics` or
+ * `strict` asks for it, and resolves the exit code. Shared by the CLI and
+ * `sveld()` so their reporting and exit codes can't drift apart.
+ */
+export function reportRun(
+  result: GenerateBundleResult,
+  check: CheckResult | undefined,
+  options: SveldRuntimeOptions,
+): { diagnostics: SveldDiagnostic[]; exitCode: ExitCode } {
+  const shouldReport = options.reportDiagnostics || options.strict;
+  const diagnostics = filterSpeculativeDiagnostics(result.diagnostics, shouldReport);
+
+  if (shouldReport && diagnostics.length > 0) {
+    if (options.format === "json") {
+      process.stderr.write(formatDiagnosticsSummaryJson(diagnostics));
+    } else {
+      console.error(formatDiagnosticsSummary(diagnostics));
+    }
+  }
+
+  const exitCode = resolveExitCode({
+    errors: result.errors,
+    check,
+    writesSnapshot: check ? writesCheckSnapshot(options, check.snapshotFile) : false,
+    checkLevel: options.checkLevel,
+    diagnostics,
+    strict: options.strict,
+  });
+  return { diagnostics, exitCode };
 }
 
 /**
@@ -98,36 +155,8 @@ export async function sveld(opts?: SveldRuntimeOptions): Promise<SveldResult> {
   const merged = mergeConfig<SveldRuntimeOptions>(fileConfig, runtimeOpts, { entry: input });
   validateOptions(merged);
   setQuiet(merged.quiet === true);
-  const result = await generateBundle(input, merged.glob === true, toGenerateBundleOptions(merged));
-
-  // Read the committed snapshot before `writeOutput` can overwrite it.
-  const checkResult = merged.check
-    ? await runCheck(result.components, resolveCheckSnapshotFile(merged), { entryExports: result.entryExports })
-    : undefined;
-
-  await writeOutput(result, merged, input);
-  // generateBundle() saved parses only; this adds the `.d.ts` text writeOutput cached.
-  result.cache?.save();
-
-  const shouldReport = merged.reportDiagnostics || merged.strict;
-  const diagnostics = filterSpeculativeDiagnostics(result.diagnostics, shouldReport);
-
-  if (shouldReport && diagnostics.length > 0) {
-    if (merged.format === "json") {
-      process.stderr.write(formatDiagnosticsSummaryJson(diagnostics));
-    } else {
-      console.error(formatDiagnosticsSummary(diagnostics));
-    }
-  }
-
-  const exitCode = resolveExitCode({
-    errors: result.errors,
-    check: checkResult,
-    writesSnapshot: checkResult ? writesCheckSnapshot(merged, checkResult.snapshotFile) : false,
-    checkLevel: merged.checkLevel,
-    diagnostics,
-    strict: merged.strict,
-  });
+  const { result, check: checkResult } = await buildAndWrite(input, merged);
+  const { diagnostics, exitCode } = reportRun(result, checkResult, merged);
 
   const document = buildJsonDocument(result.components, {
     inputDir: dirname(input),
