@@ -13,16 +13,15 @@
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": [],
-  "diagnostics": [
+  "contexts": [
     {
-      "component": "context-value-unresolved/input.svelte",
-      "kind": "context-value-unresolved",
-      "name": "store",
-      "message": "setContext(\"store\", writable(0)): the value isn't an object literal or a variable, so sveld can't describe its shape; the context is skipped.",
-      "code": "sveld/context-value-unresolved",
-      "severity": "warning"
-    },
+      "key": "store",
+      "typeName": "StoreContext",
+      "type": "import(\"svelte/store\").Writable<number>",
+      "properties": []
+    }
+  ],
+  "diagnostics": [
     {
       "component": "context-value-unresolved/input.svelte",
       "kind": "context-value-unresolved",

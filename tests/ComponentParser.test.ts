@@ -2796,4 +2796,48 @@ describe("ComponentParser", () => {
       ).toEqual({ type: "Element", name: "svelte:element" });
     });
   });
+
+  describe("context values that aren't objects or typed variables", () => {
+    const contextsOf = (script: string) => {
+      const result = new ComponentParser().parseSvelteComponent(`<script>${script}</script>`, diagnostics);
+      return {
+        contexts: (result.contexts ?? []).map(({ key, type }) => ({ key, type })),
+        diagnostics: (result.diagnostics ?? []).map((diagnostic) => diagnostic.kind),
+      };
+    };
+
+    test("types a store passed as the whole value", () => {
+      expect(
+        contextsOf(`
+          import { setContext } from "svelte";
+          import { readonly, writable } from "svelte/store";
+          const level = writable(1);
+          setContext("count", writable(0));
+          setContext("level", readonly(level));
+        `),
+      ).toEqual({
+        contexts: [
+          { key: "count", type: 'import("svelte/store").Writable<number>' },
+          { key: "level", type: 'import("svelte/store").Readable<number>' },
+        ],
+        diagnostics: [],
+      });
+    });
+
+    test("types a context cleared with `undefined` or `null` without a diagnostic", () => {
+      expect(
+        contextsOf(`
+          import { setContext } from "svelte";
+          setContext("parent", undefined);
+          setContext("group", null);
+        `),
+      ).toEqual({
+        contexts: [
+          { key: "parent", type: "undefined" },
+          { key: "group", type: "null" },
+        ],
+        diagnostics: [],
+      });
+    });
+  });
 });

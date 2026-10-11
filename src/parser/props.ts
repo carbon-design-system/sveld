@@ -516,7 +516,11 @@ const SVELTE_STORE_TYPES = new Map([
   ["writable", "Writable"],
   ["readable", "Readable"],
   ["derived", "Readable"],
+  ["readonly", "Readable"],
 ]);
+
+/** `T` from a store type: `Writable<T>`, `Readable<T>`, with or without the `import("svelte/store")`. */
+const STORE_VALUE_TYPE_REGEX = /^(?:import\("svelte\/store"\)\.)?(?:Writable|Readable)<([\s\S]*)>$/;
 
 /**
  * `import("svelte/store").Writable<T>` for `writable(value)`, `Readable<T>`
@@ -534,6 +538,15 @@ export function svelteStoreType(ctx: ParserContext, call: CallExpression): strin
   if (typeArgument) {
     trackAdditionalTypeDependencyNode(ctx, typeArgument);
     valueType = sourceForExpression(ctx, typeArgument);
+  } else if (binding?.importedName === "readonly") {
+    // `readonly(store)` reads the value type off the store it wraps.
+    const [wrapped] = call.arguments;
+    const wrappedType = isIdentifier(wrapped)
+      ? (findTrackedVariableType(ctx, wrapped.name)?.type ?? inferVariableInitializerType(ctx, wrapped.name))
+      : wrapped?.type === "CallExpression"
+        ? svelteStoreType(ctx, wrapped)
+        : undefined;
+    valueType = wrappedType?.trim().match(STORE_VALUE_TYPE_REGEX)?.[1];
   } else if (isDerived) {
     // A callback that takes `set` reports its value through it, not its return.
     const callback = call.arguments[1];
