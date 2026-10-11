@@ -353,14 +353,15 @@ export function parseRunesPropsDeclaration(ctx: ParserContext, node: VariableDec
     if (!isCallExpressionNamed(declarator.init, "$props")) continue;
 
     const metadata = ctx.runesPropsDeclarationMetadataByDeclaratorStart.get(declarator.start);
+    const declarationJSDoc = processNodeJSDoc(ctx, node);
+    // `/** @type {Props} */ let props = $props()` (or `let { a, b }`) types the whole
+    // object, so each prop takes its member's type and docs, not the declaration's JSDoc.
+    const jsDocMembers = metadata?.props.size ? undefined : getJsDocPropsMembers(ctx, declarationJSDoc?.type);
 
     if (declarator.id.type === "Identifier") {
       ctx.wholePropsLocals.add(declarator.id.name);
       ctx.restPropLocals.add(declarator.id.name);
 
-      const jsDocMembers = metadata?.props.size
-        ? undefined
-        : getJsDocPropsMembers(ctx, processNodeJSDoc(ctx, node)?.type);
       for (const member of jsDocMembers?.values() ?? []) {
         addProp(ctx, member.name, {
           name: member.name,
@@ -396,11 +397,6 @@ export function parseRunesPropsDeclaration(ctx: ParserContext, node: VariableDec
     }
 
     if (declarator.id.type !== "ObjectPattern") continue;
-
-    const declarationJSDoc = processNodeJSDoc(ctx, node);
-    // `/** @type {Props} */ let { a, b } = $props()` types the whole object, so each
-    // prop takes its member's type and docs instead of the declaration's JSDoc.
-    const jsDocMembers = metadata?.props.size ? undefined : getJsDocPropsMembers(ctx, declarationJSDoc?.type);
 
     const supportedPublicPropCount = declarator.id.properties.filter((property) => {
       if (property.type !== "Property" || property.computed) return false;
