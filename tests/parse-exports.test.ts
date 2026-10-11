@@ -5,6 +5,8 @@ import { parseExports } from "../src/parse-exports";
 
 const UNRESOLVED_RELATIVE_PATH_REGEX = /cannot resolve "\.\/sveld-test-does-not-exist"/;
 const UNRESOLVED_ALIAS_REGEX = /cannot resolve "\$components\/Button\.svelte"/;
+/** The error names the entry file, not its directory. */
+const UNRESOLVED_FROM_ENTRY_FILE_REGEX = /from src\/index\.js \(/;
 
 describe("parseExports", () => {
   test("circular `export *` between two barrel files does not overflow the stack", () => {
@@ -286,6 +288,9 @@ describe("parseExports", () => {
     const source = `export * from "./sveld-test-does-not-exist";`;
 
     expect(() => parseExports(source, "")).toThrow(UNRESOLVED_RELATIVE_PATH_REGEX);
+    expect(() => parseExports(source, "", undefined, undefined, "src/index.js")).toThrow(
+      UNRESOLVED_FROM_ENTRY_FILE_REGEX,
+    );
   });
 
   test("a side-effect import binds nothing and doesn't throw", () => {

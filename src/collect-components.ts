@@ -212,7 +212,7 @@ export function collectComponents(
   if (isFile) {
     const entry = readFileSync(input, "utf-8");
     try {
-      exports = parseExports(entry, rootDir, graph, new Set([resolve(input)]));
+      exports = parseExports(entry, rootDir, graph, new Set([resolve(input)]), resolve(input));
     } catch (error) {
       if (!documentExports) throw error;
       const message = error instanceof Error ? error.message : String(error);

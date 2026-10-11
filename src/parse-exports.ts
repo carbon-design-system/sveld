@@ -53,14 +53,16 @@ function resolveBarrelExports(
  *
  * @param resolving - Absolute paths not to follow `export *` into, e.g. the
  *   entry itself so a self-re-exporting barrel stops there.
+ * @param fromFile - The entry file, named when an `export *` can't be resolved.
  */
 export function parseExports(
   source: string,
   dir: string,
   graph: ModuleGraph = new ModuleGraph(),
   resolving: Set<string> = new Set(),
+  fromFile = dir,
 ): ParsedExports {
-  return readExports(graph, source, dir, resolving, dir);
+  return readExports(graph, source, dir, resolving, fromFile);
 }
 
 /**
