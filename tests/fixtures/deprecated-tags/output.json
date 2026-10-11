@@ -44,7 +44,7 @@
       "kind": "function",
       "description": "Programmatically focus the field.",
       "deprecated": "Focus the underlying element directly.",
-      "type": "() => any",
+      "type": "() => void",
       "typeSource": "inferred",
       "isFunction": true,
       "isFunctionDeclaration": true,

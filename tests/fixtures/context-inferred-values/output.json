@@ -100,7 +100,7 @@
         },
         {
           "name": "notifyOpen",
-          "type": "(id: any) => any",
+          "type": "(id: any) => void",
           "optional": false
         },
         {
@@ -110,7 +110,7 @@
         },
         {
           "name": "reset",
-          "type": "() => any",
+          "type": "() => void",
           "optional": false
         }
       ]

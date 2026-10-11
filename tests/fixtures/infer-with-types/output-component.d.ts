@@ -24,7 +24,7 @@ export type InferWithTypesProps = {
 export type InferWithTypesExports = {
   propConst: { [key: string]: boolean };
 
-  fn: () => any;
+  fn: () => void;
 };
 
 declare const InferWithTypes: Component<

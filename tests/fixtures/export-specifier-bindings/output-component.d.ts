@@ -18,7 +18,7 @@ export type ExportSpecifierBindingsProps = {
 };
 
 export type ExportSpecifierBindingsExports = {
-  reset: () => any;
+  reset: () => void;
 };
 
 declare const ExportSpecifierBindings: Component<

@@ -20,17 +20,17 @@
       "properties": [
         {
           "name": "open",
-          "type": "(component: any, props: any) => any",
+          "type": "(component: any, props: any) => void",
           "optional": false
         },
         {
           "name": "close",
-          "type": "() => any",
+          "type": "() => void",
           "optional": false
         },
         {
           "name": "select",
-          "type": "(id: string, focus: boolean) => any",
+          "type": "(id: string, focus: boolean) => void",
           "optional": false
         }
       ]

@@ -26,7 +26,7 @@ export type DeprecatedTagsExports = {
    * Programmatically focus the field.
    * @deprecated Focus the underlying element directly.
    */
-  focus: () => any;
+  focus: () => void;
 };
 
 type $Events = {

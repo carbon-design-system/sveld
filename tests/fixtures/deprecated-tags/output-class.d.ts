@@ -42,5 +42,5 @@ export default class DeprecatedTags extends SvelteComponentTyped<
    * Programmatically focus the field.
    * @deprecated Focus the underlying element directly.
    */
-  focus: () => any;
+  focus: () => void;
 }

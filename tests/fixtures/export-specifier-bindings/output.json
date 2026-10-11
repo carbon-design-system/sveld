@@ -63,7 +63,7 @@
     {
       "name": "reset",
       "kind": "function",
-      "type": "() => any",
+      "type": "() => void",
       "typeSource": "inferred",
       "isFunction": true,
       "isFunctionDeclaration": true,

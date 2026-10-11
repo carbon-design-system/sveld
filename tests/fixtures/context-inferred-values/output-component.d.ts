@@ -10,9 +10,9 @@ export type MenuContext = {
   isEmpty: import("svelte/store").Readable<boolean>;
   max: import("svelte/store").Readable<number>;
   fallbackName: any;
-  notifyOpen: (id: any) => any;
+  notifyOpen: (id: any) => void;
   claim: (id: string) => boolean;
-  reset: () => any;
+  reset: () => void;
 };
 
 export type ContextInferredValuesProps = {

@@ -28,5 +28,5 @@ export default class InferWithTypes extends SvelteComponentTyped<
 > {
   propConst: { [key: string]: boolean };
 
-  fn: () => any;
+  fn: () => void;
 }
