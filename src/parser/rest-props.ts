@@ -3,6 +3,7 @@ import { isCallExpressionNamed, isIdentifier, isObjectExpression, unwrapTypeCast
 import type { ComponentElement, RestProps } from "../model";
 import type { ParserContext } from "./context";
 import { isComponentLikeType, isElementLikeType } from "./element-kind";
+import { sourceRangeFromNode } from "./source-position";
 
 function createRestPropsFromParent(parent: unknown): RestProps {
   if (!parent || typeof parent !== "object" || !("type" in parent)) return undefined;
@@ -25,7 +26,7 @@ function createRestPropsFromParent(parent: unknown): RestProps {
   return restProps;
 }
 
-export function maybeSetRestProps(ctx: ParserContext, parent: unknown) {
+export function maybeSetRestProps(ctx: ParserContext, parent: unknown, spread: AST.SpreadAttribute) {
   const restProps = createRestPropsFromParent(parent);
   if (!restProps) return;
 
@@ -38,6 +39,7 @@ export function maybeSetRestProps(ctx: ParserContext, parent: unknown) {
   ctx.rest_props = restProps;
   const tag = parent && typeof parent === "object" && "tag" in parent ? parent.tag : undefined;
   ctx.restPropsTagLocal = restProps.name === "svelte:element" && isIdentifier(tag) ? tag.name : undefined;
+  ctx.restPropsSource = sourceRangeFromNode(ctx, spread);
 }
 
 /** The rest props name (`$$restProps` or a runes rest local) an object literal initializer spreads. */
