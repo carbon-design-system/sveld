@@ -1,21 +1,11 @@
 import type {
-  ArrayExpression,
   ArrowFunctionExpression,
-  BinaryExpression,
   CallExpression,
-  ConditionalExpression,
   Expression,
   FunctionDeclaration,
   FunctionExpression,
-  Identifier,
   Literal,
-  LogicalExpression,
   MemberExpression,
-  ObjectExpression,
-  Property,
-  SequenceExpression,
-  TemplateLiteral,
-  UnaryExpression,
 } from "sveast";
 import { getPropertyName, isCallExpressionNamed, isIdentifier } from "../ast-guards";
 import type {
@@ -113,12 +103,15 @@ function jsdocCastType(ctx: ParserContext, init: object): string | undefined {
   return extractJsDocType(cast.value);
 }
 
-function processInitializerWithoutAssertion(ctx: ParserContext, init: unknown, depth: number): ProcessedInitializer {
-  if (!init || typeof init !== "object" || !("type" in init)) {
-    return { value: undefined, type: undefined, isFunction: false };
-  }
+/** `node` as an expression, when it's an AST node at all. */
+function asExpression(node: unknown): Expression | undefined {
+  return node && typeof node === "object" && "type" in node ? (node as Expression) : undefined;
+}
 
-  const node = init as Expression;
+function processInitializerWithoutAssertion(ctx: ParserContext, init: unknown, depth: number): ProcessedInitializer {
+  const node = asExpression(init);
+  if (!node) return { value: undefined, type: undefined, isFunction: false };
+
   const defaultValue = classifyDefaultValue(ctx, node);
   const result = (value: string | undefined, type?: string): ProcessedInitializer => ({
     value,
@@ -284,49 +277,44 @@ const BOOLEAN_BINARY_OPERATORS = new Set(["==", "!=", "===", "!==", "<", "<=", "
  * of untyped values), so the caller falls back to `any`, not the expression text.
  */
 function inferExpressionType(ctx: ParserContext, node: unknown, depth: number): string | undefined {
-  if (!node || typeof node !== "object" || !("type" in node)) return undefined;
+  const expr = asExpression(node);
+  if (!expr) return undefined;
 
-  switch (node.type) {
+  switch (expr.type) {
     case "UnaryExpression": {
-      const unary = node as UnaryExpression;
-      if (unary.operator === "!" || unary.operator === "delete") return "boolean";
-      if (unary.operator === "typeof") return "string";
-      if (unary.operator === "void") return undefined;
-      if (unary.operator === "+") return "number";
-      return inferExpressionType(ctx, unary.argument, depth) === "bigint" ? "bigint" : "number";
+      const { operator, argument } = expr;
+      if (operator === "!" || operator === "delete") return "boolean";
+      if (operator === "typeof") return "string";
+      if (operator === "void") return undefined;
+      if (operator === "+") return "number";
+      return inferExpressionType(ctx, argument, depth) === "bigint" ? "bigint" : "number";
     }
     case "BinaryExpression": {
-      const binary = node as BinaryExpression;
-      if (BOOLEAN_BINARY_OPERATORS.has(binary.operator)) return "boolean";
-      const left = inferExpressionType(ctx, binary.left, depth);
-      const right = inferExpressionType(ctx, binary.right, depth);
+      const { operator } = expr;
+      if (BOOLEAN_BINARY_OPERATORS.has(operator)) return "boolean";
+      const left = inferExpressionType(ctx, expr.left, depth);
+      const right = inferExpressionType(ctx, expr.right, depth);
       if (left === "bigint" && right === "bigint") return "bigint";
-      if (NUMERIC_BINARY_OPERATORS.has(binary.operator)) return "number";
-      if (binary.operator !== "+") return undefined;
+      if (NUMERIC_BINARY_OPERATORS.has(operator)) return "number";
+      if (operator !== "+") return undefined;
       if (left === "string" || right === "string") return "string";
       if (left === "number" && right === "number") return "number";
       return undefined;
     }
-    case "LogicalExpression": {
-      const logical = node as LogicalExpression;
+    case "LogicalExpression":
       return unionOfBranchTypes([
-        inferExpressionType(ctx, logical.left, depth),
-        inferExpressionType(ctx, logical.right, depth),
+        inferExpressionType(ctx, expr.left, depth),
+        inferExpressionType(ctx, expr.right, depth),
       ]);
-    }
-    case "ConditionalExpression": {
-      const conditional = node as ConditionalExpression;
+    case "ConditionalExpression":
       return unionOfBranchTypes([
-        inferExpressionType(ctx, conditional.consequent, depth),
-        inferExpressionType(ctx, conditional.alternate, depth),
+        inferExpressionType(ctx, expr.consequent, depth),
+        inferExpressionType(ctx, expr.alternate, depth),
       ]);
-    }
-    case "SequenceExpression": {
-      const expressions = (node as SequenceExpression).expressions;
-      return inferExpressionType(ctx, expressions[expressions.length - 1], depth);
-    }
+    case "SequenceExpression":
+      return inferExpressionType(ctx, expr.expressions[expr.expressions.length - 1], depth);
     case "Identifier": {
-      const name = (node as Identifier).name;
+      const { name } = expr;
       if (name === "NaN" || name === "Infinity") return "number";
       if (name === "undefined") return undefined;
       const variableType = findVariableTypeAndDescription(ctx, name)?.type;
@@ -336,7 +324,7 @@ function inferExpressionType(ctx: ParserContext, node: unknown, depth: number): 
     }
     default: {
       if (depth >= 5) return undefined;
-      const result = processInitializer(ctx, node, depth + 1);
+      const result = processInitializer(ctx, expr, depth + 1);
       return result.type ?? result.resolvedType;
     }
   }
@@ -363,33 +351,29 @@ export type LiteralTypeMode = "widen" | "literal" | "const";
 
 /** The type of a default built only from literals, or `undefined` if any part isn't one. */
 export function literalType(node: unknown, mode: LiteralTypeMode): string | undefined {
-  if (!node || typeof node !== "object" || !("type" in node)) return undefined;
+  const expr = asExpression(node);
   const widen = mode === "widen";
 
-  switch (node.type) {
-    case "Literal": {
-      const literal = node as Literal;
-      if ("regex" in literal && literal.regex) return "RegExp";
-      if (literal.value === null) return "null";
-      return widen ? literalValueType(literal) : (literal.raw ?? undefined);
-    }
-    case "TemplateLiteral": {
-      if ((node as TemplateLiteral).expressions.length > 0) return undefined;
-      return widen ? "string" : `\`${(node as TemplateLiteral).quasis[0]?.value.raw ?? ""}\``;
-    }
+  switch (expr?.type) {
+    case "Literal":
+      if ("regex" in expr && expr.regex) return "RegExp";
+      if (expr.value === null) return "null";
+      return widen ? literalValueType(expr) : (expr.raw ?? undefined);
+    case "TemplateLiteral":
+      if (expr.expressions.length > 0) return undefined;
+      return widen ? "string" : `\`${expr.quasis[0]?.value.raw ?? ""}\``;
     case "Identifier":
-      return (node as Identifier).name === "undefined" ? "undefined" : undefined;
+      return expr.name === "undefined" ? "undefined" : undefined;
     case "UnaryExpression": {
-      const unary = node as UnaryExpression;
-      const argument = unary.argument as Literal | undefined;
-      if (unary.operator !== "-" || argument?.type !== "Literal") return undefined;
+      const { operator, argument } = expr;
+      if (operator !== "-" || argument.type !== "Literal") return undefined;
       const type = literalValueType(argument);
       if (type !== "number" && type !== "bigint") return undefined;
       return widen ? type : `-${argument.raw}`;
     }
     case "ArrayExpression": {
       const elements: string[] = [];
-      for (const element of (node as ArrayExpression).elements) {
+      for (const element of expr.elements) {
         const type = element === null ? undefined : literalType(element, mode);
         if (type === undefined) return undefined;
         elements.push(type);
@@ -404,7 +388,7 @@ export function literalType(node: unknown, mode: LiteralTypeMode): string | unde
     case "ObjectExpression": {
       // A repeated key keeps its last value, as at runtime.
       const members = new Map<string, string>();
-      for (const property of (node as ObjectExpression).properties) {
+      for (const property of expr.properties) {
         if (
           property.type !== "Property" ||
           property.kind !== "init" ||
@@ -648,11 +632,11 @@ function inferReturnTypeFromNode(node: FunctionNode): string {
  * Map one return expression to `string`, `number`, or `boolean`, or `null`
  * if it isn't a literal, template literal, or `String`/`Number`/`Boolean` call.
  */
-function inferReturnPrimitive(expr: unknown): "string" | "number" | "boolean" | null {
-  if (!expr || typeof expr !== "object" || !("type" in expr)) return null;
-  switch (expr.type) {
+function inferReturnPrimitive(node: unknown): "string" | "number" | "boolean" | null {
+  const expr = asExpression(node);
+  switch (expr?.type) {
     case "Literal": {
-      const value = (expr as Literal).value;
+      const { value } = expr;
       if (typeof value === "string") return "string";
       if (typeof value === "number") return "number";
       if (typeof value === "boolean") return "boolean";
@@ -661,7 +645,7 @@ function inferReturnPrimitive(expr: unknown): "string" | "number" | "boolean" | 
     case "TemplateLiteral":
       return "string";
     case "CallExpression": {
-      const callee = (expr as CallExpression).callee;
+      const { callee } = expr;
       if (!isIdentifier(callee)) return null;
       if (callee.name === "String") return "string";
       if (callee.name === "Number") return "number";
@@ -722,30 +706,37 @@ function conciseFunctionDefaultText(ctx: ParserContext, node: FunctionNode): str
   return undefined;
 }
 
-function classifyDefaultValue(ctx: ParserContext, init: unknown): ComponentPropDefaultValue | undefined {
-  const raw = sourceForExpression(ctx, init);
-  if (!raw || !init || typeof init !== "object" || !("type" in init)) return undefined;
-
-  let kind: ComponentPropDefaultValueKind = "expression";
-  if (init.type === "Literal" || init.type === "UnaryExpression") {
-    kind = "literal";
-  } else if (init.type === "TemplateLiteral") {
-    kind = (init as TemplateLiteral).expressions.length === 0 ? "literal" : "expression";
-  } else if (init.type === "ArrayExpression") {
-    kind = "array";
-  } else if (init.type === "ObjectExpression") {
-    kind = "object";
-  } else if (
-    init.type === "ArrowFunctionExpression" ||
-    init.type === "FunctionExpression" ||
-    init.type === "FunctionDeclaration"
-  ) {
-    kind = "function";
+function defaultValueKind(node: Expression | FunctionDeclaration): ComponentPropDefaultValueKind {
+  switch (node.type) {
+    case "Literal":
+    case "UnaryExpression":
+      return "literal";
+    case "TemplateLiteral":
+      return node.expressions.length === 0 ? "literal" : "expression";
+    case "ArrayExpression":
+      return "array";
+    case "ObjectExpression":
+      return "object";
+    case "ArrowFunctionExpression":
+    case "FunctionExpression":
+    case "FunctionDeclaration":
+      return "function";
+    default:
+      return "expression";
   }
+}
 
+function classifyDefaultValue(
+  ctx: ParserContext,
+  node: Expression | FunctionDeclaration,
+): ComponentPropDefaultValue | undefined {
+  const raw = sourceForExpression(ctx, node);
+  if (!raw) return undefined;
+
+  const kind = defaultValueKind(node);
   const defaultValue: ComponentPropDefaultValue = { raw, kind };
   if (kind === "literal" || kind === "array" || kind === "object") {
-    const parsed = jsonSafeValueFromExpression(init);
+    const parsed = jsonSafeValueFromExpression(node);
     if (parsed.ok) defaultValue.value = parsed.value;
   }
 
@@ -753,59 +744,52 @@ function classifyDefaultValue(ctx: ParserContext, init: unknown): ComponentPropD
 }
 
 function jsonSafeValueFromExpression(node: unknown): { ok: true; value: unknown } | { ok: false } {
-  if (!node || typeof node !== "object" || !("type" in node)) return { ok: false };
-
-  if (node.type === "Literal") {
-    const value = (node as Literal).value;
-    // A regex's value is a `RegExp` object, which JSON would turn into `{}`.
-    return typeof value === "bigint" || "regex" in node ? { ok: false } : { ok: true, value };
-  }
-
-  if (node.type === "UnaryExpression") {
-    const { operator, argument } = node as UnaryExpression;
-    if (argument?.type !== "Literal") return { ok: false };
-    const { value } = argument;
-    if (typeof value === "number") {
-      if (operator === "-") return { ok: true, value: -value };
-      if (operator === "+") return { ok: true, value };
+  const expr = asExpression(node);
+  switch (expr?.type) {
+    case "Literal":
+      // A regex's value is a `RegExp` object, which JSON would turn into `{}`.
+      return typeof expr.value === "bigint" || "regex" in expr ? { ok: false } : { ok: true, value: expr.value };
+    case "UnaryExpression": {
+      const { operator, argument } = expr;
+      if (argument.type !== "Literal") return { ok: false };
+      const { value } = argument;
+      if (typeof value === "number") {
+        if (operator === "-") return { ok: true, value: -value };
+        if (operator === "+") return { ok: true, value };
+      }
+      if (typeof value === "boolean" && operator === "!") return { ok: true, value: !value };
+      return { ok: false };
     }
-    if (typeof value === "boolean" && operator === "!") return { ok: true, value: !value };
-    return { ok: false };
-  }
-
-  if (node.type === "TemplateLiteral") {
-    const template = node as TemplateLiteral;
-    if (template.expressions.length > 0 || template.quasis.length !== 1) return { ok: false };
-    return { ok: true, value: template.quasis[0].value.cooked ?? template.quasis[0].value.raw };
-  }
-
-  if (node.type === "ArrayExpression") {
-    const array = node as ArrayExpression;
-    const values: unknown[] = [];
-    for (const element of array.elements) {
-      if (!element) return { ok: false };
-      const result = jsonSafeValueFromExpression(element);
-      if (!result.ok) return { ok: false };
-      values.push(result.value);
+    case "TemplateLiteral": {
+      const { expressions, quasis } = expr;
+      if (expressions.length > 0 || quasis.length !== 1) return { ok: false };
+      return { ok: true, value: quasis[0].value.cooked ?? quasis[0].value.raw };
     }
-    return { ok: true, value: values };
-  }
-
-  if (node.type === "ObjectExpression") {
-    const object = node as ObjectExpression;
-    const value: Record<string, unknown> = {};
-    for (const property of object.properties) {
-      if (property.type !== "Property" || property.computed) return { ok: false };
-      const key = getPropertyName(property.key as Property["key"]);
-      if (!key) return { ok: false };
-      const propertyValue = jsonSafeValueFromExpression(property.value);
-      if (!propertyValue.ok) return { ok: false };
-      value[key] = propertyValue.value;
+    case "ArrayExpression": {
+      const values: unknown[] = [];
+      for (const element of expr.elements) {
+        if (!element) return { ok: false };
+        const result = jsonSafeValueFromExpression(element);
+        if (!result.ok) return { ok: false };
+        values.push(result.value);
+      }
+      return { ok: true, value: values };
     }
-    return { ok: true, value };
+    case "ObjectExpression": {
+      const value: Record<string, unknown> = {};
+      for (const property of expr.properties) {
+        if (property.type !== "Property" || property.computed) return { ok: false };
+        const key = getPropertyName(property.key);
+        if (!key) return { ok: false };
+        const propertyValue = jsonSafeValueFromExpression(property.value);
+        if (!propertyValue.ok) return { ok: false };
+        value[key] = propertyValue.value;
+      }
+      return { ok: true, value };
+    }
+    default:
+      return { ok: false };
   }
-
-  return { ok: false };
 }
 
 const NUMBER_CONSTANTS = new Set([
