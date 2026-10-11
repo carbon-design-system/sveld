@@ -20,7 +20,7 @@ import type { ComponentPropDefaultValue, ProcessedInitializer } from "../model";
 import type { ParserContext } from "./context";
 import { recordDiagnostic, recordPropSveldIgnore } from "./diagnostics";
 import { processNodeJSDoc } from "./jsdoc";
-import { resolvePropTypeAndDocs } from "./prop-shared";
+import { propJsDocFields, resolvePropTypeAndDocs } from "./prop-shared";
 import { addProp, literalType, processInitializer, queuePendingCrossFileDefault } from "./props";
 import { collectPatternIdentifiers } from "./scopes";
 import { sourceRangeFromNode } from "./source-position";
@@ -373,10 +373,7 @@ function addInstanceDeclarationExports(
       ...(localName !== undefined && localName !== prop_name ? { localName } : {}),
       kind,
       description,
-      binding: jsdocInfo?.binding,
-      deprecated: jsdocInfo?.deprecated,
-      tags: jsdocInfo?.tags,
-      ...(jsdocInfo?.internal ? { internal: true as const } : {}),
+      ...propJsDocFields(jsdocInfo),
       type,
       typeSource,
       value: declarator.value,
