@@ -62,17 +62,6 @@ function stripSourceRanges<T>(value: T): T {
 }
 
 /**
- * Makes `filePath` resolvable from `cwd`. JSON-only: other writers need the
- * original relative `filePath`, so this can't live in the document model.
- */
-function withNormalizedFilePaths(components: ComponentDocApi[], inputDir: string): ComponentDocApi[] {
-  return components.map((component) => ({
-    ...component,
-    filePath: normalizeComponentFilePath(component.filePath, inputDir),
-  }));
-}
-
-/**
  * `--glob` can find two components with one `moduleName` (`Menu/Menu.svelte`,
  * `icons/Menu.svelte`); on collision, name the file from the source path instead.
  */
@@ -91,9 +80,7 @@ function jsonFileName(component: ComponentDocApi, hasCollision: boolean, warnedM
 }
 
 async function writeJsonComponents(components: ComponentDocs, options: WriteJsonOptions, outDir: string) {
-  const document = buildComponentApiDocument(components);
-  let output = withNormalizedFilePaths(document.components, options.inputDir);
-  if (options.source === false) output = stripSourceRanges(output);
+  const output = buildJsonDocument(components, { inputDir: options.inputDir, source: options.source }).components;
 
   const moduleNameCounts = new Map<string, number>();
   for (const component of output) {
@@ -124,7 +111,11 @@ export function buildJsonDocument(
   const document = buildComponentApiDocument(components, { entryExports: options.entryExports });
   const output: ComponentApiDocument = {
     ...document,
-    components: withNormalizedFilePaths(document.components, options.inputDir),
+    // Resolvable from `cwd`. JSON-only: the other writers need the relative `filePath`.
+    components: document.components.map((component) => ({
+      ...component,
+      filePath: normalizeComponentFilePath(component.filePath, options.inputDir),
+    })),
   };
   return options.source === false ? stripSourceRanges(output) : output;
 }
