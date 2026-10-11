@@ -364,6 +364,7 @@ describe("cross-file setContext key resolution", () => {
         'export const THEME = Symbol("theme");',
         'export const REGISTRY = Symbol.for("registry");',
         "export const UNNAMED = Symbol();",
+        "export const NUMBERED = Symbol(1);",
         'export const TABS = "tabs" as const;',
         'export const FORM = "form" satisfies string;',
         "",
@@ -373,11 +374,12 @@ describe("cross-file setContext key resolution", () => {
       path.join(dir, "Keys.svelte"),
       `<script>
   import { setContext } from "svelte";
-  import { THEME, REGISTRY, UNNAMED, TABS, FORM } from "./keys";
+  import { THEME, REGISTRY, UNNAMED, NUMBERED, TABS, FORM } from "./keys";
 
   setContext(THEME, { a: 1 });
   setContext(REGISTRY, { a: 1 });
   setContext(UNNAMED, { a: 1 });
+  setContext(NUMBERED, { a: 1 });
   setContext(TABS, { a: 1 });
   setContext(FORM, { a: 1 });
 </script>
@@ -392,6 +394,7 @@ describe("cross-file setContext key resolution", () => {
       "theme",
       "registry",
       "UNNAMED",
+      "NUMBERED",
       "tabs",
       "form",
     ]);

@@ -231,7 +231,10 @@ function symbolKeyDescription(init: Expression, bindingName: string): string | u
       identifierName(callee.object) === "Symbol" &&
       identifierName(callee.property) === "for");
   if (!isSymbol) return undefined;
-  const description = resolveStaticStringLiteral(init.arguments[0]);
+  // Only a string description counts, as for a same-file key: `Symbol(1)` is named by its binding.
+  const [argument] = init.arguments;
+  const description =
+    argument?.type === "Literal" && typeof argument.value !== "string" ? null : resolveStaticStringLiteral(argument);
   return description || bindingName;
 }
 
