@@ -11,7 +11,6 @@ export declare function wrap<T>(value: T): T[];
 
 export type GenericsTemplateExportedFunctionScopedProps<Row extends { id: string | number }> = {
   /**
-   * @template {{ id: string | number }} Row
    * @default []
    */
   rows?: Row[];

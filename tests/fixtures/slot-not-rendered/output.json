@@ -5,7 +5,6 @@
     {
       "name": "title",
       "kind": "let",
-      "description": "The first word of an inline description is read as the slot name.",
       "type": "string",
       "typeSource": "default",
       "value": "\"\"",

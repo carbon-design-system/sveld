@@ -330,6 +330,21 @@ export function functionDocCommentStarts(ctx: ParserContext): Set<number> {
   return starts;
 }
 
+/** Tags that declare part of the component's API rather than document a declaration. */
+const COMPONENT_LEVEL_TAGS = new Set([
+  "slot",
+  "snippet",
+  "event",
+  "typedef",
+  "callback",
+  "restProps",
+  "extends",
+  "extendProps",
+  "csspart",
+  "cssprop",
+  "cssproperty",
+]);
+
 export function processNodeJSDoc(
   ctx: ParserContext,
   node: { leadingComments?: unknown[]; start?: number } | null | undefined,
@@ -367,8 +382,11 @@ export function templateTagParameters(tag: JSDocTag, type: string): Array<{ name
   return parameters;
 }
 
-function processJSDocComment(ctx: ParserContext, jsdocComment: LeadingJSDocComment): NodeJsDoc {
+function processJSDocComment(ctx: ParserContext, jsdocComment: LeadingJSDocComment): NodeJsDoc | undefined {
   const comment = parsedSourceBlock(ctx, jsdocComment) ?? parseCommentText(ctx, formatComment(jsdocComment.value));
+  // A block declaring component-level items (`@slot`, `@event`, `@typedef`, ...) documents
+  // the component, not the declaration below it.
+  if (comment[0]?.tags.some(({ tag }) => COMPONENT_LEVEL_TAGS.has(tag))) return undefined;
   const tags = getCommentTags(comment);
 
   const params: ComponentPropParam[] | undefined =
@@ -383,19 +401,19 @@ function processJSDocComment(ctx: ParserContext, jsdocComment: LeadingJSDocComme
           }))
       : undefined;
 
-  // A function's own `@template`s become its type parameters instead of description text.
+  // A function's own `@template`s become its type parameters; anywhere else they (and
+  // `@generics`) declare component generics. Neither is description text.
   let typeParameters: string | undefined;
-  let descriptionTags = tags.additional;
   if (ctx.functionDocCommentStarts.has(jsdocComment.start)) {
-    const templateTags = descriptionTags.filter((tag) => tag.tag === "template" && tag.name);
+    const templateTags = tags.additional.filter((tag) => tag.tag === "template" && tag.name);
     if (templateTags.length > 0) {
       typeParameters = templateTags
         .flatMap((tag) => templateTagParameters(tag, aliasType(tag.type)))
         .map(({ constraint }) => constraint)
         .join(", ");
-      descriptionTags = descriptionTags.filter((tag) => tag.tag !== "template");
     }
   }
+  const descriptionTags = tags.additional.filter((tag) => tag.tag !== "template" && tag.tag !== "generics");
 
   const formattedDescription = tags.description?.trim();
   const descriptionParts = [
