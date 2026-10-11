@@ -9434,7 +9434,7 @@
           "type": "() => void",
           "typeSource": "jsdoc",
           "defaultValue": {
-            "raw": "() => {     files = [];   }",
+            "raw": "() => { files = []; }",
             "kind": "function"
           },
           "isFunction": true,
@@ -16234,7 +16234,7 @@
           "typeSource": "default",
           "value": "{ clearAll: \"clearAll\", clearSelection: \"clearSelection\", }",
           "defaultValue": {
-            "raw": "{     clearAll: \"clearAll\",     clearSelection: \"clearSelection\",   }",
+            "raw": "{ clearAll: \"clearAll\", clearSelection: \"clearSelection\", }",
             "kind": "object",
             "value": {
               "clearAll": "clearAll",
@@ -19938,7 +19938,7 @@
           "typeSource": "jsdoc",
           "value": "{ increment: \"increment\", decrement: \"decrement\", }",
           "defaultValue": {
-            "raw": "{     increment: \"increment\",     decrement: \"decrement\",   }",
+            "raw": "{ increment: \"increment\", decrement: \"decrement\", }",
             "kind": "object",
             "value": {
               "increment": "increment",
