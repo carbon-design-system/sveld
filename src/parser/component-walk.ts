@@ -37,6 +37,7 @@ import {
   buildSlotPropsFromObjectExpression,
   DEFAULT_SLOT_NAME,
   extractRenderTagInfo,
+  mergeSlotPropsSpread,
   renderTagCall,
   slotKey,
   slotPropValueFromExpression,
@@ -167,7 +168,12 @@ function addSlotElement(ctx: ParserContext, node: AST.SlotElement) {
   const slot_name = firstNameChunk?.type === "Text" ? firstNameChunk.data : undefined;
 
   const slot_props: SlotProps = {};
+  let slot_props_unresolved_spread = false;
   for (const attr of node.attributes) {
+    if (attr.type === "SpreadAttribute") {
+      if (!mergeSlotPropsSpread(ctx, slot_props, attr.expression, attr)) slot_props_unresolved_spread = true;
+      continue;
+    }
     // Only attributes and `style:` directives have a `value`.
     if (!("value" in attr) || attr.name === "name" || attr.value === true) continue;
     slot_props[attr.name] = slotPropValueFromAttribute(ctx, attr.value);
@@ -182,6 +188,7 @@ function addSlotElement(ctx: ParserContext, node: AST.SlotElement) {
   addSlot(ctx, {
     slot_name,
     slot_props,
+    slot_props_unresolved_spread: slot_props_unresolved_spread || undefined,
     slot_fallback: fallback,
     source: sourceRangeFromNode(ctx, node),
   });
