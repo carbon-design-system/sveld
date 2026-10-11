@@ -1,4 +1,3 @@
-import { dirname } from "node:path";
 import type { ComponentDocApi } from "./bundle";
 import { type CrossFilePass, dropUnknownTypeDiagnostic, findCandidateProp, setResolvedField } from "./cross-file-pass";
 import type { PendingCallDefaultCandidate } from "./model";
@@ -29,12 +28,10 @@ function siblingDeclarationFile(resolvedFile: string, graph: ModuleGraph): strin
  * can't use `node:fs`.
  */
 function resolveCallDefaultCandidates(
-  componentFilePath: string,
+  fromDir: string,
   candidates: PendingCallDefaultCandidate[],
   ctx: ResolveContext,
 ): CallDefaultResolution[] {
-  const fromDir = dirname(componentFilePath);
-
   return candidates.map((candidate): CallDefaultResolution => {
     if (!candidate.importSource || !candidate.importedName) {
       // Parse already finalized these to "any".

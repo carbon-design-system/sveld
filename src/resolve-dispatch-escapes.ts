@@ -1,4 +1,3 @@
-import { dirname } from "node:path";
 import type { Expression, Node, Pattern, SpreadElement, TSParameterProperty } from "sveast";
 import { isReference, STOP, walk } from "sveast/walk";
 import { resolveStaticStringLiteral } from "./ast-guards";
@@ -44,12 +43,10 @@ type DispatcherBinding = { name: string } | { object: string; property: string }
  * name, leaves the candidate unresolved. AST only, no `tsc`.
  */
 function resolveDispatchEscapeCandidates(
-  componentFilePath: string,
+  fromDir: string,
   candidates: PendingDispatchEscapeCandidate[],
   ctx: ResolveContext,
 ): DispatchEscapeResolution[] {
-  const fromDir = dirname(componentFilePath);
-
   return candidates.map((candidate): DispatchEscapeResolution => {
     const resolvedFile = ctx.graph.resolve(candidate.importSource, fromDir);
     if (!resolvedFile) return { candidate, failureReason: "module-not-found" };

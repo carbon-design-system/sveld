@@ -1,4 +1,3 @@
-import { dirname } from "node:path";
 import type { ComponentDocApi } from "./bundle";
 import { type CrossFilePass, dropUnknownTypeDiagnostic, findCandidateProp, setResolvedField } from "./cross-file-pass";
 import type { PendingConstDefaultCandidate } from "./model";
@@ -14,12 +13,10 @@ interface ConstDefaultResolution {
 
 /** Only `export const` with a primitive literal counts; `let`/`var` exports are live bindings. */
 function resolveConstDefaultCandidates(
-  componentFilePath: string,
+  fromDir: string,
   candidates: PendingConstDefaultCandidate[],
   ctx: ResolveContext,
 ): ConstDefaultResolution[] {
-  const fromDir = dirname(componentFilePath);
-
   return candidates.map((candidate): ConstDefaultResolution => {
     const resolvedFile = ctx.graph.resolve(candidate.importSource, fromDir);
     if (!resolvedFile) return { candidate };

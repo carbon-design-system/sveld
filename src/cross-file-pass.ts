@@ -12,8 +12,8 @@ import type { ResolveContext } from "./module-exports";
 export interface CrossFilePass<Candidate, Resolution> {
   /** This pass's candidates out of what the parse left pending. */
   collect(pending: PendingCrossFileCandidates): Candidate[];
-  /** Reads the other files. AST/JSDoc only (no tsc). */
-  resolve(componentFilePath: string, candidates: Candidate[], ctx: ResolveContext): Resolution[];
+  /** Reads the other files, resolving imports from `fromDir`, the component's directory. AST/JSDoc only (no tsc). */
+  resolve(fromDir: string, candidates: Candidate[], ctx: ResolveContext): Resolution[];
   /** Writes the resolutions onto the component, in place. */
   apply(component: ComponentDocApi, resolutions: Resolution[], pending: PendingCrossFileCandidates): void;
 }
