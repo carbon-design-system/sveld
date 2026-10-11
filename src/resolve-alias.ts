@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, isAbsolute, relative, resolve } from "node:path";
 import { findUp } from "./fs-listing";
+import { escapeRegExp } from "./parser/utils";
 import { MODULE_EXTENSIONS, normalizeSeparators } from "./path";
 import { type ParsedTsConfig, parseTsConfig } from "./validate";
 
@@ -10,8 +11,6 @@ const pathPatternRegexCache = new Map<string, RegExp>();
 
 /** A block or line comment, stripped before parsing a tsconfig/jsconfig as JSON. */
 const COMMENT_PATTERN = /\/\*[\s\S]*?\*\/|\/\/.*/g;
-/** Each character with a special meaning in a regular expression (`*` is split on first). */
-const REGEX_SPECIAL_CHARS = /[.+?^${}()|[\]\\]/g;
 
 const ALIAS_CANDIDATE_EXTENSIONS = [".svelte", ...MODULE_EXTENSIONS];
 
@@ -97,10 +96,7 @@ interface AliasLookup {
 function getPatternRegex(pattern: string): RegExp {
   let regex = pathPatternRegexCache.get(pattern);
   if (!regex) {
-    const escapedPattern = pattern
-      .split("*")
-      .map((part) => part.replace(REGEX_SPECIAL_CHARS, "\\$&"))
-      .join("(.*)");
+    const escapedPattern = pattern.split("*").map(escapeRegExp).join("(.*)");
 
     regex = new RegExp(`^${escapedPattern}$`);
     pathPatternRegexCache.set(pattern, regex);
