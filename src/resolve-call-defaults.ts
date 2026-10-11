@@ -34,7 +34,7 @@ function resolveCallDefaultCandidates(
 ): CallDefaultResolution[] {
   return candidates.map((candidate): CallDefaultResolution => {
     if (!candidate.importSource || !candidate.importedName) {
-      // Parse already finalized these to "any".
+      // Nothing to resolve: the prop stays untyped (`any`).
       return { candidate };
     }
 

@@ -101,7 +101,6 @@
     {
       "name": "blockScoped",
       "kind": "let",
-      "type": "any",
       "typeSource": "unknown",
       "value": "helper()",
       "defaultValue": {

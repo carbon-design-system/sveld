@@ -6,7 +6,6 @@
       "name": "id",
       "kind": "let",
       "description": "Element id.",
-      "type": "any",
       "typeSource": "unknown",
       "value": "A generated `ccs-` id",
       "defaultValue": {
