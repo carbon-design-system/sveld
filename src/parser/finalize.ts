@@ -187,12 +187,12 @@ function componentInstanceType(name: string): string {
  * component's instance, as an array when bound by index. A `<svelte:element>`
  * whose tag is a type parameter in `tagTypes` is that tag's element type.
  */
-function boundPropType(binding: ComponentPropBindings, tagTypes: Map<string, string>): string {
+function boundPropType(binding: ComponentPropBindings, tagTypes?: Map<string, string>): string {
   const boundTypes = [
     ...binding.elements
       .sort((a, b) => (a.tag < b.tag ? -1 : a.tag > b.tag ? 1 : 0))
       .map(({ tag, namespace, tagLocal }) => {
-        const tagType = tagLocal === undefined ? undefined : tagTypes.get(tagLocal);
+        const tagType = tagLocal && tagTypes?.get(tagLocal);
         return tagType ? `HTMLElementTagNameMap[${tagType}]` : getElementByTag(tag, namespace);
       }),
     ...binding.components.sort().map(componentInstanceType),
@@ -217,14 +217,10 @@ function buildProps(ctx: ParserContext): ComponentProp[] {
     .map((prop) => {
       const reactive = prop.reactive || ctx.reactive_vars.has(prop.name);
       const binding = ctx.bindings.get(prop.name);
-      if (!binding || binding.target === "mixed") return { ...prop, reactive };
       // `refs[key]` into an object map (`= {}`) isn't an array.
-      if (binding.target === "indexed" && prop.type !== undefined && !prop.type.endsWith("[]")) {
-        return { ...prop, reactive };
-      }
-
-      const type = boundPropType(binding, new Map());
-      return { ...prop, type, typeSource: "inferred" as const, reactive };
+      const isObjectMap = binding?.target === "indexed" && prop.type !== undefined && !prop.type.endsWith("[]");
+      if (!binding || binding.target === "mixed" || isObjectMap) return { ...prop, reactive };
+      return { ...prop, type: boundPropType(binding), typeSource: "inferred" as const, reactive };
     });
 }
 
@@ -500,6 +496,27 @@ function recordUnrenderedJsDocSlots(ctx: ParserContext) {
 }
 
 /**
+ * Rest props spread only onto a component, with no `@restProps` tag: another
+ * component's rest-prop shape is unknowable. `@extendProps` naming the
+ * component the rest props go to already types them.
+ */
+function recordUnresolvedRestProps(ctx: ParserContext) {
+  const restProps = ctx.rest_props;
+  if (restProps?.type !== "InlineComponent") return;
+  const spreadTarget = importedBindingByName(ctx, restProps.name);
+  // `extends.import` keeps the tag's quotes: `"./Link.svelte"`.
+  const extendsSource = ctx.extends?.import.replace(SURROUNDING_QUOTES_REGEX, "");
+  if (spreadTarget?.importedName === "default" && spreadTarget.source === extendsSource) return;
+  recordDiagnostic(
+    ctx,
+    "rest-props-unresolved",
+    "$$restProps",
+    `$$restProps is only spread onto component "${restProps.name}"; sveld cannot infer its rest-prop type. Spread onto a plain element or add an @restProps tag.`,
+    ctx.restPropsSource,
+  );
+}
+
+/**
  * A public prop/typedef/event/slot/module-export/context-property whose type
  * text still names a now-excluded `@internal` typedef leaves a dangling
  * reference in the generated `.d.ts`. Cheap early-out: most components
@@ -516,16 +533,13 @@ function recordInternalTypedefReferences(
     contexts: ComponentContext[];
   },
 ) {
-  const internalTypedefNames = output.typedefs
+  const internalTypedefMatchers = output.typedefs
     .filter((typedef) => typedef.internal)
-    .map((typedef) => typedef.name.split("<")[0]);
-
-  if (internalTypedefNames.length === 0) return;
-
-  const internalTypedefMatchers = internalTypedefNames.map((name) => ({
-    name,
-    regex: new RegExp(`\\b${name}\\b`),
-  }));
+    .map((typedef) => {
+      const name = typedef.name.split("<")[0];
+      return { name, regex: new RegExp(`\\b${name}\\b`) };
+    });
+  if (internalTypedefMatchers.length === 0) return;
 
   const scanForInternalReference = (referencingName: string, typeText: string | undefined, source?: SourceRange) => {
     if (!typeText) return;
@@ -541,14 +555,9 @@ function recordInternalTypedefReferences(
     }
   };
 
-  for (const prop of output.props) {
+  for (const prop of [...output.props, ...output.moduleExports]) {
     if (prop.internal) continue;
     scanForInternalReference(prop.name, prop.type, prop.source);
-  }
-
-  for (const moduleExport of output.moduleExports) {
-    if (moduleExport.internal) continue;
-    scanForInternalReference(moduleExport.name, moduleExport.type, moduleExport.source);
   }
 
   for (const typedef of output.typedefs) {
@@ -662,23 +671,7 @@ export function finalizeComponent(ctx: ParserContext, walk: ComponentWalkResult)
     );
   }
 
-  // Spread only onto components, with no `@restProps` tag: another component's rest-prop shape is unknowable.
-  // `@extendProps` naming the component the rest props go to already types them.
-  const spreadTarget =
-    ctx.rest_props?.type === "InlineComponent" ? importedBindingByName(ctx, ctx.rest_props.name) : undefined;
-  // `extends.import` keeps the tag's quotes: `"./Link.svelte"`.
-  const extendsSource = ctx.extends?.import.replace(SURROUNDING_QUOTES_REGEX, "");
-  const extendsSpreadTarget = spreadTarget?.importedName === "default" && spreadTarget.source === extendsSource;
-  if (ctx.rest_props?.type === "InlineComponent" && !extendsSpreadTarget) {
-    recordDiagnostic(
-      ctx,
-      "rest-props-unresolved",
-      "$$restProps",
-      `$$restProps is only spread onto component "${ctx.rest_props.name}"; sveld cannot infer its rest-prop type. Spread onto a plain element or add an @restProps tag.`,
-      ctx.restPropsSource,
-    );
-  }
-
+  recordUnresolvedRestProps(ctx);
   recordInternalTypedefReferences(ctx, { props, moduleExports, typedefs, events, slots, contexts });
 
   const parsedComponent: ParsedComponent = {

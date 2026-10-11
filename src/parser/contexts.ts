@@ -193,7 +193,8 @@ function objectLiteralContext(ctx: ParserContext, objExpr: ObjectExpression, key
 
 function parseContextValue(ctx: ParserContext, node: Node, key: string): ComponentContext | null {
   if (isObjectExpression(node)) return objectLiteralContext(ctx, node, key);
-  const typed = (type: string) => ({ key, typeName: generateContextTypeName(key), type, properties: [] });
+  const typeName = generateContextTypeName(key);
+  const typed = (type: string) => ({ key, typeName, type, properties: [] });
   // A store passed as the whole value, or `null`/`undefined` to clear a parent's context.
   if (node.type === "CallExpression") {
     const storeType = svelteStoreType(ctx, node);
@@ -217,7 +218,7 @@ function parseContextValue(ctx: ParserContext, node: Node, key: string): Compone
     const members = parseObjectTypeLiteralMembers(varInfo.type);
     return {
       key,
-      typeName: generateContextTypeName(key),
+      typeName,
       ...(members ? {} : { type: varInfo.type }),
       properties: members ?? [],
       description: varInfo.description,
@@ -232,13 +233,7 @@ function parseContextValue(ctx: ParserContext, node: Node, key: string): Compone
     `Context "${key}" variable "${varName}" has no type annotation; defaulted to "any".`,
     sourceRangeFromNode(ctx, node),
   );
-
-  return {
-    key,
-    typeName: generateContextTypeName(key),
-    type: "any",
-    properties: [],
-  };
+  return typed("any");
 }
 
 /** Static description from `Symbol()` / `Symbol.for()`, or `""` when unknown. Returns `null` for other calls. */
