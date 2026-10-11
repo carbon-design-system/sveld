@@ -273,7 +273,10 @@ export function readFunctionDeclarationParts(
   const params: FunctionDeclarationParam[] = [];
   let previousEnd = "start" in funcDecl && typeof funcDecl.start === "number" ? funcDecl.start : undefined;
 
-  for (const rawParam of funcDecl.params) {
+  // A destructured param has no name of its own; numbered when there are others, so no two share one.
+  const unnamed = (index: number) => (funcDecl.params.length === 1 ? "arg" : `arg${index}`);
+
+  for (const [index, rawParam] of funcDecl.params.entries()) {
     const inlineType = inlineJsDocType(ctx, previousEnd, rawParam.start);
     previousEnd = rawParam.end;
     // `constructor(public x: T)`: the parameter is wrapped.
@@ -294,7 +297,7 @@ export function readFunctionDeclarationParts(
     const annotation = "typeAnnotation" in target ? target.typeAnnotation : undefined;
     trackAdditionalTypeDependencyNode(ctx, annotation?.typeAnnotation);
     params.push({
-      name: target.type === "Identifier" ? target.name : "arg",
+      name: target.type === "Identifier" ? target.name : unnamed(index),
       type: getTypeAnnotationText(ctx, annotation) ?? inlineType,
       optional: hasDefault || ("optional" in param && param.optional === true),
       rest: false,
