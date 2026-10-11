@@ -78,8 +78,8 @@ function findAttachedComment(comments: ScriptComment[], declStart: number, sourc
  * `@type`/description/`@internal` of its attached JSDoc block. A block without `@type` is
  * still recorded, for a TS-annotated variable.
  */
-function buildVariableJsDocTable(ctx: ParserContext): ParserContext["variableInfoCache"] {
-  const table: ParserContext["variableInfoCache"] = new Map();
+function buildVariableJsDocTable(ctx: ParserContext): NonNullable<ParserContext["variableInfoCache"]> {
+  const table: NonNullable<ParserContext["variableInfoCache"]> = new Map();
   if (!ctx.source) return table;
 
   const allComments: ScriptComment[] = [];
@@ -117,10 +117,7 @@ function buildVariableJsDocTable(ctx: ParserContext): ParserContext["variableInf
 
 /** The JSDoc table entry for `varName`, building the table on first use. */
 function variableJsDocEntry(ctx: ParserContext, varName: string) {
-  if (!ctx.variableInfoCacheBuilt) {
-    ctx.variableInfoCache = buildVariableJsDocTable(ctx);
-    ctx.variableInfoCacheBuilt = true;
-  }
+  ctx.variableInfoCache ??= buildVariableJsDocTable(ctx);
   return ctx.variableInfoCache.get(varName);
 }
 
