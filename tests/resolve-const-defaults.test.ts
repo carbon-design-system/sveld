@@ -153,6 +153,24 @@ describe("cross-file imported-constant prop-default resolution", () => {
     expect(prop?.value).toBe("300");
   });
 
+  test("an explicit @default isn't replaced by the imported const", async () => {
+    const component = await parseComponent(
+      "Documented",
+      `<script>
+  import { TOOLTIP_LEAVE_DELAY_MS } from "./timing.js";
+
+  /** @default 250 */
+  export let leaveDelayMs = TOOLTIP_LEAVE_DELAY_MS;
+</script>
+<div />
+`,
+    );
+    const prop = component?.props.find((p) => p.name === "leaveDelayMs");
+
+    expect(prop?.value).toBe("250");
+    expect(prop?.description).toBeUndefined();
+  });
+
   test("leaves let exports, non-literal consts, and missing modules unresolved", async () => {
     const component = await parseComponent(
       "Unresolved",

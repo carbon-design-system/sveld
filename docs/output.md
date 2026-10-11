@@ -243,7 +243,7 @@ A prop looks like this:
 
 - `name` is the public prop name. For a runes alias such as `let { class: className } = $props()`, `localName` holds the local binding.
 - `typeSource` says where `type` came from: `"typescript"`, `"jsdoc"`, `"default"` (the initializer), `"inferred"`, or `"unknown"`.
-- `value` is the raw default expression. `defaultValue` adds a coarse `kind` and a parsed `value` for JSON-safe literals, arrays, and plain objects. sveld never evaluates code.
+- `value` is the raw default expression, or the text of an explicit `@default` tag, which is then left out of `description`. `defaultValue` always describes the initializer: a coarse `kind` and a parsed `value` for JSON-safe literals, arrays, and plain objects. sveld never evaluates code.
 - `reactive` is a heuristic: `true` when sveld finds the prop assigned or mutated inside the component, declared with `$bindable(...)`, or used as a `bind:` target. `false` doesn't mean a parent can't `bind:` it.
 - `binding` (`"readonly"` or `"writable"`) comes only from [`@bindable`](jsdoc-tags.md#bindable).
 - `bindable: true` marks props declared with `$bindable(...)`.

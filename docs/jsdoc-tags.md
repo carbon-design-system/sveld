@@ -159,7 +159,7 @@ open?: boolean;
 
 A fallback or conditional initializer (`??`, `||`, `&&`, `?:`) shows its source text, folded onto one line, in the `.d.ts`, the JSON `value`, and the Markdown "Default value" column. For example, `export let size = defaultSize ?? "md"` documents `@default defaultSize ?? "md"`.
 
-An explicit `@default` always wins over the inferred value. Use it when the initializer names something meaningless to consumers:
+An explicit `@default` always wins over the inferred value: the `.d.ts`, the JSON `value`, and the Markdown "Default value" column all show it, and it's left out of the prop's description. Use it when the initializer names something meaningless to consumers:
 
 ```svelte
 <script>

@@ -330,7 +330,11 @@ function copyIfAny<T>(items: T[]): T[] | undefined {
 /** What the parse leaves for the cross-file pass, or `undefined` when it depends on no other file. */
 export function buildPendingCrossFileCandidates(ctx: ParserContext): PendingCrossFileCandidates | undefined {
   const pendingCallDefaultCandidates = copyIfAny(ctx.pendingCallDefaultCandidates);
-  const pendingConstDefaultCandidates = copyIfAny(ctx.pendingConstDefaultCandidates);
+  const pendingConstDefaultCandidates = copyIfAny(
+    ctx.pendingConstDefaultCandidates.filter(
+      (candidate) => candidate.location !== "props" || !ctx.explicitDefaultPropNames.has(candidate.propName),
+    ),
+  );
   const pendingContextKeyCandidates = copyIfAny(ctx.pendingContextKeyCandidates);
   const pendingDispatchEscapeCandidates = copyIfAny(ctx.pendingDispatchEscapeCandidates);
   if (

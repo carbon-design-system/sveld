@@ -51,6 +51,10 @@ export interface NodeJsDoc {
   internal: boolean;
   /** `@template` tags of a comment documenting a function, as its type parameter list (`T extends Foo, U`). */
   typeParameters?: string;
+  /** An explicit `@default` tag's text; a prop shows it as its default instead of the initializer. */
+  explicitDefault?: string;
+  /** `description` without the `@default` line, set with `explicitDefault`. */
+  descriptionWithoutDefault?: string;
 }
 
 export interface RunesPropsDeclarationMetadata {

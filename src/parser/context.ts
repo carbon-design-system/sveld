@@ -136,6 +136,8 @@ export interface ParserContext {
   readonly jsDocEventNames: Set<string>;
   /** Events a typed dispatcher declares (`createEventDispatcher<{ save: ... }>()`), dispatched or not. */
   readonly typedDispatcherEventNames: Set<string>;
+  /** Props with an explicit `@default`, which another file's constant must not replace. */
+  readonly explicitDefaultPropNames: Set<string>;
   /** `@event` tags with no `{type}` or `@property`: their `null` detail gives way to a dispatch's. */
   readonly untypedJsDocEventNames: Set<string>;
 
@@ -221,6 +223,7 @@ export function createParserContext(): ParserContext {
     forwardedEvents: new Map(),
     jsDocEventNames: new Set(),
     typedDispatcherEventNames: new Set(),
+    explicitDefaultPropNames: new Set(),
     untypedJsDocEventNames: new Set(),
     jsDocEventSources: new Map(),
     bindings: new Map(),
