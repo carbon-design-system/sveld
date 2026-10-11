@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.38.6](https://github.com/carbon-design-system/sveld/releases/tag/v0.38.6) - 2026-10-10
+
+**Features**
+
+- type a context property from its JSDoc (96e86e2)
+- type a `<svelte:element>` ref from its tag type parameter (fb09cf4)
+- type store, `null`, and `undefined` context values (41cfe34)
+
+**Fixes**
+
+- skip `rest-props-unresolved` when `@extendProps` covers it (c768c8e)
+- locate `rest-props-unresolved` (3314450)
+
 ## [0.38.5](https://github.com/carbon-design-system/sveld/releases/tag/v0.38.5) - 2026-10-10
 
 **Fixes**
