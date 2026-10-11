@@ -2750,4 +2750,50 @@ describe("ComponentParser", () => {
       expect(restPropsOf(source)).toMatchObject({ type: "Element", name: "span" });
     });
   });
+
+  describe("rest props of a `<svelte:element>` whose tag is a type parameter", () => {
+    const restPropsOf = (source: string) => new ComponentParser().parseSvelteComponent(source, diagnostics).rest_props;
+
+    test("types them from the type parameter", () => {
+      expect(
+        restPropsOf(`
+          <script>
+            /** @template {keyof HTMLElementTagNameMap} [Tag="div"] */
+
+            /** @type {Tag} */
+            export let tag = "div";
+          </script>
+
+          <svelte:element this={tag} {...$$restProps}><slot /></svelte:element>
+        `),
+      ).toEqual({ type: "Element", name: "svelte:element", thisType: "Tag" });
+    });
+
+    test("types them from a runes prop's type parameter", () => {
+      expect(
+        restPropsOf(`
+          <script lang="ts" generics="Tag extends keyof HTMLElementTagNameMap = 'div'">
+            let { tag = "div" as Tag, ...rest }: { tag?: Tag; [key: string]: unknown } = $props();
+          </script>
+
+          <svelte:element this={tag} {...rest} />
+        `),
+      ).toEqual({ type: "Element", name: "svelte:element", thisType: "Tag" });
+    });
+
+    test("leaves an unconstrained type parameter alone, since it may not be a tag name", () => {
+      expect(
+        restPropsOf(`
+          <script>
+            /** @template [Tag="div"] */
+
+            /** @type {Tag} */
+            export let tag = "div";
+          </script>
+
+          <svelte:element this={tag} {...$$restProps} />
+        `),
+      ).toEqual({ type: "Element", name: "svelte:element" });
+    });
+  });
 });

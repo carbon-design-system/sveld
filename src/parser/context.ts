@@ -60,6 +60,8 @@ export interface ParserContext {
   functionDocCommentStarts: Set<number>;
 
   rest_props?: RestProps;
+  /** The local a `<svelte:element this={tag}>` rest props target names as its tag. */
+  restPropsTagLocal?: string;
   extends?: Extends;
   customElementTag?: string;
   customElement?: CustomElementOptions;
