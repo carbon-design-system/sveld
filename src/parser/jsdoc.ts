@@ -125,32 +125,32 @@ export function aliasType(type: string): string {
 }
 
 /**
- * `@returns`/`@return` type from raw JSDoc text (with or without `/**` delimiters).
- * Needs no parser context, so modules outside a component can use it.
+ * Tags of raw JSDoc text (with or without `/**` delimiters). Needs no parser
+ * context, so modules outside a component can use the `extractJsDoc*` helpers.
  */
+function commentTagsOf(commentValue: string) {
+  return getCommentTags(parseComments(formatComment(commentValue)));
+}
+
+/** `@returns`/`@return` type from raw JSDoc text. */
 export function extractJsDocReturnType(commentValue: string): string | undefined {
-  const comment = parseComments(formatComment(commentValue));
-  const { returns: returnsTag } = getCommentTags(comment);
-  return returnsTag ? aliasType(returnsTag.type) : undefined;
+  const { returns } = commentTagsOf(commentValue);
+  return returns ? aliasType(returns.type) : undefined;
 }
 
-/** `@type` type from raw JSDoc text, like {@link extractJsDocReturnType}. */
+/** `@type` type from raw JSDoc text. */
 export function extractJsDocType(commentValue: string): string | undefined {
-  const { type: typeTag } = getCommentTags(parseComments(formatComment(commentValue)));
-  return typeTag ? aliasType(typeTag.type) : undefined;
+  const { type } = commentTagsOf(commentValue);
+  return type ? aliasType(type.type) : undefined;
 }
 
-/**
- * `@deprecated`, passthrough tags, and `@ignore`/`@internal` from raw JSDoc text.
- * Context-free, like {@link extractJsDocReturnType}.
- */
+/** `@deprecated`, passthrough tags, and `@ignore`/`@internal` from raw JSDoc text. */
 export function extractJsDocDeprecatedAndTags(commentValue: string): {
   deprecated?: DeprecatedValue;
   tags?: JsDocPassthroughTag[];
   internal: boolean;
 } {
-  const comment = parseComments(formatComment(commentValue));
-  const { deprecated, passthrough, internal } = getCommentTags(comment);
+  const { deprecated, passthrough, internal } = commentTagsOf(commentValue);
   return { deprecated, tags: toPassthroughTags(passthrough), internal };
 }
 
@@ -331,13 +331,7 @@ export function functionDocCommentStarts(ctx: ParserContext): Set<number> {
 
 export function processNodeJSDoc(
   ctx: ParserContext,
-  node:
-    | {
-        leadingComments?: unknown[];
-        start?: number;
-      }
-    | null
-    | undefined,
+  node: { leadingComments?: unknown[]; start?: number } | null | undefined,
 ) {
   const comment = findAdjacentJSDocComment(ctx, node?.leadingComments, node?.start);
   return comment && processJSDocComment(ctx, comment);
@@ -373,23 +367,11 @@ export function templateTagParameters(tag: JSDocTag, type: string): Array<{ name
 
 function processJSDocComment(ctx: ParserContext, jsdocComment: LeadingJSDocComment): NodeJsDoc {
   const comment = parsedSourceBlock(ctx, jsdocComment) ?? parseCommentText(ctx, formatComment(jsdocComment.value));
-
-  const {
-    type: typeTag,
-    param: paramTags,
-    returns: returnsTag,
-    binding,
-    deprecated,
-    internal,
-    additional: additionalTags,
-    passthrough: passthroughTags,
-    ignore: ignoreCodes,
-    description: commentDescription,
-  } = getCommentTags(comment);
+  const tags = getCommentTags(comment);
 
   const params: ComponentPropParam[] | undefined =
-    paramTags.length > 0
-      ? paramTags
+    tags.param.length > 0
+      ? tags.param
           .filter((tag) => !tag.name.includes("."))
           .map((tag) => ({
             name: tag.name,
@@ -401,19 +383,19 @@ function processJSDocComment(ctx: ParserContext, jsdocComment: LeadingJSDocComme
 
   // A function's own `@template`s become its type parameters instead of description text.
   let typeParameters: string | undefined;
-  let descriptionTags = additionalTags;
+  let descriptionTags = tags.additional;
   if (ctx.functionDocCommentStarts.has(jsdocComment.start)) {
-    const templateTags = additionalTags.filter((tag) => tag.tag === "template" && tag.name);
+    const templateTags = descriptionTags.filter((tag) => tag.tag === "template" && tag.name);
     if (templateTags.length > 0) {
       typeParameters = templateTags
         .flatMap((tag) => templateTagParameters(tag, aliasType(tag.type)))
         .map(({ constraint }) => constraint)
         .join(", ");
-      descriptionTags = additionalTags.filter((tag) => tag.tag !== "template");
+      descriptionTags = descriptionTags.filter((tag) => tag.tag !== "template");
     }
   }
 
-  const formattedDescription = commentDescription?.trim();
+  const formattedDescription = tags.description?.trim();
   const descriptionParts = [
     ...(formattedDescription ? [formattedDescription] : []),
     // Rebuilt from the text as written, so a `{...}` in it (`@default { a: 1 }`) survives.
@@ -421,15 +403,15 @@ function processJSDocComment(ctx: ParserContext, jsdocComment: LeadingJSDocComme
   ];
 
   return {
-    type: typeTag ? aliasType(typeTag.type) : undefined,
+    type: tags.type ? aliasType(tags.type.type) : undefined,
     params,
-    returnType: returnsTag ? aliasType(returnsTag.type) : undefined,
+    returnType: tags.returns ? aliasType(tags.returns.type) : undefined,
     description: descriptionParts.length > 0 ? descriptionParts.join("\n") : undefined,
-    binding,
-    deprecated,
-    tags: toPassthroughTags(passthroughTags),
-    sveldIgnore: ignoreCodes.length > 0 ? ignoreCodes : undefined,
-    internal,
+    binding: tags.binding,
+    deprecated: tags.deprecated,
+    tags: toPassthroughTags(tags.passthrough),
+    sveldIgnore: tags.ignore.length > 0 ? tags.ignore : undefined,
+    internal: tags.internal,
     typeParameters,
   };
 }
