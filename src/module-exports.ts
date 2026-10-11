@@ -164,10 +164,10 @@ function functionReturnAnnotationText(source: ModuleSource, fn: FunctionLike): s
   return textOf(source, fn.returnType?.typeAnnotation);
 }
 
-function buildSignature(source: ModuleSource, fn: FunctionLike): string {
+/** `fn`'s type: its params as written, returning its annotated type, else `returnType`, else `any`. */
+function buildSignature(source: ModuleSource, fn: FunctionLike, returnType?: string): string {
   const params = fn.params.map((param) => textOf(source, param) ?? "").join(", ");
-  const returnType = functionReturnAnnotationText(source, fn);
-  return `(${params})${returnType ? ` => ${returnType}` : ""}`;
+  return `(${params}) => ${functionReturnAnnotationText(source, fn) ?? returnType ?? "any"}`;
 }
 
 function inferLiteralType(init: Expression): string | undefined {
@@ -393,8 +393,8 @@ function describeDeclaration(
       if (init) {
         if (init.type === "ArrowFunctionExpression" || init.type === "FunctionExpression") {
           functionNode = init;
-          if (!type) type = buildSignature(source, init);
           returnType = returnTypeOf(init, type);
+          if (!type) type = buildSignature(source, init, returnType);
         } else {
           value = textOf(source, init);
           if (!type) type = inferLiteralType(init);
@@ -414,10 +414,11 @@ function describeDeclaration(
 
   // Ambient signature in a `.d.ts`: `export function uniqueId(prefix?: string): string;`
   if (declaration.type === "FunctionDeclaration" || declaration.type === "TSDeclareFunction") {
+    const returnType = returnTypeOf(declaration);
     return entry(identifierName(declaration.id) ?? anonymousName, {
       kind: "function",
-      type: buildSignature(source, declaration),
-      returnType: returnTypeOf(declaration),
+      type: buildSignature(source, declaration, returnType),
+      returnType,
       ...(declaration.type === "FunctionDeclaration" ? { functionNode: declaration } : {}),
     });
   }
@@ -472,7 +473,7 @@ function describeDefaultExport(
     return {
       name: "default",
       kind: "function",
-      type: buildSignature(source, declaration),
+      type: buildSignature(source, declaration, inferAstLiteralReturnType(declaration)),
       functionNode: declaration,
       declFile: source.filePath,
       isTypeOnly: false,
