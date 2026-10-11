@@ -2,7 +2,7 @@ const REGEXP_SPECIAL_CHARS = ".+^$()[]{}|\\";
 
 /**
  * For `diagnostics.ignore[].component`: `*` matches within a path segment,
- * `**` across segments (eating a following `/`), `?` one character. Hand-rolled
+ * `**` across segments, `?` one character. Hand-rolled
  * since sveld ships no runtime dependencies.
  */
 function globToRegExpSource(pattern: string): string {
@@ -12,9 +12,14 @@ function globToRegExpSource(pattern: string): string {
     const ch = pattern[i];
 
     if (ch === "*" && pattern[i + 1] === "*") {
-      source += ".*";
       i++;
-      if (pattern[i + 1] === "/") i++;
+      // `**/` matches zero or more whole segments, so `**/Button.svelte` doesn't match `MyButton.svelte`.
+      if (pattern[i + 1] === "/") {
+        source += "(?:.*/)?";
+        i++;
+      } else {
+        source += ".*";
+      }
       continue;
     }
 
