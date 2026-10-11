@@ -1,0 +1,291 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "reassigned",
+      "kind": "let",
+      "type": "boolean",
+      "typeSource": "default",
+      "value": "false",
+      "defaultValue": {
+        "raw": "false",
+        "kind": "literal",
+        "value": false
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    },
+    {
+      "name": "value",
+      "kind": "let",
+      "type": "string",
+      "typeSource": "default",
+      "value": "\"\"",
+      "defaultValue": {
+        "raw": "\"\"",
+        "kind": "literal",
+        "value": ""
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    },
+    {
+      "name": "boundInput",
+      "kind": "let",
+      "type": "string",
+      "typeSource": "default",
+      "value": "\"\"",
+      "defaultValue": {
+        "raw": "\"\"",
+        "kind": "literal",
+        "value": ""
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    },
+    {
+      "name": "pageSize",
+      "kind": "let",
+      "type": "number",
+      "typeSource": "default",
+      "value": "10",
+      "defaultValue": {
+        "raw": "10",
+        "kind": "literal",
+        "value": 10
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    },
+    {
+      "name": "ref",
+      "kind": "let",
+      "typeSource": "unknown",
+      "value": "null",
+      "defaultValue": {
+        "raw": "null",
+        "kind": "literal",
+        "value": null
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    },
+    {
+      "name": "listRef",
+      "kind": "let",
+      "typeSource": "unknown",
+      "value": "null",
+      "defaultValue": {
+        "raw": "null",
+        "kind": "literal",
+        "value": null
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    },
+    {
+      "name": "values",
+      "kind": "let",
+      "type": "string[]",
+      "typeSource": "default",
+      "value": "[\"a\"]",
+      "defaultValue": {
+        "raw": "[\"a\"]",
+        "kind": "array",
+        "value": [
+          "a"
+        ]
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    },
+    {
+      "name": "settings",
+      "kind": "let",
+      "type": "{ name: string }",
+      "typeSource": "default",
+      "value": "{ name: \"\" }",
+      "defaultValue": {
+        "raw": "{ name: \"\" }",
+        "kind": "object",
+        "value": {
+          "name": ""
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    },
+    {
+      "name": "rows",
+      "kind": "let",
+      "type": "{ label: string }[]",
+      "typeSource": "default",
+      "value": "[{ label: \"\" }]",
+      "defaultValue": {
+        "raw": "[{ label: \"\" }]",
+        "kind": "array",
+        "value": [
+          {
+            "label": ""
+          }
+        ]
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    },
+    {
+      "name": "passedThrough",
+      "kind": "let",
+      "type": "boolean",
+      "typeSource": "default",
+      "value": "false",
+      "defaultValue": {
+        "raw": "false",
+        "kind": "literal",
+        "value": false
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "localShadow",
+      "kind": "let",
+      "type": "boolean",
+      "typeSource": "default",
+      "value": "false",
+      "defaultValue": {
+        "raw": "false",
+        "kind": "literal",
+        "value": false
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "paramShadow",
+      "kind": "let",
+      "type": "boolean",
+      "typeSource": "default",
+      "value": "false",
+      "defaultValue": {
+        "raw": "false",
+        "kind": "literal",
+        "value": false
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "handlerShadow",
+      "kind": "let",
+      "type": "boolean",
+      "typeSource": "default",
+      "value": "false",
+      "defaultValue": {
+        "raw": "false",
+        "kind": "literal",
+        "value": false
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "eachShadow",
+      "kind": "let",
+      "type": "boolean",
+      "typeSource": "default",
+      "value": "false",
+      "defaultValue": {
+        "raw": "false",
+        "kind": "literal",
+        "value": false
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "bindShadow",
+      "kind": "let",
+      "type": "string",
+      "typeSource": "default",
+      "value": "\"\"",
+      "defaultValue": {
+        "raw": "\"\"",
+        "kind": "literal",
+        "value": ""
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "legacy-reactive-detection/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "ref",
+      "message": "Prop \"ref\" type could not be inferred; falling back to \"any\".",
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
+    },
+    {
+      "component": "legacy-reactive-detection/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "listRef",
+      "message": "Prop \"listRef\" type could not be inferred; falling back to \"any\".",
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
+    }
+  ]
+}
