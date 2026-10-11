@@ -110,7 +110,7 @@
         },
         {
           "name": "reset",
-          "type": "(...args: any[]) => any",
+          "type": "() => any",
           "optional": false
         }
       ]

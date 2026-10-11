@@ -19,7 +19,13 @@ import { generateContextTypeName } from "./context-type-name";
 import { recordDiagnostic } from "./diagnostics";
 import { processNodeJSDoc } from "./jsdoc";
 import { parseObjectTypeLiteralMembers } from "./object-type-literal";
-import { inferVariableInitializerType, literalValueType, resolveConstInitializer, svelteStoreType } from "./props";
+import {
+  inferFunctionValueType,
+  inferVariableInitializerType,
+  literalValueType,
+  resolveConstInitializer,
+  svelteStoreType,
+} from "./props";
 import { isBoundInNestedScope, isCalleeBoundInNestedScope } from "./scopes";
 import { sourceForExpression, sourceRangeFromNode } from "./source-position";
 import { importedMemberBinding, importPath } from "./value-imports";
@@ -39,7 +45,7 @@ function findContextVariableType(
   const varInfo = findTrackedVariableType(ctx, name);
   if (varInfo || !inferFromInitializer) return varInfo;
 
-  const inferredType = inferVariableInitializerType(ctx, name);
+  const inferredType = inferVariableInitializerType(ctx, name, true);
   return inferredType ? { type: inferredType, ...findVariableJsDoc(ctx, name) } : null;
 }
 
@@ -106,8 +112,7 @@ function describeContextValue(
     return { type: "any" };
   }
   if (value?.type === "ArrowFunctionExpression" || value?.type === "FunctionExpression") {
-    const params = value.params.map((param) => `${isIdentifier(param) ? param.name || "arg" : "arg"}: any`).join(", ");
-    return { type: `(${params}) => any` };
+    return { type: inferFunctionValueType(ctx, value) };
   }
   if (isLiteral(value)) {
     return { type: literalValueType(value) ?? "null" };

@@ -793,7 +793,7 @@ describe("ComponentParser", () => {
       `);
       expect(types).toEqual({
         select: "(index: number) => any",
-        label: "(...args: any[]) => string",
+        label: "() => string",
         close: "(force?: boolean) => void",
       });
     });

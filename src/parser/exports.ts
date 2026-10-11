@@ -23,7 +23,7 @@ import { processNodeJSDoc } from "./jsdoc";
 import { propJsDocFields, resolvePropTypeAndDocs } from "./prop-shared";
 import {
   addProp,
-  inferFunctionDeclarationType,
+  inferFunctionValueType,
   literalType,
   processInitializer,
   queuePendingCrossFileDefault,
@@ -241,7 +241,7 @@ export function collectExportDeclarators(
       kind: "function",
       isFunctionDeclaration: true,
       value: undefined,
-      typeSeed: accessorSignature?.hasAnnotations ? undefined : inferFunctionDeclarationType(declaration),
+      typeSeed: accessorSignature?.hasAnnotations ? undefined : inferFunctionValueType(ctx, declaration),
       explicitType: accessorSignature?.hasAnnotations ? accessorSignature.signature : undefined,
       initializerIsFunction: true,
       isRequired: false,
