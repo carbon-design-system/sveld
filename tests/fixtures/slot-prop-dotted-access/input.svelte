@@ -1,4 +1,9 @@
 <script>
+  /**
+   * A `@slot` type wins over the type a dotted access would resolve to.
+   * @slot {{ item: "override" }} typed
+   */
+
   /** @type {{ value: string }} */
   let explicit = { value: "hello" };
 
@@ -21,6 +26,11 @@
 
   /** @type {{ x: number; y: number }} */
   export let point = { x: 0, y: 0 };
+
+  /** @type {{ onClick: (e: MouseEvent) => void; label: string }} */
+  export let item = { onClick: () => {}, label: "" };
+
+  let key = "value";
 </script>
 
 <slot
@@ -33,4 +43,11 @@
   g={generic.items}
   h={inferred.noType}
   i={point.x}
+  j={item.label}
+  computed={explicit[key]}
+  chained={nested.inner.deep}
+/>
+<slot
+  name="typed"
+  item={explicit.value}
 />

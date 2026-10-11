@@ -9,6 +9,17 @@ export type SlotPropDottedAccessProps = {
     y: number
   };
 
+  /**
+   * @default { onClick: () => {}, label: "" }
+   */
+  item?: {
+    onClick: (e: MouseEvent) => void;
+    label: string
+  };
+
+  /** A `@slot` type wins over the type a dotted access would resolve to. */
+  typed?: (this: void, ...args: [{ item: "override" }]) => void;
+
   children?: (this: void, ...args: [{
         a: string;
         b: string;
@@ -19,6 +30,9 @@ export type SlotPropDottedAccessProps = {
         g: Array<string>;
         h: any;
         i: number;
+        j: string;
+        computed: any;
+        chained: any;
       }]) => void;
 };
 

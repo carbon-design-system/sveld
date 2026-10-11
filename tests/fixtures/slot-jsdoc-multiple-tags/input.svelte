@@ -9,6 +9,7 @@
    * </BreadcrumbItem>
    * ```
    * @deprecated Prefer the `link` snippet.
+   * @since 1.2.0
    * @slot {{ props?: { "aria-current"?: string; class: "bx--link" } }}
    */
 </script>
