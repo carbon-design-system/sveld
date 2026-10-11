@@ -165,8 +165,23 @@ export function findVariableJsDoc(ctx: ParserContext, varName: string): { descri
 export function resolveLocalVarJSDoc(ctx: ParserContext, name: string) {
   for (const decl of ctx.vars) {
     if (decl.declarations.some((declarator) => declarator.id.type === "Identifier" && declarator.id.name === name)) {
-      return processNodeJSDoc(ctx, decl);
+      return declarationJSDoc(ctx, decl);
     }
   }
-  return processNodeJSDoc(ctx, ctx.funcDecls.get(name));
+  const funcDecl = ctx.funcDecls.get(name);
+  return funcDecl && declarationJSDoc(ctx, funcDecl);
+}
+
+/** A declaration's JSDoc, which sits on the `export` statement when it's exported. */
+function declarationJSDoc(ctx: ParserContext, declaration: object) {
+  const own = processNodeJSDoc(ctx, declaration);
+  if (own) return own;
+  for (const script of [ctx.parsed?.instance, ctx.parsed?.module]) {
+    for (const statement of script?.content.body ?? []) {
+      if (statement.type === "ExportNamedDeclaration" && statement.declaration === declaration) {
+        return processNodeJSDoc(ctx, statement);
+      }
+    }
+  }
+  return undefined;
 }
