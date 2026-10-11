@@ -10,6 +10,8 @@ type $Events = {
   click: WindowEventMap["click"];
   /** Dismiss button clicked with no data */
   dismiss: CustomEvent<null>;
+  /** Shares a native event name, but the child dispatches it */
+  reset: CustomEvent<null>;
   /** Search query changed */
   search: CustomEvent<string>;
 };
