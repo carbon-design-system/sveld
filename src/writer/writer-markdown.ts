@@ -4,13 +4,11 @@ import type { EntryExports } from "../parse-entry-exports";
 import type { ComponentDocs } from "../plugin";
 import { buildComponentApiDocument } from "./document-model";
 import type { AppendType, MarkdownDocument } from "./markdown-document";
-import {
-  renderComponentIndexToMarkdown,
-  renderComponentsToMarkdown,
-  renderComponentToMarkdown,
-} from "./markdown-render-utils";
+import { renderComponentIndexToMarkdown, renderComponentToMarkdown } from "./markdown-render-utils";
 import Writer from "./Writer";
-import { createMarkdownDocument } from "./writer-markdown-core";
+import { createMarkdownDocument, renderMarkdownDocument } from "./writer-markdown-core";
+
+export { renderMarkdownDocument } from "./writer-markdown-core";
 
 /** User-settable `markdownOptions`. */
 export interface MarkdownOptions {
@@ -64,16 +62,6 @@ async function writeMarkdownComponents(components: ComponentDocs, options: Write
       info(`${wasWritten ? "created" : "unchanged"} "${outFile}".`);
     }),
   );
-}
-
-/** Shared by `writeMarkdown` and the CLI's `--stdout` mode so the two can't drift. */
-export function renderMarkdownDocument(
-  components: ComponentDocs,
-  options: Pick<WriteMarkdownOptions, "entryExports" | "onAppend">,
-): string {
-  const document = createMarkdownDocument(components, options);
-  renderComponentsToMarkdown(document, components, options.entryExports);
-  return document.end();
 }
 
 export default async function writeMarkdown(components: ComponentDocs, options: WriteMarkdownOptions) {
