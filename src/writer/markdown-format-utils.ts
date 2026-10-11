@@ -179,17 +179,6 @@ export function formatSlotFallback(fallback?: string) {
 
 /** The description, then one line per tag (`@since 1.2.0`), as one table cell. */
 export function formatDescriptionWithTags(description?: string, tags?: Array<{ name: string; body: string }>) {
-  const hasDescription = description !== undefined && description.trim().length > 0;
-  if (!(hasDescription && hasCodeFence(description)) && !tags?.some(({ body }) => body && hasCodeFence(body))) {
-    const segments = hasDescription ? [proseText(description)] : [];
-    for (const { name, body } of tags ?? []) {
-      const trimmed = body?.trim();
-      segments.push(trimmed ? `@${name} ${proseText(trimmed)}` : `@${name}`);
-    }
-    if (segments.length === 0) return MD_TYPE_UNDEFINED;
-    return segments.join("\n").replace(PIPE_REGEX, "&#124;").replace(NEWLINE_REGEX, "<br />");
-  }
-
   const parts: CellPart[] = [];
   const appendProse = (text: string) => {
     const last = parts.at(-1);
@@ -205,7 +194,7 @@ export function formatDescriptionWithTags(description?: string, tags?: Array<{ n
     }
   };
 
-  if (hasDescription) appendSegment("", description);
+  if (description?.trim()) appendSegment("", description);
 
   for (const { name, body } of tags ?? []) {
     const trimmed = body?.trim();
