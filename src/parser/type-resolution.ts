@@ -15,6 +15,7 @@ import type {
   TypeImportBinding,
 } from "../model";
 import type { ParserContext } from "./context";
+import { extractJsDocType } from "./jsdoc";
 import { sourceAtPos } from "./source-position";
 import { compareText } from "./utils";
 
@@ -253,21 +254,35 @@ export interface FunctionDeclarationParts {
   typeParameters?: string;
 }
 
+/** A `/** @type {T} *\/` comment right before a param, as `(/** @type {string} *\/ id) => ...` types it. */
+const INLINE_JSDOC_REGEX = /\/\*\*((?:(?!\*\/)[\s\S])*)\*\/\s*$/;
+
+/** The type an inline JSDoc comment between `from` and a param at `to` gives that param. */
+function inlineJsDocType(ctx: ParserContext, from: number | undefined, to: number): string | undefined {
+  if (from === undefined) return undefined;
+  const between = sourceAtPos(ctx, from, to);
+  const comment = between && INLINE_JSDOC_REGEX.exec(between);
+  return comment ? extractJsDocType(comment[0]) : undefined;
+}
+
 /** Also records each annotation so the `.d.ts` pulls in the types it names. */
 export function readFunctionDeclarationParts(
   ctx: ParserContext,
   funcDecl: FunctionDeclarationLike,
 ): FunctionDeclarationParts {
   const params: FunctionDeclarationParam[] = [];
+  let previousEnd = "start" in funcDecl && typeof funcDecl.start === "number" ? funcDecl.start : undefined;
 
   for (const rawParam of funcDecl.params) {
+    const inlineType = inlineJsDocType(ctx, previousEnd, rawParam.start);
+    previousEnd = rawParam.end;
     // `constructor(public x: T)`: the parameter is wrapped.
     const param = rawParam.type === "TSParameterProperty" ? rawParam.parameter : rawParam;
     if (param.type === "RestElement") {
       trackAdditionalTypeDependencyNode(ctx, param.typeAnnotation?.typeAnnotation);
       params.push({
         name: param.argument.type === "Identifier" ? param.argument.name : "rest",
-        type: getTypeAnnotationText(ctx, param.typeAnnotation),
+        type: getTypeAnnotationText(ctx, param.typeAnnotation) ?? inlineType,
         optional: false,
         rest: true,
       });
@@ -280,7 +295,7 @@ export function readFunctionDeclarationParts(
     trackAdditionalTypeDependencyNode(ctx, annotation?.typeAnnotation);
     params.push({
       name: target.type === "Identifier" ? target.name : "arg",
-      type: getTypeAnnotationText(ctx, annotation),
+      type: getTypeAnnotationText(ctx, annotation) ?? inlineType,
       optional: hasDefault || ("optional" in param && param.optional === true),
       rest: false,
     });
