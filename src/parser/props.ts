@@ -422,15 +422,16 @@ export function literalType(node: unknown, mode: LiteralTypeMode): string | unde
  * argument (`$state<number>(0)`) wins over its argument. A function
  * declaration is typed as a function default is. `undefined` when unknown.
  */
-export function inferVariableInitializerType(ctx: ParserContext, name: string): string | undefined {
+/** With `exactArity`, a function is typed as a value ({@link inferFunctionValueType}), not a prop default. */
+export function inferVariableInitializerType(ctx: ParserContext, name: string, exactArity = false): string | undefined {
   const init = resolveLocalVarInitializer(ctx, name);
   if (init === undefined) {
     const funcDecl = ctx.funcDecls.get(name);
-    return funcDecl && localFunctionType(ctx, name, funcDecl);
+    return funcDecl && localFunctionType(ctx, name, funcDecl, exactArity);
   }
 
   if (init.type === "ArrowFunctionExpression" || init.type === "FunctionExpression") {
-    return initializerCastType(ctx, init) ?? localFunctionType(ctx, name, init);
+    return initializerCastType(ctx, init) ?? localFunctionType(ctx, name, init, exactArity);
   }
 
   if (init.type === "CallExpression") {
@@ -455,11 +456,14 @@ export function inferVariableInitializerType(ctx: ParserContext, name: string): 
  * Type of the function `node` declared as `name`: its TS annotations, else
  * its JSDoc, else what {@link inferFunctionTypeFromNode} reads off the node.
  */
-function localFunctionType(ctx: ParserContext, name: string, node: FunctionNode): string {
+function localFunctionType(ctx: ParserContext, name: string, node: FunctionNode, exactArity: boolean): string {
   const annotated = buildFunctionDeclarationSignature(ctx, node);
   if (annotated.hasAnnotations) return annotated.signature;
   const jsdoc = resolveLocalVarJSDoc(ctx, name);
-  return jsdoc?.type ?? buildFunctionTypeFromParts(ctx, jsdoc, node);
+  if (jsdoc?.type) return jsdoc.type;
+  return exactArity && !jsdoc?.params?.length && !jsdoc?.returnType
+    ? inferFunctionValueType(ctx, node)
+    : buildFunctionTypeFromParts(ctx, jsdoc, node);
 }
 
 const SVELTE_STORE_TYPES = new Map([
@@ -619,11 +623,15 @@ function inferParamsFromNode({ params }: FunctionNode): string {
 }
 
 /**
- * An `export function`'s type when nothing declares it: each param as `any`
- * (optional when it has a default, `any[]` when rest) so consumers can call
- * it with arguments, and the return type {@link inferReturnTypeFromNode} reads.
+ * The type of a function that is itself the value (an `export function`, a
+ * context member), not a prop's default: its TS annotations, else each param
+ * as `any` (optional when it has a default, `any[]` when rest), returning
+ * what {@link inferReturnTypeFromNode} reads.
  */
-export function inferFunctionDeclarationType(node: FunctionDeclaration): string {
+export function inferFunctionValueType(ctx: ParserContext, node: FunctionNode): string {
+  const returnType = inferReturnTypeFromNode(node);
+  const annotated = buildFunctionDeclarationSignature(ctx, node, returnType);
+  if (annotated.hasAnnotations) return annotated.signature;
   const params = node.params.map((param, index) => {
     if (param.type === "RestElement") {
       return `...${isIdentifier(param.argument) ? param.argument.name : "args"}: any[]`;
@@ -633,7 +641,7 @@ export function inferFunctionDeclarationType(node: FunctionDeclaration): string 
     }
     return `${isIdentifier(param) ? param.name : `arg${index}`}: any`;
   });
-  return `(${params.join(", ")}) => ${inferReturnTypeFromNode(node)}`;
+  return `(${params.join(", ")}) => ${returnType}`;
 }
 
 /**

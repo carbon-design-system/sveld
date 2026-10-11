@@ -12,7 +12,7 @@ export type MenuContext = {
   fallbackName: any;
   notifyOpen: (id: any) => any;
   claim: (id: string) => boolean;
-  reset: (...args: any[]) => any;
+  reset: () => any;
 };
 
 export type ContextInferredValuesProps = {

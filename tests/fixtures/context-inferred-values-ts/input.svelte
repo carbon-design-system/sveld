@@ -12,7 +12,13 @@
     selectedItem.set(item);
   }
 
-  setContext("Picker", { selectedItem, items, select });
+  setContext("Picker", {
+    selectedItem,
+    items,
+    select,
+    find: (id: string): Item | undefined => undefined,
+    clear: () => selectedItem.set(null),
+  });
 </script>
 
 <slot />

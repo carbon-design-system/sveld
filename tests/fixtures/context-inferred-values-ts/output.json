@@ -32,6 +32,16 @@
           "name": "select",
           "type": "(item: Item, focus?: boolean) => void",
           "optional": false
+        },
+        {
+          "name": "find",
+          "type": "(id: string) => Item | undefined",
+          "optional": false
+        },
+        {
+          "name": "clear",
+          "type": "() => any",
+          "optional": false
         }
       ]
     }
