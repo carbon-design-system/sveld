@@ -22,7 +22,7 @@
 | Name | Kind | Type | Description |
 | :- | :- | :- | :- |
 | tree | <code>const</code> | <code>boolean</code> | -- |
-| computeTreeLeafDepth | <code>function</code> | <code>() => any</code> | -- |
+| computeTreeLeafDepth | <code>function</code> | <code>(node: any) => any</code> | -- |
 | findParentTreeNode | <code>function</code> | <code>(node: HTMLElement) => null &#124; HTMLElement</code> | Finds the nearest parent tree node |
 
 ### Slots
