@@ -5,6 +5,73 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.38.7](https://github.com/carbon-design-system/sveld/releases/tag/v0.38.7) - 2026-10-11
+
+**Features**
+
+- type more context values, and report the ones that fall to `any` (cae91c7)
+- type a context member read off a typed local (cf51e2e)
+- let `sveld()` skip the config file, and report a missing one (bf873fb)
+
+**Fixes**
+
+- keep a default's line breaks in the JSON `value` (5c5e5da)
+- type an exported `const` function as the value it is (b502c4a)
+- fold a multi-line default's indentation with its line breaks (4cd673f)
+- type an exported variable from its own annotation (515f69d)
+- quote a `@param` member name that isn't an identifier (6806b7c)
+- read an annotated function's return type off its body (83f6c62)
+- give destructured params of a typed function unique names (6786252)
+- substitute `Props<T>` arguments into spreads and unions (1241bf5)
+- keep literal text intact in an object or array default (cbd2293)
+- type a function value that returns nothing as returning `void` (29aab74)
+- skip `spread-unresolved` on a slot typed by `@slot` (430b5b9)
+- name the entry file when its `export *` can't be resolved (7ca3ba7)
+- pass any absolute path through alias lookup (f3c6bd2)
+- mark a type read off a called function's body as inferred (acdbaba)
+- read an exported local's JSDoc off its `export` statement (dfd3a05)
+- leave `type` out for every prop sveld couldn't type (343df1c)
+- leave out empty descriptions in JSON (33ca536)
+- keep a module class's index signature in the `.d.ts` (72eb670)
+- type a param from an inline `/** @type */` comment (9d625c4)
+- read `@param options.member` tags into the param's type (783ea21)
+- classify an operator default sveld can't evaluate as an expression (912729f)
+- keep a dot-prefixed directory relative in a source path (3085084)
+- let an explicit `@default` win in JSON and Markdown too (05fcfc2)
+- show the value inside `$state`/`$derived` as a prop default (97014a3)
+- type a module class field from its literal initializer (0a8ccf4)
+- drop comments from an object or array default's text (fbef854)
+- skip the empty `$Props` when `@extendProps` adds no props (284e312)
+- write a multi-line context member description as a block (3c0d4e1)
+- tidy slot props and event details in Markdown tables (e56ebbe)
+- type a context function as the value it is (1dcfd6f)
+- type a TypeScript function default from its annotations (9bb060c)
+- name an imported `Symbol(1)` context key by its binding (34ca1a9)
+- give an unannotated exported function a full signature (edc5bf4)
+- type negative numbers and primitive conversions (de75303)
+- type a legacy `<slot {...props}>` from the spread value (e0bd9a5)
+- read `readonly` and optional members of an object type (873c117)
+- type `<slot>` and `{@render}` prop values the same way (0d69cb7)
+- count a typed dispatcher's events as having a source (e6c1206)
+- type a forwarded component event from its `@event {null}` (545b567)
+- keep a `null` detail on `$host()` custom events (7970130)
+- substitute `$props()` type arguments only in type positions (134bb24)
+- read inherited members of a `$props()` interface (5e4f16e)
+- treat legacy and runes props the same for callbacks and typedefs (687eb69)
+- document whole-object `$props()` members like destructured ones (916f1c4)
+- read a quoted JSDoc tag name up to its closing quote (136dae0)
+- attach trailing `@deprecated`/`@internal` to a typedef (25111ed)
+- keep component-level JSDoc off the declaration below it (64fc0cf)
+- match `**/` in ignore globs on whole segments (931b952)
+- type an untyped `export function` from its params (b40302a)
+- type `<svelte:document>` events from `DocumentEventMap` (0f3d882)
+- quote an unquoted `@extendProps` import path (383c3bf)
+- read `@type {*}` on an imported const as `any` (ebf5ebf)
+- quote context property keys that aren't identifiers (052ba67)
+- declare module exports from top-level function types (80fe54a)
+- mark a prop bound through an index or member reactive (a271248)
+- honor a prop's `@sveld-ignore` for `extend-props-override` (eb28a37)
+
 ## [0.38.6](https://github.com/carbon-design-system/sveld/releases/tag/v0.38.6) - 2026-10-10
 
 **Features**
