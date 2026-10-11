@@ -147,10 +147,11 @@ export interface ParserContext {
   readonly typedefs: Map<string, TypeDef>;
   /** So `/** @type {Props} *\/ let { ... } = $props()` can type each prop. */
   readonly typedefMembersByName: Map<string, TypedefMember[]>;
-  /** No `type` for a variable whose JSDoc has no `@type` (a TS annotation may still type it). */
-  variableInfoCache: Map<string, { type?: string; description?: string; internal?: boolean }>;
-
-  variableInfoCacheBuilt: boolean;
+  /**
+   * Built on first lookup. No `type` for a variable whose JSDoc has no
+   * `@type` (a TS annotation may still type it).
+   */
+  variableInfoCache: Map<string, { type?: string; description?: string; internal?: boolean }> | undefined;
 
   /** `@sveld-ignore` codes keyed by `"<kind>:<name>"`; see `recordSveldIgnore`. */
   readonly sveldIgnoreDirectives: Map<string, Set<string>>;
@@ -224,8 +225,7 @@ export function createParserContext(): ParserContext {
     contexts: new Map(),
     typedefs: new Map(),
     typedefMembersByName: new Map(),
-    variableInfoCache: new Map(),
-    variableInfoCacheBuilt: false,
+    variableInfoCache: undefined,
     sveldIgnoreDirectives: new Map(),
     propIgnoreCodes: new Map(),
   };
