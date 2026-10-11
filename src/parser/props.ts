@@ -451,7 +451,9 @@ export function inferVariableInitializerType(ctx: ParserContext, name: string, e
     }
   }
 
-  return processInitializer(ctx, init).type;
+  // A call's declared return type (`@returns`) lands in `resolvedType`.
+  const processed = processInitializer(ctx, init);
+  return processed.type ?? processed.resolvedType;
 }
 
 /**

@@ -112,6 +112,16 @@
           "name": "reset",
           "type": "() => void",
           "optional": false
+        },
+        {
+          "name": "registerIcon",
+          "type": "(id: string) => void",
+          "optional": false
+        },
+        {
+          "name": "hasIconItems",
+          "type": "import(\"svelte/store\").Readable<boolean>",
+          "optional": false
         }
       ]
     }

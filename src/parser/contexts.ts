@@ -14,6 +14,7 @@ import {
   resolveStaticStringLiteral,
 } from "../ast-guards";
 import type { ComponentContext, ComponentContextProp, SourceRange } from "../model";
+import { extractPropertyType } from "./bindings";
 import type { ParserContext } from "./context";
 import { generateContextTypeName } from "./context-type-name";
 import { recordDiagnostic } from "./diagnostics";
@@ -116,6 +117,17 @@ function describeContextValue(
   }
   if (isLiteral(value)) {
     return { type: literalValueType(value) ?? "null" };
+  }
+  // `registry.register`, read off a local whose type sveld knows.
+  if (
+    value?.type === "MemberExpression" &&
+    !value.computed &&
+    isIdentifier(value.object) &&
+    isIdentifier(value.property)
+  ) {
+    const objectType = findContextVariableType(ctx, value.object.name)?.type;
+    const memberType = objectType && extractPropertyType(objectType, value.property.name);
+    if (memberType) return { type: memberType };
   }
   const storeType = value?.type === "CallExpression" ? svelteStoreType(ctx, value) : undefined;
   return { type: storeType ?? "any" };

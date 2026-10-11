@@ -13,6 +13,8 @@ export type MenuContext = {
   notifyOpen: (id: any) => void;
   claim: (id: string) => boolean;
   reset: () => void;
+  registerIcon: (id: string) => void;
+  hasIconItems: import("svelte/store").Readable<boolean>;
 };
 
 export type ContextInferredValuesProps = {
