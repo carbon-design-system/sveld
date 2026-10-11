@@ -241,7 +241,7 @@ describe("MarkdownDocument", () => {
               {
                 name: "footer",
                 default: false,
-                slot_props: "{}",
+                slot_props: "Record<string, never>",
               },
             ],
             events: [],
@@ -257,7 +257,7 @@ describe("MarkdownDocument", () => {
     expect(output).toMatchSnapshot();
     expect(output).toContain("| Slot name | Default | Props | Fallback | Description |");
     expect(output).toContain(
-      "| -- | Yes | <code>{ prop: number } </code> | -- | Default content.<br />Spans two lines.<br />@deprecated Prefer the `body` slot.<br />@since 1.2.0 |",
+      "| -- | Yes | <code>{ prop: number }</code> | -- | Default content.<br />Spans two lines.<br />@deprecated Prefer the `body` slot.<br />@since 1.2.0 |",
     );
     expect(output).toContain(
       "| title | No | -- | -- | Heading content.<br />@example &lt;Example&gt;Hi&lt;/Example&gt; |",
@@ -296,6 +296,11 @@ describe("MarkdownDocument", () => {
                 description: "Fires on change.",
                 tags: [{ name: "example", body: "on:change={handleChange}" }],
               },
+              {
+                type: "dispatched",
+                name: "select",
+                detail: "{\n  a: string;\n  b: number;\n}",
+              },
             ],
             typedefs: [],
             generics: null,
@@ -308,6 +313,7 @@ describe("MarkdownDocument", () => {
 
     expect(output).toContain("| size | No | <code>let</code> | No | -- | -- | -- | Current value.<br />@since 1.2.0 |");
     expect(output).toContain("| change | dispatched | -- | Fires on change.<br />@example on:change={handleChange} |");
+    expect(output).toContain("| select | dispatched | <code>{ a: string; b: number; }</code> | -- |");
   });
 
   test("rewrites {@link} to a Markdown link in prop and slot descriptions", () => {

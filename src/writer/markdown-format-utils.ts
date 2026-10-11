@@ -1,5 +1,5 @@
 import type { ComponentProp, DeprecatedValue } from "../model";
-import { formatClassMemberSignature, formatTsProps } from "./writer-ts-definitions-core";
+import { formatClassMemberSignature } from "./writer-ts-definitions-core";
 
 export const BACKTICK_REGEX = /`/g;
 export const WHITESPACE_REGEX = /\s+/g;
@@ -172,8 +172,8 @@ export function formatPropDescription(description: string | undefined) {
 }
 
 export function formatSlotProps(props?: string) {
-  if (props === undefined || props === "{}") return MD_TYPE_UNDEFINED;
-  return formatPropType(formatTsProps(props).replace(NEWLINE_REGEX, " "));
+  if (props === undefined || props === "{}" || props === "Record<string, never>") return MD_TYPE_UNDEFINED;
+  return formatPropType(props.trim());
 }
 
 export function formatSlotFallback(fallback?: string) {
@@ -210,8 +210,7 @@ export function formatDescriptionWithTags(description?: string, tags?: Array<{ n
 }
 
 export function formatEventDetail(detail?: string) {
-  if (detail === undefined) return MD_TYPE_UNDEFINED;
-  return formatPropType(detail.replace(NEWLINE_REGEX, " "));
+  return formatPropType(detail);
 }
 
 /** `Extends <code>Base&lt;T></code>. Implements <code>Disposable</code>.` */
