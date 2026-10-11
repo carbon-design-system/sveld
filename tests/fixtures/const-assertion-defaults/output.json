@@ -45,16 +45,16 @@
     {
       "name": "nested",
       "kind": "let",
-      "type": "{ readonly steps: readonly [1, 2] }",
+      "type": "{ readonly steps: readonly [1, -2] }",
       "typeSource": "default",
-      "value": "{ steps: [1, 2] }",
+      "value": "{ steps: [1, -2] }",
       "defaultValue": {
-        "raw": "{ steps: [1, 2] }",
+        "raw": "{ steps: [1, -2] }",
         "kind": "object",
         "value": {
           "steps": [
             1,
-            2
+            -2
           ]
         }
       },
@@ -74,6 +74,25 @@
         "raw": "\"sm\"",
         "kind": "literal",
         "value": "sm"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "angleItems",
+      "kind": "let",
+      "type": "readonly [\"x\"]",
+      "typeSource": "default",
+      "value": "[\"x\"]",
+      "defaultValue": {
+        "raw": "[\"x\"]",
+        "kind": "array",
+        "value": [
+          "x"
+        ]
       },
       "isFunction": false,
       "isFunctionDeclaration": false,

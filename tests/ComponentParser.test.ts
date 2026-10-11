@@ -70,57 +70,6 @@ describe("ComponentParser", () => {
     }
   });
 
-  describe("hoisted call defaults", () => {
-    test("resolves a default from a top-level function declared after the prop", () => {
-      const parser = new ComponentParser();
-      const source = `
-        <script>
-          export let id = uniqueId();
-
-          /** @returns {string} */
-          function uniqueId() { return "ccs"; }
-        </script>
-      `;
-
-      const result = parser.parseSvelteComponent(source, diagnostics);
-      expect(result.props[0]).toMatchObject({ name: "id", type: "string", value: "uniqueId()" });
-    });
-
-    test("resolves a default from an exported function declared after the prop", () => {
-      const parser = new ComponentParser();
-      const source = `
-        <script>
-          export let id = uniqueId();
-
-          /** @returns {string} */
-          export function uniqueId() { return "ccs"; }
-        </script>
-      `;
-
-      const result = parser.parseSvelteComponent(source, diagnostics);
-      expect(result.props[0]).toMatchObject({ name: "id", type: "string", value: "uniqueId()" });
-    });
-
-    test("does not hoist a function declared inside a nested block", () => {
-      // Block-level functions are block-scoped in module (strict) code, so a
-      // top-level default can't actually call one; only top-level statements
-      // are pre-collected before prop defaults resolve.
-      const parser = new ComponentParser();
-      const source = `
-        <script>
-          export let id = helper();
-          {
-            /** @returns {string} */
-            function helper() { return "x"; }
-          }
-        </script>
-      `;
-
-      const result = parser.parseSvelteComponent(source, diagnostics);
-      expect(result.props[0]).toMatchObject({ name: "id", type: "any", value: "helper()" });
-    });
-  });
-
   test("keeps the JSDoc of a context variable typed from its initializer", () => {
     const parser = new ComponentParser();
     const source = `
@@ -324,41 +273,6 @@ describe("ComponentParser", () => {
     const result = parser.parseSvelteComponent(source, diagnostics);
 
     expect(result.syntaxMode).toBe("legacy");
-  });
-
-  test("resolves a prop default wrapped in `as const`", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <script lang="ts">
-        export let type = "button" as const;
-      </script>
-
-      <button {type} />
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-    const prop = result.props.find((prop) => prop.name === "type");
-
-    expect(prop?.type).toBe('"button"');
-    expect(prop?.typeSource).toBe("default");
-    expect(prop?.defaultValue).toMatchObject({ kind: "literal", value: "button" });
-  });
-
-  test("resolves a prop default wrapped in `satisfies` and a non-null assertion", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <script lang="ts">
-        export let count = (5 satisfies number)!;
-      </script>
-
-      <button>{count}</button>
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-    const prop = result.props.find((prop) => prop.name === "count");
-
-    expect(prop?.type).toBe("number");
-    expect(prop?.defaultValue).toMatchObject({ kind: "literal", value: 5 });
   });
 
   test("parses basic component exports", () => {
@@ -892,151 +806,6 @@ describe("ComponentParser", () => {
     const result = parser.parseSvelteComponent(source, diagnostics);
     expect(result.props).toHaveLength(1);
     expect(result.props[0].name).toBe("data");
-  });
-
-  test("parses @returns tag for function declarations", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <script>
-        /**
-         * Add a notification to the queue.
-         * @param {string} notification
-         * @returns {string} The notification id
-         */
-        export function add(notification) {
-          return "id";
-        }
-
-        /**
-         * Remove a notification by id.
-         * @param {string} id
-         * @returns {boolean} True if the notification was found and removed
-         */
-        export function remove(id) {
-          return true;
-        }
-
-        /**
-         * Get notification count.
-         * @returns {number} The number of notifications
-         */
-        export function getCount() {
-          return 0;
-        }
-      </script>
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-    expect(result.props).toHaveLength(3);
-
-    const addProp = result.props.find((p) => p.name === "add");
-    expect(addProp?.returnType).toBe("string");
-    expect(addProp?.params).toHaveLength(1);
-    expect(addProp?.params?.[0].name).toBe("notification");
-    expect(addProp?.params?.[0].type).toBe("string");
-
-    const removeProp = result.props.find((p) => p.name === "remove");
-    expect(removeProp?.returnType).toBe("boolean");
-    expect(removeProp?.params).toHaveLength(1);
-    expect(removeProp?.params?.[0].name).toBe("id");
-    expect(removeProp?.params?.[0].type).toBe("string");
-
-    const getCountProp = result.props.find((p) => p.name === "getCount");
-    expect(getCountProp?.returnType).toBe("number");
-    expect(getCountProp?.params).toBeUndefined();
-  });
-
-  test("parses @return tag (alternative to @returns)", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <script>
-        /**
-         * Get user by id.
-         * @param {string} id
-         * @return {object} The user object
-         */
-        export function getUser(id) {
-          return {};
-        }
-      </script>
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-    expect(result.props).toHaveLength(1);
-
-    const getUserProp = result.props.find((p) => p.name === "getUser");
-    expect(getUserProp?.returnType).toBe("object");
-    expect(getUserProp?.params).toHaveLength(1);
-  });
-
-  test("parses @returns for module exports", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <script context="module">
-        /**
-         * Utility function that processes data.
-         * @param {string} data
-         * @returns {number} The processed result
-         */
-        export function process(data) {
-          return 42;
-        }
-      </script>
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-    expect(result.moduleExports).toHaveLength(1);
-
-    const processExport = result.moduleExports.find((e) => e.name === "process");
-    expect(processExport?.returnType).toBe("number");
-    expect(processExport?.params).toHaveLength(1);
-    expect(processExport?.params?.[0].name).toBe("data");
-    expect(processExport?.params?.[0].type).toBe("string");
-  });
-
-  test("handles function with @param but no @returns (defaults to any)", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <script>
-        /**
-         * Log a message.
-         * @param {string} message
-         */
-        export function log(message) {
-          console.log(message);
-        }
-      </script>
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-    expect(result.props).toHaveLength(1);
-
-    const logProp = result.props.find((p) => p.name === "log");
-    expect(logProp?.returnType).toBeUndefined();
-    expect(logProp?.params).toHaveLength(1);
-    expect(logProp?.params?.[0].name).toBe("message");
-  });
-
-  test("handles function with @returns but no @param", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <script>
-        /**
-         * Get the current count.
-         * @returns {number} The current count
-         */
-        export function getCount() {
-          return 0;
-        }
-      </script>
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-    expect(result.props).toHaveLength(1);
-
-    const getCountProp = result.props.find((p) => p.name === "getCount");
-    expect(getCountProp?.returnType).toBe("number");
-    expect(getCountProp?.params).toBeUndefined();
   });
 
   test("parses props from $props destructuring", () => {
@@ -1659,33 +1428,6 @@ describe("ComponentParser", () => {
     });
   });
 
-  test("types an `as const` default as TypeScript's const assertion does", () => {
-    const source = `
-      <script lang="ts">
-        export let sizes = { sm: false, md: true } as const;
-        export let items = ["a", "b"] as const;
-        export let nested = { steps: [1, -2] } as const;
-        export let size = "sm" as const;
-        export let legacyAssertion = <const>["x"];
-        export let widened = { sm: false };
-        export const ids = { close: "close" } as const;
-      </script>
-    `;
-
-    const { props } = new ComponentParser().parseSvelteComponent(source, diagnostics);
-    const types = Object.fromEntries(props.map((prop) => [prop.name, prop.type]));
-
-    expect(types).toEqual({
-      sizes: "{ readonly sm: false; readonly md: true }",
-      items: 'readonly ["a", "b"]',
-      nested: "{ readonly steps: readonly [1, -2] }",
-      size: '"sm"',
-      legacyAssertion: 'readonly ["x"]',
-      widened: "{ sm: boolean }",
-      ids: '{ readonly close: "close" }',
-    });
-  });
-
   test("types an `as const` runes prop default as TypeScript's const assertion does", () => {
     const source = `
       <script lang="ts">
@@ -1697,40 +1439,6 @@ describe("ComponentParser", () => {
     const types = Object.fromEntries(props.map((prop) => [prop.name, prop.type]));
 
     expect(types).toEqual({ sizes: "{ readonly sm: false }", size: '"sm"' });
-  });
-
-  test("types a default cast with a JSDoc `@type` as the cast type", () => {
-    const source = `
-      <script>
-        /** @typedef {{ id: string; label?: string }} Item */
-
-        export let item = /** @type {Item} */ ({ id: "1" });
-        export let items = /** @type {Item[]} */ ([]);
-        export let plain = { id: "1" };
-      </script>
-    `;
-
-    const { props } = new ComponentParser().parseSvelteComponent(source, diagnostics);
-    const types = Object.fromEntries(props.map((prop) => [prop.name, prop.type]));
-
-    expect(types).toEqual({ item: "Item", items: "Item[]", plain: "{ id: string }" });
-  });
-
-  test("types a default cast with `as` as the cast type", () => {
-    const source = `
-      <script lang="ts">
-        type Item = { id: string; label?: string };
-
-        export let item = { id: "1" } as Item;
-        export let items = <Item[]>[];
-        export let checked = { id: "1" } satisfies Item;
-      </script>
-    `;
-
-    const { props } = new ComponentParser().parseSvelteComponent(source, diagnostics);
-    const types = Object.fromEntries(props.map((prop) => [prop.name, prop.type]));
-
-    expect(types).toEqual({ item: "Item", items: "Item[]", checked: "{ id: string }" });
   });
 
   test('types `bind:this` on an unknown element in a `namespace="mathml"` component as MathML', () => {

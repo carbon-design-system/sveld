@@ -15,14 +15,19 @@ export type ConstAssertionDefaultsProps = {
   items?: readonly ["a", "b"];
 
   /**
-   * @default { steps: [1, 2] }
+   * @default { steps: [1, -2] }
    */
-  nested?: { readonly steps: readonly [1, 2] };
+  nested?: { readonly steps: readonly [1, -2] };
 
   /**
    * @default "sm"
    */
   size?: "sm";
+
+  /**
+   * @default ["x"]
+   */
+  angleItems?: readonly ["x"];
 
   /**
    * @default { sm: false }

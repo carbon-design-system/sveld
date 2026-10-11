@@ -37,6 +37,11 @@ export type AccessorParamReturnsExports = {
   update: (id: string, data: NotificationData) => boolean;
 
   /**
+   * `@return` is an alias for `@returns`.
+   */
+  getUser: (id: string) => object;
+
+  /**
    * Function with only @param, no @returns (should default to any)
    */
   log: (message: string) => any;

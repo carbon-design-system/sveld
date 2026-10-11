@@ -51,6 +51,15 @@
   }
 
   /**
+   * `@return` is an alias for `@returns`.
+   * @param {string} id
+   * @return {object} The user object
+   */
+  export function getUser(id) {
+    return {};
+  }
+
+  /**
    * Function with only @param, no @returns (should default to any)
    * @param {string} message
    */

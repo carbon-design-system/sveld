@@ -65,6 +65,66 @@
       "isRequired": false,
       "constant": false,
       "reactive": false
+    },
+    {
+      "name": "hoisted",
+      "kind": "let",
+      "type": "string",
+      "typeSource": "jsdoc",
+      "value": "uniqueId()",
+      "defaultValue": {
+        "raw": "uniqueId()",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "hoistedExport",
+      "kind": "let",
+      "type": "string",
+      "typeSource": "jsdoc",
+      "value": "exportedId()",
+      "defaultValue": {
+        "raw": "exportedId()",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "blockScoped",
+      "kind": "let",
+      "type": "any",
+      "typeSource": "unknown",
+      "value": "helper()",
+      "defaultValue": {
+        "raw": "helper()",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "exportedId",
+      "kind": "function",
+      "type": "() => string",
+      "typeSource": "jsdoc",
+      "returnType": "string",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -73,5 +133,14 @@
   "typedefs": [],
   "generics": null,
   "contexts": [],
-  "diagnostics": []
+  "diagnostics": [
+    {
+      "component": "call-expression-defaults/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "blockScoped",
+      "message": "Prop \"blockScoped\" default calls \"helper()\", but its return type could not be inferred; falling back to \"any\".",
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
+    }
+  ]
 }

@@ -16,6 +16,20 @@
       "type": "forwarded",
       "name": "click",
       "element": "ListBoxSelection"
+    },
+    {
+      "type": "forwarded",
+      "name": "dismiss",
+      "element": "ListBoxSelection",
+      "description": "Dismiss button clicked with no data",
+      "detail": "null"
+    },
+    {
+      "type": "forwarded",
+      "name": "search",
+      "element": "ListBoxSelection",
+      "description": "Search query changed",
+      "detail": "string"
     }
   ],
   "typedefs": [],

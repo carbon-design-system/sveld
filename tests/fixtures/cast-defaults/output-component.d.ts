@@ -20,9 +20,19 @@ export type CastDefaultsProps = {
   sizes?: Size[];
 
   /**
+   * @default []
+   */
+  angleSizes?: Size[];
+
+  /**
    * @default { type: "button" }
    */
   checked?: { type: string };
+
+  /**
+   * @default 5
+   */
+  count?: number;
 };
 
 export type CastDefaultsExports = Record<string, never>;
