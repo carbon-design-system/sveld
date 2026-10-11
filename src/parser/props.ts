@@ -7,7 +7,7 @@ import type {
   Literal,
   MemberExpression,
 } from "sveast";
-import { getPropertyName, isCallExpressionNamed, isIdentifier } from "../ast-guards";
+import { getPropertyName, isIdentifier } from "../ast-guards";
 import type {
   ComponentProp,
   ComponentPropDefaultValue,
@@ -655,13 +655,6 @@ function inferReturnPrimitive(node: unknown): "string" | "number" | "boolean" | 
     default:
       return null;
   }
-}
-
-/** Unwraps `$bindable(...)` so the default is documented as its underlying value. */
-export function unwrapBindableInitializer(init: unknown): { init?: unknown; bindable: boolean } {
-  return isCallExpressionNamed(init, "$bindable")
-    ? { init: init.arguments[0], bindable: true }
-    : { init, bindable: false };
 }
 
 /**

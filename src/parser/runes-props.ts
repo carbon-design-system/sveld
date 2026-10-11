@@ -26,13 +26,12 @@ import { collectGenericsAttributeTypeDependencies } from "./generics";
 import { processNodeJSDoc } from "./jsdoc";
 import { parseObjectTypeLiteralMembers } from "./object-type-literal";
 import { resolvePropTypeAndDocs } from "./prop-shared";
-import { addProp, processInitializer, queuePendingCrossFileDefault, unwrapBindableInitializer } from "./props";
+import { addProp, processInitializer, queuePendingCrossFileDefault } from "./props";
 import { resolveScriptGenericsAttribute, resolveScriptLanguage } from "./script-attributes";
 import { sourceAtPos, sourceRangeFromNode } from "./source-position";
 import {
   buildEnumLocalTypeDeclarationCode,
   collectReferencedTypeDependencies,
-  getRunesPropsDeclarationMetadata,
   getTypeAnnotationText,
   getTypeNodeText,
   getTypeReferenceName,
@@ -297,35 +296,30 @@ export function buildRunesPropTypeMetadata(ctx: ParserContext, parsed: AST.Root)
   const body = parsed.instance?.content.body ?? [];
 
   for (const statement of body) {
-    if (!statement?.type) continue;
     collectScriptTypeDeclaration(ctx, statement, false);
 
-    if (statement.type === "ExportNamedDeclaration" && statement.declaration?.type === "VariableDeclaration") {
-      for (const declarator of statement.declaration.declarations ?? []) {
-        if (declarator.id?.type !== "Identifier" || !declarator.id.name) continue;
-        const explicitType = getTypeAnnotationText(ctx, declarator.id.typeAnnotation);
-        if (explicitType) {
-          ctx.explicitPropTypesByName.set(declarator.id.name, explicitType);
-          trackAdditionalTypeDependencyNode(ctx, declarator.id.typeAnnotation?.typeAnnotation);
-        }
-      }
-    } else if (statement.type === "VariableDeclaration") {
-      for (const declarator of statement.declarations ?? []) {
-        if (declarator.id?.type !== "Identifier" || !declarator.id.name) continue;
-        const explicitType = getTypeAnnotationText(ctx, declarator.id.typeAnnotation);
-        if (explicitType) {
-          ctx.explicitVariableTypesByName.set(declarator.id.name, explicitType);
-          const typeNode = declarator.id.typeAnnotation?.typeAnnotation;
-          if (typeNode) ctx.explicitVariableTypeNodesByName.set(declarator.id.name, typeNode);
-        }
+    const exported = statement.type === "ExportNamedDeclaration";
+    const declaration = exported ? statement.declaration : statement;
+    if (declaration?.type !== "VariableDeclaration") continue;
+    for (const { id } of declaration.declarations) {
+      if (id.type !== "Identifier") continue;
+      const explicitType = getTypeAnnotationText(ctx, id.typeAnnotation);
+      if (!explicitType) continue;
+      const typeNode = id.typeAnnotation?.typeAnnotation;
+      if (exported) {
+        ctx.explicitPropTypesByName.set(id.name, explicitType);
+        trackAdditionalTypeDependencyNode(ctx, typeNode);
+      } else {
+        ctx.explicitVariableTypesByName.set(id.name, explicitType);
+        if (typeNode) ctx.explicitVariableTypeNodesByName.set(id.name, typeNode);
       }
     }
   }
 
   for (const statement of body) {
-    if (!statement || typeof statement !== "object" || !("declarations" in statement)) continue;
+    if (statement.type !== "VariableDeclaration") continue;
 
-    for (const declarator of statement.declarations ?? []) {
+    for (const declarator of statement.declarations) {
       if (!isCallExpressionNamed(unwrapTypeCastExpression(declarator.init), "$props")) continue;
 
       // `$props() as Props` / `satisfies Props` carry the type on the initializer, not the binding.
@@ -340,16 +334,14 @@ export function buildRunesPropTypeMetadata(ctx: ParserContext, parsed: AST.Root)
       collectReferencedTypeDependencies(ctx, effectiveTypeNode, referencedImportedTypes, referencedLocalTypes);
       collectGenericsAttributeTypeDependencies(ctx, referencedImportedTypes, referencedLocalTypes);
 
-      if (declarator.start !== undefined) {
-        const declarationMetadata: RunesPropsDeclarationMetadata = {
-          canonicalType,
-          props: metadata,
-          referencedImportedTypes,
-          referencedLocalTypes,
-        };
-        ctx.runesPropsDeclarationMetadataByDeclaratorStart.set(declarator.start, declarationMetadata);
-        if (canonicalType) ctx.typedRunesPropsDeclarations.push(declarationMetadata);
-      }
+      const declarationMetadata: RunesPropsDeclarationMetadata = {
+        canonicalType,
+        props: metadata,
+        referencedImportedTypes,
+        referencedLocalTypes,
+      };
+      ctx.runesPropsDeclarationMetadataByDeclaratorStart.set(declarator.start, declarationMetadata);
+      if (canonicalType) ctx.typedRunesPropsDeclarations.push(declarationMetadata);
     }
   }
 }
@@ -370,11 +362,18 @@ function getJsDocPropsMembers(
   return members ? new Map(members.map((member) => [member.name, member])) : undefined;
 }
 
+/** Unwraps `$bindable(...)` so the default is documented as its underlying value. */
+function unwrapBindableInitializer(init: unknown): { init?: unknown; bindable: boolean } {
+  return isCallExpressionNamed(init, "$bindable")
+    ? { init: init.arguments[0], bindable: true }
+    : { init, bindable: false };
+}
+
 export function parseRunesPropsDeclaration(ctx: ParserContext, node: VariableDeclaration) {
   for (const declarator of node.declarations) {
     if (!isCallExpressionNamed(declarator.init, "$props")) continue;
 
-    const metadata = getRunesPropsDeclarationMetadata(ctx, declarator.start);
+    const metadata = ctx.runesPropsDeclarationMetadataByDeclaratorStart.get(declarator.start);
 
     if (declarator.id.type === "Identifier") {
       ctx.wholePropsLocals.add(declarator.id.name);
