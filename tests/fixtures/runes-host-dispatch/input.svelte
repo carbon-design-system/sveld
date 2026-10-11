@@ -24,6 +24,10 @@
     $host().dispatchEvent(new CustomEvent("change", { detail: { count, label } }));
   }
 
+  function clear() {
+    $host().dispatchEvent(new CustomEvent("clear", { detail: null }));
+  }
+
   function tick() {
     $host().dispatchEvent(new CustomEvent("tick", { detail: count }));
   }
@@ -33,4 +37,5 @@
 <button onclick={ready}>ready</button>
 <button onclick={close}>close</button>
 <button onclick={change}>change</button>
+<button onclick={clear}>clear</button>
 <button onclick={tick}>tick</button>

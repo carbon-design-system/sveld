@@ -95,9 +95,11 @@ function inferLiteralMemberType(source: DetailTypeSource, node: unknown): string
 
 /**
  * Detail type text of a dispatch's detail argument: {@link deriveDetailType},
- * else a scalar literal's type, else `""` (typed by `addDispatchedEvent`).
+ * else `null` or a scalar literal's type, else `""` (typed by `addDispatchedEvent`).
  */
 export function dispatchDetailText(source: DetailTypeSource, detail: unknown): string {
+  // A `null` value is also how a regex/bigint literal the runtime can't build looks, so check `raw`.
+  if (isLiteral(detail) && detail.raw === "null") return "null";
   const typed = deriveDetailType(source, detail);
   if (typed !== undefined) return typed;
   const literal = isLiteral(detail) ? detail.value : undefined;

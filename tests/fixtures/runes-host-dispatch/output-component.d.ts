@@ -11,6 +11,7 @@ type $Events = {
       count: number;
       label: string;
     }>;
+  clear: CustomEvent<null>;
   close: CustomEvent<null>;
   notify: CustomEvent<any>;
   ready: CustomEvent<"loaded">;

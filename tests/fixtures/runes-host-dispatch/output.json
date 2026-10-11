@@ -23,6 +23,11 @@
     },
     {
       "type": "dispatched",
+      "name": "clear",
+      "detail": "null"
+    },
+    {
+      "type": "dispatched",
       "name": "close",
       "detail": "null"
     },
