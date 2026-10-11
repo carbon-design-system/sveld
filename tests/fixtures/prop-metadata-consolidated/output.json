@@ -109,11 +109,27 @@
     {
       "name": "callbackDefault",
       "kind": "let",
-      "type": "(value: any) => any",
+      "type": "(value: string) => any",
       "typeSource": "default",
       "value": "(value: string) => value.toUpperCase()",
       "defaultValue": {
         "raw": "(value: string) => value.toUpperCase()",
+        "kind": "function"
+      },
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "formatDefault",
+      "kind": "let",
+      "type": "(count: number, unit?: string) => string",
+      "typeSource": "default",
+      "value": "(count: number, unit?: string) => `${count}${unit ?? \"\"}`",
+      "defaultValue": {
+        "raw": "(count: number, unit?: string): string => `${count}${unit ?? \"\"}`",
         "kind": "function"
       },
       "isFunction": true,

@@ -308,6 +308,7 @@ export function readFunctionDeclarationParts(
 export function buildFunctionDeclarationSignature(
   ctx: ParserContext,
   funcDecl: FunctionDeclarationLike,
+  fallbackReturnType = "any",
 ): { signature: string; hasAnnotations: boolean } {
   const { params, returnType, typeParameters } = readFunctionDeclarationParts(ctx, funcDecl);
   const paramTexts = params.map(({ name, type, optional, rest }) =>
@@ -317,7 +318,7 @@ export function buildFunctionDeclarationSignature(
     returnType !== undefined || typeParameters !== undefined || params.some((param) => param.type !== undefined);
 
   return {
-    signature: `${typeParameters ?? ""}(${paramTexts.join(", ")}) => ${returnType ?? "any"}`,
+    signature: `${typeParameters ?? ""}(${paramTexts.join(", ")}) => ${returnType ?? fallbackReturnType}`,
     hasAnnotations,
   };
 }

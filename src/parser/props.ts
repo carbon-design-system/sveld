@@ -130,7 +130,7 @@ function processInitializerWithoutAssertion(ctx: ParserContext, init: unknown, d
     case "ArrowFunctionExpression":
     case "FunctionExpression":
       return {
-        ...result(conciseFunctionDefaultText(ctx, node), inferFunctionTypeFromNode(node)),
+        ...result(conciseFunctionDefaultText(ctx, node), inferFunctionTypeFromNode(ctx, node)),
         isFunction: true,
       };
     case "UnaryExpression":
@@ -176,7 +176,7 @@ function processInitializerWithoutAssertion(ctx: ParserContext, init: unknown, d
             type: undefined,
             isFunction: true,
             defaultValue: classifyDefaultValue(ctx, funcNode),
-            resolvedType: resolvedJSDoc?.type ?? buildFunctionTypeFromParts(resolvedJSDoc, funcNode),
+            resolvedType: resolvedJSDoc?.type ?? buildFunctionTypeFromParts(ctx, resolvedJSDoc, funcNode),
             resolvedDescription: resolvedJSDoc?.description,
             resolvedParams: resolvedJSDoc?.params,
             resolvedReturnType: resolvedJSDoc?.returnType,
@@ -459,7 +459,7 @@ function localFunctionType(ctx: ParserContext, name: string, node: FunctionNode)
   const annotated = buildFunctionDeclarationSignature(ctx, node);
   if (annotated.hasAnnotations) return annotated.signature;
   const jsdoc = resolveLocalVarJSDoc(ctx, name);
-  return jsdoc?.type ?? buildFunctionTypeFromParts(jsdoc, node);
+  return jsdoc?.type ?? buildFunctionTypeFromParts(ctx, jsdoc, node);
 }
 
 const SVELTE_STORE_TYPES = new Map([
@@ -581,6 +581,7 @@ function functionReturnTypeAnnotationText(ctx: ParserContext, node: FunctionNode
  * else what {@link inferFunctionTypeFromNode} reads off `node`.
  */
 function buildFunctionTypeFromParts(
+  ctx: ParserContext,
   jsdoc: { params?: ComponentPropParam[]; returnType?: string } | undefined,
   node: FunctionNode,
 ): string {
@@ -588,7 +589,7 @@ function buildFunctionTypeFromParts(
   const params = jsdoc?.params;
   if (params && params.length > 0) return `(${formatParamList(params)}) => ${returnType}`;
   if (jsdoc?.returnType) return `() => ${returnType}`;
-  return inferFunctionTypeFromNode(node);
+  return inferFunctionTypeFromNode(ctx, node);
 }
 
 /**
@@ -596,8 +597,12 @@ function buildFunctionTypeFromParts(
  * returns, `any` for the rest. A default's body is a weak signal for the
  * prop's contract, so the prop's own JSDoc always wins over this.
  */
-function inferFunctionTypeFromNode(node: FunctionNode): string {
-  return `(${inferParamsFromNode(node)}) => ${inferReturnTypeFromNode(node)}`;
+function inferFunctionTypeFromNode(ctx: ParserContext, node: FunctionNode): string {
+  const returnType = inferReturnTypeFromNode(node);
+  // TypeScript annotations on the function (`(value: string) => ...`) say more than its body.
+  const annotated = buildFunctionDeclarationSignature(ctx, node, returnType);
+  if (annotated.hasAnnotations) return annotated.signature;
+  return `(${inferParamsFromNode(node)}) => ${returnType}`;
 }
 
 /**
