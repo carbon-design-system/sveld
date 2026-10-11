@@ -8,7 +8,7 @@
       "type": "(value: string, options?: { uppercase?: boolean }) => string",
       "typeSource": "jsdoc",
       "defaultValue": {
-        "raw": "(value, options) => { if (options?.uppercase) return value.toUpperCase(); return value; }",
+        "raw": "(value, options) => {\n  if (options?.uppercase) return value.toUpperCase();\n  return value;\n}",
         "kind": "function"
       },
       "isFunction": true,
@@ -23,7 +23,7 @@
       "type": "(items: string[], callback: (item: string, index: number) => void) => Promise<void>",
       "typeSource": "jsdoc",
       "defaultValue": {
-        "raw": "async (items, callback) => { for (let i = 0; i < items.length; i++) callback(items[i], i); }",
+        "raw": "async (items, callback) => {\n  for (let i = 0; i < items.length; i++) callback(items[i], i);\n}",
         "kind": "function"
       },
       "isFunction": true,

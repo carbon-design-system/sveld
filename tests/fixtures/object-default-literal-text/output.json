@@ -8,9 +8,9 @@
       "description": "URL patterns",
       "type": "{ url: RegExp; quote: RegExp }",
       "typeSource": "default",
-      "value": "{ url: /https?:\\/\\//, quote: /\"/, }",
+      "value": "{\n  url: /https?:\\/\\//,\n  quote: /\"/,\n}",
       "defaultValue": {
-        "raw": "{ url: /https?:\\/\\//, quote: /\"/, }",
+        "raw": "{\n  url: /https?:\\/\\//,\n  quote: /\"/,\n}",
         "kind": "object"
       },
       "isFunction": false,
@@ -25,9 +25,9 @@
       "description": "Separators",
       "type": "string[]",
       "typeSource": "default",
-      "value": "[ \"  \", \"a // b\", `one\\ntwo`, ]",
+      "value": "[\n  \"  \",\n  \"a // b\",\n  `one\\ntwo`,\n]",
       "defaultValue": {
-        "raw": "[ \"  \", \"a // b\", `one\\ntwo`, ]",
+        "raw": "[\n  \"  \",\n  \"a // b\",\n  `one\\ntwo`,\n]",
         "kind": "array",
         "value": [
           "  ",

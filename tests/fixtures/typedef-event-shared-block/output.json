@@ -45,9 +45,9 @@
       "description": "Sizes as an object.",
       "type": "Record<BreakpointSize, boolean>",
       "typeSource": "jsdoc",
-      "value": "{ sm: false, md: false, lg: false, xlg: false, max: false, }",
+      "value": "{\n  sm: false,\n  md: false,\n  lg: false,\n  xlg: false,\n  max: false,\n}",
       "defaultValue": {
-        "raw": "{ sm: false, md: false, lg: false, xlg: false, max: false, }",
+        "raw": "{\n  sm: false,\n  md: false,\n  lg: false,\n  xlg: false,\n  max: false,\n}",
         "kind": "object",
         "value": {
           "sm": false,

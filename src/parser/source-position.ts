@@ -83,18 +83,20 @@ export function sourceForExpression(ctx: ParserContext, node: unknown) {
   return nodeSourceText(ctx, node)?.replace(LINE_BREAKS_WITH_INDENT_REGEX, " ");
 }
 
+/** The spaces and tabs a line starts with. */
+const LEADING_INDENT_REGEX = /^[ \t]*/;
 /** A line break inside a template literal's text. */
 const TEMPLATE_LINE_BREAK_REGEX = /\r?\n/g;
 
 /**
- * `node`'s source on one line with its comments dropped, for a literal default
- * shown as `@default`: a `// px` folded onto one line would comment out the rest.
- * Whitespace runs collapse to one space outside string, template, and regex
- * literals, whose text stays as written (a template's line break as `\n`, which
- * reads the same). Comments and literals come from the AST, not a rescan of
- * the text, so `/\/\//` or `/"/` isn't misread as a comment or a string.
+ * `node`'s source as a default's text: comments dropped, laid out as written
+ * (line breaks kept, indentation relative to the line it starts on), other
+ * whitespace runs collapsed. String, template, and regex literals stay as
+ * written, a template's line break as `\n`. Comments and literals come from
+ * the AST, not a rescan of the text, so `/\/\//` or `/"/` isn't misread as a
+ * comment or a string. Writers that need one line fold the line breaks.
  */
-export function compactSourceText(ctx: ParserContext, node: unknown) {
+export function defaultSourceText(ctx: ParserContext, node: unknown) {
   const { source } = ctx;
   const { start, end } = nodeOffsets(node);
   if (source === undefined || start === undefined || end === undefined) return undefined;
@@ -116,7 +118,11 @@ export function compactSourceText(ctx: ParserContext, node: unknown) {
   });
   segments.sort((a, b) => a.start - b.start);
 
-  let result = "";
+  // A whitespace run with a line break keeps the break and the next line's indentation.
+  const layOut = (text: string) =>
+    text.replace(WHITESPACE_RUN_REGEX, (run) => (run.includes("\n") ? run.slice(run.lastIndexOf("\n")) : " "));
+
+  let text = "";
   let between = "";
   let cursor = start;
   for (const segment of segments) {
@@ -127,8 +133,17 @@ export function compactSourceText(ctx: ParserContext, node: unknown) {
       between += " ";
       continue;
     }
-    result += between.replace(WHITESPACE_RUN_REGEX, " ") + segment.text;
+    text += layOut(between) + segment.text;
     between = "";
   }
-  return result + `${between}${source.slice(cursor, end)}`.replace(WHITESPACE_RUN_REGEX, " ");
+  text += layOut(between + source.slice(cursor, end));
+
+  const lineStart = source.lastIndexOf("\n", start - 1) + 1;
+  const baseIndent = LEADING_INDENT_REGEX.exec(source.slice(lineStart, start))?.[0] ?? "";
+  return text
+    .split("\n")
+    .map((line, index) => (index > 0 && line.startsWith(baseIndent) ? line.slice(baseIndent.length) : line).trimEnd())
+    .filter((line, index) => index === 0 || line !== "")
+    .join("\n")
+    .trim();
 }

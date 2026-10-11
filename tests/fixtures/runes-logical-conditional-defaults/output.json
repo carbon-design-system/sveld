@@ -42,9 +42,9 @@
       "description": "A long ternary spread over several lines",
       "type": "string",
       "typeSource": "default",
-      "value": "compact ? \"compact-spacing-with-tight-line-height\" : theme === \"print\" ? \"print-friendly-spacing\" : \"comfortable-spacing\"",
+      "value": "compact\n  ? \"compact-spacing-with-tight-line-height\"\n  : theme === \"print\"\n    ? \"print-friendly-spacing\"\n    : \"comfortable-spacing\"",
       "defaultValue": {
-        "raw": "compact ? \"compact-spacing-with-tight-line-height\" : theme === \"print\" ? \"print-friendly-spacing\" : \"comfortable-spacing\"",
+        "raw": "compact\n  ? \"compact-spacing-with-tight-line-height\"\n  : theme === \"print\"\n    ? \"print-friendly-spacing\"\n    : \"comfortable-spacing\"",
         "kind": "expression"
       },
       "isFunction": false,
