@@ -7,8 +7,18 @@
   "events": [
     {
       "type": "dispatched",
+      "name": "a;b",
+      "detail": "number"
+    },
+    {
+      "type": "dispatched",
       "name": "cancel",
       "detail": "null"
+    },
+    {
+      "type": "dispatched",
+      "name": "change:value",
+      "detail": "string"
     },
     {
       "type": "dispatched",

@@ -1,4 +1,8 @@
 <script>
+  /**
+   * @event {{ h1: boolean; }} hover - Fired on mouseover.
+   */
+
   import { createEventDispatcher, onDestroy } from "svelte";
 
   const dispatcher = createEventDispatcher();
