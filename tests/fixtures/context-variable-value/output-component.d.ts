@@ -10,7 +10,7 @@ export type SettingsContext = {
 };
 
 export type ApiContext = {
-  reset: () => any;
+  reset: () => void;
   version: string;
 };
 

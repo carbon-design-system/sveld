@@ -48,7 +48,7 @@
     {
       "name": "reset",
       "kind": "function",
-      "type": "() => any",
+      "type": "() => void",
       "typeSource": "inferred",
       "isFunction": true,
       "isFunctionDeclaration": true,
@@ -70,7 +70,7 @@
     {
       "name": "pick",
       "kind": "function",
-      "type": "(arg0: any) => any",
+      "type": "(arg: any) => any",
       "typeSource": "inferred",
       "isFunction": true,
       "isFunctionDeclaration": true,

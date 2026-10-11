@@ -33,5 +33,5 @@ export default class InferBasic extends SvelteComponentTyped<
 > {
   propConst: { 1: true };
 
-  fn: () => any;
+  fn: () => void;
 }

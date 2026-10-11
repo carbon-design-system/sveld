@@ -651,19 +651,30 @@ function inferParamsFromNode({ params }: FunctionNode): string {
  * what {@link inferReturnTypeFromNode} reads.
  */
 export function inferFunctionValueType(ctx: ParserContext, node: FunctionNode): string {
-  const returnType = inferReturnTypeFromNode(node);
+  const returnType = returnsNothing(node) ? (node.async ? "Promise<void>" : "void") : inferReturnTypeFromNode(node);
   const annotated = buildFunctionDeclarationSignature(ctx, node, returnType);
   if (annotated.hasAnnotations) return annotated.signature;
+  // A destructured param has no name of its own.
+  const unnamed = (index: number) => (node.params.length === 1 ? "arg" : `arg${index}`);
   const params = node.params.map((param, index) => {
     if (param.type === "RestElement") {
       return `...${isIdentifier(param.argument) ? param.argument.name : "args"}: any[]`;
     }
     if (param.type === "AssignmentPattern") {
-      return `${isIdentifier(param.left) ? param.left.name : `arg${index}`}?: any`;
+      return `${isIdentifier(param.left) ? param.left.name : unnamed(index)}?: any`;
     }
-    return `${isIdentifier(param) ? param.name : `arg${index}`}: any`;
+    return `${isIdentifier(param) ? param.name : unnamed(index)}: any`;
   });
   return `(${params.join(", ")}) => ${returnType}`;
+}
+
+/** A block-bodied function with no `return` of a value: calling it gives `undefined`. */
+function returnsNothing(node: FunctionNode): boolean {
+  return (
+    !node.generator &&
+    node.body.type === "BlockStatement" &&
+    collectReturnArguments(node.body).every((argument) => argument === null)
+  );
 }
 
 /**

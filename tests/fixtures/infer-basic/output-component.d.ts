@@ -29,7 +29,7 @@ export type InferBasicProps = {
 export type InferBasicExports = {
   propConst: { 1: true };
 
-  fn: () => any;
+  fn: () => void;
 };
 
 declare const InferBasic: Component<

@@ -51,7 +51,7 @@
       "properties": [
         {
           "name": "reset",
-          "type": "() => any",
+          "type": "() => void",
           "optional": false
         },
         {

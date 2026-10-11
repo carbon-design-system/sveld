@@ -22,5 +22,5 @@ export default class ExportSpecifierBindings extends SvelteComponentTyped<
   Record<string, any>,
   Record<string, never>
 > {
-  reset: () => any;
+  reset: () => void;
 }

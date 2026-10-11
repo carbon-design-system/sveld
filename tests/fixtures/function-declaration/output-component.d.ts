@@ -12,11 +12,11 @@ export type FunctionDeclarationExports = {
 
   add: (a: any, b: any) => any;
 
-  reset: () => any;
+  reset: () => void;
 
   format: (value: any, locale?: any, ...rest: any[]) => string;
 
-  pick: (arg0: any) => any;
+  pick: (arg: any) => any;
 
   double: (n: number) => any;
 
