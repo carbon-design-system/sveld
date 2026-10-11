@@ -382,7 +382,7 @@ export function parseRunesPropsDeclaration(ctx: ParserContext, node: VariableDec
           jsdocReturnType: jsdoc?.returnType,
           initializerIsFunction: false,
           isFunctionDeclaration: false,
-          inferIsFunctionFromTypeSignature: true,
+          typedefs: ctx.typedefs,
         });
         recordPropSveldIgnore(ctx, name, jsdoc?.sveldIgnore);
         addProp(ctx, name, {
@@ -470,7 +470,7 @@ export function parseRunesPropsDeclaration(ctx: ParserContext, node: VariableDec
         resolvedReturnType: initResult.resolvedReturnType,
         initializerIsFunction,
         isFunctionDeclaration: false,
-        inferIsFunctionFromTypeSignature: true,
+        typedefs: ctx.typedefs,
       });
 
       if (bindable) ctx.reactive_vars.add(propName);

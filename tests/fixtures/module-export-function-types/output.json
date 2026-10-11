@@ -62,7 +62,7 @@
         "kind": "literal",
         "value": null
       },
-      "isFunction": false,
+      "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": true,
