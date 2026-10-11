@@ -330,9 +330,7 @@ function parseTagSection(sectionLines: CommentLine[]): JSDocTag {
 
 function parseBlock(rawLines: CommentLine[], start: number, end: number): JSDocComment {
   const lines = trimBoilerplateEdges(rawLines);
-  lines.forEach((line, index) => {
-    line.number = index;
-  });
+  for (const [index, line] of lines.entries()) line.number = index;
 
   const sections = splitIntoSections(lines);
   const tags = sections.slice(1).map(parseTagSection);

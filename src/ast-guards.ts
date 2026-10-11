@@ -67,21 +67,12 @@ export function isNewExpressionNamed(node: unknown, calleeName: string): node is
  * templates, and anything else.
  */
 export function resolveStaticStringLiteral(node: unknown): string | null {
-  if (!isObject(node) || typeof node.type !== "string") return null;
-
-  if (node.type === "Literal") {
-    const value = (node as { value?: unknown }).value;
-    if (typeof value === "string") return value;
-    return value == null ? null : String(value);
-  }
-
+  if (!isObject(node)) return null;
+  if (node.type === "Literal") return node.value == null ? null : String(node.value);
   if (node.type === "TemplateLiteral") {
-    const quasis = (node as { quasis?: Array<{ value?: { cooked?: string | null } }> }).quasis;
-    if (quasis?.length === 1) {
-      return quasis[0]?.value?.cooked ?? null;
-    }
+    const quasis = node.quasis as Array<{ value?: { cooked?: string | null } }> | undefined;
+    if (quasis?.length === 1) return quasis[0]?.value?.cooked ?? null;
   }
-
   return null;
 }
 
