@@ -7,9 +7,9 @@
       "kind": "let",
       "type": "any",
       "typeSource": "unknown",
-      "value": "$derived(now.toISOString())",
+      "value": "now.toISOString()",
       "defaultValue": {
-        "raw": "$derived(now.toISOString())",
+        "raw": "now.toISOString()",
         "kind": "expression"
       },
       "isFunction": false,
@@ -23,9 +23,9 @@
       "kind": "let",
       "type": "string",
       "typeSource": "jsdoc",
-      "value": "$derived(uniqueId())",
+      "value": "uniqueId()",
       "defaultValue": {
-        "raw": "$derived(uniqueId())",
+        "raw": "uniqueId()",
         "kind": "expression"
       },
       "isFunction": false,
@@ -39,10 +39,11 @@
       "kind": "let",
       "type": "number",
       "typeSource": "default",
-      "value": "$state(0)",
+      "value": "0",
       "defaultValue": {
-        "raw": "$state(0)",
-        "kind": "expression"
+        "raw": "0",
+        "kind": "literal",
+        "value": 0
       },
       "isFunction": false,
       "isFunctionDeclaration": false,
