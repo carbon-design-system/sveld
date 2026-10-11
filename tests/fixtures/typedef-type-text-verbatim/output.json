@@ -1,0 +1,138 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "summary",
+      "kind": "let",
+      "type": "Pick<Options, \"id\" | \"size\">",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "editable",
+      "kind": "let",
+      "type": "Omit<Options, \"disabled\">",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "defaults",
+      "kind": "let",
+      "type": "ReturnType<Factory>",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "resolved",
+      "kind": "let",
+      "type": "Awaited<Promise<Options>>",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "userId",
+      "kind": "let",
+      "type": "UserId",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "isUser",
+      "kind": "let",
+      "type": "(value: unknown) => value is User",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "validate",
+      "kind": "let",
+      "type": "UserGuard",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "payload",
+      "kind": "let",
+      "type": "unknown",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "raw",
+      "kind": "let",
+      "type": "any",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ id: string; size: \"sm\" | \"md\" | \"lg\"; disabled: boolean }",
+      "name": "Options",
+      "ts": "interface Options { id: string; size: \"sm\" | \"md\" | \"lg\"; disabled: boolean }"
+    },
+    {
+      "type": "() => Options",
+      "name": "Factory",
+      "ts": "type Factory = () => Options;"
+    },
+    {
+      "type": "string & { readonly __brand: \"UserId\" }",
+      "name": "UserId",
+      "ts": "type UserId = string & { readonly __brand: \"UserId\" };"
+    },
+    {
+      "type": "{ id: string; name: string }",
+      "name": "User",
+      "ts": "interface User { id: string; name: string }"
+    },
+    {
+      "type": "(value: unknown) => value is User",
+      "name": "UserGuard",
+      "ts": "type UserGuard = (value: unknown) => value is User;"
+    }
+  ],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
