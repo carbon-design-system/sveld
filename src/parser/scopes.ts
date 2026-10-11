@@ -8,16 +8,12 @@ import type {
   FunctionDeclaration,
   FunctionExpression,
   Pattern,
+  Program,
+  VariableDeclaration,
   VariableDeclarator,
 } from "sveast";
 import { extractIdentifiers } from "sveast/walk";
-import {
-  getPropertyName,
-  isCallExpressionNamed,
-  isIdentifier,
-  isMemberExpression,
-  isVariableDeclaration,
-} from "../ast-guards";
+import { getPropertyName, isCallExpressionNamed, isIdentifier, isMemberExpression } from "../ast-guards";
 import type { LexicalScope, ScopeBinding, ScopeBindingKind } from "../model";
 import type { ParserContext } from "./context";
 
@@ -136,15 +132,6 @@ function isFunctionScopeOwner(node: unknown) {
   return type === "FunctionDeclaration" || type === "FunctionExpression" || type === "ArrowFunctionExpression";
 }
 
-function getOrCreateScope(ctx: ParserContext, node: object) {
-  let scope = ctx.scopeDeclarations.get(node);
-  if (!scope) {
-    scope = new Map();
-    ctx.scopeDeclarations.set(node, scope);
-  }
-  return scope;
-}
-
 /** Scope bindings from `const { a, b: c } = $props()`. Destructured props are `prop`; rest is `local`. */
 function extractRunesScopeBindings(declarator: VariableDeclarator) {
   const bindings: Array<{ kind: ScopeBindingKind; name: string; publicPropName?: string }> = [];
@@ -181,13 +168,11 @@ function extractRunesScopeBindings(declarator: VariableDeclarator) {
 }
 
 function declareVariableDeclaration(
-  declaration: unknown,
+  declaration: VariableDeclaration,
   lexicalScope: LexicalScope,
   varScope: LexicalScope,
   options?: { allowRunesProps?: boolean; forceProp?: boolean },
 ) {
-  if (!isVariableDeclaration(declaration)) return;
-
   const targetScope = declaration.kind === "var" ? varScope : lexicalScope;
 
   for (const declarator of declaration.declarations) {
@@ -212,39 +197,30 @@ function declareVariableDeclaration(
   }
 }
 
-function declareFunctionLikeScopeBindings(
-  node: FunctionExpression | ArrowFunctionExpression | FunctionDeclaration,
-  scope: LexicalScope,
-) {
-  if (node.id) declareScopeBinding(scope, node.id.name, { kind: "local" });
-
-  for (const param of node.params) {
-    // `constructor(private x)`: the parameter is wrapped.
-    const pattern = param.type === "TSParameterProperty" ? param.parameter : param;
+/** Declares every name the `patterns` bind as a local. */
+function declareLocals(scope: LexicalScope, ...patterns: Array<Parameters<typeof collectPatternIdentifiers>[0]>) {
+  for (const pattern of patterns) {
     for (const identifier of collectPatternIdentifiers(pattern)) {
       declareScopeBinding(scope, identifier, { kind: "local" });
     }
   }
 }
 
-/** Declares top-level `var`/`function`/`class` bindings directly within a block's statement list. */
-function collectDirectBlockDeclarations(body: unknown, lexicalScope: LexicalScope, varScope: LexicalScope) {
-  if (!Array.isArray(body)) return;
-
-  for (const statement of body) {
-    if (!statement || typeof statement !== "object" || !("type" in statement)) continue;
-
-    switch (statement.type) {
-      case "VariableDeclaration":
-        declareVariableDeclaration(statement, lexicalScope, varScope);
-        break;
-      case "FunctionDeclaration":
-      case "ClassDeclaration":
-        if (statement.id?.name) {
-          declareScopeBinding(lexicalScope, statement.id.name, { kind: "local" });
-        }
-        break;
-    }
+/** Declares the bindings a variable, `function`, or `class` statement makes. */
+function declareStatement(
+  statement: Program["body"][number],
+  lexicalScope: LexicalScope,
+  varScope: LexicalScope,
+  options?: { allowRunesProps?: boolean },
+) {
+  switch (statement.type) {
+    case "VariableDeclaration":
+      declareVariableDeclaration(statement, lexicalScope, varScope, options);
+      break;
+    case "FunctionDeclaration":
+    case "ClassDeclaration":
+      declareLocals(lexicalScope, statement.id);
+      break;
   }
 }
 
@@ -263,43 +239,19 @@ function declareExportSpecifierProps(ctx: ParserContext, specifiers: ExportSpeci
 }
 
 function collectComponentScopeDeclarations(ctx: ParserContext, instance: AST.Script | undefined) {
+  const scope = ctx.componentScope;
   for (const statement of instance?.content.body ?? []) {
-    switch (statement.type) {
-      case "ImportDeclaration":
-        for (const specifier of statement.specifiers) {
-          if (specifier.local.name) {
-            declareScopeBinding(ctx.componentScope, specifier.local.name, { kind: "local" });
-          }
-        }
-        break;
-      case "VariableDeclaration":
-        declareVariableDeclaration(statement, ctx.componentScope, ctx.componentScope, {
-          allowRunesProps: true,
-        });
-        break;
-      case "FunctionDeclaration":
-      case "ClassDeclaration":
-        if (statement.id?.name) {
-          declareScopeBinding(ctx.componentScope, statement.id.name, { kind: "local" });
-        }
-        break;
-      case "ExportNamedDeclaration":
-        if (!statement.declaration) {
-          if (statement.source == null) declareExportSpecifierProps(ctx, statement.specifiers);
-          break;
-        }
-
-        if (statement.declaration.type === "VariableDeclaration") {
-          declareVariableDeclaration(statement.declaration, ctx.componentScope, ctx.componentScope, {
-            forceProp: true,
-          });
-        } else if (statement.declaration.type === "FunctionDeclaration" && statement.declaration.id?.name) {
-          declareScopeBinding(ctx.componentScope, statement.declaration.id.name, {
-            kind: "prop",
-            publicPropName: statement.declaration.id.name,
-          });
-        }
-        break;
+    if (statement.type === "ImportDeclaration") {
+      declareLocals(scope, ...statement.specifiers.map((specifier) => specifier.local));
+    } else if (statement.type !== "ExportNamedDeclaration") {
+      declareStatement(statement, scope, scope, { allowRunesProps: true });
+    } else if (!statement.declaration) {
+      if (statement.source == null) declareExportSpecifierProps(ctx, statement.specifiers);
+    } else if (statement.declaration.type === "VariableDeclaration") {
+      declareVariableDeclaration(statement.declaration, scope, scope, { forceProp: true });
+    } else if (statement.declaration.type === "FunctionDeclaration" && statement.declaration.id?.name) {
+      const { name } = statement.declaration.id;
+      declareScopeBinding(scope, name, { kind: "prop", publicPropName: name });
     }
   }
 }
@@ -311,7 +263,6 @@ function collectComponentScopeDeclarations(ctx: ParserContext, instance: AST.Scr
  */
 export function initComponentScope(ctx: ParserContext) {
   ctx.componentScope.clear();
-  ctx.scopeDeclarations = new Map();
   ctx.activeScopes.length = 0;
 
   collectComponentScopeDeclarations(ctx, ctx.parsed?.instance);
@@ -325,9 +276,8 @@ export function createScopeWalkState(ctx: ParserContext): ScopeWalkState {
 }
 
 /**
- * Declares bindings for a scope-owning `node` and, for functions, pushes it as
- * the active `var` scope. Must run before anything reads
- * `ctx.scopeDeclarations` for `node`, since its scope is created here.
+ * Declares the bindings of a scope-owning `node` in a new scope and returns
+ * it; for functions, also pushes it as the active `var` scope.
  */
 export function enterNestedScopeDeclarationNode(
   ctx: ParserContext,
@@ -336,38 +286,32 @@ export function enterNestedScopeDeclarationNode(
 ): LexicalScope | undefined {
   if (!isScopeOwner(node)) return undefined;
 
-  const scope = getOrCreateScope(ctx, node);
+  const scope: LexicalScope = new Map();
   const currentVarScope = state.varScopeStack[state.varScopeStack.length - 1] ?? ctx.componentScope;
 
   switch (node.type) {
     case "FunctionDeclaration":
     case "FunctionExpression":
     case "ArrowFunctionExpression":
-      declareFunctionLikeScopeBindings(node, scope);
+      // `constructor(private x)`: the parameter is wrapped.
+      declareLocals(
+        scope,
+        node.id,
+        ...node.params.map((param) => (param.type === "TSParameterProperty" ? param.parameter : param)),
+      );
       break;
     case "BlockStatement":
-      collectDirectBlockDeclarations(node.body, scope, currentVarScope);
+      for (const statement of node.body) declareStatement(statement, scope, currentVarScope);
       break;
     case "CatchClause":
-      for (const identifier of collectPatternIdentifiers(node.param)) {
-        declareScopeBinding(scope, identifier, { kind: "local" });
-      }
+      declareLocals(scope, node.param);
       break;
     case "EachBlock":
-      for (const identifier of collectPatternIdentifiers(node.context)) {
-        declareScopeBinding(scope, identifier, { kind: "local" });
-      }
-      if (typeof node.index === "string") {
-        declareScopeBinding(scope, node.index, { kind: "local" });
-      }
+      declareLocals(scope, node.context);
+      if (typeof node.index === "string") declareScopeBinding(scope, node.index, { kind: "local" });
       break;
     case "AwaitBlock":
-      for (const identifier of collectPatternIdentifiers(node.value)) {
-        declareScopeBinding(scope, identifier, { kind: "local" });
-      }
-      for (const identifier of collectPatternIdentifiers(node.error)) {
-        declareScopeBinding(scope, identifier, { kind: "local" });
-      }
+      declareLocals(scope, node.value, node.error);
       break;
   }
 
