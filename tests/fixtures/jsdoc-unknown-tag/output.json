@@ -1,0 +1,66 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "label",
+      "kind": "let",
+      "description": "The label.\n@depreacted Use `text` instead.",
+      "type": "string",
+      "typeSource": "default",
+      "value": "\"\"",
+      "defaultValue": {
+        "raw": "\"\"",
+        "kind": "literal",
+        "value": ""
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "text",
+      "kind": "let",
+      "description": "A custom tag with no close match.\n@remarks Kept with the description.",
+      "type": "string",
+      "typeSource": "default",
+      "value": "\"\"",
+      "defaultValue": {
+        "raw": "\"\"",
+        "kind": "literal",
+        "value": ""
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "jsdoc-unknown-tag/input.svelte",
+      "kind": "jsdoc-unknown-tag",
+      "name": "depreacted",
+      "message": "Unknown JSDoc tag \"@depreacted\"; did you mean \"@deprecated\"? Passed through unchanged.",
+      "code": "sveld/jsdoc-unknown-tag",
+      "severity": "warning"
+    },
+    {
+      "component": "jsdoc-unknown-tag/input.svelte",
+      "kind": "jsdoc-unknown-tag",
+      "name": "remarks",
+      "message": "Unknown JSDoc tag \"@remarks\"; passed through unchanged. If this is a typo, fix the tag name.",
+      "code": "sveld/jsdoc-unknown-tag",
+      "severity": "warning"
+    }
+  ]
+}
