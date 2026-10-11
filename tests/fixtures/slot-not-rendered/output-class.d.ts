@@ -2,7 +2,6 @@ import { SvelteComponentTyped } from "svelte";
 
 export type SlotNotRenderedProps = {
   /**
-   * The first word of an inline description is read as the slot name.
    * @default ""
    */
   title?: string;
