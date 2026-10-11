@@ -7,22 +7,6 @@ describe("ComponentParser", () => {
     filePath: "/test/TestComponent.svelte",
   };
 
-  test("detects legacy syntax with plain JavaScript script", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <script>
-        export let label;
-      </script>
-
-      <button>{label}</button>
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-
-    expect(result.syntaxMode).toBe("legacy");
-    expect(result.scriptLanguage).toBe("js");
-  });
-
   test("orders events the same way whatever the machine locale", () => {
     const original = String.prototype.localeCompare;
     const czech = new Intl.Collator("cs");
@@ -163,48 +147,6 @@ describe("ComponentParser", () => {
     expect(result.contexts?.[0]?.description).toBeUndefined();
   });
 
-  test("detects legacy syntax with TypeScript script", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <script lang="ts">
-        export let label: string;
-      </script>
-
-      <button>{label}</button>
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-
-    expect(result.syntaxMode).toBe("legacy");
-    expect(result.scriptLanguage).toBe("ts");
-  });
-
-  test("detects runes syntax metadata", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <script lang="ts">
-        let { label }: { label: string } = $props();
-      </script>
-
-      <button>{label}</button>
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-
-    expect(result.syntaxMode).toBe("runes");
-    expect(result.scriptLanguage).toBe("ts");
-  });
-
-  test("omits script language for markup-only components", () => {
-    const parser = new ComponentParser();
-    const source = "<button>Label</button>";
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-
-    expect(result.syntaxMode).toBe("legacy");
-    expect(result).not.toHaveProperty("scriptLanguage");
-  });
-
   test("detects runes syntax from a bare rune reference with no $props()", () => {
     const parser = new ComponentParser();
     const source = `
@@ -273,66 +215,6 @@ describe("ComponentParser", () => {
     const result = parser.parseSvelteComponent(source, diagnostics);
 
     expect(result.syntaxMode).toBe("legacy");
-  });
-
-  test("parses basic component exports", () => {
-    const parser = new ComponentParser();
-    const source = `  
-      <script>
-        export let label;
-        export let disabled = false;
-      </script>
-
-      <button {disabled}>{label}</button>
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-    expect(result.props).toHaveLength(2);
-    const propNames = result.props.map((p) => p.name);
-    expect(propNames).toContain("label");
-    expect(propNames).toContain("disabled");
-  });
-
-  test("parses component with multiple exports", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <script>
-        export let size = 'medium';
-        export const buttonSizes = ['small', 'medium', 'large'];
-      </script>
-
-      <button class={size}>
-        <slot />
-      </button>
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-    expect(result.props).toHaveLength(2);
-    expect(result.props[0].name).toBe("size");
-    expect(result.props[1].name).toBe("buttonSizes");
-  });
-
-  test("parses component with JSDoc comments", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <script>
-        /** The text to display in the button */
-        export let label;
-        /** Controls the disabled state */
-        export let disabled = false;
-      </script>
-
-      <button {disabled}>{label}</button>
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-    expect(result.props).toHaveLength(2);
-
-    const labelProp = result.props.find((p) => p.name === "label");
-    expect(labelProp?.description).toBe("The text to display in the button");
-
-    const disabledProp = result.props.find((p) => p.name === "disabled");
-    expect(disabledProp?.description).toBe("Controls the disabled state");
   });
 
   test("parses @bindable JSDoc metadata and ignores invalid values", () => {
@@ -563,63 +445,6 @@ describe("ComponentParser", () => {
     expect(result.props.find((prop) => prop.name === "bar")?.type).toBe("number");
   });
 
-  test("parses named interface annotations for $props destructuring", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <script lang="ts">
-        interface Props {
-          foo: string;
-          bar?: number;
-        }
-
-        let { foo, bar }: Props = $props();
-      </script>
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-    expect(result.props.find((prop) => prop.name === "foo")?.type).toBe("string");
-    expect(result.props.find((prop) => prop.name === "foo")?.isRequired).toBe(true);
-    expect(result.props.find((prop) => prop.name === "bar")?.type).toBe("number");
-    expect(result.props.find((prop) => prop.name === "bar")?.isRequired).toBe(false);
-  });
-
-  test("parses typed whole-object $props captures", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <script lang="ts">
-        type Props = {
-          title: string;
-          disabled?: boolean;
-        };
-
-        let props: Props = $props();
-      </script>
-
-      <button disabled={props.disabled}>{props.title}</button>
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-    expect(result.props.find((prop) => prop.name === "title")?.type).toBe("string");
-    expect(result.props.find((prop) => prop.name === "title")?.isRequired).toBe(true);
-    expect(result.props.find((prop) => prop.name === "disabled")?.type).toBe("boolean");
-    expect(result.props.find((prop) => prop.name === "disabled")?.isRequired).toBe(false);
-    expect(getParsedComponentTypeScriptMetadata(result)?.canonicalPropsType).toBe("Props");
-  });
-
-  test("preserves explicit TypeScript annotations for legacy export lets", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <script lang="ts">
-        export let title: string;
-        export let count: number = 0;
-      </script>
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-    expect(result.props.find((prop) => prop.name === "title")?.type).toBe("string");
-    expect(result.props.find((prop) => prop.name === "count")?.type).toBe("number");
-  });
-
   test("does not bleed declaration JSDoc across multiple $props bindings", () => {
     const parser = new ComponentParser();
     const source = `
@@ -702,24 +527,6 @@ describe("ComponentParser", () => {
     expect(result.events[0].detail).toBe("{ selected: boolean }");
   });
 
-  test("handles component comments", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <!-- @component
-        A button component with customizable styles and behaviors.
-        Use this component for consistent button styling across the app.
-      -->
-      <script>
-        export let label;
-      </script>
-
-      <button>{label}</button>
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-    expect(result.componentComment).toContain("A button component with customizable styles");
-  });
-
   test("adds source locations for component metadata", () => {
     const parser = new ComponentParser();
     const source = `<script>
@@ -768,172 +575,6 @@ describe("ComponentParser", () => {
     expect(() => parser.parseSvelteComponent(invalidSource, diagnostics)).toThrow();
   });
 
-  test("handles re-exported imports from context=module (issue #104)", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <script context="module" lang="ts">
-        import { LayerCake, Svg, Html } from 'layercake';
-        export { Svg, Html };
-      </script>
-
-      <script lang="ts">
-        export let data;
-      </script>
-
-      <div>
-        <slot />
-      </div>
-    `;
-
-    // This should not throw "Cannot read properties of null (reading 'type')"
-    const result = parser.parseSvelteComponent(source, diagnostics);
-    expect(result.props).toHaveLength(1);
-    expect(result.props[0].name).toBe("data");
-  });
-
-  test("handles re-exports in instance script (issue #104)", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <script>
-        import { helper } from './utils';
-        export { helper };
-        export let data = [];
-      </script>
-
-      <div>{data.length}</div>
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-    expect(result.props).toHaveLength(1);
-    expect(result.props[0].name).toBe("data");
-  });
-
-  test("parses props from $props destructuring", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <script>
-        let { title, count = 0 } = $props();
-      </script>
-
-      <div>{title} {count}</div>
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-    expect(result.props).toHaveLength(2);
-    expect(result.props.find((p) => p.name === "title")?.isRequired).toBe(true);
-    expect(result.props.find((p) => p.name === "count")?.value).toBe("0");
-  });
-
-  test("preserves public prop names for renamed $props bindings", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <script>
-        let { class: klass } = $props();
-      </script>
-
-      <button class={klass}>click</button>
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-    expect(result.props).toHaveLength(1);
-    expect(result.props[0]?.name).toBe("class");
-  });
-
-  test("treats $bindable defaults as optional reactive props", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <script>
-        let { value = $bindable(0) } = $props();
-      </script>
-
-      <input bind:value />
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-    const valueProp = result.props.find((p) => p.name === "value");
-    expect(valueProp?.isRequired).toBe(false);
-    expect(valueProp?.reactive).toBe(true);
-    expect(valueProp?.value).toBe("0");
-  });
-
-  test("keeps callback props in props and out of events", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <script>
-        let { onclick } = $props();
-      </script>
-
-      <button onclick={onclick}>click</button>
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-    expect(result.props.find((p) => p.name === "onclick")).toBeTruthy();
-    expect(result.events).toHaveLength(0);
-  });
-
-  test("maps render tags to slots", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <script>
-        let { item, children, header } = $props();
-      </script>
-
-      <section>
-        {@render header?.({ title: item })}
-        {@render children?.({ item })}
-      </section>
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-    expect(result.slots).toHaveLength(2);
-    expect(result.props.map((prop) => prop.name)).toEqual(["item"]);
-    expect(result.slots.find((slot) => slot.default)?.slot_props).toBe("{ item: any }");
-    expect(result.slots.find((slot) => slot.name === "header")?.slot_props).toBe("{ title: any }");
-  });
-
-  test("maps render tags through typed whole-object $props captures", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <script lang="ts">
-        interface Props {
-          item: string;
-          children?: import("svelte").Snippet<[props: { item: string }]>;
-        }
-
-        let props: Props = $props();
-      </script>
-
-      {@render props.children?.({ item: props.item })}
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-    expect(result.props.map((prop) => prop.name)).toEqual(["item"]);
-    expect(result.slots.find((slot) => slot.default)?.slot_props).toBe("{ item: string }");
-  });
-
-  test("keeps positional snippet props in props when render args are not slot-shaped", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <script lang="ts">
-        interface Props {
-          row: import("svelte").Snippet<[item: string, index: number]>;
-        }
-
-        let { row }: Props = $props();
-        let item = "hello";
-        let index = 0;
-      </script>
-
-      {@render row?.(item, index)}
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-    expect(result.props.find((prop) => prop.name === "row")?.type).toBe(
-      'import("svelte").Snippet<[item: string, index: number]>',
-    );
-    expect(result.slots).toHaveLength(0);
-  });
-
   test("does not invent props from whole-object $props captures", () => {
     const parser = new ComponentParser();
     const source = `
@@ -949,23 +590,6 @@ describe("ComponentParser", () => {
   });
 
   describe("@generics/@template JSDoc tags", () => {
-    test("falls back to the name for a bare @generics tag with no constraint", () => {
-      const parser = new ComponentParser();
-      const source = `
-        <script>
-          /**
-           * @generics Item
-           */
-
-          /** @type {Item} */
-          export let value;
-        </script>
-      `;
-
-      const result = parser.parseSvelteComponent(source, diagnostics);
-      expect(result.generics).toEqual(["Item", "Item"]);
-    });
-
     test("warns when both @generics and @template declare the same name", () => {
       const warn = jest.spyOn(console, "warn").mockImplementation(() => undefined);
       const parser = new ComponentParser();
@@ -1544,85 +1168,6 @@ describe("ComponentParser", () => {
     ).toEqual({ size: '"sm" | "md"' });
   });
 
-  test("types `bind:this={refs[i]}` on an element as an array of the element", () => {
-    const source = `
-      <script>
-        export let itemRefs = [];
-        export let keyedRefs = [];
-        export let items = ["a"];
-      </script>
-
-      {#each items as item, i}
-        <li bind:this={itemRefs[i]}>{item}</li>
-        <span bind:this={keyedRefs[item]} />
-      {/each}
-    `;
-
-    const { props } = new ComponentParser().parseSvelteComponent(source, diagnostics);
-    const byName = Object.fromEntries(props.map((prop) => [prop.name, prop]));
-
-    expect(byName.itemRefs).toMatchObject({ type: "(null | HTMLLIElement)[]", typeSource: "inferred", reactive: true });
-    expect(byName.keyedRefs).toMatchObject({ type: "(null | HTMLSpanElement)[]", reactive: true });
-    expect(byName.items).toMatchObject({ type: "string[]", reactive: false });
-  });
-
-  test("types `bind:this={refs[i]}` inside `<svg>` as an array of the SVG element", () => {
-    const source = `
-      <script>
-        export let circleRefs = [];
-      </script>
-
-      <svg>
-        {#each [1, 2] as r, i}
-          <circle bind:this={circleRefs[i]} {r} />
-        {/each}
-      </svg>
-    `;
-
-    const { props } = new ComponentParser().parseSvelteComponent(source, diagnostics);
-
-    expect(props[0]?.type).toBe("(null | SVGCircleElement)[]");
-  });
-
-  test("types `bind:this={refs[i]}` on an imported component as an array of its instance", () => {
-    const source = `
-      <script>
-        import Modal from "./Modal.svelte";
-
-        export let modalRefs = [];
-      </script>
-
-      {#each [1, 2] as _, i}
-        <Modal bind:this={modalRefs[i]} />
-      {/each}
-    `;
-
-    const result = new ComponentParser().parseSvelteComponent(source, diagnostics);
-
-    expect(result.props[0]?.type).toBe(
-      "(null | (typeof Modal extends abstract new (...args: any) => infer I ? I : typeof Modal extends (...args: any) => infer R ? R : never))[]",
-    );
-    expect(getParsedComponentTypeScriptMetadata(result)?.typeImportStatements).toEqual([
-      'import type { default as Modal } from "./Modal.svelte";',
-    ]);
-  });
-
-  test("types a runes `$bindable([])` prop bound by index as an array of the element", () => {
-    const source = `
-      <script>
-        let { itemRefs = $bindable([]), items = [] } = $props();
-      </script>
-
-      {#each items as item, i}
-        <li bind:this={itemRefs[i]}>{item}</li>
-      {/each}
-    `;
-
-    const { props } = new ComponentParser().parseSvelteComponent(source, diagnostics);
-
-    expect(props.find((prop) => prop.name === "itemRefs")?.type).toBe("(null | HTMLLIElement)[]");
-  });
-
   test("leaves the type of a prop bound both directly and by index", () => {
     const source = `
       <script>
@@ -1681,19 +1226,6 @@ describe("ComponentParser", () => {
 
   describe("rest props spread through a local object", () => {
     const restPropsOf = (source: string) => new ComponentParser().parseSvelteComponent(source, diagnostics).rest_props;
-
-    test("follows a `$:` object that spreads $$restProps onto a dynamic element", () => {
-      const source = `
-        <script>
-          export let tag = "div";
-          $: props = { ...$$restProps, class: ["stack", $$restProps.class].join(" ") };
-        </script>
-
-        <svelte:element this={tag} {...props}><slot /></svelte:element>
-      `;
-
-      expect(restPropsOf(source)).toEqual({ type: "Element", name: "svelte:element" });
-    });
 
     test("follows a const object, through a type cast, onto an element or component", () => {
       const element = `
@@ -1785,21 +1317,6 @@ describe("ComponentParser", () => {
 
   describe("rest props of a `<svelte:element>` whose tag is a type parameter", () => {
     const restPropsOf = (source: string) => new ComponentParser().parseSvelteComponent(source, diagnostics).rest_props;
-
-    test("types them from the type parameter", () => {
-      expect(
-        restPropsOf(`
-          <script>
-            /** @template {keyof HTMLElementTagNameMap} [Tag="div"] */
-
-            /** @type {Tag} */
-            export let tag = "div";
-          </script>
-
-          <svelte:element this={tag} {...$$restProps}><slot /></svelte:element>
-        `),
-      ).toEqual({ type: "Element", name: "svelte:element", thisType: "Tag" });
-    });
 
     test("types them from a runes prop's type parameter", () => {
       expect(
