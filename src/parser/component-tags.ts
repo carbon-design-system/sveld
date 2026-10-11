@@ -3,7 +3,7 @@
  * component's comments, they describe the component, not the declaration they sit on.
  */
 import { closestMatch } from "../levenshtein";
-import type { DeprecatedValue, JsDocPassthroughTag, SourceRange, TypeDef } from "../model";
+import type { DeprecatedValue, JsDocPassthroughTag, SourceRange } from "../model";
 import { indexOfClosingBracket, splitTopLevel } from "../type-text";
 import type { JSDocComment, JSDocTag } from "./comment-parser";
 import { parseComments, togglesCodeFence } from "./comment-parser";
@@ -204,8 +204,8 @@ function typeDeclarationUsesAny(
  * TypeScript, only an untyped or `object`/`Object` typedef takes them; a `@property` under
  * `@typedef {string | Fn} Name` is ignored rather than turning it into an object type.
  */
-function typedefTakesProperties(typedefType: string | undefined): boolean {
-  const type = typedefType?.trim();
+function typedefTakesProperties(typedefType: string): boolean {
+  const type = typedefType.trim();
   return !type || type === "object" || type === "Object";
 }
 
@@ -255,21 +255,50 @@ function accumulateOrReplaceGeneric(ctx: ParserContext, declaredName: string, co
   accumulateGeneric(ctx, declaredName, constraint);
 }
 
+type BlockLines = JSDocTag["lines"];
+
+/** A `@property` of an `@event` detail or an object `@typedef`. */
+interface TagProperty {
+  name: string;
+  type: string;
+  description?: string;
+  optional?: boolean;
+  default?: string;
+}
+
+/** An `@event`, `@typedef`, or `@callback` still collecting the tags below it. */
+interface OpenDeclaration {
+  name: string;
+  description: string | undefined;
+  source: SourceRange | undefined;
+  tags: JsDocPassthroughTag[];
+  internal: boolean;
+}
+
+interface OpenEvent extends OpenDeclaration {
+  type: string;
+  deprecated: DeprecatedValue | undefined;
+  tagLine: number | undefined;
+  ignores: string[];
+  properties: TagProperty[];
+}
+
+interface OpenTypedef extends OpenDeclaration {
+  type: string;
+  properties: TagProperty[];
+}
+
+interface OpenCallback extends OpenDeclaration {
+  params: Array<{ name: string; type: string; optional?: boolean }>;
+  returnType: string | undefined;
+}
+
 /** `@typedef` and `@callback` share `ctx.typedefs`, so either one can overwrite the other. */
 function addTypedef(
   ctx: ParserContext,
-  {
-    name,
-    type,
-    ts,
-    description,
-    tags,
-    internal,
-    source,
-  }: Omit<TypeDef, "tags" | "internal"> & {
-    tags: JsDocPassthroughTag[];
-    internal: boolean;
-  },
+  { name, description, tags, internal, source }: OpenDeclaration,
+  type: string,
+  ts: string,
 ) {
   if (ctx.typedefs.has(name)) {
     recordDiagnostic(
@@ -315,17 +344,6 @@ function pushOrReplaceProperty<T extends { name: string }>(
   }
 }
 
-type BlockLines = JSDocTag["lines"];
-
-/** A `@property` of an `@event` detail or an object `@typedef`. */
-interface TagProperty {
-  name: string;
-  type: string;
-  description?: string;
-  optional?: boolean;
-  default?: string;
-}
-
 /**
  * Reads one comment block's tags in order. Tags build on each other (an `@event` collects
  * the `@property` tags below it, a tag with no description takes the text above it), so the
@@ -339,32 +357,9 @@ class CommentBlockReader {
   private commentDescriptionUsed = false;
   private isFirstTag = true;
 
-  private eventName: string | undefined;
-  private eventType: string | undefined;
-  private eventDescription: string | undefined;
-  private eventDeprecated: DeprecatedValue | undefined;
-  private eventInternal = false;
-  private eventSource: SourceRange | undefined;
-  private eventTagLine: number | undefined;
-  private eventTags: JsDocPassthroughTag[] = [];
-  private eventIgnores: string[] = [];
-  private readonly eventProperties: TagProperty[] = [];
-
-  private typedefName: string | undefined;
-  private typedefType: string | undefined;
-  private typedefDescription: string | undefined;
-  private typedefSource: SourceRange | undefined;
-  private typedefTags: JsDocPassthroughTag[] = [];
-  private typedefInternal = false;
-  private readonly typedefProperties: TagProperty[] = [];
-
-  private callbackName: string | undefined;
-  private callbackDescription: string | undefined;
-  private callbackSource: SourceRange | undefined;
-  private callbackTags: JsDocPassthroughTag[] = [];
-  private callbackInternal = false;
-  private readonly callbackParams: Array<{ name: string; type: string; optional?: boolean }> = [];
-  private callbackReturnType: string | undefined;
+  private event: OpenEvent | undefined;
+  private typedef: OpenTypedef | undefined;
+  private callback: OpenCallback | undefined;
 
   /**
    * Set whenever a structural tag (`@slot`/`@event`/`@typedef`/...) starts, so a passthrough
@@ -566,17 +561,18 @@ class CommentBlockReader {
     tagSource: BlockLines,
     previousTag: JSDocTag | undefined,
   ) {
-    if (this.eventName === undefined || this.eventDescription) return;
+    const { event } = this;
+    if (event === undefined || event.description) return;
     // Indented lines under the `@event` are its description; they're merged in later.
-    if (this.eventTagLine !== undefined && this.indentedContinuationLines.has(this.eventTagLine + 1)) return;
+    if (event.tagLine !== undefined && this.indentedContinuationLines.has(event.tagLine + 1)) return;
     if (previousTag?.tag !== "event" && !EVENT_SCOPE_TAGS.has(previousTag?.tag ?? "")) return;
     if (cleanDescription(getInlineTagDescription(tagSource))) return;
     const label = name ? `@${tag} "${name}"` : `@${tag}`;
     recordDiagnostic(
       this.ctx,
       "event-description-ambiguous",
-      this.eventName,
-      `Text after @event "${this.eventName}" was used as the description of ${label}. Move it above the tag it describes, indent it as a continuation line, or give each event its own comment block.`,
+      event.name,
+      `Text after @event "${event.name}" was used as the description of ${label}. Move it above the tag it describes, indent it as a continuation line, or give each event its own comment block.`,
       sourceRangeFromCommentTag(this.ctx, tagSource),
     );
   }
@@ -593,86 +589,74 @@ class CommentBlockReader {
   }
 
   private finalizeEvent() {
-    if (this.eventName === undefined) return;
-    const { ctx } = this;
+    const { ctx, event } = this;
+    if (event === undefined) return;
+    this.event = undefined;
     // Prefer explicit `@type` over `@property`-built objects; `{object}` falls through.
-    const explicitType =
-      this.eventType && this.eventType !== "object" && this.eventType !== "Object" ? this.eventType : undefined;
+    const explicitType = event.type && event.type !== "object" && event.type !== "Object" ? event.type : undefined;
     const detailType =
       explicitType ??
-      (this.eventProperties.length > 0
-        ? buildEventDetailFromProperties(this.eventProperties, true)
-        : this.eventType || "");
+      (event.properties.length > 0 ? buildEventDetailFromProperties(event.properties, true) : event.type || "");
 
-    const eventTagLine = this.eventTagLine;
-    if (eventTagLine !== undefined) {
+    const { tagLine } = event;
+    if (tagLine !== undefined) {
       const scopeBoundaryLine = this.tags.find((t) => {
         const line = t.lines[0]?.number;
-        return line !== undefined && line > eventTagLine && !EVENT_SCOPE_TAGS.has(t.tag);
+        return line !== undefined && line > tagLine && !EVENT_SCOPE_TAGS.has(t.tag);
       })?.lines[0].number;
       const trailing = Array.from(this.lineDescriptions.keys())
         .sort((a, b) => a - b)
         .filter(
           (lineNum) =>
-            lineNum > eventTagLine &&
+            lineNum > tagLine &&
             (scopeBoundaryLine === undefined || lineNum < scopeBoundaryLine) &&
             !this.consumedDescriptionLines.has(lineNum) &&
             this.lineDescriptions.get(lineNum)?.trim(),
         );
       for (const lineNum of trailing) this.consumedDescriptionLines.add(lineNum);
       if (trailing.length > 0) {
-        this.eventDescription = this.joinBlockLines(
+        event.description = this.joinBlockLines(
           trailing,
-          this.eventDescription ? { text: this.eventDescription, line: eventTagLine } : undefined,
+          event.description ? { text: event.description, line: tagLine } : undefined,
         );
       }
     }
 
+    const { name, description, source } = event;
     // With no `{type}` or `@property`, the `null` detail is only a fallback that a dispatch
     // replaces (see `addDispatchedEvent`), unless an earlier `@event` typed this one.
-    const fallbackDetail =
-      detailType === "" && (!ctx.events.has(this.eventName) || ctx.untypedJsDocEventNames.has(this.eventName));
+    const fallbackDetail = detailType === "" && (!ctx.events.has(name) || ctx.untypedJsDocEventNames.has(name));
     addDispatchedEvent(ctx, {
-      name: this.eventName,
+      name,
       detail: detailType,
       has_argument: false,
-      description: this.eventDescription,
-      deprecated: this.eventDeprecated,
-      tags: this.eventTags.length > 0 ? this.eventTags : undefined,
-      internal: this.eventInternal || undefined,
-      source: this.eventSource,
+      description,
+      deprecated: event.deprecated,
+      tags: event.tags.length > 0 ? event.tags : undefined,
+      internal: event.internal || undefined,
+      source,
     });
-    if (fallbackDetail) ctx.untypedJsDocEventNames.add(this.eventName);
-    ctx.eventDescriptions.set(this.eventName, this.eventDescription);
-    ctx.jsDocEventNames.add(this.eventName);
-    ctx.jsDocEventSources.set(this.eventName, this.eventSource);
-    recordSveldIgnore(ctx, "event-no-source", this.eventName, this.eventIgnores);
-    this.eventProperties.length = 0;
-    this.eventName = undefined;
-    this.eventType = undefined;
-    this.eventDescription = undefined;
-    this.eventDeprecated = undefined;
-    this.eventInternal = false;
-    this.eventSource = undefined;
-    this.eventTagLine = undefined;
-    this.eventTags = [];
-    this.eventIgnores = [];
+    if (fallbackDetail) ctx.untypedJsDocEventNames.add(name);
+    ctx.eventDescriptions.set(name, description);
+    ctx.jsDocEventNames.add(name);
+    ctx.jsDocEventSources.set(name, source);
+    recordSveldIgnore(ctx, "event-no-source", name, event.ignores);
   }
 
   private finalizeTypedef() {
-    if (this.typedefName === undefined) return;
-    const { ctx } = this;
-    const hasProperties = this.typedefProperties.length > 0;
-    const typedefType = hasProperties
-      ? buildEventDetailFromProperties(this.typedefProperties, true)
-      : this.typedefType || "{}";
-    const typedefTs =
-      !hasProperties && this.typedefType && isSingleObjectLiteral(typedefType)
-        ? `interface ${this.typedefName} ${typedefType}`
-        : `type ${this.typedefName} = ${typedefType};`;
+    const { ctx, typedef } = this;
+    if (typedef === undefined) return;
+    this.typedef = undefined;
+    const { properties } = typedef;
+    const hasProperties = properties.length > 0;
+    const typedefType = hasProperties ? buildEventDetailFromProperties(properties, true) : typedef.type || "{}";
+    const ts =
+      !hasProperties && typedef.type && isSingleObjectLiteral(typedefType)
+        ? `interface ${typedef.name} ${typedefType}`
+        : `type ${typedef.name} = ${typedefType};`;
 
     const members = hasProperties
-      ? this.typedefProperties
+      ? properties
           .filter(({ name }) => !name.includes(".") && !name.startsWith("["))
           .map(({ name, type, optional, description }) => ({
             name,
@@ -681,47 +665,39 @@ class CommentBlockReader {
             ...(description ? { description } : {}),
           }))
       : parseObjectTypeLiteralMembers(typedefType, { skipIndexSignatures: true });
-    if (members) ctx.typedefMembersByName.set(this.typedefName, members);
+    if (members) ctx.typedefMembersByName.set(typedef.name, members);
 
-    addTypedef(ctx, {
-      name: this.typedefName,
-      type: typedefType,
-      ts: typedefTs,
-      description: this.typedefDescription,
-      tags: this.typedefTags,
-      internal: this.typedefInternal,
-      source: this.typedefSource,
-    });
-
-    this.typedefProperties.length = 0;
-    this.typedefName = undefined;
-    this.typedefType = undefined;
-    this.typedefDescription = undefined;
-    this.typedefSource = undefined;
-    this.typedefTags = [];
-    this.typedefInternal = false;
+    addTypedef(ctx, typedef, typedefType, ts);
   }
 
   private finalizeCallback() {
-    if (this.callbackName === undefined) return;
-    const callbackType = `(${formatParamList(this.callbackParams)}) => ${this.callbackReturnType || "void"}`;
-    addTypedef(this.ctx, {
-      name: this.callbackName,
-      type: callbackType,
-      ts: `type ${this.callbackName} = ${callbackType};`,
-      description: this.callbackDescription,
-      tags: this.callbackTags,
-      internal: this.callbackInternal,
-      source: this.callbackSource,
-    });
+    const { callback } = this;
+    if (callback === undefined) return;
+    this.callback = undefined;
+    const type = `(${formatParamList(callback.params)}) => ${callback.returnType || "void"}`;
+    addTypedef(this.ctx, callback, type, `type ${callback.name} = ${type};`);
+  }
 
-    this.callbackParams.length = 0;
-    this.callbackReturnType = undefined;
-    this.callbackName = undefined;
-    this.callbackDescription = undefined;
-    this.callbackSource = undefined;
-    this.callbackTags = [];
-    this.callbackInternal = false;
+  /**
+   * Opens a `@typedef`/`@callback`: its name (with any `@template`s above it), description,
+   * and the tags queued for it. Tags after it attach to it.
+   */
+  private openTypeDeclaration(tagIndex: number): OpenDeclaration {
+    const { name, lines: tagSource } = this.tags[tagIndex];
+    const declaration: OpenDeclaration = {
+      name: this.typeDeclarationName(name),
+      source: sourceRangeFromCommentTag(this.ctx, tagSource),
+      description: this.orCommentDescription(
+        this.getTagDescription(tagSource, this.tags[tagIndex + 1]) || this.takePrecedingDescription(tagIndex),
+      ),
+      tags: this.pendingTags.splice(0),
+      internal: this.pendingInternal,
+    };
+    const { tags } = declaration;
+    this.pendingInternal = false;
+    this.attachTrailingTag = (trailingTag) => tags.push(trailingTag);
+    this.isFirstTag = false;
+    return declaration;
   }
 
   private readExtends(tagIndex: number, type: string) {
@@ -804,80 +780,48 @@ class CommentBlockReader {
   private readEvent(tagIndex: number, type: string) {
     const { name, lines: tagSource } = this.tags[tagIndex];
     // Claim the text above before the previous event takes it as its trailing description.
-    const eventDescription =
-      cleanDescription(getInlineTagDescription(tagSource)) || this.takePrecedingDescription(tagIndex);
+    const description = cleanDescription(getInlineTagDescription(tagSource)) || this.takePrecedingDescription(tagIndex);
     this.finalizeEvent();
 
-    this.eventName = name;
-    this.eventType = type;
-    this.eventTagLine = tagSource.length > 0 ? tagSource[0].number : undefined;
-    this.eventDescription = this.orCommentDescription(eventDescription);
-    this.eventSource = sourceRangeFromCommentTag(this.ctx, tagSource);
-    this.eventTags.push(...this.pendingTags.splice(0));
-    this.attachTrailingTag = (trailingTag) => this.eventTags.push(trailingTag);
+    const tags = this.pendingTags.splice(0);
+    this.event = {
+      name,
+      type,
+      tagLine: tagSource.length > 0 ? tagSource[0].number : undefined,
+      description: this.orCommentDescription(description),
+      source: sourceRangeFromCommentTag(this.ctx, tagSource),
+      tags,
+      internal: false,
+      deprecated: undefined,
+      ignores: [],
+      properties: [],
+    };
+    this.attachTrailingTag = (trailingTag) => tags.push(trailingTag);
     this.isFirstTag = false;
   }
 
   private readProperty(tagIndex: number, type: string) {
     const { name, optional, default: defaultValue, lines: tagSource } = this.tags[tagIndex];
-    const propertyData = {
-      name,
-      type,
-      description: this.getTagDescription(tagSource, this.tags[tagIndex + 1], this.eventName !== undefined),
-      optional: optional || false,
-      default: defaultValue,
-    };
-
-    if (this.eventName !== undefined) {
-      pushOrReplaceProperty(
-        this.ctx,
-        this.eventProperties,
-        propertyData,
-        this.eventName,
-        sourceRangeFromCommentTag(this.ctx, tagSource),
-      );
-    } else if (this.typedefName !== undefined && typedefTakesProperties(this.typedefType)) {
-      pushOrReplaceProperty(
-        this.ctx,
-        this.typedefProperties,
-        propertyData,
-        this.typedefName,
-        sourceRangeFromCommentTag(this.ctx, tagSource),
-      );
-    }
+    const description = this.getTagDescription(tagSource, this.tags[tagIndex + 1], this.event !== undefined);
+    const owner = this.event ?? (this.typedef && typedefTakesProperties(this.typedef.type) ? this.typedef : undefined);
+    if (owner === undefined) return;
+    pushOrReplaceProperty(
+      this.ctx,
+      owner.properties,
+      { name, type, description, optional: optional || false, default: defaultValue },
+      owner.name,
+      sourceRangeFromCommentTag(this.ctx, tagSource),
+    );
   }
 
   private readTypedef(tagIndex: number, type: string) {
-    const { name, lines: tagSource } = this.tags[tagIndex];
     this.finalizeTypedef();
-
-    this.typedefName = this.typeDeclarationName(name);
-    this.typedefType = type;
-    this.typedefSource = sourceRangeFromCommentTag(this.ctx, tagSource);
-    this.typedefDescription = this.orCommentDescription(
-      this.getTagDescription(tagSource, this.tags[tagIndex + 1]) || this.takePrecedingDescription(tagIndex),
-    );
-    this.typedefTags.push(...this.pendingTags.splice(0));
-    this.typedefInternal = this.pendingInternal;
-    this.pendingInternal = false;
-    this.attachTrailingTag = (trailingTag) => this.typedefTags.push(trailingTag);
-    this.isFirstTag = false;
+    this.typedef = { ...this.openTypeDeclaration(tagIndex), type, properties: [] };
   }
 
   private readCallback(tagIndex: number) {
-    const { name, lines: tagSource } = this.tags[tagIndex];
     this.finalizeCallback();
-
-    this.callbackName = this.typeDeclarationName(name);
-    this.callbackSource = sourceRangeFromCommentTag(this.ctx, tagSource);
-    this.callbackDescription = this.orCommentDescription(
-      this.getTagDescription(tagSource, this.tags[tagIndex + 1]) || this.takePrecedingDescription(tagIndex),
-    );
-    this.callbackTags.push(...this.pendingTags.splice(0));
-    this.callbackInternal = this.pendingInternal;
-    this.pendingInternal = false;
-    this.attachTrailingTag = (trailingTag) => this.callbackTags.push(trailingTag);
-    this.isFirstTag = false;
+    this.callback = { ...this.openTypeDeclaration(tagIndex), params: [], returnType: undefined };
   }
 
   private readGenerics(tagIndex: number, type: string) {
@@ -932,11 +876,11 @@ class CommentBlockReader {
 
   private readDeprecated(tagIndex: number) {
     const { text } = this.tags[tagIndex];
-    const forEvent = this.eventName !== undefined;
+    const { event } = this;
     // The first `@deprecated` wins.
-    if (forEvent ? this.eventDeprecated !== undefined : this.pendingDeprecated !== undefined) return;
+    if ((event ? event.deprecated : this.pendingDeprecated) !== undefined) return;
     const setDeprecated = (value: DeprecatedValue) => {
-      if (forEvent) this.eventDeprecated = value;
+      if (event) event.deprecated = value;
       else this.pendingDeprecated = value;
     };
     setDeprecated(deprecatedValueFromBody(text));
@@ -1018,20 +962,14 @@ class CommentBlockReader {
           this.readEvent(tagIndex, type);
           break;
         case "type":
-          if (this.eventName !== undefined) {
-            this.eventType = type;
-          }
+          if (this.event) this.event.type = type;
           break;
         case "param":
-          if (this.callbackName !== undefined) {
-            this.callbackParams.push({ name, type, optional: optional || false });
-          }
+          this.callback?.params.push({ name, type, optional: optional || false });
           break;
         case "returns":
         case "return":
-          if (this.callbackName !== undefined) {
-            this.callbackReturnType = type;
-          }
+          if (this.callback) this.callback.returnType = type;
           break;
         case "property":
           this.readProperty(tagIndex, type);
@@ -1053,16 +991,11 @@ class CommentBlockReader {
           break;
         case "ignore":
         case "internal":
-          if (this.eventName === undefined) {
-            this.pendingInternal = true;
-          } else {
-            this.eventInternal = true;
-          }
+          if (this.event) this.event.internal = true;
+          else this.pendingInternal = true;
           break;
         case "sveld-ignore":
-          if (this.eventName !== undefined) {
-            this.eventIgnores.push(name);
-          }
+          this.event?.ignores.push(name);
           break;
         case "enum":
         case "class":
