@@ -6,8 +6,6 @@ export type PanelsContext = {
    * Zero when every panel is closed.
    */
   count: number;
-  /** Hidden from docs */
-  secret: number;
   items: number[];
   /** Adds an item to the group. */
   register: (id: string) => void;

@@ -2,6 +2,7 @@ import path from "node:path";
 import { Glob } from "bun";
 import { asNormalizedPath } from "../src/brands";
 import ComponentParser from "../src/ComponentParser";
+import { buildComponentApiDocument } from "../src/writer/document-model";
 import { writeTsDefinition } from "../src/writer/writer-ts-definitions";
 
 const folder = path.join(process.cwd(), "tests", "fixtures");
@@ -103,7 +104,10 @@ describe("fixtures (TypeScript)", async () => {
       throw new Error(`Source not found for: ${filePath}`);
     }
     const { dir, metadata, parsed_component } = getMetadata({ filePath, source });
-    const component = { ...metadata, ...parsed_component };
+    // As a build writes it: `@internal`/`@ignore` items left out.
+    const [component] = buildComponentApiDocument(
+      new Map([[metadata.moduleName, { ...metadata, ...parsed_component }]]),
+    ).components;
 
     const api_ts_class = writeTsDefinition(component, { format: "class" });
     const api_ts_component = writeTsDefinition(component, { format: "component" });
