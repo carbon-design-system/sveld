@@ -6,7 +6,6 @@
       "name": "ignored",
       "kind": "let",
       "description": "Suppresses only the named diagnostic.",
-      "type": "any",
       "typeSource": "unknown",
       "value": "compute()",
       "defaultValue": {
@@ -23,7 +22,6 @@
       "name": "ignoredAll",
       "kind": "let",
       "description": "A bare tag suppresses every diagnostic for the prop.",
-      "type": "any",
       "typeSource": "unknown",
       "value": "compute()",
       "defaultValue": {
@@ -40,7 +38,6 @@
       "name": "otherCode",
       "kind": "let",
       "description": "A different code leaves this prop's diagnostic in place.",
-      "type": "any",
       "typeSource": "unknown",
       "value": "compute()",
       "defaultValue": {
@@ -56,7 +53,6 @@
     {
       "name": "reported",
       "kind": "let",
-      "type": "any",
       "typeSource": "unknown",
       "value": "compute()",
       "defaultValue": {

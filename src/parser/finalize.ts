@@ -310,34 +310,23 @@ function serializeEvents(ctx: ParserContext): SerializedComponentEvent[] {
     .sort(compareSerializedEvents);
 }
 
-/** Types an untyped call default `any` and reports every prop whose type is still unknown. */
-function recordUnknownPropTypes(ctx: ParserContext, props: ComponentProp[], moduleExports: ComponentProp[]) {
-  const pendingCallDefaultsByLocation = {
-    props: new Map(ctx.pendingCallDefaultCandidates.filter((c) => c.location === "props").map((c) => [c.propName, c])),
-    moduleExports: new Map(
-      ctx.pendingCallDefaultCandidates.filter((c) => c.location === "moduleExports").map((c) => [c.propName, c]),
-    ),
-  };
+/** Reports every prop whose type is still unknown, which the `.d.ts` declares `any`. */
+function recordUnknownPropTypes(ctx: ParserContext, props: ComponentProp[]) {
+  const pendingCallDefaults = new Map(
+    ctx.pendingCallDefaultCandidates.filter((c) => c.location === "props").map((c) => [c.propName, c]),
+  );
 
   for (const prop of props) {
     if (prop.typeSource === "unknown") {
-      const callDefault = pendingCallDefaultsByLocation.props.get(prop.name);
-      // Never leave type unset: the writer would emit `id?: undefined;`.
-      if (callDefault) prop.type = "any";
+      const callDefault = pendingCallDefaults.get(prop.name);
 
       const message = callDefault
         ? callDefault.importSource
           ? `Prop "${prop.name}" default calls "${callDefault.calleeName}()" imported from "${callDefault.importSource}"; falling back to "any" pending cross-file resolution.`
           : `Prop "${prop.name}" default calls "${callDefault.calleeName}()", but its return type could not be inferred; falling back to "any".`
-        : `Prop "${prop.name}" type could not be inferred; falling back to "${prop.type ?? "any"}".`;
+        : `Prop "${prop.name}" type could not be inferred; falling back to "any".`;
 
       recordDiagnostic(ctx, "prop-unknown-type", prop.name, message, prop.source);
-    }
-  }
-
-  for (const moduleExport of moduleExports) {
-    if (moduleExport.typeSource === "unknown" && pendingCallDefaultsByLocation.moduleExports.has(moduleExport.name)) {
-      moduleExport.type = "any";
     }
   }
 }
@@ -640,7 +629,7 @@ export function finalizeComponent(ctx: ParserContext, walk: ComponentWalkResult)
   const typedefs = mapToArray(ctx.typedefs);
   const contexts = mapToArray(ctx.contexts);
 
-  recordUnknownPropTypes(ctx, props, moduleExports);
+  recordUnknownPropTypes(ctx, props);
   replaceInvalidTypes(ctx, props, events, slots, typedefs);
 
   const unfollowableEscapes = queueDispatcherEscapes(ctx, walk);

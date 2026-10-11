@@ -2,6 +2,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { type ComponentDocApi, type ComponentDocs, generateBundle } from "../src/bundle";
+import { writeTsDefinition } from "../src/writer/writer-ts-definitions";
 
 /** Look up `allComponentsForTypes` by filePath; moduleName is not unique. */
 function byModuleName(components: ComponentDocs, moduleName: string): ComponentDocApi | undefined {
@@ -148,7 +149,8 @@ describe("cross-file CallExpression prop-default resolution", () => {
     const component = byModuleName(result.allComponentsForTypes, "Unresolvable");
     const prop = component?.props.find((p) => p.name === "id");
 
-    expect(prop?.type).toBe("any");
+    expect(prop?.type).toBeUndefined();
+    expect(component && writeTsDefinition(component)).toContain("id?: any;");
     expect(prop?.typeSource).toBe("unknown");
     const diagnostic = component?.diagnostics?.find((d) => d.name === "id");
     expect(diagnostic?.message).toContain("could not be resolved");
@@ -172,7 +174,8 @@ describe("cross-file CallExpression prop-default resolution", () => {
     const component = byModuleName(result.allComponentsForTypes, "MissingExport");
     const prop = component?.props.find((p) => p.name === "id");
 
-    expect(prop?.type).toBe("any");
+    expect(prop?.type).toBeUndefined();
+    expect(component && writeTsDefinition(component)).toContain("id?: any;");
     const diagnostic = component?.diagnostics?.find((d) => d.name === "id");
     expect(diagnostic?.message).toContain("is not exported from");
   });
@@ -297,7 +300,7 @@ describe("cross-file CallExpression prop-default resolution", () => {
 
     const result = await generateBundle(path.join(dir, "index.js"), true);
     const prop = byModuleName(result.allComponentsForTypes, "Unresolvable2")?.props.find((p) => p.name === "id");
-    expect(prop?.type).toBe("any");
+    expect(prop?.type).toBeUndefined();
   });
 
   test("F: explicit JSDoc @type still wins when the import comes after the export let", async () => {
@@ -539,7 +542,8 @@ describe("cross-file CallExpression prop-default resolution", () => {
     const result = await generateBundle(path.join(dir, "index.js"), true);
     const component = byModuleName(result.allComponentsForTypes, "NoReturn");
     const prop = component?.props.find((p) => p.name === "id");
-    expect(prop?.type).toBe("any");
+    expect(prop?.type).toBeUndefined();
+    expect(component && writeTsDefinition(component)).toContain("id?: any;");
     expect(component?.diagnostics?.find((d) => d.name === "id")?.message).toContain(
       "return type could not be resolved",
     );

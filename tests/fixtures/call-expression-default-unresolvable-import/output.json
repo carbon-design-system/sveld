@@ -5,7 +5,6 @@
     {
       "name": "id",
       "kind": "let",
-      "type": "any",
       "typeSource": "unknown",
       "value": "generateId()",
       "defaultValue": {
