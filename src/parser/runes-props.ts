@@ -24,7 +24,7 @@ import { addDispatchedEvent } from "./events";
 import { collectGenericsAttributeTypeDependencies } from "./generics";
 import { processNodeJSDoc } from "./jsdoc";
 import { parseObjectTypeLiteralMembers } from "./object-type-literal";
-import { resolvePropTypeAndDocs } from "./prop-shared";
+import { propJsDocFields, resolvePropTypeAndDocs } from "./prop-shared";
 import { addProp, processInitializer, queuePendingCrossFileDefault } from "./props";
 import { resolveScriptGenericsAttribute, resolveScriptLanguage } from "./script-attributes";
 import { sourceAtPos, sourceRangeFromNode } from "./source-position";
@@ -473,10 +473,7 @@ export function parseRunesPropsDeclaration(ctx: ParserContext, node: VariableDec
         ...(localName === propName ? {} : { localName }),
         kind: "let",
         description,
-        binding: propertyJSDoc?.binding,
-        deprecated: propertyJSDoc?.deprecated,
-        tags: propertyJSDoc?.tags,
-        ...(propertyJSDoc?.internal ? { internal: true as const } : {}),
+        ...propJsDocFields(propertyJSDoc),
         ...(bindable ? { bindable: true as const } : {}),
         type,
         typeSource,

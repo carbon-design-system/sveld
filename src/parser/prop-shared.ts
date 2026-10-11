@@ -1,4 +1,4 @@
-import type { ComponentPropParam, ComponentPropTypeSource } from "../model";
+import type { ComponentPropParam, ComponentPropTypeSource, NodeJsDoc } from "../model";
 import { formatParamList } from "./utils";
 
 /** A prop's type provenance, in the same precedence {@link resolvePropTypeAndDocs} picks its type. */
@@ -102,4 +102,14 @@ export function resolvePropTypeAndDocs(input: ResolvePropTypeAndDocsInput): Reso
   const typeParameters = isFunction ? input.jsdocTypeParameters : undefined;
 
   return { type, typeSource, description, params, returnType, isFunction, typeParameters };
+}
+
+/** The fields a prop copies verbatim from its own JSDoc block, in prop key order. */
+export function propJsDocFields(jsdoc: NodeJsDoc | undefined) {
+  return {
+    binding: jsdoc?.binding,
+    deprecated: jsdoc?.deprecated,
+    tags: jsdoc?.tags,
+    ...(jsdoc?.internal ? { internal: true as const } : {}),
+  };
 }
