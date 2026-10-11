@@ -1,7 +1,5 @@
 import { SvelteComponentTyped } from "svelte";
 
-export type Secret = string;
-
 /**
  * @deprecated Use `Size`.
  */

@@ -1,9 +1,5 @@
 import type { Component } from "svelte";
 
-export interface InternalCount {
-  count: number
-}
-
 export interface PublicList {
   items: InternalCount[]
 }

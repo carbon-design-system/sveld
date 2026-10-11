@@ -12,8 +12,6 @@ export type DrawerContext = {
   close: () => void;
 };
 
-export type SecretContext = string;
-
 export type ContextTsAnnotationDescriptionProps = {
   /**
    * The dialog's title.
