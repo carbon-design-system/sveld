@@ -198,40 +198,40 @@ const svg_tag_map = {
   view: "SVGViewElement",
 } satisfies Record<string, string>;
 
-/** MathML tag-to-DOM-type map from TypeScript's `lib.dom.d.ts`. */
-const mathml_tag_map = {
-  a: "MathMLElement",
-  annotation: "MathMLElement",
-  "annotation-xml": "MathMLElement",
-  maction: "MathMLElement",
-  math: "MathMLElement",
-  merror: "MathMLElement",
-  mfrac: "MathMLElement",
-  mi: "MathMLElement",
-  mmultiscripts: "MathMLElement",
-  mn: "MathMLElement",
-  mo: "MathMLElement",
-  mover: "MathMLElement",
-  mpadded: "MathMLElement",
-  mphantom: "MathMLElement",
-  mprescripts: "MathMLElement",
-  mroot: "MathMLElement",
-  mrow: "MathMLElement",
-  ms: "MathMLElement",
-  mspace: "MathMLElement",
-  msqrt: "MathMLElement",
-  mstyle: "MathMLElement",
-  msub: "MathMLElement",
-  msubsup: "MathMLElement",
-  msup: "MathMLElement",
-  mtable: "MathMLElement",
-  mtd: "MathMLElement",
-  mtext: "MathMLElement",
-  mtr: "MathMLElement",
-  munder: "MathMLElement",
-  munderover: "MathMLElement",
-  semantics: "MathMLElement",
-} satisfies Record<string, string>;
+/** MathML tags from TypeScript's `lib.dom.d.ts`; each one's DOM type is `MathMLElement`. */
+const MATHML_TAGS = new Set([
+  "a",
+  "annotation",
+  "annotation-xml",
+  "maction",
+  "math",
+  "merror",
+  "mfrac",
+  "mi",
+  "mmultiscripts",
+  "mn",
+  "mo",
+  "mover",
+  "mpadded",
+  "mphantom",
+  "mprescripts",
+  "mroot",
+  "mrow",
+  "ms",
+  "mspace",
+  "msqrt",
+  "mstyle",
+  "msub",
+  "msubsup",
+  "msup",
+  "mtable",
+  "mtd",
+  "mtext",
+  "mtr",
+  "munder",
+  "munderover",
+  "semantics",
+]);
 
 /** The namespace an element is created in: SVG inside `<svg>`, MathML inside `<math>`, HTML elsewhere. */
 export type ElementNamespace = "html" | "svg" | "mathml";
@@ -249,7 +249,11 @@ function lookup(map: Record<string, string>, tag: string): string | undefined {
 export function getElementByTag(element: string, namespace: ElementNamespace = "html"): string {
   if (namespace === "svg") return lookup(svg_tag_map, element) ?? "SVGElement";
   if (namespace === "mathml") {
-    return lookup(mathml_tag_map, element) ?? lookup(tag_map, element) ?? "MathMLElement";
+    return MATHML_TAGS.has(element) ? "MathMLElement" : (lookup(tag_map, element) ?? "MathMLElement");
   }
-  return lookup(tag_map, element) ?? lookup(svg_tag_map, element) ?? lookup(mathml_tag_map, element) ?? "HTMLElement";
+  return (
+    lookup(tag_map, element) ??
+    lookup(svg_tag_map, element) ??
+    (MATHML_TAGS.has(element) ? "MathMLElement" : "HTMLElement")
+  );
 }
