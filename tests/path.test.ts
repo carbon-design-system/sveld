@@ -1,3 +1,4 @@
+import { asRelativeSourcePath } from "../src/brands";
 import { MODULE_EXTENSIONS, normalizeSeparators, WATCH_RELEVANT_EXT_REGEX } from "../src/path";
 
 describe("normalizeSeparators", () => {
@@ -48,5 +49,15 @@ describe("WATCH_RELEVANT_EXT_REGEX", () => {
     }
     expect(WATCH_RELEVANT_EXT_REGEX.test("a.json")).toBe(false);
     expect(WATCH_RELEVANT_EXT_REGEX.test("a.css")).toBe(false);
+  });
+});
+
+describe("asRelativeSourcePath", () => {
+  test("prefixes `./` unless the path is already relative", () => {
+    expect(asRelativeSourcePath("Button.svelte")).toBe("./Button.svelte");
+    expect(asRelativeSourcePath(".hidden/Button.svelte")).toBe("./.hidden/Button.svelte");
+    expect(asRelativeSourcePath("./Button.svelte")).toBe("./Button.svelte");
+    expect(asRelativeSourcePath("../Button.svelte")).toBe("../Button.svelte");
+    expect(asRelativeSourcePath("")).toBe("");
   });
 });

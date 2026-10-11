@@ -19,5 +19,7 @@ export function asRelativeSourcePath(path: string): RelativeSourcePath {
   if (path === "") {
     return path as RelativeSourcePath;
   }
-  return (path.startsWith(".") ? path : `./${path}`) as RelativeSourcePath;
+  // `.hidden/x` is a bare name like `x`, not a relative path.
+  const isRelative = path === "." || path === ".." || path.startsWith("./") || path.startsWith("../");
+  return (isRelative ? path : `./${path}`) as RelativeSourcePath;
 }
