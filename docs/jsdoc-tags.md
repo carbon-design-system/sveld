@@ -239,7 +239,7 @@ Any other identifier (an `export let`, a computed value, a package import) is us
 </script>
 ```
 
-An object-literal typedef is emitted as an `interface`. A union (for example a discriminated union, `{ kind: "a"; ... } | { kind: "b"; ... }`) is emitted as a `type` alias so it narrows correctly for consumers.
+A typedef whose `{type}` is an object literal is emitted as an `interface`; one built from `@property` tags is a `type` alias. A union (for example a discriminated union, `{ kind: "a"; ... } | { kind: "b"; ... }`) is emitted as a `type` alias so it narrows correctly for consumers.
 
 ### Documenting fields with `@property`
 
@@ -452,7 +452,7 @@ Or put the description on the line above the tag:
 
 ### Description and extra tags
 
-Put the slot's description, then any extra tags, then the `@slot` / `@snippet` line last. Tags such as `@example`, `@see`, and `@since` before the slot line are copied to the `.d.ts`, JSON (`tags`), and Markdown. `@deprecated` in that position marks the slot deprecated. Tags after `@slot` in the same comment are not tied to that slot.
+Put the slot's description, then any extra tags, then the `@slot` / `@snippet` line last. Tags such as `@example`, `@see`, and `@since` before the slot line are copied to the `.d.ts`, JSON (`tags`), and Markdown. `@deprecated` in that position marks the slot deprecated. A passthrough tag after the `@slot` line (`@since`, `@see`, ...) also attaches to that slot; `@deprecated` and `@internal` there apply to the next `@slot` in the comment, or are reported as `jsdoc-tag-dropped` when there is none.
 
 ````svelte
 <script>
