@@ -384,6 +384,7 @@ export function templateTagParameters(tag: JSDocTag, type: string): Array<{ name
 
 /** Param types that `@param name.member` tags fill in with an object type. */
 const OBJECT_PLACEHOLDER_TYPES = new Set(["", "any", "object", "Object"]);
+const IDENTIFIER_REGEX = /^[A-Za-z_$][\w$]*$/;
 
 /**
  * `@param` tags as params. `@param options.label` tags become members of `options`' type
@@ -393,9 +394,11 @@ function paramsWithNestedMembers(paramTags: JSDocTag[]): ComponentPropParam[] {
   const membersByParam = new Map<string, string[]>();
   for (const { name, type, optional } of paramTags) {
     const [param, member, ...deeper] = name.split(".");
-    if (member === undefined || deeper.length > 0) continue;
+    if (!member || deeper.length > 0) continue;
     const members = membersByParam.get(param) ?? [];
-    members.push(`${member}${optional ? "?" : ""}: ${aliasType(type) || "any"}`);
+    // `options.aria-label` is a member all the same, quoted as a key.
+    const key = IDENTIFIER_REGEX.test(member) ? member : JSON.stringify(member);
+    members.push(`${key}${optional ? "?" : ""}: ${aliasType(type) || "any"}`);
     membersByParam.set(param, members);
   }
   return paramTags

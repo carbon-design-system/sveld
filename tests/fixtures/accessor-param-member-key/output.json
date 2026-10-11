@@ -1,0 +1,33 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "label",
+      "kind": "function",
+      "description": "Label a control.",
+      "type": "(attributes: { id: string; \"aria-label\"?: string }) => void",
+      "typeSource": "jsdoc",
+      "params": [
+        {
+          "name": "attributes",
+          "type": "{ id: string; \"aria-label\"?: string }",
+          "optional": false
+        }
+      ],
+      "returnType": "void",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
