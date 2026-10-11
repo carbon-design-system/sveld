@@ -9434,7 +9434,7 @@
           "type": "() => void",
           "typeSource": "jsdoc",
           "defaultValue": {
-            "raw": "() => { files = []; }",
+            "raw": "() => {\n  files = [];\n}",
             "kind": "function"
           },
           "isFunction": true,
@@ -16232,9 +16232,9 @@
           "description": "Default translation ids",
           "type": "{ clearAll: \"clearAll\"; clearSelection: \"clearSelection\" }",
           "typeSource": "default",
-          "value": "{ clearAll: \"clearAll\", clearSelection: \"clearSelection\", }",
+          "value": "{\n  clearAll: \"clearAll\",\n  clearSelection: \"clearSelection\",\n}",
           "defaultValue": {
-            "raw": "{ clearAll: \"clearAll\", clearSelection: \"clearSelection\", }",
+            "raw": "{\n  clearAll: \"clearAll\",\n  clearSelection: \"clearSelection\",\n}",
             "kind": "object",
             "value": {
               "clearAll": "clearAll",
@@ -19936,9 +19936,9 @@
           "description": "Default translation ids",
           "type": "{ increment: \"increment\"; decrement: \"decrement\" }",
           "typeSource": "jsdoc",
-          "value": "{ increment: \"increment\", decrement: \"decrement\", }",
+          "value": "{\n  increment: \"increment\",\n  decrement: \"decrement\",\n}",
           "defaultValue": {
-            "raw": "{ increment: \"increment\", decrement: \"decrement\", }",
+            "raw": "{\n  increment: \"increment\",\n  decrement: \"decrement\",\n}",
             "kind": "object",
             "value": {
               "increment": "increment",
