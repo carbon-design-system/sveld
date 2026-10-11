@@ -230,14 +230,19 @@ export class Project {
     const { exports, allComponentEntries, resolveComponentFilePath } = this.collected;
     this.canonicalEntries = new Map();
     for (const entries of [Object.entries(exports), allComponentEntries]) {
-      for (const [exportName, entry] of entries) {
-        if (!hasSvelteExtension(entry.source)) continue;
-        this.canonicalEntries.set(resolveComponentFilePath(entry.source), {
-          moduleName: componentModuleName(exportName, entry.source, entries.length, this.warnedModuleNames),
-          filePath: normalizeSeparators(entry.source),
-        });
+      for (const entry of entries) {
+        if (!hasSvelteExtension(entry[1].source)) continue;
+        this.canonicalEntries.set(resolveComponentFilePath(entry[1].source), this.entryIdentity(entries, entry));
       }
     }
+  }
+
+  /** The `moduleName` and `filePath` the component `entry` points at is documented under. */
+  private entryIdentity(entries: ComponentEntry[], [exportName, { source }]: ComponentEntry): CanonicalEntry {
+    return {
+      moduleName: componentModuleName(exportName, source, entries.length, this.warnedModuleNames),
+      filePath: normalizeSeparators(source),
+    };
   }
 
   private canonicalEntry(resolvedPath: string): CanonicalEntry {
@@ -369,15 +374,12 @@ export class Project {
     const { exports, allComponentEntries, resolveComponentFilePath } = this.collected;
     const cache = this.cache;
 
-    const view = (entries: ComponentEntry[], [exportName, entry]: ComponentEntry) => {
-      if (!hasSvelteExtension(entry.source)) return undefined;
-      const record = this.records.get(resolveComponentFilePath(entry.source));
+    const view = (entries: ComponentEntry[], entry: ComponentEntry) => {
+      const { source } = entry[1];
+      if (!hasSvelteExtension(source)) return undefined;
+      const record = this.records.get(resolveComponentFilePath(source));
       if (record === undefined) return undefined;
-      const component: ComponentDocApi = {
-        moduleName: componentModuleName(exportName, entry.source, entries.length, this.warnedModuleNames),
-        filePath: normalizeSeparators(entry.source),
-        ...record.component,
-      };
+      const component: ComponentDocApi = { ...this.entryIdentity(entries, entry), ...record.component };
       return { component, record };
     };
 
