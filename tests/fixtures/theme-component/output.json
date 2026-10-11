@@ -137,7 +137,7 @@
       "kind": "const",
       "type": "Record<CarbonTheme, string>",
       "typeSource": "jsdoc",
-      "value": "{     white: \"White\",     g10: \"Gray 10\",     g80: \"Gray 80\",     g90: \"Gray 90\",     g100: \"Gray 100\",   }",
+      "value": "{ white: \"White\", g10: \"Gray 10\", g80: \"Gray 80\", g90: \"Gray 90\", g100: \"Gray 100\", }",
       "defaultValue": {
         "raw": "{     white: \"White\",     g10: \"Gray 10\",     g80: \"Gray 80\",     g90: \"Gray 90\",     g100: \"Gray 100\",   }",
         "kind": "object",

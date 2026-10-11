@@ -19,7 +19,7 @@ import { returnTypeOfFunctionType } from "../type-text";
 import type { ParserContext } from "./context";
 import { trackPropLocalName } from "./context";
 import { extractJsDocType } from "./jsdoc";
-import { nodeSourceText, sourceAtPos, sourceForExpression } from "./source-position";
+import { compactSourceText, nodeSourceText, sourceAtPos, sourceForExpression } from "./source-position";
 import { buildFunctionDeclarationSignature, trackAdditionalTypeDependencyNode } from "./type-resolution";
 import { formatParamList } from "./utils";
 import { importedMemberBinding } from "./value-imports";
@@ -124,7 +124,7 @@ function processInitializerWithoutAssertion(ctx: ParserContext, init: unknown, d
   switch (node.type) {
     case "ObjectExpression":
     case "ArrayExpression":
-      return result(sourceForExpression(ctx, node), literalType(node, "widen"));
+      return result(compactSourceText(ctx, node), literalType(node, "widen"));
     case "BinaryExpression":
       return result(sourceForExpression(ctx, node), inferExpressionType(ctx, node, depth));
     case "ArrowFunctionExpression":
