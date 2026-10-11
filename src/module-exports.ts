@@ -13,7 +13,6 @@ import type {
   Program,
   TSDeclareFunction,
   TSEnumDeclaration,
-  TSEnumMember,
 } from "sveast";
 import { resolveStaticStringLiteral, unwrapTypeCastExpression } from "./ast-guards";
 import type { ModuleGraph, ModuleSource } from "./module-graph";
@@ -183,28 +182,24 @@ function inferLiteralType(init: Expression): string | undefined {
 }
 
 /** `300`, `-1`, `"a"`, `true`, or a template with no expressions. */
+function staticPrimitiveValue(node: Expression): PrimitiveLiteral["value"] | undefined {
+  if (node.type === "Literal") {
+    const value = node.value;
+    return typeof value === "string" || typeof value === "number" || typeof value === "boolean" ? value : undefined;
+  }
+  // Negative numeric literals parse as `UnaryExpression` (`-1`), not `Literal`.
+  if (node.type === "UnaryExpression" && node.operator === "-") {
+    const argument = node.argument;
+    return argument.type === "Literal" && typeof argument.value === "number" ? -argument.value : undefined;
+  }
+  return node.type === "TemplateLiteral" ? (resolveStaticStringLiteral(node) ?? undefined) : undefined;
+}
+
 function primitiveLiteralOf(source: ModuleSource, init: Expression): PrimitiveLiteral | undefined {
   const raw = textOf(source, init);
-  if (raw === undefined) return undefined;
-
-  if (init.type === "Literal") {
-    const value = init.value;
-    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
-      return { raw, value, type: typeof value as PrimitiveLiteral["type"] };
-    }
-    return undefined;
-  }
-
-  if (init.type === "UnaryExpression" && init.operator === "-") {
-    const argument = init.argument;
-    if (argument.type === "Literal" && typeof argument.value === "number") {
-      return { raw, value: -argument.value, type: "number" };
-    }
-    return undefined;
-  }
-
-  const templateValue = init.type === "TemplateLiteral" ? resolveStaticStringLiteral(init) : null;
-  return templateValue === null ? undefined : { raw, value: templateValue, type: "string" };
+  const value = staticPrimitiveValue(init);
+  if (raw === undefined || value === undefined) return undefined;
+  return { raw, value, type: typeof value as PrimitiveLiteral["type"] };
 }
 
 /**
@@ -291,22 +286,11 @@ function inferAstLiteralReturnType(fn: FunctionLike): string | undefined {
   return inferred;
 }
 
-function enumMemberLiteralValue(member: TSEnumMember): string | number | undefined {
-  const initializer = member.initializer;
-  if (!initializer) return undefined;
-
-  if (initializer.type === "Literal") {
-    const value = initializer.value;
-    return typeof value === "string" || typeof value === "number" ? value : undefined;
-  }
-
-  // Negative numeric literals parse as `UnaryExpression` (`-1`), not `Literal`.
-  if (initializer.type === "UnaryExpression" && initializer.operator === "-") {
-    const argument = initializer.argument;
-    if (argument.type === "Literal" && typeof argument.value === "number") return -argument.value;
-  }
-
-  return undefined;
+/** A string or (possibly negative) number literal; a template counts as computed. */
+function enumMemberLiteralValue(initializer: Expression): string | number | undefined {
+  if (initializer.type === "TemplateLiteral") return undefined;
+  const value = staticPrimitiveValue(initializer);
+  return typeof value === "boolean" ? undefined : value;
 }
 
 /**
@@ -326,7 +310,7 @@ function enumMemberUnionType(declaration: TSEnumDeclaration): string | undefined
       continue;
     }
 
-    const value = enumMemberLiteralValue(member);
+    const value = enumMemberLiteralValue(member.initializer);
     if (value === undefined) return undefined;
 
     literals.push(typeof value === "string" ? JSON.stringify(value) : String(value));
@@ -361,16 +345,25 @@ function describeDeclaration(
     ...(internal ? { internal: true as const } : {}),
     declFile: source.filePath,
   };
+  const entry = (
+    name: string | undefined,
+    fields: Omit<InternalExport, "name" | "declFile" | "isTypeOnly">,
+    isTypeOnly = false,
+  ): InternalExport[] => (name ? [{ name, ...fields, ...shared, isTypeOnly }] : []);
+  const returnTypeOf = (fn: FunctionLike, annotatedType?: string) =>
+    functionReturnAnnotationText(source, fn) ??
+    jsDocReturnType ??
+    returnTypeOfFunctionType(annotatedType) ??
+    inferAstLiteralReturnType(fn);
 
   if (declaration.type === "VariableDeclaration") {
     // `using` can't be exported; anything but `let`/`var` reads as `const`.
     const kind = declaration.kind === "let" || declaration.kind === "var" ? declaration.kind : "const";
-    const results: InternalExport[] = [];
 
-    for (const declarator of declaration.declarations) {
+    return declaration.declarations.flatMap((declarator) => {
       const id = declarator.id;
       const name = identifierName(id);
-      if (!name) continue;
+      if (!name) return [];
 
       const annotation = annotationText(source, id);
       let type = annotation;
@@ -386,11 +379,7 @@ function describeDeclaration(
         if (init.type === "ArrowFunctionExpression" || init.type === "FunctionExpression") {
           functionNode = init;
           if (!type) type = buildSignature(source, init);
-          returnType =
-            functionReturnAnnotationText(source, init) ??
-            jsDocReturnType ??
-            returnTypeOfFunctionType(type) ??
-            inferAstLiteralReturnType(init);
+          returnType = returnTypeOf(init, type);
         } else {
           value = textOf(source, init);
           if (!type) type = inferLiteralType(init);
@@ -404,99 +393,40 @@ function describeDeclaration(
         }
       }
 
-      results.push({
-        name,
-        kind,
-        type,
-        value,
-        returnType,
-        literalValue,
-        primitiveLiteral,
-        declaredType,
-        functionNode,
-        ...shared,
-        isTypeOnly: false,
-      });
-    }
-
-    return results;
+      return entry(name, { kind, type, value, returnType, literalValue, primitiveLiteral, declaredType, functionNode });
+    });
   }
 
   // Ambient signature in a `.d.ts`: `export function uniqueId(prefix?: string): string;`
   if (declaration.type === "FunctionDeclaration" || declaration.type === "TSDeclareFunction") {
-    const name = identifierName(declaration.id) ?? anonymousName;
-    if (!name) return [];
-    return [
-      {
-        name,
-        kind: "function",
-        type: buildSignature(source, declaration),
-        returnType:
-          functionReturnAnnotationText(source, declaration) ??
-          jsDocReturnType ??
-          inferAstLiteralReturnType(declaration),
-        ...(declaration.type === "FunctionDeclaration" ? { functionNode: declaration } : {}),
-        ...shared,
-        isTypeOnly: false,
-      },
-    ];
+    return entry(identifierName(declaration.id) ?? anonymousName, {
+      kind: "function",
+      type: buildSignature(source, declaration),
+      returnType: returnTypeOf(declaration),
+      ...(declaration.type === "FunctionDeclaration" ? { functionNode: declaration } : {}),
+    });
   }
 
   if (declaration.type === "ClassDeclaration") {
     const className = identifierName(declaration.id);
-    const name = className ?? anonymousName;
-    if (!name) return [];
-    return [
-      {
-        name,
-        kind: "class",
-        ...(className ? { type: className } : {}),
-        ...shared,
-        isTypeOnly: false,
-      },
-    ];
+    return entry(className ?? anonymousName, { kind: "class", ...(className ? { type: className } : {}) });
   }
 
   if (declaration.type === "TSTypeAliasDeclaration") {
-    const name = identifierName(declaration.id);
-    if (!name) return [];
-    return [
-      {
-        name,
-        kind: "type",
-        type: textOf(source, declaration.typeAnnotation),
-        ...shared,
-        isTypeOnly: true,
-      },
-    ];
+    return entry(
+      identifierName(declaration.id),
+      { kind: "type", type: textOf(source, declaration.typeAnnotation) },
+      true,
+    );
   }
 
   if (declaration.type === "TSInterfaceDeclaration") {
-    const name = identifierName(declaration.id);
-    if (!name) return [];
-    return [
-      {
-        name,
-        kind: "interface",
-        type: textOf(source, declaration.body),
-        ...shared,
-        isTypeOnly: true,
-      },
-    ];
+    return entry(identifierName(declaration.id), { kind: "interface", type: textOf(source, declaration.body) }, true);
   }
 
   if (declaration.type === "TSEnumDeclaration") {
     const name = identifierName(declaration.id);
-    if (!name) return [];
-    return [
-      {
-        name,
-        kind: "enum",
-        type: enumMemberUnionType(declaration) ?? name,
-        ...shared,
-        isTypeOnly: false,
-      },
-    ];
+    return entry(name, { kind: "enum", type: enumMemberUnionType(declaration) ?? name });
   }
 
   return [];
