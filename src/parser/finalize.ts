@@ -431,8 +431,8 @@ function queueDispatcherEscapes(ctx: ParserContext, walk: ComponentWalkResult): 
 }
 
 /**
- * `@event` in JSDoc with no `createEventDispatcher`, `on:` forward,
- * or `on<event>` callback prop. While the dispatcher escapes, such an
+ * `@event` in JSDoc with no dispatch, typed dispatcher member, `on:`
+ * forward, or `on<event>` callback prop. While the dispatcher escapes, such an
  * event may come from the function it escapes to: an imported one gets
  * checked once its events are known, anything else gets the benefit of
  * the doubt.
@@ -444,7 +444,7 @@ function recordOrphanJsDocEvents(
 ) {
   for (const eventName of ctx.jsDocEventNames) {
     if (dispatchedEvents.names.has(eventName) || dispatchedEvents.mayDispatch(eventName)) continue;
-    if (ctx.forwardedEvents.has(eventName)) continue;
+    if (ctx.forwardedEvents.has(eventName) || ctx.typedDispatcherEventNames.has(eventName)) continue;
     if (ctx.props.has(`on${eventName}`)) continue;
     if (unfollowableEscapes.length > 0) continue;
     const diagnostic = buildDiagnostic(
