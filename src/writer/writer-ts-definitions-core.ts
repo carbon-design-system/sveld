@@ -316,9 +316,11 @@ function genPropDef(
     if (def.canonicalPropsType) {
       const own = props.trim() === "" ? "" : ` & ${ownMembers}`;
       declarations = [`type $Props${genericsName} = ${def.canonicalPropsType}${own};`, exportProps(propsRef)];
-    } else if (def.extends === undefined) {
+    } else if (props.trim() === "") {
       // Never emit `{}`: Svelte 4 rejects it and Biome bans it.
-      declarations = [exportProps(props.trim() === "" ? EMPTY_OBJECT : ownMembers)];
+      declarations = [exportProps(def.extends?.interface ?? EMPTY_OBJECT)];
+    } else if (def.extends === undefined) {
+      declarations = [exportProps(ownMembers)];
     } else {
       declarations = [`type $Props${genericsName} = ${ownMembers};`, exportProps(propsRef)];
     }
