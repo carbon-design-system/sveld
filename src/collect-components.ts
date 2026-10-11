@@ -9,9 +9,7 @@ import { hasSvelteExtension, normalizeSeparators } from "./path";
 
 /** Each hyphen; `my-button.svelte` names `mybutton`. */
 const HYPHEN_REGEX = /-/g;
-/** Each character an identifier can't contain. */
 const INVALID_MODULE_NAME_CHAR_REGEX = /[^A-Za-z0-9_$]/g;
-/** A leading digit, which an identifier can't start with. */
 const LEADING_DIGIT_REGEX = /^[0-9]/;
 
 /**

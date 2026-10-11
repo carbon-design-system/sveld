@@ -3,9 +3,7 @@ import { splitTopLevel } from "../type-text";
 import type { ParserContext } from "./context";
 import { collectReferencedTypeDependencies } from "./type-resolution";
 
-/** The leading identifier: a type parameter's name. */
 const LEADING_IDENTIFIER_REGEX = /^[A-Za-z_$][\w$]*/;
-/** Each identifier in type text. */
 const IDENTIFIER_REGEX = /[A-Za-z_$][\w$]*/g;
 /** A type parameter's leading `const`/`in`/`out` modifiers. */
 const LEADING_TYPE_PARAM_MODIFIERS_REGEX = /^(?:(?:const|in|out)\s+)+/;

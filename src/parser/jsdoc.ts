@@ -9,7 +9,6 @@ import type { JSDocComment, JSDocTag } from "./comment-parser";
 import { leadingWhitespaceLength, parseComments, togglesCodeFence } from "./comment-parser";
 import type { ParserContext } from "./context";
 
-/** One whitespace character. */
 const WHITESPACE_CHAR_REGEX = /\s/;
 
 /**
@@ -347,7 +346,6 @@ function templateTagConstraint(name: string, type: string, defaultValue: string 
   return constraint;
 }
 
-/** The first name in a `@template T, U` list. */
 const TEMPLATE_FIRST_NAME_REGEX = /^[^\s,]+/;
 /** The next `, U` in a `@template` name list, capturing the name. */
 const TEMPLATE_NEXT_NAME_REGEX = /^\s*,\s*([^\s,]+)/;

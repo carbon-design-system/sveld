@@ -4,7 +4,6 @@ import type { ParserContext } from "./context";
 import { getPropTypeByLocalOrPublic } from "./context";
 import { findVariableTypeAndDescription } from "./variable-jsdoc";
 
-/** An identifier character. */
 const WORD_CHAR_REGEX = /\w/;
 
 function extractPropertyType(typeStr: string, propName: string): string | undefined {

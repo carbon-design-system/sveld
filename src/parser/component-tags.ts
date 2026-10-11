@@ -27,7 +27,6 @@ import { addSlot, slotKey } from "./slots";
 import { sourceRangeFromCommentTag } from "./source-position";
 import { formatParamList } from "./utils";
 
-/** A generic parameter's `=` and the whitespace around it. */
 const GENERIC_DEFAULT_EQUALS_REGEX = /\s*=\s*/;
 
 /** `Name<Row=DataTableRow,Header=Foo>` to `Name<Row = DataTableRow, Header = Foo>`, as sveld spaces other generics. */
@@ -166,7 +165,6 @@ const SUGGESTED_JSDOC_TAGS = [
   "cssprop",
 ];
 
-/** A trailing `;`. */
 const TRAILING_SEMICOLON_REGEX = /;$/;
 
 /**
@@ -179,7 +177,6 @@ function isSingleObjectLiteral(source: string): boolean {
   return indexOfClosingBracket(s, 0) === s.length - 1;
 }
 
-/** Each identifier-like word in type text. */
 const IDENTIFIER_REGEX = /[\w$]+/g;
 
 /** Tags whose types make up the body of the `@typedef`/`@callback` above them. */
