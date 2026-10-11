@@ -1,0 +1,9 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": ["src/index.ts", "src/browser.ts", "src/cli-entry.ts", "scripts/*.{ts,js}"],
+  "project": ["src/**/*.ts", "scripts/**/*.{ts,js}", "tests/*.ts"],
+  "ignoreBinaries": ["check"],
+  "ignoreUnresolved": ["./cli-entry.js"],
+  "ignore": ["tests/fixtures/**"],
+  "svelte": false
+}
