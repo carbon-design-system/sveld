@@ -74,7 +74,7 @@
   "contexts": [],
   "diagnostics": [
     {
-      "component": "required/input.svelte",
+      "component": "jsdoc-required-tag/input.svelte",
       "kind": "prop-unknown-type",
       "name": "prop2",
       "message": "Prop \"prop2\" type could not be inferred; falling back to \"any\".",
