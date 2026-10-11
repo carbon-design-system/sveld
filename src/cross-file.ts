@@ -1,3 +1,4 @@
+import { dirname } from "node:path";
 import type { ComponentDocApi, ResolveComponentFilePath } from "./bundle";
 import type { CrossFilePass } from "./cross-file-pass";
 import type { PendingCrossFileCandidates } from "./model";
@@ -10,7 +11,7 @@ import { contextKeysPass } from "./resolve-context-keys";
 import { dispatchEscapesPass } from "./resolve-dispatch-escapes";
 
 /** A pass bound to one component's candidates, run once they're known to be non-empty. */
-type BoundPass = (component: ComponentDocApi, componentFilePath: string, ctx: ResolveContext) => void;
+type BoundPass = (component: ComponentDocApi, fromDir: string, ctx: ResolveContext) => void;
 
 function bind<Candidate, Resolution>(
   pass: CrossFilePass<Candidate, Resolution>,
@@ -18,8 +19,7 @@ function bind<Candidate, Resolution>(
   return (pending) => {
     const candidates = pass.collect(pending);
     if (candidates.length === 0) return undefined;
-    return (component, componentFilePath, ctx) =>
-      pass.apply(component, pass.resolve(componentFilePath, candidates, ctx), pending);
+    return (component, fromDir, ctx) => pass.apply(component, pass.resolve(fromDir, candidates, ctx), pending);
   };
 }
 
@@ -54,8 +54,8 @@ export async function resolveCrossFileCandidates(
 
   for (const { component, passes } of work) {
     const ctx = createResolveContext(graph);
-    const filePath = resolveComponentFilePath(component.filePath);
-    for (const pass of passes) pass(component, filePath, ctx);
+    const fromDir = dirname(resolveComponentFilePath(component.filePath));
+    for (const pass of passes) pass(component, fromDir, ctx);
     readsByFilePath.set(component.filePath, Array.from(ctx.cache.keys()));
   }
 

@@ -1,13 +1,12 @@
-import { dirname } from "node:path";
 import type { ComponentDocApi } from "./bundle";
 import type { CrossFilePass } from "./cross-file-pass";
-import { createDiagnostic } from "./diagnostics";
+import { appendDiagnostics, createDiagnostic } from "./diagnostics";
 import type { PendingContextKeyCandidate, SourceRange } from "./model";
 import { findImportedExport, type ResolveContext } from "./module-exports";
 import { generateContextTypeName } from "./parser/context-type-name";
 import { importPath } from "./parser/value-imports";
 
-export interface ContextKeyResolution {
+interface ContextKeyResolution {
   candidate: PendingContextKeyCandidate;
   /** Present on success. */
   key?: string;
@@ -15,12 +14,10 @@ export interface ContextKeyResolution {
 
 /** Only `export const` with a string literal or static template counts; `let`/`var` are live bindings. */
 function resolveContextKeyCandidates(
-  componentFilePath: string,
+  fromDir: string,
   candidates: PendingContextKeyCandidate[],
   ctx: ResolveContext,
 ): ContextKeyResolution[] {
-  const fromDir = dirname(componentFilePath);
-
   return candidates.map((candidate): ContextKeyResolution => {
     const resolvedFile = ctx.graph.resolve(candidate.importSource, fromDir);
     if (!resolvedFile) return { candidate };
@@ -40,8 +37,7 @@ function applyContextKeyResolutions(component: ComponentDocApi, resolutions: Con
   for (const { candidate, key } of resolutions) {
     if (!key) {
       const label = importPath(candidate);
-      component.diagnostics = [
-        ...(component.diagnostics ?? []),
+      appendDiagnostics(component, [
         createDiagnostic({
           component: component.filePath,
           kind: "context-key-unresolved",
@@ -49,7 +45,7 @@ function applyContextKeyResolutions(component: ComponentDocApi, resolutions: Con
           message: `setContext key \`${label}\` from "${candidate.importSource}" isn't an \`export const\` string or Symbol() sveld can read; the context is skipped.`,
           ...(candidate.source ? { source: candidate.source } : {}),
         }),
-      ];
+      ]);
       continue;
     }
 
@@ -59,8 +55,7 @@ function applyContextKeyResolutions(component: ComponentDocApi, resolutions: Con
       const duplicate = contexts[duplicateIndex];
       const candidateIsFirst = startsAfter(duplicate.source, candidate.source);
       const laterSource = candidateIsFirst ? duplicate.source : candidate.source;
-      component.diagnostics = [
-        ...(component.diagnostics ?? []),
+      appendDiagnostics(component, [
         createDiagnostic({
           component: component.filePath,
           kind: "context-duplicate-key",
@@ -68,7 +63,7 @@ function applyContextKeyResolutions(component: ComponentDocApi, resolutions: Con
           message: `setContext("${key}", ...) was called more than once; only the first call's shape is used.`,
           ...(laterSource ? { source: laterSource } : {}),
         }),
-      ];
+      ]);
       if (!candidateIsFirst) continue;
       contexts.splice(duplicateIndex, 1);
     }
