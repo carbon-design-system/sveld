@@ -31,6 +31,21 @@
 
   const reset = () => {};
 
+  /**
+   * @returns {{ hasAny: import("svelte/store").Readable<boolean>, register: (id: string) => void }}
+   */
+  function createRegistry() {
+    const ids = writable(new Set());
+    return {
+      hasAny: derived(ids, (_) => _.size > 0),
+      register(id) {
+        ids.update((_) => _.add(id));
+      },
+    };
+  }
+
+  const iconColumn = createRegistry();
+
   setContext("Menu", {
     query,
     size: sharedSize,
@@ -44,6 +59,8 @@
     notifyOpen,
     claim,
     reset,
+    registerIcon: iconColumn.register,
+    hasIconItems: iconColumn.hasAny,
   });
 </script>
 

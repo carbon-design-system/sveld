@@ -8,7 +8,7 @@ const WORD_CHAR_REGEX = /\w/;
 /** A member's `readonly` modifier. */
 const READONLY_MODIFIER_REGEX = /^readonly\s+/;
 
-function extractPropertyType(typeStr: string, propName: string): string | undefined {
+export function extractPropertyType(typeStr: string, propName: string): string | undefined {
   const trimmed = typeStr.trim();
   if (!trimmed.startsWith("{") || !trimmed.endsWith("}")) return undefined;
 
