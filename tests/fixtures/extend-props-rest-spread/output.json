@@ -1,0 +1,20 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "rest_props": {
+    "type": "InlineComponent",
+    "name": "Link"
+  },
+  "extends": {
+    "interface": "LinkProps",
+    "import": "\"./Link.svelte\""
+  },
+  "contexts": [],
+  "diagnostics": []
+}

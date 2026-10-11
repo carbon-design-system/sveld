@@ -1,0 +1,25 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "rest_props": {
+    "type": "InlineComponent",
+    "name": "Button"
+  },
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "rest-props-unresolved/input.svelte",
+      "kind": "rest-props-unresolved",
+      "name": "$$restProps",
+      "message": "$$restProps is only spread onto component \"Button\"; sveld cannot infer its rest-prop type. Spread onto a plain element or add an @restProps tag.",
+      "code": "sveld/rest-props-unresolved",
+      "severity": "warning"
+    }
+  ]
+}

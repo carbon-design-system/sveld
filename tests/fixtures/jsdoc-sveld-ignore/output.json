@@ -1,0 +1,115 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "ignored",
+      "kind": "let",
+      "description": "Suppresses only the named diagnostic.",
+      "type": "any",
+      "typeSource": "unknown",
+      "value": "compute()",
+      "defaultValue": {
+        "raw": "compute()",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "ignoredAll",
+      "kind": "let",
+      "description": "A bare tag suppresses every diagnostic for the prop.",
+      "type": "any",
+      "typeSource": "unknown",
+      "value": "compute()",
+      "defaultValue": {
+        "raw": "compute()",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "otherCode",
+      "kind": "let",
+      "description": "A different code leaves this prop's diagnostic in place.",
+      "type": "any",
+      "typeSource": "unknown",
+      "value": "compute()",
+      "defaultValue": {
+        "raw": "compute()",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "reported",
+      "kind": "let",
+      "type": "any",
+      "typeSource": "unknown",
+      "value": "compute()",
+      "defaultValue": {
+        "raw": "compute()",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "jsdoc-sveld-ignore/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "ignored",
+      "message": "Prop \"ignored\" default calls \"compute()\" imported from \"./compute.js\"; falling back to \"any\" pending cross-file resolution.",
+      "ignored": true,
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
+    },
+    {
+      "component": "jsdoc-sveld-ignore/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "ignoredAll",
+      "message": "Prop \"ignoredAll\" default calls \"compute()\" imported from \"./compute.js\"; falling back to \"any\" pending cross-file resolution.",
+      "ignored": true,
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
+    },
+    {
+      "component": "jsdoc-sveld-ignore/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "otherCode",
+      "message": "Prop \"otherCode\" default calls \"compute()\" imported from \"./compute.js\"; falling back to \"any\" pending cross-file resolution.",
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
+    },
+    {
+      "component": "jsdoc-sveld-ignore/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "reported",
+      "message": "Prop \"reported\" default calls \"compute()\" imported from \"./compute.js\"; falling back to \"any\" pending cross-file resolution.",
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
+    }
+  ]
+}

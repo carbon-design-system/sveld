@@ -1,0 +1,64 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "closure",
+      "kind": "let",
+      "type": "any",
+      "typeSource": "jsdoc",
+      "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "truncated",
+      "kind": "let",
+      "type": "any",
+      "typeSource": "jsdoc",
+      "value": "\"\"",
+      "defaultValue": {
+        "raw": "\"\"",
+        "kind": "literal",
+        "value": ""
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "jsdoc-type-syntax-error/input.svelte",
+      "kind": "type-syntax-error",
+      "name": "closure",
+      "message": "Type `Array.<string>` of \"closure\" is not valid TypeScript; falling back to \"any\".",
+      "code": "sveld/type-syntax-error",
+      "severity": "error"
+    },
+    {
+      "component": "jsdoc-type-syntax-error/input.svelte",
+      "kind": "type-syntax-error",
+      "name": "truncated",
+      "message": "Type `string |` of \"truncated\" is not valid TypeScript; falling back to \"any\".",
+      "code": "sveld/type-syntax-error",
+      "severity": "error"
+    }
+  ]
+}
