@@ -42,12 +42,12 @@ export function slotPropValueFromExpression(ctx: ParserContext, expression: Prop
  * bound to, else the members of its object-type annotation. `null` when
  * neither resolves, so the caller widens to `Record<string, any>`.
  */
-function resolveSlotSpreadShape(ctx: ParserContext, argument: unknown): SlotProps | null {
+function resolveSlotSpreadShape(ctx: ParserContext, argument: unknown, documented: boolean): SlotProps | null {
   if (!isIdentifier(argument)) return null;
 
   const initializer = resolveConstInitializer(ctx, argument.name);
   if (isObjectExpression(initializer)) {
-    return buildSlotPropsFromObjectExpression(ctx, initializer).slot_props;
+    return buildSlotPropsFromObjectExpression(ctx, initializer, documented).slot_props;
   }
 
   const varInfo = findVariableTypeAndDescription(ctx, argument.name);
@@ -65,19 +65,22 @@ function resolveSlotSpreadShape(ctx: ParserContext, argument: unknown): SlotProp
 
 /**
  * Merges what a spread (`{...props}` on a `<slot>`, or in a `{@render x({...})}` argument)
- * adds to `slot_props`. Returns `false`, after reporting it, when the spread can't be resolved.
+ * adds to `slot_props`. Returns `false` when the spread can't be resolved, reporting it
+ * unless the slot is `documented` by a `@slot`/`@snippet` tag, whose type is used instead.
  */
 export function mergeSlotPropsSpread(
   ctx: ParserContext,
   slot_props: SlotProps,
   argument: unknown,
   node: { start: number; end: number },
+  documented: boolean,
 ): boolean {
-  const merged = resolveSlotSpreadShape(ctx, argument);
+  const merged = resolveSlotSpreadShape(ctx, argument, documented);
   if (merged) {
     Object.assign(slot_props, merged);
     return true;
   }
+  if (documented) return false;
   recordDiagnostic(
     ctx,
     "spread-unresolved",
@@ -91,13 +94,16 @@ export function mergeSlotPropsSpread(
 export function buildSlotPropsFromObjectExpression(
   ctx: ParserContext,
   expression: ObjectExpression,
+  documented: boolean,
 ): { slot_props: SlotProps; hasUnresolvedSpread: boolean } {
   const slot_props: SlotProps = {};
   let hasUnresolvedSpread = false;
 
   for (const property of expression.properties) {
     if (property.type === "SpreadElement") {
-      if (!mergeSlotPropsSpread(ctx, slot_props, property.argument, property)) hasUnresolvedSpread = true;
+      if (!mergeSlotPropsSpread(ctx, slot_props, property.argument, property, documented)) {
+        hasUnresolvedSpread = true;
+      }
       continue;
     }
 

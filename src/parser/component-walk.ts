@@ -171,7 +171,10 @@ function addSlotElement(ctx: ParserContext, node: AST.SlotElement) {
   let slot_props_unresolved_spread = false;
   for (const attr of node.attributes) {
     if (attr.type === "SpreadAttribute") {
-      if (!mergeSlotPropsSpread(ctx, slot_props, attr.expression, attr)) slot_props_unresolved_spread = true;
+      const documented = ctx.jsDocSlots.has(slotKey(slot_name));
+      if (!mergeSlotPropsSpread(ctx, slot_props, attr.expression, attr, documented)) {
+        slot_props_unresolved_spread = true;
+      }
       continue;
     }
     // Only attributes and `style:` directives have a `value`.
@@ -208,18 +211,18 @@ function addRenderTagSlot(ctx: ParserContext, node: AST.RenderTag) {
 
   // Positional arguments (`{@render row(item, index)}`) aren't slot props: the
   // snippet prop's own `Snippet<[...]>` type describes them.
+  const slot_name = renderInfo.publicName === "children" ? undefined : renderInfo.publicName;
   const [first, ...rest] = renderInfo.arguments;
   let slot_props: SlotProps | undefined;
   let slot_props_unresolved_spread = false;
   if (first === undefined) {
     slot_props = {};
   } else if (rest.length === 0 && first.type === "ObjectExpression") {
-    const built = buildSlotPropsFromObjectExpression(ctx, first);
+    const built = buildSlotPropsFromObjectExpression(ctx, first, ctx.jsDocSlots.has(slotKey(slot_name)));
     slot_props = built.slot_props;
     slot_props_unresolved_spread = built.hasUnresolvedSpread;
   }
 
-  const slot_name = renderInfo.publicName === "children" ? undefined : renderInfo.publicName;
   ctx.renderedSlots.add(slotKey(slot_name));
 
   if (slot_props !== undefined) {
