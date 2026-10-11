@@ -15,7 +15,7 @@
         {
           "name": "count",
           "type": "number",
-          "description": "Number of open panels",
+          "description": "Number of open panels.\nZero when every panel is closed.",
           "optional": false
         },
         {
