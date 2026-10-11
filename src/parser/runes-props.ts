@@ -16,7 +16,7 @@ import type {
   RunesPropTypeMetadata,
   SourceRange,
 } from "../model";
-import { indexOfClosingBracket, indexOfTopLevel, splitTopLevel } from "../type-text";
+import { indexOfClosingBracket, indexOfTopLevel, indexOfTopLevelArrow, splitTopLevel } from "../type-text";
 import type { ParserContext, TypedefMember } from "./context";
 import { trackPropLocalName } from "./context";
 import { recordPropSveldIgnore } from "./diagnostics";
@@ -39,12 +39,132 @@ import {
 import { importSpecifierImportedName } from "./value-imports";
 import { resolveLocalVarJSDoc } from "./variable-jsdoc";
 
-/** A quoted string literal type, or an identifier. */
-const STRING_OR_IDENTIFIER_REGEX = /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|[A-Za-z_$][\w$]*/g;
+/** An identifier, matched at `lastIndex`. */
+const IDENTIFIER_AT_REGEX = /[A-Za-z_$][\w$]*/y;
+const IDENTIFIER_CHAR_REGEX = /[\w$]/;
 /** What follows a member or parameter name: an optional `?`, then `:`. */
 const NAME_COLON_REGEX = /^\s*\??\s*:/;
 /** What precedes a member or parameter name. */
 const BEFORE_NAME_REGEX = /(?:^|[{;,(\n]|\breadonly)\s*$/;
+/** An index or array suffix: `T[]`, `T["key"]`. */
+const INDEX_AFTER_REGEX = /^\s*\[/;
+const TYPE_OPERATOR_BEFORE_REGEX = /\b(?:keyof|readonly|unique)\s+$/;
+const INTERSECTION_BEFORE_REGEX = /&\s*$/;
+const INTERSECTION_AFTER_REGEX = /^\s*&/;
+const UNION_OR_EXTENDS_BEFORE_REGEX = /(?:\||\bextends)\s*$/;
+const UNION_OR_EXTENDS_AFTER_REGEX = /^\s*(?:\||extends\b)/;
+const TYPE_OPERATOR_PREFIX_REGEX = /^(?:keyof|readonly|unique|typeof|infer)\s/;
+const CONSTRUCTOR_TYPE_REGEX = /^(?:abstract\s+)?new\b/;
+
+/**
+ * How loosely `type` binds, from 0 (`Item`, `T[]`, `{ a: T }`) through a type
+ * operator (`keyof T`), an intersection, and a union, to 4: a function,
+ * constructor, or conditional type.
+ */
+function typePrecedenceRank(type: string): number {
+  const trimmed = type.trim();
+  if (
+    indexOfTopLevelArrow(trimmed) !== -1 ||
+    indexOfTopLevel(trimmed, "?") !== -1 ||
+    CONSTRUCTOR_TYPE_REGEX.test(trimmed)
+  ) {
+    return 4;
+  }
+  if (splitTopLevel(trimmed, "|").length > 1) return 3;
+  if (splitTopLevel(trimmed, "&").length > 1) return 2;
+  return TYPE_OPERATOR_PREFIX_REGEX.test(trimmed) ? 1 : 0;
+}
+
+/** The loosest {@link typePrecedenceRank} a type can have to stand between `before` and `after` without parens. */
+function loosestRankInPlace(before: string, after: string): number {
+  if (INDEX_AFTER_REGEX.test(after)) return 0;
+  if (TYPE_OPERATOR_BEFORE_REGEX.test(before)) return 1;
+  if (INTERSECTION_BEFORE_REGEX.test(before) || INTERSECTION_AFTER_REGEX.test(after)) return 2;
+  if (UNION_OR_EXTENDS_BEFORE_REGEX.test(before) || UNION_OR_EXTENDS_AFTER_REGEX.test(after)) return 3;
+  return 4;
+}
+
+/** Index just past the string literal opening at `start`. */
+function endOfQuoted(text: string, start: number): number {
+  for (let index = start + 1; index < text.length; index++) {
+    if (text[index] === "\\") index++;
+    else if (text[index] === text[start]) return index + 1;
+  }
+  return text.length;
+}
+
+/** Index just past a template literal's text run from `start`: past its closing `` ` ``, or past the `${` that ends it. */
+function endOfTemplateText(text: string, start: number): { end: number; opensExpression: boolean } {
+  for (let index = start; index < text.length; index++) {
+    if (text[index] === "\\") index++;
+    else if (text[index] === "`") return { end: index + 1, opensExpression: false };
+    else if (text[index] === "$" && text[index + 1] === "{") return { end: index + 2, opensExpression: true };
+  }
+  return { end: text.length, opensExpression: false };
+}
+
+/**
+ * `type` with each type parameter replaced by its type argument. String literals, a
+ * template literal's text, member names, and `Ns.T` are left alone; an argument that
+ * binds more loosely than where it lands is parenthesized (`T[]` with `A | B` gives
+ * `(A | B)[]`).
+ */
+function substituteTypeParameters(type: string, substitutions: Map<string, string>): string {
+  if (substitutions.size === 0) return type;
+
+  let result = "";
+  // For each template literal whose `${` the scan is inside, innermost last: the `{` depth within it.
+  const templateExpressionDepths: number[] = [];
+  let index = 0;
+  while (index < type.length) {
+    const char = type[index];
+    const depth = templateExpressionDepths.length - 1;
+
+    if (char === '"' || char === "'") {
+      const end = endOfQuoted(type, index);
+      result += type.slice(index, end);
+      index = end;
+      continue;
+    }
+
+    if (char === "`" || (char === "}" && templateExpressionDepths[depth] === 0)) {
+      if (char === "}") templateExpressionDepths.pop();
+      const { end, opensExpression } = endOfTemplateText(type, index + 1);
+      if (opensExpression) templateExpressionDepths.push(0);
+      result += type.slice(index, end);
+      index = end;
+      continue;
+    }
+
+    if (depth >= 0 && char === "{") templateExpressionDepths[depth]++;
+    if (depth >= 0 && char === "}") templateExpressionDepths[depth]--;
+
+    IDENTIFIER_AT_REGEX.lastIndex = index;
+    const token = IDENTIFIER_CHAR_REGEX.test(type[index - 1] ?? "") ? undefined : IDENTIFIER_AT_REGEX.exec(type)?.[0];
+    if (!token) {
+      result += char;
+      index++;
+      continue;
+    }
+
+    index += token.length;
+    const substitute = substitutions.get(token);
+    const before = type.slice(0, index - token.length);
+    const after = type.slice(index);
+    const trimmedBefore = before.trimEnd();
+    // A member access (`Ns.T`, not a spread `...T`), or a property or parameter name (`{ T: T }`), isn't the type parameter.
+    if (
+      substitute === undefined ||
+      (trimmedBefore.endsWith(".") && !trimmedBefore.endsWith("...")) ||
+      (BEFORE_NAME_REGEX.test(before) && NAME_COLON_REGEX.test(after))
+    ) {
+      result += token;
+    } else {
+      result += typePrecedenceRank(substitute) > loosestRankInPlace(before, after) ? `(${substitute})` : substitute;
+    }
+  }
+  return result;
+}
 
 /**
  * Maps a referenced interface/type-alias's own type-parameter names (`Props<T>`) to the
@@ -73,19 +193,6 @@ function buildTypeParameterSubstitutions(
   }
 
   return substitutions;
-}
-
-function substituteTypeParameters(type: string, substitutions: Map<string, string>): string {
-  if (substitutions.size === 0) return type;
-  return type.replace(STRING_OR_IDENTIFIER_REGEX, (token: string, offset: number) => {
-    const substitute = substitutions.get(token);
-    if (substitute === undefined) return token;
-    const before = type.slice(0, offset);
-    // A member access (`Ns.T`), or a property or parameter name (`{ T: T }`), isn't the type parameter.
-    if (before.trimEnd().endsWith(".")) return token;
-    if (BEFORE_NAME_REGEX.test(before) && NAME_COLON_REGEX.test(type.slice(offset + token.length))) return token;
-    return substitute;
-  });
 }
 
 /** Flatten a runes `$props()` type node into prop name -> metadata, following local aliases and intersections. */
