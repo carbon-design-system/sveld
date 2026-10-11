@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, isAbsolute, relative, resolve } from "node:path";
+import { asRelativeSourcePath } from "./brands";
 import { findUp } from "./fs-listing";
 import { escapeRegExp } from "./parser/utils";
 import { MODULE_EXTENSIONS, normalizeSeparators } from "./path";
@@ -114,7 +115,7 @@ export class PathAliases {
    * disk wins; if none does, the first mapping is a best-effort guess.
    */
   lookup(importPath: string, fromDir: string): AliasLookup {
-    if (importPath.startsWith(".") || importPath.startsWith("/")) {
+    if (importPath.startsWith(".") || isAbsolute(importPath)) {
       return { resolved: importPath, unresolved: false, searched: "" };
     }
 
@@ -161,7 +162,6 @@ export class PathAliases {
   relative(importPath: string, fromDir: string): string {
     const absolutePath = this.absolute(importPath, fromDir);
     if (absolutePath === importPath) return importPath;
-    const relativePath = normalizeSeparators(relative(fromDir, absolutePath));
-    return relativePath.startsWith(".") ? relativePath : `./${relativePath}`;
+    return asRelativeSourcePath(normalizeSeparators(relative(fromDir, absolutePath)));
   }
 }

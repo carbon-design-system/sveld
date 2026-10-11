@@ -373,4 +373,9 @@ describe("PathAliases", () => {
     const result = aliases.lookup("./Button.svelte", TEST_DIR);
     expect(result.unresolved).toBe(false);
   });
+
+  test("passes an absolute path through, on any platform", () => {
+    const absolutePath = join(TEST_DIR, "Button.svelte");
+    expect(aliases.lookup(absolutePath, TEST_DIR)).toEqual({ resolved: absolutePath, unresolved: false, searched: "" });
+  });
 });
