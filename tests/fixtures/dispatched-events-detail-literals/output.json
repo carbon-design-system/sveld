@@ -19,6 +19,11 @@
   "events": [
     {
       "type": "dispatched",
+      "name": "clear",
+      "detail": "null"
+    },
+    {
+      "type": "dispatched",
       "name": "items",
       "detail": "number[]"
     },
@@ -26,6 +31,11 @@
       "type": "dispatched",
       "name": "save",
       "detail": "{ id: string; }"
+    },
+    {
+      "type": "dispatched",
+      "name": "status",
+      "detail": "\"done\""
     }
   ],
   "typedefs": [],

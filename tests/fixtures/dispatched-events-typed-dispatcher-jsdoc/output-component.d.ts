@@ -5,7 +5,9 @@ export type DispatchedEventsTypedDispatcherJsdocProps = Record<string, never>;
 export type DispatchedEventsTypedDispatcherJsdocExports = Record<string, never>;
 
 type $Events = {
+  "a;b": CustomEvent<number>;
   cancel: CustomEvent<null>;
+  "change:value": CustomEvent<string>;
   save: CustomEvent<{ id: string }>;
 };
 

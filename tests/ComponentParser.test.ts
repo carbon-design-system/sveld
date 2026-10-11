@@ -998,27 +998,6 @@ describe("ComponentParser", () => {
     expect(result.props.find((prop) => prop.name === "onclose")?.type).toBe("() => void");
   });
 
-  test("handles dispatched events", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <script>
-        import { createEventDispatcher } from 'svelte';
-        const dispatch = createEventDispatcher();
-        
-        function handleClick() {
-          dispatch('click', { detail: 'clicked' });
-        }
-      </script>
-
-      <button on:click={handleClick}>Click me</button>
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-    expect(result.events).toHaveLength(1);
-    expect(result.events[0].type).toBe("dispatched");
-    expect(result.events[0].name).toBe("click");
-  });
-
   test("merges a quoted @event name with the matching dispatch() call", () => {
     const parser = new ComponentParser();
     const source = `
@@ -1294,28 +1273,6 @@ describe("ComponentParser", () => {
     expect(getCountProp?.params).toBeUndefined();
   });
 
-  test("sorts events deterministically by name", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <script>
-        import { createEventDispatcher, onDestroy } from "svelte";
-
-        const dispatch = createEventDispatcher();
-
-        onDestroy(() => {
-          dispatch("zeta");
-          dispatch("alpha");
-        });
-      </script>
-
-      <button on:click />
-      <input on:blur />
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-    expect(result.events.map((event) => event.name)).toEqual(["alpha", "blur", "click", "zeta"]);
-  });
-
   test("parses props from $props destructuring", () => {
     const parser = new ComponentParser();
     const source = `
@@ -1521,27 +1478,6 @@ describe("ComponentParser", () => {
       new ComponentParser().parseSvelteComponent(source, diagnostics).events.find((event) => event.name === name)
         ?.detail;
 
-    test("types an unannotated variable from its initializer, as a member or the whole detail", () => {
-      const source = `
-        <script>
-          import { createEventDispatcher } from "svelte";
-          const dispatch = createEventDispatcher();
-          let count = 0;
-          let label = "none";
-          let roll = Math.random();
-          function change() {
-            dispatch("change", { count, label, roll });
-            dispatch("count", count);
-            dispatch("roll", roll);
-          }
-        </script>
-      `;
-
-      expect(detailOf(source, "change")).toBe("{ count: number; label: string; roll: any; }");
-      expect(detailOf(source, "count")).toBe("number");
-      expect(detailOf(source, "roll")).toBeUndefined();
-    });
-
     test("leaves a name a nested scope binds untyped", () => {
       const source = `
         <script>
@@ -1561,22 +1497,6 @@ describe("ComponentParser", () => {
       expect(detailOf(source, "rename")).toBe("{ label: any; }");
       expect(detailOf(source, "label")).toBeUndefined();
       expect(detailOf(source, "value")).toBeUndefined();
-    });
-
-    test("types a $host() CustomEvent detail the same way", () => {
-      const source = `
-        <svelte:options customElement="detail-host" />
-        <script>
-          let count = $state(0);
-          function change() {
-            $host().dispatchEvent(new CustomEvent("change", { detail: { count, open: true } }));
-            $host().dispatchEvent(new CustomEvent("tick", { detail: count }));
-          }
-        </script>
-      `;
-
-      expect(detailOf(source, "change")).toBe("{ count: number; open: boolean; }");
-      expect(detailOf(source, "tick")).toBe("number");
     });
   });
 

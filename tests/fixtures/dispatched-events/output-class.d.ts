@@ -10,6 +10,7 @@ export default class DispatchedEvents extends SvelteComponentTyped<
     destroy: CustomEvent<null>;
     "destroy--component": CustomEvent<null>;
     "destroy:component": CustomEvent<null>;
+    /** Fired on mouseover. */
     hover: CustomEvent<{ h1: boolean }>;
   },
   { default: Record<string, never> }
