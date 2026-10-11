@@ -8,7 +8,7 @@ export type FunctionDeclarationProps = {
 };
 
 export type FunctionDeclarationExports = {
-  fnB: (...args: any[]) => any;
+  fnB: () => void;
 
   add: (a: any, b: any) => any;
 

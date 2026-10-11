@@ -14,9 +14,9 @@ export declare const e: { [key: string]: any };
  */
 export declare function log(message: string): void;
 
-export declare function b(...args: any[]): any;
+export declare function b(): void;
 
-export declare function b2(...args: any[]): any;
+export declare function b2(): any;
 
 export declare function b3(): () => false;
 
