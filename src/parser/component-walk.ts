@@ -322,9 +322,12 @@ function recordBindDirective(
   if (binding.target !== target) binding.target = "mixed";
 
   if (isElementLikeType(parent.type)) {
-    if (!binding.elements.some((other) => other.tag === parent.name && other.namespace === namespace)) {
-      binding.elements = [...binding.elements, { tag: parent.name, namespace }];
-    }
+    const tagLocal = "tag" in parent && isIdentifier(parent.tag) ? parent.tag.name : undefined;
+    const element = { tag: parent.name, namespace, ...(tagLocal ? { tagLocal } : {}) };
+    const isRecorded = binding.elements.some(
+      (other) => other.tag === element.tag && other.namespace === namespace && other.tagLocal === tagLocal,
+    );
+    if (!isRecorded) binding.elements = [...binding.elements, element];
   } else {
     // Only an imported component can be named in the `.d.ts`: not `UI.Modal`, `<svelte:self>`, or a local.
     const imported = parent.type === "Component" ? importedBindingByName(ctx, parent.name) : undefined;

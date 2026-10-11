@@ -576,7 +576,8 @@ export interface ComponentCssProperty {
 }
 
 export interface ComponentPropBindings {
-  elements: Array<{ tag: string; namespace: ElementNamespace }>;
+  /** `tagLocal` is the local a `<svelte:element this={tag}>` names as its tag. */
+  elements: Array<{ tag: string; namespace: ElementNamespace; tagLocal?: string }>;
   /** Local names of imported components the prop is bound to. */
   components: string[];
   /**
