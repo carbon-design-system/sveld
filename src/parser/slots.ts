@@ -152,37 +152,18 @@ export function addSlot(
   },
 ) {
   const name = slotKey(slot_name);
-  const default_slot = name === DEFAULT_SLOT_NAME;
-  const fallback = slot_fallback || undefined;
-  const props = slot_props === undefined || slot_props === "" ? undefined : slot_props;
-  const description = slot_description?.trim() || undefined;
-
-  const existing_slot = ctx.slots.get(name);
-  if (existing_slot) {
-    ctx.slots.set(name, {
-      ...existing_slot,
-      default: existing_slot.default ?? default_slot,
-      fallback,
-      slot_props: existing_slot.slot_props === undefined ? props : existing_slot.slot_props,
-      slot_props_unresolved_spread: existing_slot.slot_props_unresolved_spread || slot_props_unresolved_spread,
-      description: existing_slot.description || description,
-      deprecated: existing_slot.deprecated ?? slot_deprecated,
-      tags: existing_slot.tags || slot_tags,
-      ...(existing_slot.internal || slot_internal ? { internal: true as const } : {}),
-      source: source || existing_slot.source,
-    });
-  } else {
-    ctx.slots.set(name, {
-      name,
-      default: default_slot,
-      fallback,
-      slot_props: props,
-      slot_props_unresolved_spread,
-      description,
-      deprecated: slot_deprecated,
-      tags: slot_tags,
-      ...(slot_internal ? { internal: true as const } : {}),
-      source,
-    });
-  }
+  const existing = ctx.slots.get(name);
+  // What an earlier `addSlot` for this slot recorded wins, except the fallback and source.
+  ctx.slots.set(name, {
+    name,
+    default: existing?.default ?? name === DEFAULT_SLOT_NAME,
+    fallback: slot_fallback || undefined,
+    slot_props: existing?.slot_props ?? (slot_props === "" ? undefined : slot_props),
+    slot_props_unresolved_spread: existing?.slot_props_unresolved_spread || slot_props_unresolved_spread,
+    description: existing?.description || slot_description?.trim() || undefined,
+    deprecated: existing?.deprecated ?? slot_deprecated,
+    tags: existing?.tags || slot_tags,
+    ...(existing?.internal || slot_internal ? { internal: true as const } : {}),
+    source: source || existing?.source,
+  });
 }
