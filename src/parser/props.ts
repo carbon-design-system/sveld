@@ -776,13 +776,11 @@ function classifyDefaultValue(
   if (!raw) return undefined;
 
   const kind = defaultValueKind(node);
-  const defaultValue: ComponentPropDefaultValue = { raw, kind };
-  if (kind === "literal" || kind === "array" || kind === "object") {
-    const parsed = jsonSafeValueFromExpression(node);
-    if (parsed.ok) defaultValue.value = parsed.value;
-  }
-
-  return defaultValue;
+  if (kind !== "literal" && kind !== "array" && kind !== "object") return { raw, kind };
+  const parsed = jsonSafeValueFromExpression(node);
+  if (parsed.ok) return { raw, kind, value: parsed.value };
+  // `!x`, `typeof x`, `~0`: an operator, not a value sveld can write down.
+  return { raw, kind: node.type === "UnaryExpression" ? "expression" : kind };
 }
 
 function jsonSafeValueFromExpression(node: unknown): { ok: true; value: unknown } | { ok: false } {

@@ -64,7 +64,7 @@
       "value": "~0",
       "defaultValue": {
         "raw": "~0",
-        "kind": "literal"
+        "kind": "expression"
       },
       "isFunction": false,
       "isFunctionDeclaration": false,
@@ -81,7 +81,7 @@
       "value": "-(-5)",
       "defaultValue": {
         "raw": "-(-5)",
-        "kind": "literal"
+        "kind": "expression"
       },
       "isFunction": false,
       "isFunctionDeclaration": false,
