@@ -18,11 +18,6 @@ import type { ParserContext } from "./context";
 import { sourceAtPos } from "./source-position";
 import { compareText } from "./utils";
 
-export function getRunesPropsDeclarationMetadata(ctx: ParserContext, declaratorStart: number | undefined) {
-  if (declaratorStart === undefined) return undefined;
-  return ctx.runesPropsDeclarationMetadataByDeclaratorStart.get(declaratorStart);
-}
-
 export function getTypeReferenceName(typeName: EntityName): string {
   return typeName.type === "Identifier" ? typeName.name : typeName.right.name;
 }
