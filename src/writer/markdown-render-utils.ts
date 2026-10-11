@@ -14,7 +14,6 @@ import {
   formatNameWithDeprecation,
   formatPropDescription,
   formatPropType,
-  formatPropValue,
   formatSlotFallback,
   formatSlotProps,
   MD_TYPE_UNDEFINED,
@@ -144,7 +143,7 @@ export function renderComponentToMarkdown(document: MarkdownRenderTarget, compon
         "raw",
         `| ${formatNameWithDeprecation(prop.name, prop.deprecated)} | ${prop.isRequired ? "Yes" : "No"} | <code>${kind}</code> | ${
           prop.reactive ? "Yes" : "No"
-        } | ${prop.binding ?? "--"} | ${formatPropType(prop.type)} | ${formatPropValue(prop.value)} | ${formatDescriptionWithTags(
+        } | ${prop.binding ?? "--"} | ${formatPropType(prop.type)} | ${formatPropType(prop.value)} | ${formatDescriptionWithTags(
           prop.description,
           prop.tags,
         )} |\n`,
@@ -197,7 +196,7 @@ export function renderComponentToMarkdown(document: MarkdownRenderTarget, compon
     for (const cssProperty of component.cssProperties) {
       document.append(
         "raw",
-        `| ${cssProperty.name} | ${formatPropType(cssProperty.type)} | ${formatPropValue(cssProperty.default)} | ${formatPropDescription(
+        `| ${cssProperty.name} | ${formatPropType(cssProperty.type)} | ${formatPropType(cssProperty.default)} | ${formatPropDescription(
           cssProperty.description,
         )} |\n`,
       );

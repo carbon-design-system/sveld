@@ -153,11 +153,6 @@ function escapeHtml(text: string) {
   return text.replace(LT_REGEX, "&lt;").replace(GT_REGEX, "&gt;");
 }
 
-export function formatPropValue(value: string | undefined) {
-  if (value === undefined) return MD_TYPE_UNDEFINED;
-  return codeCell(value);
-}
-
 export function formatNameWithDeprecation(name: string, deprecated: DeprecatedValue | undefined): string {
   if (deprecated === undefined) return name;
   const suffix =
