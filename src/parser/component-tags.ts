@@ -360,6 +360,8 @@ class CommentBlockReader {
   private event: OpenEvent | undefined;
   private typedef: OpenTypedef | undefined;
   private callback: OpenCallback | undefined;
+  /** The `@typedef`/`@callback` read last, until a `@slot`/`@event` follows: it takes a trailing `@deprecated`/`@internal`. */
+  private typeDeclaration: OpenDeclaration | undefined;
 
   /**
    * Set whenever a structural tag (`@slot`/`@event`/`@typedef`/...) starts, so a passthrough
@@ -368,9 +370,9 @@ class CommentBlockReader {
    */
   private attachTrailingTag: ((tag: JsDocPassthroughTag) => void) | undefined;
   private readonly pendingTags: JsDocPassthroughTag[] = [];
-  /** `@deprecated` for the next `@slot` / `@snippet` in this block. */
+  /** `@deprecated` for the next structural tag in this block. */
   private pendingDeprecated: DeprecatedValue | undefined;
-  /** `@ignore`/`@internal` for the next `@slot`/`@snippet`/`@typedef`/`@callback` in this block. */
+  /** `@ignore`/`@internal` for the next structural tag in this block. */
   private pendingInternal = false;
   /** `@template` type parameters for the `@typedef`/`@callback` right below them. */
   private readonly pendingTypeParameters: string[] = [];
@@ -692,6 +694,10 @@ class CommentBlockReader {
       internal: this.pendingInternal,
     };
     const { tags } = declaration;
+    if (this.pendingDeprecated !== undefined) {
+      tags.push({ name: "deprecated", body: this.pendingDeprecated === true ? "" : this.pendingDeprecated });
+      this.pendingDeprecated = undefined;
+    }
     this.pendingInternal = false;
     this.attachTrailingTag = (trailingTag) => tags.push(trailingTag);
     this.isFirstTag = false;
@@ -770,6 +776,7 @@ class CommentBlockReader {
     });
     this.pendingDeprecated = undefined;
     this.pendingInternal = false;
+    this.typeDeclaration = undefined;
     this.attachTrailingTag = (trailingTag) => {
       const slot = this.ctx.slots.get(key);
       if (slot) slot.tags = [...(slot.tags ?? []), trailingTag];
@@ -790,11 +797,14 @@ class CommentBlockReader {
       description: this.orCommentDescription(description),
       source: sourceRangeFromCommentTag(this.ctx, tagSource),
       tags,
-      internal: false,
-      deprecated: undefined,
+      internal: this.pendingInternal,
+      deprecated: this.pendingDeprecated,
       ignores: [],
       properties: [],
     };
+    this.pendingInternal = false;
+    this.pendingDeprecated = undefined;
+    this.typeDeclaration = undefined;
     this.attachTrailingTag = (trailingTag) => tags.push(trailingTag);
     this.isFirstTag = false;
   }
@@ -816,11 +826,13 @@ class CommentBlockReader {
   private readTypedef(tagIndex: number, type: string) {
     this.finalizeTypedef();
     this.typedef = { ...this.openTypeDeclaration(tagIndex), type, properties: [] };
+    this.typeDeclaration = this.typedef;
   }
 
   private readCallback(tagIndex: number) {
     this.finalizeCallback();
     this.callback = { ...this.openTypeDeclaration(tagIndex), params: [], returnType: undefined };
+    this.typeDeclaration = this.callback;
   }
 
   private readGenerics(tagIndex: number, type: string) {
@@ -876,6 +888,15 @@ class CommentBlockReader {
   private readDeprecated(tagIndex: number) {
     const { text } = this.tags[tagIndex];
     const { event } = this;
+    // A type alias has no `deprecated` field; the tag is kept as written, so the .d.ts carries it.
+    if (!event && this.typeDeclaration) {
+      const deprecatedTag = { name: "deprecated", body: text };
+      this.typeDeclaration.tags.push(deprecatedTag);
+      this.claimBodyLines(this.tags[tagIndex], (droppedLineCount) => {
+        deprecatedTag.body = dropLastLines(text, droppedLineCount);
+      });
+      return;
+    }
     // The first `@deprecated` wins.
     if ((event ? event.deprecated : this.pendingDeprecated) !== undefined) return;
     const setDeprecated = (value: DeprecatedValue) => {
@@ -991,6 +1012,7 @@ class CommentBlockReader {
         case "ignore":
         case "internal":
           if (this.event) this.event.internal = true;
+          else if (this.typeDeclaration) this.typeDeclaration.internal = true;
           else this.pendingInternal = true;
           break;
         case "sveld-ignore":
@@ -1019,10 +1041,15 @@ class CommentBlockReader {
 
     // Leftover tags in a plain prop or context comment are expected: `processJSDocComment`
     // captures those. They're only dropped when the block had a structural tag to attach to.
-    if (this.pendingTags.length === 0) return;
+    const danglingTags = [
+      ...this.pendingTags,
+      ...(this.pendingDeprecated === undefined ? [] : [{ name: "deprecated" }]),
+      ...(this.pendingInternal ? [{ name: "internal" }] : []),
+    ];
+    if (danglingTags.length === 0) return;
     const hasStructuralTag = tags.some((t) => t.tag === "event" || EVENT_SCOPE_ENDING_TAGS.has(t.tag));
     if (!hasStructuralTag) return;
-    for (const danglingTag of this.pendingTags) {
+    for (const danglingTag of danglingTags) {
       recordDiagnostic(
         this.ctx,
         "jsdoc-tag-dropped",

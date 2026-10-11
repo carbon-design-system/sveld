@@ -1,0 +1,102 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "size",
+      "kind": "let",
+      "type": "string",
+      "typeSource": "default",
+      "value": "\"sm\"",
+      "defaultValue": {
+        "raw": "\"sm\"",
+        "kind": "literal",
+        "value": "sm"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "label",
+      "kind": "let",
+      "description": "Label for the panel.",
+      "type": "string",
+      "typeSource": "default",
+      "value": "\"\"",
+      "defaultValue": {
+        "raw": "\"\"",
+        "kind": "literal",
+        "value": ""
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "footer",
+      "default": false,
+      "slot_props": "Record<string, never>"
+    },
+    {
+      "name": "sized",
+      "default": false,
+      "slot_props": "{ size: OldSize }"
+    }
+  ],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "close",
+      "detail": "null",
+      "description": "Fires when the panel closes."
+    },
+    {
+      "type": "dispatched",
+      "name": "open",
+      "detail": "null",
+      "deprecated": "Use `toggle`."
+    }
+  ],
+  "typedefs": [
+    {
+      "type": "string",
+      "name": "Secret",
+      "ts": "type Secret = string;",
+      "internal": true
+    },
+    {
+      "type": "\"sm\" | \"lg\"",
+      "name": "OldSize",
+      "ts": "type OldSize = \"sm\" | \"lg\";",
+      "tags": [
+        {
+          "name": "deprecated",
+          "body": "Use `Size`."
+        }
+      ]
+    }
+  ],
+  "generics": [
+    "T",
+    "T extends string = string"
+  ],
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "jsdoc-component-tag-attribution/input.svelte",
+      "kind": "jsdoc-tag-dropped",
+      "name": "deprecated",
+      "message": "@deprecated could not attach to a @slot/@snippet/@event/@typedef/@callback tag in the same comment block and was dropped.",
+      "code": "sveld/jsdoc-tag-dropped",
+      "severity": "warning"
+    }
+  ]
+}
