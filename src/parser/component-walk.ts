@@ -6,13 +6,18 @@
  */
 import type { AST, CallExpression, Expression, SimpleCallExpression, TSNode } from "sveast";
 import { SKIP, type Visitor, walk as walkTree } from "sveast/walk";
-import { isCallExpressionNamed, isIdentifier, isMemberExpression } from "../ast-guards";
+import {
+  isCallExpressionNamed,
+  isComponentLikeType,
+  isElementLikeType,
+  isIdentifier,
+  isMemberExpression,
+} from "../ast-guards";
 import type { ElementNamespace } from "../element-tag-map";
 import type { ComponentElement, ComponentInlineElement, SlotProps, SlotPropValue } from "../model";
 import { resolveMemberExpressionType } from "./bindings";
 import type { ParserContext } from "./context";
 import { parseSetContextCall } from "./contexts";
-import { isComponentLikeType, isElementLikeType } from "./element-kind";
 import { detailNamesBoundInNestedScope, type HostDispatch, parseHostDispatchEventCall } from "./events";
 import { addInstanceExports } from "./exports";
 import { collectRestPropsObjectLocals, maybeSetRestProps } from "./rest-props";
