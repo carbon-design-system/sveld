@@ -43,6 +43,8 @@ function normalizeGenericNameSpacing(name: string): string {
   return `${base}<${normalizedParams}>`;
 }
 
+type BlockLines = JSDocTag["lines"];
+
 /** Tags that take the description lines directly above them when they have none on their own line. */
 const PRECEDING_DESCRIPTION_TAGS = new Set(["restProps", "slot", "snippet", "event", "typedef", "callback"]);
 
@@ -53,14 +55,12 @@ const EVENT_SCOPE_TAGS = new Set(["property", "type"]);
 const EVENT_SCOPE_ENDING_TAGS = new Set(["slot", "snippet", "typedef", "callback"]);
 
 /**
- * Text on the tag's own line, without the continuation lines `parseComments` folds into
- * `description`. A multi-line `{type}` moves that line down to where the type closes.
+ * Cleaned text on the tag's own line, without the continuation lines `parseComments` folds
+ * into `description`. A multi-line `{type}` moves that line down to where the type closes.
  */
-function getInlineTagDescription(
-  tagLines: Array<{ content: string; continuesType?: true }> | undefined,
-): string | undefined {
-  if (!tagLines || tagLines.length === 0) return undefined;
-  return tagLines[tagHeadIndex(tagLines)].content;
+function getInlineTagDescription(tagLines: BlockLines): string | undefined {
+  if (tagLines.length === 0) return undefined;
+  return cleanDescription(tagLines[tagHeadIndex(tagLines)].content);
 }
 
 /** A block line with no text, not part of a tag's opening line or its multi-line `{type}`. */
@@ -254,8 +254,6 @@ function accumulateOrReplaceGeneric(ctx: ParserContext, declaredName: string, co
   }
   accumulateGeneric(ctx, declaredName, constraint);
 }
-
-type BlockLines = JSDocTag["lines"];
 
 /** A `@property` of an `@event` detail or an object `@typedef`. */
 interface TagProperty {
@@ -532,11 +530,9 @@ class CommentBlockReader {
    * {@link PRECEDING_DESCRIPTION_TAGS}), and for the event when this tag ends an `@event`'s scope.
    */
   private getTagDescription(tagSource: BlockLines, nextTag: JSDocTag | undefined, inEventScope = false) {
-    const inline = cleanDescription(getInlineTagDescription(tagSource));
+    const inline = getInlineTagDescription(tagSource);
     const nextTagTakesTextAbove =
-      nextTag !== undefined &&
-      PRECEDING_DESCRIPTION_TAGS.has(nextTag.tag) &&
-      !cleanDescription(getInlineTagDescription(nextTag.lines));
+      nextTag !== undefined && PRECEDING_DESCRIPTION_TAGS.has(nextTag.tag) && !getInlineTagDescription(nextTag.lines);
     const endsEventScope = inEventScope && (nextTag === undefined || !EVENT_SCOPE_TAGS.has(nextTag.tag));
 
     const continuation: number[] = [];
@@ -566,7 +562,7 @@ class CommentBlockReader {
     // Indented lines under the `@event` are its description; they're merged in later.
     if (event.tagLine !== undefined && this.indentedContinuationLines.has(event.tagLine + 1)) return;
     if (previousTag?.tag !== "event" && !EVENT_SCOPE_TAGS.has(previousTag?.tag ?? "")) return;
-    if (cleanDescription(getInlineTagDescription(tagSource))) return;
+    if (getInlineTagDescription(tagSource)) return;
     const label = name ? `@${tag} "${name}"` : `@${tag}`;
     recordDiagnostic(
       this.ctx,
@@ -780,7 +776,7 @@ class CommentBlockReader {
   private readEvent(tagIndex: number, type: string) {
     const { name, lines: tagSource } = this.tags[tagIndex];
     // Claim the text above before the previous event takes it as its trailing description.
-    const description = cleanDescription(getInlineTagDescription(tagSource)) || this.takePrecedingDescription(tagIndex);
+    const description = getInlineTagDescription(tagSource) || this.takePrecedingDescription(tagIndex);
     this.finalizeEvent();
 
     const tags = this.pendingTags.splice(0);
