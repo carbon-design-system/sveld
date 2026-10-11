@@ -15,7 +15,7 @@ type $Props<Tag extends keyof HTMLElementTagNameMap = "div"> = {
   [key: `data-${string}`]: unknown;
 };
 
-export type RestPropsSvelteElementTypeParameterProps<Tag extends keyof HTMLElementTagNameMap = "div"> = Omit<$RestProps<Tag>, keyof $Props<Tag>> & $Props<Tag>;
+export type RestPropsSvelteElementTypeParameterProps<Tag extends keyof HTMLElementTagNameMap = "div"> = (Tag extends any ? Omit<$RestProps<Tag>, keyof $Props<Tag>> : never) & $Props<Tag>;
 
 export type RestPropsSvelteElementTypeParameterExports = Record<string, never>;
 
