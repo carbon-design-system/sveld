@@ -8,15 +8,10 @@ import type {
   ObjectExpression,
   Property,
   TypeNode,
-  VariableDeclaration,
 } from "sveast";
 
 export function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
-}
-
-export function isVariableDeclaration(node: unknown): node is VariableDeclaration {
-  return isObject(node) && node.type === "VariableDeclaration" && Array.isArray(node.declarations);
 }
 
 export function isLiteral(node: unknown): node is Literal {

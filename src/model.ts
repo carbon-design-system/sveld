@@ -450,7 +450,7 @@ export type ComponentEvent = ForwardedEvent | DispatchedEvent;
  * { type: "forwarded", name: "click", element: "button" }
  * ```
  */
-export interface SerializedForwardedEvent {
+interface SerializedForwardedEvent {
   type: "forwarded";
   name: string;
   /** Element name as a string for JSON output. */
@@ -531,7 +531,7 @@ export interface Extends {
 }
 
 /** `customElement.props.<name>.type` in `<svelte:options customElement={{ ... }} />`. */
-export type CustomElementPropType = "String" | "Boolean" | "Number" | "Array" | "Object";
+type CustomElementPropType = "String" | "Boolean" | "Number" | "Array" | "Object";
 
 /** `customElement.props.<name>` config in `<svelte:options customElement={{ ... }} />`. */
 export interface CustomElementPropConfig {
