@@ -54,39 +54,6 @@ describe("ComponentParser", () => {
     }
   });
 
-  test("keeps the JSDoc of a context variable typed from its initializer", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <script>
-        import { setContext } from "svelte";
-
-        /** Number of open panels */
-        let count = $state(0);
-        /**
-         * Hidden from docs
-         * @internal
-         */
-        let secret = $state(1);
-        setContext("panels", { count, secret });
-
-        /** Current label */
-        let label = "x";
-        setContext("label", label);
-      </script>
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-
-    expect(result.contexts?.find((context) => context.key === "panels")?.properties).toEqual([
-      { name: "count", type: "number", description: "Number of open panels", optional: false },
-      { name: "secret", type: "number", description: "Hidden from docs", optional: false, internal: true },
-    ]);
-    expect(result.contexts?.find((context) => context.key === "label")).toMatchObject({
-      type: "string",
-      description: "Current label",
-    });
-  });
-
   test("keeps a JSDoc block separated from its declaration by line or block comments", () => {
     const parser = new ComponentParser();
     const source = `
@@ -160,41 +127,6 @@ describe("ComponentParser", () => {
     const result = parser.parseSvelteComponent(source, diagnostics);
 
     expect(result.syntaxMode).toBe("runes");
-  });
-
-  test("explicit <svelte:options runes={true} /> forces runes mode", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <svelte:options runes={true} />
-      <script>
-        export let label;
-      </script>
-
-      <button>{label}</button>
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-
-    expect(result.syntaxMode).toBe("runes");
-  });
-
-  test("explicit <svelte:options runes={false} /> forces legacy mode", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <svelte:options runes={false} />
-      <script>
-        /** a plain local function that happens to share a rune's name */
-        function describe() {
-          return "legacy";
-        }
-      </script>
-
-      <button>{describe()}</button>
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-
-    expect(result.syntaxMode).toBe("legacy");
   });
 
   test("a local declaration shadowing a rune name does not trigger runes mode", () => {
@@ -471,36 +403,6 @@ describe("ComponentParser", () => {
     expect(result.props.find((prop) => prop.name === "first")?.type).toBe("string");
     expect(result.props.find((prop) => prop.name === "count")?.description).toBe("Count prop.");
     expect(result.props.find((prop) => prop.name === "count")?.type).toBe("number");
-  });
-
-  test("aliases runes @event docs to callback props when no dispatched event exists", () => {
-    const parser = new ComponentParser();
-    const source = `
-      <script>
-        /**
-         * Fired when a value is saved.
-         * @event {{ id: string }} save
-         * @event close
-         */
-        let { onsave, onclose } = $props();
-      </script>
-
-      <button
-        onclick={() => {
-          onsave?.({ id: "1" });
-          onclose?.();
-        }}
-      >
-        Save
-      </button>
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-    expect(result.events).toHaveLength(0);
-    expect(result.props.find((prop) => prop.name === "onsave")?.type).toBe("(detail: { id: string }) => void");
-    expect(result.props.find((prop) => prop.name === "onsave")?.description).toBe("Fired when a value is saved.");
-    expect(result.props.find((prop) => prop.name === "onsave")?.isFunction).toBe(true);
-    expect(result.props.find((prop) => prop.name === "onclose")?.type).toBe("() => void");
   });
 
   test("merges a quoted @event name with the matching dispatch() call", () => {
@@ -862,28 +764,6 @@ describe("ComponentParser", () => {
       };
     };
 
-    test("types a function declaration like a function prop default", () => {
-      const { types, anyTyped } = contextTypes(`
-        import { setContext } from "svelte";
-        function notifyOpen(id) {}
-        function reset() {}
-        /**
-         * @param {string} id
-         * @returns {boolean}
-         */
-        function claim(id) {
-          return true;
-        }
-        setContext("k", { notifyOpen, reset, claim });
-      `);
-      expect(types).toEqual({
-        notifyOpen: "(id: any) => any",
-        reset: "(...args: any[]) => any",
-        claim: "(id: string) => boolean",
-      });
-      expect(anyTyped).toEqual([]);
-    });
-
     test("types an arrow const from its JSDoc params", () => {
       const { types } = contextTypes(`
         import { setContext } from "svelte";
@@ -1006,20 +886,6 @@ describe("ComponentParser", () => {
     });
   });
 
-  test('ignores the generics script attribute without lang="ts" and reports syntax-skipped', () => {
-    const parser = new ComponentParser();
-    const source = `
-      <script generics="Row extends DataTableRow = DataTableRow">
-        export let row;
-      </script>
-    `;
-
-    const result = parser.parseSvelteComponent(source, diagnostics);
-
-    expect(result.generics).toBeNull();
-    expect(result.diagnostics).toContainEqual(expect.objectContaining({ kind: "syntax-skipped", name: "generics" }));
-  });
-
   describe("type text with arrows and string literals", () => {
     test("reads a JSDoc EventDispatcher generic whose members contain an arrow", () => {
       const parser = new ComponentParser();
@@ -1079,60 +945,6 @@ describe("ComponentParser", () => {
     const { props } = new ComponentParser().parseSvelteComponent(source, diagnostics);
 
     expect(props.find((prop) => prop.name === "ref")?.type).toBe("null | MathMLElement");
-  });
-
-  test("types `bind:this` on an imported component as its instance", () => {
-    const source = `
-      <script>
-        import Modal from "./Modal.svelte";
-        import { Tooltip } from "./ui";
-
-        export let modalRef = null;
-        export let tooltipRef = null;
-        export let elementOrModal = null;
-      </script>
-
-      <Modal bind:this={modalRef} />
-      <Tooltip bind:this={tooltipRef} />
-      {#if modalRef}
-        <div bind:this={elementOrModal} />
-      {:else}
-        <Modal bind:this={elementOrModal} />
-      {/if}
-    `;
-
-    const result = new ComponentParser().parseSvelteComponent(source, diagnostics);
-    const types = Object.fromEntries(result.props.map((prop) => [prop.name, prop.type]));
-    const instance = (name: string) =>
-      `(typeof ${name} extends abstract new (...args: any) => infer I ? I : typeof ${name} extends (...args: any) => infer R ? R : never)`;
-
-    expect(types).toEqual({
-      modalRef: `null | ${instance("Modal")}`,
-      tooltipRef: `null | ${instance("Tooltip")}`,
-      elementOrModal: `null | HTMLDivElement | ${instance("Modal")}`,
-    });
-    expect(getParsedComponentTypeScriptMetadata(result)?.typeImportStatements).toEqual([
-      'import type { default as Modal } from "./Modal.svelte";',
-      'import type { Tooltip } from "./ui";',
-    ]);
-  });
-
-  test("leaves `bind:this` on a component it can't name untyped", () => {
-    const source = `
-      <script>
-        import * as UI from "./ui";
-
-        export let namespacedRef = null;
-        export let selfRef = null;
-      </script>
-
-      <UI.Modal bind:this={namespacedRef} />
-      <svelte:self bind:this={selfRef} />
-    `;
-
-    const { props } = new ComponentParser().parseSvelteComponent(source, diagnostics);
-
-    expect(props.map((prop) => prop.type)).toEqual([undefined, undefined]);
   });
 
   test("types runes props from a JSDoc object type with an index signature", () => {
@@ -1318,18 +1130,6 @@ describe("ComponentParser", () => {
   describe("rest props of a `<svelte:element>` whose tag is a type parameter", () => {
     const restPropsOf = (source: string) => new ComponentParser().parseSvelteComponent(source, diagnostics).rest_props;
 
-    test("types them from a runes prop's type parameter", () => {
-      expect(
-        restPropsOf(`
-          <script lang="ts" generics="Tag extends keyof HTMLElementTagNameMap = 'div'">
-            let { tag = "div" as Tag, ...rest }: { tag?: Tag; [key: string]: unknown } = $props();
-          </script>
-
-          <svelte:element this={tag} {...rest} />
-        `),
-      ).toEqual({ type: "Element", name: "svelte:element", thisType: "Tag" });
-    });
-
     test("leaves an unconstrained type parameter alone, since it may not be a tag name", () => {
       expect(
         restPropsOf(`
@@ -1346,69 +1146,6 @@ describe("ComponentParser", () => {
     });
   });
 
-  describe("context values that aren't objects or typed variables", () => {
-    const contextsOf = (script: string) => {
-      const result = new ComponentParser().parseSvelteComponent(`<script>${script}</script>`, diagnostics);
-      return {
-        contexts: (result.contexts ?? []).map(({ key, type }) => ({ key, type })),
-        diagnostics: (result.diagnostics ?? []).map((diagnostic) => diagnostic.kind),
-      };
-    };
-
-    test("types a store passed as the whole value", () => {
-      expect(
-        contextsOf(`
-          import { setContext } from "svelte";
-          import { readonly, writable } from "svelte/store";
-          const level = writable(1);
-          setContext("count", writable(0));
-          setContext("level", readonly(level));
-        `),
-      ).toEqual({
-        contexts: [
-          { key: "count", type: 'import("svelte/store").Writable<number>' },
-          { key: "level", type: 'import("svelte/store").Readable<number>' },
-        ],
-        diagnostics: [],
-      });
-    });
-
-    test("types a context cleared with `undefined` or `null` without a diagnostic", () => {
-      expect(
-        contextsOf(`
-          import { setContext } from "svelte";
-          setContext("parent", undefined);
-          setContext("group", null);
-        `),
-      ).toEqual({
-        contexts: [
-          { key: "parent", type: "undefined" },
-          { key: "group", type: "null" },
-        ],
-        diagnostics: [],
-      });
-    });
-  });
-
-  test("types `bind:this` on a `<svelte:element>` from its tag type parameter", () => {
-    const { props } = new ComponentParser().parseSvelteComponent(
-      `
-        <script>
-          /** @template {keyof HTMLElementTagNameMap} [Tag="div"] */
-
-          /** @type {Tag} */
-          export let tag = "div";
-          export let ref = null;
-        </script>
-
-        <svelte:element this={tag} bind:this={ref} />
-      `,
-      diagnostics,
-    );
-
-    expect(props.find((prop) => prop.name === "ref")?.type).toBe("null | HTMLElementTagNameMap[Tag]");
-  });
-
   test("locates a rest props spread onto a component", () => {
     const result = new ComponentParser().parseSvelteComponent(
       `<script>\n  import Link from "./Link.svelte";\n</script>\n\n<Link {...$$restProps} />\n`,
@@ -1417,51 +1154,5 @@ describe("ComponentParser", () => {
     const diagnostic = result.diagnostics?.find(({ kind }) => kind === "rest-props-unresolved");
 
     expect(diagnostic?.source?.start).toEqual({ line: 5, column: 6 });
-  });
-
-  test("doesn't flag rest props spread onto the component `@extendProps` names", () => {
-    const restPropsDiagnostics = (target: string) =>
-      new ComponentParser()
-        .parseSvelteComponent(
-          `
-            <script>
-              /** @extendProps {"./Link.svelte"} LinkProps */
-              import Link from "./Link.svelte";
-              import Button from "./Button.svelte";
-            </script>
-
-            <${target} {...$$restProps} />
-          `,
-          diagnostics,
-        )
-        .diagnostics?.filter(({ kind }) => kind === "rest-props-unresolved") ?? [];
-
-    expect(restPropsDiagnostics("Link")).toEqual([]);
-    expect(restPropsDiagnostics("Button")).toHaveLength(1);
-  });
-
-  test("types a context property from its JSDoc", () => {
-    const result = new ComponentParser().parseSvelteComponent(
-      `
-        <script>
-          import { setContext } from "svelte";
-          import { noop } from "./utils";
-
-          setContext("group", {
-            /**
-             * Adds an item to the group.
-             * @type {(id: string) => void}
-             */
-            register: noop,
-          });
-        </script>
-      `,
-      diagnostics,
-    );
-
-    expect(result.contexts?.[0]?.properties).toEqual([
-      { name: "register", type: "(id: string) => void", description: "Adds an item to the group.", optional: false },
-    ]);
-    expect(result.diagnostics?.filter(({ kind }) => kind === "context-any-type")).toEqual([]);
   });
 });

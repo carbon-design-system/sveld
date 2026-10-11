@@ -1,0 +1,30 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "label",
+      "kind": "let",
+      "type": "string",
+      "typeSource": "default",
+      "value": "\"Save\"",
+      "defaultValue": {
+        "raw": "\"Save\"",
+        "kind": "literal",
+        "value": "Save"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}

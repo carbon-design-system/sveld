@@ -6,10 +6,13 @@
    * @type {Tag}
    */
   export let tag = "div";
+
+  export let ref = null;
 </script>
 
 <svelte:element
   this={tag}
+  bind:this={ref}
   {...$$restProps}
 >
   <slot />

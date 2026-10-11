@@ -1,0 +1,22 @@
+{
+  "syntaxMode": "legacy",
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "forwarded",
+      "name": "click",
+      "element": "svelte:body"
+    },
+    {
+      "type": "forwarded",
+      "name": "keydown",
+      "element": "svelte:window"
+    }
+  ],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}

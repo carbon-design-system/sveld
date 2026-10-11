@@ -35,6 +35,72 @@
       "isRequired": false,
       "constant": false,
       "reactive": true
+    },
+    {
+      "name": "popoverRef",
+      "kind": "let",
+      "type": "null | (typeof Popover extends abstract new (...args: any) => infer I ? I : typeof Popover extends (...args: any) => infer R ? R : never)",
+      "typeSource": "inferred",
+      "value": "null",
+      "defaultValue": {
+        "raw": "null",
+        "kind": "literal",
+        "value": null
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    },
+    {
+      "name": "elementOrModal",
+      "kind": "let",
+      "type": "null | HTMLDivElement | (typeof Modal extends abstract new (...args: any) => infer I ? I : typeof Modal extends (...args: any) => infer R ? R : never)",
+      "typeSource": "inferred",
+      "value": "null",
+      "defaultValue": {
+        "raw": "null",
+        "kind": "literal",
+        "value": null
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    },
+    {
+      "name": "namespacedRef",
+      "kind": "let",
+      "typeSource": "unknown",
+      "value": "null",
+      "defaultValue": {
+        "raw": "null",
+        "kind": "literal",
+        "value": null
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    },
+    {
+      "name": "selfRef",
+      "kind": "let",
+      "typeSource": "unknown",
+      "value": "null",
+      "defaultValue": {
+        "raw": "null",
+        "kind": "literal",
+        "value": null
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
     }
   ],
   "moduleExports": [],
@@ -43,5 +109,22 @@
   "typedefs": [],
   "generics": null,
   "contexts": [],
-  "diagnostics": []
+  "diagnostics": [
+    {
+      "component": "bind-this-component/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "namespacedRef",
+      "message": "Prop \"namespacedRef\" type could not be inferred; falling back to \"any\".",
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
+    },
+    {
+      "component": "bind-this-component/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "selfRef",
+      "message": "Prop \"selfRef\" type could not be inferred; falling back to \"any\".",
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
+    }
+  ]
 }

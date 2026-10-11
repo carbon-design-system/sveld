@@ -1,0 +1,36 @@
+{
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "onsave",
+      "kind": "let",
+      "description": "Fired when a value is saved.",
+      "type": "(detail: { id: string }) => void",
+      "typeSource": "inferred",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "onclose",
+      "kind": "let",
+      "type": "() => void",
+      "typeSource": "inferred",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}

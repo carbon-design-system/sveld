@@ -5,11 +5,18 @@ declare enum Size {
   Large = "lg",
 }
 
+type Density = "compact" | "comfortable";
+
 export type TsLocalEnumPropProps = {
   /**
    * @default Size.Small
    */
   size?: Size;
+
+  /**
+   * @default Density.Compact
+   */
+  density?: Density;
 
   children?: (this: void) => void;
 };

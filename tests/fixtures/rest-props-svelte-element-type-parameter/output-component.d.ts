@@ -10,6 +10,11 @@ type $Props<Tag extends keyof HTMLElementTagNameMap = "div"> = {
    */
   tag?: Tag;
 
+  /**
+   * @default null
+   */
+  ref?: null | HTMLElementTagNameMap[Tag];
+
   children?: (this: void) => void;
 
   [key: `data-${string}`]: unknown;
