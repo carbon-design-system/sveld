@@ -416,22 +416,32 @@ function processJSDocComment(ctx: ParserContext, jsdocComment: LeadingJSDocComme
   const descriptionTags = tags.additional.filter((tag) => tag.tag !== "template" && tag.tag !== "generics");
 
   const formattedDescription = tags.description?.trim();
-  const descriptionParts = [
-    ...(formattedDescription ? [formattedDescription] : []),
-    // Rebuilt from the text as written, so a `{...}` in it (`@default { a: 1 }`) survives.
-    ...descriptionTags.map((tag) => `@${tag.tag}${tag.text ? ` ${tag.text}` : ""}`),
-  ];
+  const describe = (described: JSDocTag[]) => {
+    const parts = [
+      ...(formattedDescription ? [formattedDescription] : []),
+      // Rebuilt from the text as written, so a `{...}` in it (`@default { a: 1 }`) survives.
+      ...described.map((tag) => `@${tag.tag}${tag.text ? ` ${tag.text}` : ""}`),
+    ];
+    return parts.length > 0 ? parts.join("\n") : undefined;
+  };
+  const defaultTag = descriptionTags.find((tag) => tag.tag === "default" && tag.text.trim());
 
   return {
     type: tags.type ? aliasType(tags.type.type) : undefined,
     params,
     returnType: tags.returns ? aliasType(tags.returns.type) : undefined,
-    description: descriptionParts.length > 0 ? descriptionParts.join("\n") : undefined,
+    description: describe(descriptionTags),
     binding: tags.binding,
     deprecated: tags.deprecated,
     tags: toPassthroughTags(tags.passthrough),
     sveldIgnore: tags.ignore.length > 0 ? tags.ignore : undefined,
     internal: tags.internal,
     typeParameters,
+    ...(defaultTag
+      ? {
+          explicitDefault: defaultTag.text.trim(),
+          descriptionWithoutDefault: describe(descriptionTags.filter((tag) => tag !== defaultTag)),
+        }
+      : {}),
   };
 }

@@ -1,5 +1,6 @@
 import type { ComponentPropParam, ComponentPropTypeSource, NodeJsDoc } from "../model";
 import { isFunctionType } from "../type-text";
+import type { ParserContext } from "./context";
 import { formatParamList } from "./utils";
 
 /** A prop's type provenance, in the same precedence {@link resolvePropTypeAndDocs} picks its type. */
@@ -100,6 +101,16 @@ export function resolvePropTypeAndDocs(input: ResolvePropTypeAndDocsInput): Reso
   const typeParameters = isFunction ? input.jsdocTypeParameters : undefined;
 
   return { type, typeSource, description, params, returnType, isFunction, typeParameters };
+}
+
+/**
+ * A prop's own JSDoc with an explicit `@default` taken out of its description: the prop
+ * shows it as its default (`value`) instead, and no other file's constant replaces it.
+ */
+export function withExplicitDefault(ctx: ParserContext, propName: string, jsdoc: NodeJsDoc | undefined) {
+  if (jsdoc?.explicitDefault === undefined) return jsdoc;
+  ctx.explicitDefaultPropNames.add(propName);
+  return { ...jsdoc, description: jsdoc.descriptionWithoutDefault };
 }
 
 /** The fields a prop copies verbatim from its own JSDoc block, in prop key order. */

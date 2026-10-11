@@ -105,10 +105,10 @@
     {
       "name": "explicit",
       "kind": "let",
-      "description": "A description that already documents its default\n@default \"md\"",
+      "description": "A description that already documents its default",
       "type": "string",
       "typeSource": "default",
-      "value": "defaultSize ?? \"md\"",
+      "value": "\"md\"",
       "defaultValue": {
         "raw": "defaultSize ?? \"md\"",
         "kind": "expression"

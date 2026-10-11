@@ -1,0 +1,56 @@
+{
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "id",
+      "kind": "let",
+      "description": "Element id.",
+      "type": "any",
+      "typeSource": "unknown",
+      "value": "A generated `ccs-` id",
+      "defaultValue": {
+        "raw": "uniqueId()",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "retries",
+      "kind": "let",
+      "type": "number",
+      "typeSource": "default",
+      "value": "5",
+      "defaultValue": {
+        "raw": "3",
+        "kind": "literal",
+        "value": 3
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "runes-explicit-default/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "id",
+      "message": "Prop \"id\" default calls \"uniqueId()\" imported from \"./utils.js\"; falling back to \"any\" pending cross-file resolution.",
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
+    }
+  ]
+}

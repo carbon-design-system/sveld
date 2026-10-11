@@ -19,6 +19,12 @@
    */
   export let disabled = false;
 
+  /**
+   * The documented default wins over the initializer everywhere.
+   * @default 5
+   */
+  export let retries = 3;
+
   const DEFAULT_SIZE = "md";
 
   /**
@@ -62,6 +68,7 @@
 
 {name}
 {disabled}
+{retries}
 {size}
 {count}
 {offset}

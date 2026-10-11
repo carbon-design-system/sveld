@@ -20,6 +20,12 @@ export type ExplicitDefaultNoDuplicateProps = {
   disabled?: boolean;
 
   /**
+   * The documented default wins over the initializer everywhere.
+   * @default 5
+   */
+  retries?: number;
+
+  /**
    * Prop with identifier default, no explicit annotation.
    * Should resolve to the actual value.
    * @default "md"

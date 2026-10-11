@@ -20,7 +20,7 @@ import type { ComponentPropDefaultValue, ProcessedInitializer } from "../model";
 import type { ParserContext } from "./context";
 import { recordDiagnostic, recordPropSveldIgnore } from "./diagnostics";
 import { processNodeJSDoc } from "./jsdoc";
-import { propJsDocFields, resolvePropTypeAndDocs } from "./prop-shared";
+import { propJsDocFields, resolvePropTypeAndDocs, withExplicitDefault } from "./prop-shared";
 import {
   addProp,
   inferFunctionValueType,
@@ -369,8 +369,9 @@ function addInstanceDeclarationExports(
 
   for (const declarator of declarators) {
     const { prop_name, kind, localName } = declarator;
+    const propJSDoc = withExplicitDefault(ctx, prop_name, jsdocInfo);
     const { type, typeSource, description, params, returnType, isFunction, typeParameters } =
-      resolveExportDeclaratorTypeAndDocs(ctx, declarator, jsdocInfo);
+      resolveExportDeclaratorTypeAndDocs(ctx, declarator, propJSDoc);
 
     recordPropSveldIgnore(ctx, prop_name, jsdocInfo?.sveldIgnore);
 
@@ -382,7 +383,7 @@ function addInstanceDeclarationExports(
       ...propJsDocFields(jsdocInfo),
       type,
       typeSource,
-      value: declarator.value,
+      value: propJSDoc?.explicitDefault ?? declarator.value,
       defaultValue: declarator.defaultValue,
       params,
       returnType,

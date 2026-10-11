@@ -24,7 +24,7 @@ import { addDispatchedEvent } from "./events";
 import { collectGenericsAttributeTypeDependencies } from "./generics";
 import { processNodeJSDoc } from "./jsdoc";
 import { parseObjectTypeLiteralMembers } from "./object-type-literal";
-import { propJsDocFields, resolvePropTypeAndDocs } from "./prop-shared";
+import { propJsDocFields, resolvePropTypeAndDocs, withExplicitDefault } from "./prop-shared";
 import { addProp, processInitializer, queuePendingCrossFileDefault } from "./props";
 import { resolveScriptGenericsAttribute, resolveScriptLanguage } from "./script-attributes";
 import { sourceAtPos, sourceRangeFromNode } from "./source-position";
@@ -397,7 +397,7 @@ export function parseRunesPropsDeclaration(ctx: ParserContext, node: VariableDec
         ...Array.from(metadata?.props ?? [], ([name, typeMetadata]) => ({ name, member: undefined, typeMetadata })),
       ];
       for (const { name, member, typeMetadata } of wholeObjectProps) {
-        const jsdoc = typeMetadata?.jsdoc;
+        const jsdoc = withExplicitDefault(ctx, name, typeMetadata?.jsdoc);
         const { type, typeSource, description, params, returnType, isFunction } = resolvePropTypeAndDocs({
           explicitType: typeMetadata?.type,
           jsdocType: jsdoc?.type ?? member?.type,
@@ -416,6 +416,7 @@ export function parseRunesPropsDeclaration(ctx: ParserContext, node: VariableDec
           ...propJsDocFields(jsdoc),
           type,
           typeSource,
+          value: jsdoc?.explicitDefault,
           params,
           returnType,
           isFunction,
@@ -467,10 +468,13 @@ export function parseRunesPropsDeclaration(ctx: ParserContext, node: VariableDec
 
       const member = jsDocMembers?.get(propName);
       const typeMetadata = metadata?.props.get(propName);
-      const propertyJSDoc =
+      const propertyJSDoc = withExplicitDefault(
+        ctx,
+        propName,
         processNodeJSDoc(ctx, property) ??
-        typeMetadata?.jsdoc ??
-        (supportedPublicPropCount === 1 && !jsDocMembers ? declarationJSDoc : undefined);
+          typeMetadata?.jsdoc ??
+          (supportedPublicPropCount === 1 && !jsDocMembers ? declarationJSDoc : undefined),
+      );
       const { init: unwrappedInit, bindable } = unwrapBindableInitializer(init);
       const initResult = unwrappedInit == null ? { isFunction: false } : processInitializer(ctx, unwrappedInit);
       const { value, type: inferredType, isFunction: initializerIsFunction, defaultValue } = initResult;
@@ -510,7 +514,7 @@ export function parseRunesPropsDeclaration(ctx: ParserContext, node: VariableDec
         ...(bindable ? { bindable: true as const } : {}),
         type,
         typeSource,
-        value,
+        value: propertyJSDoc?.explicitDefault ?? value,
         defaultValue,
         params,
         returnType,

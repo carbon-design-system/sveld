@@ -5,10 +5,10 @@
     {
       "name": "options",
       "kind": "let",
-      "description": "Options.\n@default { a: 1, b: 2 }",
+      "description": "Options.",
       "type": "{}",
       "typeSource": "default",
-      "value": "{}",
+      "value": "{ a: 1, b: 2 }",
       "defaultValue": {
         "raw": "{}",
         "kind": "object",

@@ -5,7 +5,7 @@
     {
       "name": "shouldFilter",
       "kind": "let",
-      "description": "Custom filter function.\n@default () => true",
+      "description": "Custom filter function.",
       "type": "(item: string, value: string) => boolean",
       "typeSource": "jsdoc",
       "value": "() => true",
@@ -40,7 +40,7 @@
     {
       "name": "disabled",
       "kind": "let",
-      "description": "Prop with explicit @default matching the initializer.\n@default false",
+      "description": "Prop with explicit @default matching the initializer.",
       "type": "boolean",
       "typeSource": "default",
       "value": "false",
@@ -48,6 +48,24 @@
         "raw": "false",
         "kind": "literal",
         "value": false
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "retries",
+      "kind": "let",
+      "description": "The documented default wins over the initializer everywhere.",
+      "type": "number",
+      "typeSource": "default",
+      "value": "5",
+      "defaultValue": {
+        "raw": "3",
+        "kind": "literal",
+        "value": 3
       },
       "isFunction": false,
       "isFunctionDeclaration": false,
