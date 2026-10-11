@@ -23,9 +23,9 @@ export function resolveTypeSource({
 export interface ResolvePropTypeAndDocsInput {
   /** A legacy `: T` annotation, or the matching `$props()` type-literal member. */
   explicitType?: string;
-  /** Lowest precedence: the initializer's inferred type, or `"() => any"` for an `export function`. */
+  /** Lowest precedence: the type inferred from the initializer or `export function` node. */
   typeSeed?: string;
-  /** Differs from `typeSeed` for function declarations, whose seed is a placeholder, not an inferred type. */
+  /** Differs from `typeSeed` for function declarations, whose seed doesn't count as an inferred type. */
   inferredTypeForSource?: string;
   jsdocType?: string;
   jsdocDescription?: string;
@@ -64,13 +64,12 @@ export function resolvePropTypeAndDocs(input: ResolvePropTypeAndDocsInput): Reso
   const params = input.jsdocParams ?? input.resolvedParams;
   const returnType = input.jsdocReturnType ?? input.resolvedReturnType;
 
-  // A function's placeholder signature gives way to one built from `@param`/`@returns`.
-  const hasPlaceholderSignature = input.isFunctionDeclaration
-    ? type === "() => any"
-    : input.initializerIsFunction && type === input.typeSeed;
-  if (hasPlaceholderSignature && returnType) {
+  // A function's inferred signature gives way to one built from `@param`/`@returns`.
+  const hasPlaceholderSignature =
+    (input.isFunctionDeclaration || input.initializerIsFunction) && type === input.typeSeed;
+  if (hasPlaceholderSignature && (returnType || (input.isFunctionDeclaration && params?.length))) {
     const typeParameters = input.jsdocTypeParameters ? `<${input.jsdocTypeParameters}>` : "";
-    type = `${typeParameters}(${formatParamList(params ?? [])}) => ${returnType}`;
+    type = `${typeParameters}(${formatParamList(params ?? [])}) => ${returnType ?? "any"}`;
   }
 
   let description = input.jsdocDescription ?? input.resolvedDescription;

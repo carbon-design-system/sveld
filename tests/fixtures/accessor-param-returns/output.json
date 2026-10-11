@@ -122,7 +122,7 @@
       "name": "log",
       "kind": "function",
       "description": "Function with only @param, no @returns (should default to any)",
-      "type": "() => any",
+      "type": "(message: string) => any",
       "typeSource": "jsdoc",
       "params": [
         {

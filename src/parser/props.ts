@@ -614,6 +614,24 @@ function inferParamsFromNode({ params }: FunctionNode): string {
 }
 
 /**
+ * An `export function`'s type when nothing declares it: each param as `any`
+ * (optional when it has a default, `any[]` when rest) so consumers can call
+ * it with arguments, and the return type {@link inferReturnTypeFromNode} reads.
+ */
+export function inferFunctionDeclarationType(node: FunctionDeclaration): string {
+  const params = node.params.map((param, index) => {
+    if (param.type === "RestElement") {
+      return `...${isIdentifier(param.argument) ? param.argument.name : "args"}: any[]`;
+    }
+    if (param.type === "AssignmentPattern") {
+      return `${isIdentifier(param.left) ? param.left.name : `arg${index}`}?: any`;
+    }
+    return `${isIdentifier(param) ? param.name : `arg${index}`}: any`;
+  });
+  return `(${params.join(", ")}) => ${inferReturnTypeFromNode(node)}`;
+}
+
+/**
  * Infer return type from literal returns only. Every `return` must agree on
  * the same primitive. Bare `return;`, no returns, identifiers, calls,
  * objects, ternaries, async, or generators all become `any`.

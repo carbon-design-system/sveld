@@ -21,7 +21,13 @@ import type { ParserContext } from "./context";
 import { recordDiagnostic, recordPropSveldIgnore } from "./diagnostics";
 import { processNodeJSDoc } from "./jsdoc";
 import { propJsDocFields, resolvePropTypeAndDocs } from "./prop-shared";
-import { addProp, literalType, processInitializer, queuePendingCrossFileDefault } from "./props";
+import {
+  addProp,
+  inferFunctionDeclarationType,
+  literalType,
+  processInitializer,
+  queuePendingCrossFileDefault,
+} from "./props";
 import { collectPatternIdentifiers } from "./scopes";
 import { sourceRangeFromNode } from "./source-position";
 import { buildFunctionDeclarationSignature } from "./type-resolution";
@@ -235,7 +241,7 @@ export function collectExportDeclarators(
       kind: "function",
       isFunctionDeclaration: true,
       value: undefined,
-      typeSeed: accessorSignature?.hasAnnotations ? undefined : "() => any",
+      typeSeed: accessorSignature?.hasAnnotations ? undefined : inferFunctionDeclarationType(declaration),
       explicitType: accessorSignature?.hasAnnotations ? accessorSignature.signature : undefined,
       initializerIsFunction: true,
       isRequired: false,
