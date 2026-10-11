@@ -184,7 +184,7 @@ export function getContextDefs(def: Pick<ComponentDocApi, "contexts" | "generics
         .map((prop) => {
           const comment = prop.description ? `${formatSingleLineComment(prop.description)}\n  ` : "";
           const optional = prop.optional ? "?" : "";
-          return `${comment}${prop.name}${optional}: ${prop.type};`;
+          return `${comment}${formatKey(prop.name)}${optional}: ${prop.type};`;
         })
         .join("\n  ");
 
