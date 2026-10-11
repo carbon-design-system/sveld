@@ -4,6 +4,7 @@
     Large = "lg",
   }
 
+  // biome-ignore lint/suspicious/noConstEnum: pins how a const enum is emitted
   const enum Density {
     Compact = "compact",
     Comfortable = "comfortable",

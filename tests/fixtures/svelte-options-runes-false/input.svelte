@@ -1,6 +1,7 @@
 <svelte:options runes={false} />
 
 <script>
+  // biome-ignore lint/correctness/noUnusedImports: read below as the `$state` store
   import { state } from "./stores.js";
 
   export let label = "Save";
