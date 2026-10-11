@@ -27,6 +27,11 @@
           "name": "close",
           "type": "() => any",
           "optional": false
+        },
+        {
+          "name": "select",
+          "type": "(id: string, focus: boolean) => any",
+          "optional": false
         }
       ]
     }

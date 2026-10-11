@@ -9,6 +9,9 @@
     close: () => {
       console.log("Closing");
     },
+    select: (/** @type {string} */ id, /** @type {boolean} */ focus) => {
+      console.log(id, focus);
+    },
   });
 </script>
 

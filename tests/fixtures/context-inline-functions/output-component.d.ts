@@ -3,6 +3,7 @@ import type { Component } from "svelte";
 export type ModalContext = {
   open: (component: any, props: any) => any;
   close: () => any;
+  select: (id: string, focus: boolean) => any;
 };
 
 export type ContextInlineFunctionsProps = {
