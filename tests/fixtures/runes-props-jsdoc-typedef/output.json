@@ -43,6 +43,24 @@
       "isRequired": false,
       "constant": false,
       "reactive": false
+    },
+    {
+      "name": "size",
+      "kind": "let",
+      "description": "A size token.",
+      "type": "Size",
+      "typeSource": "jsdoc",
+      "value": "\"sm\"",
+      "defaultValue": {
+        "raw": "\"sm\"",
+        "kind": "literal",
+        "value": "sm"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -50,9 +68,15 @@
   "events": [],
   "typedefs": [
     {
-      "type": "{\n  /** Card title */\n  title: string;\n  /** Elevated look @default false */\n  elevated?: boolean;\n  /** Click handler */\n  onclick?: (e: MouseEvent) => void;\n}",
+      "type": "\"sm\" | \"lg\"",
+      "name": "Size",
+      "description": "A size token.",
+      "ts": "type Size = \"sm\" | \"lg\";"
+    },
+    {
+      "type": "{\n  /** Card title */\n  title: string;\n  /** Elevated look @default false */\n  elevated?: boolean;\n  /** Click handler */\n  onclick?: (e: MouseEvent) => void;\n  size?: Size;\n}",
       "name": "Props",
-      "ts": "type Props = {\n  /** Card title */\n  title: string;\n  /** Elevated look @default false */\n  elevated?: boolean;\n  /** Click handler */\n  onclick?: (e: MouseEvent) => void;\n};"
+      "ts": "type Props = {\n  /** Card title */\n  title: string;\n  /** Elevated look @default false */\n  elevated?: boolean;\n  /** Click handler */\n  onclick?: (e: MouseEvent) => void;\n  size?: Size;\n};"
     }
   ],
   "generics": null,

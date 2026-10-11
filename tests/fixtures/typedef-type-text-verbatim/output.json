@@ -62,7 +62,7 @@
       "kind": "let",
       "type": "(value: unknown) => value is User",
       "typeSource": "jsdoc",
-      "isFunction": false,
+      "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,

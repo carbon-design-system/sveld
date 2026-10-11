@@ -1,4 +1,5 @@
 import type { ComponentPropParam, ComponentPropTypeSource, NodeJsDoc } from "../model";
+import { isFunctionType } from "../type-text";
 import { formatParamList } from "./utils";
 
 /** A prop's type provenance, in the same precedence {@link resolvePropTypeAndDocs} picks its type. */
@@ -42,9 +43,7 @@ export interface ResolvePropTypeAndDocsInput {
   resolvedReturnType?: string;
   initializerIsFunction: boolean;
   isFunctionDeclaration: boolean;
-  /** Runes-only (a preserved mode difference): a callback-looking type makes the prop a function. */
-  inferIsFunctionFromTypeSignature?: boolean;
-  /** Legacy-only (a preserved mode difference): falls back to a `@typedef`'s description. */
+  /** A prop typed as a `@typedef` with no description of its own takes the typedef's. */
   typedefs?: Map<string, { description?: string }>;
 }
 
@@ -88,15 +87,15 @@ export function resolvePropTypeAndDocs(input: ResolvePropTypeAndDocsInput): Reso
     finalType: type,
   });
 
+  // A callback-looking declared type makes the prop a function too.
   const isFunction =
     input.initializerIsFunction ||
     input.isFunctionDeclaration ||
-    (input.inferIsFunctionFromTypeSignature === true &&
-      (!!input.jsdocParams?.length ||
-        input.jsdocReturnType !== undefined ||
-        !!input.jsdocType?.includes("=>") ||
-        !!input.resolvedType?.includes("=>") ||
-        !!input.explicitType?.includes("=>")));
+    !!input.jsdocParams?.length ||
+    input.jsdocReturnType !== undefined ||
+    isFunctionType(input.jsdocType) ||
+    isFunctionType(input.resolvedType) ||
+    isFunctionType(input.explicitType);
 
   const typeParameters = isFunction ? input.jsdocTypeParameters : undefined;
 

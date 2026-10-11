@@ -1,5 +1,10 @@
 import { SvelteComponentTyped } from "svelte";
 
+/**
+ * A size token.
+ */
+export type Size = "sm" | "lg";
+
 export type Props = {
   /** Card title */
   title: string;
@@ -7,6 +12,7 @@ export type Props = {
   elevated?: boolean;
   /** Click handler */
   onclick?: (e: MouseEvent) => void;
+  size?: Size;
 };
 
 export type RunesPropsJsdocTypedefProps = {
@@ -25,6 +31,12 @@ export type RunesPropsJsdocTypedefProps = {
    * Click handler
    */
   onclick?: (e: MouseEvent) => void;
+
+  /**
+   * A size token.
+   * @default "sm"
+   */
+  size?: Size;
 };
 
 export default class RunesPropsJsdocTypedef extends SvelteComponentTyped<

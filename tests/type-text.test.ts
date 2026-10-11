@@ -3,6 +3,7 @@ import {
   indexOfClosingBracket,
   indexOfTopLevel,
   indexOfTopLevelArrow,
+  isFunctionType,
   isTupleType,
   returnTypeOfFunctionType,
   scanTypeText,
@@ -102,6 +103,23 @@ describe("isTupleType", () => {
     expect(isTupleType("[A] | [B]")).toBe(false);
     expect(isTupleType("{ count: number }")).toBe(false);
     expect(isTupleType("string[]")).toBe(false);
+  });
+});
+
+describe("isFunctionType", () => {
+  test("accepts a function type, optionally unioned with null or undefined", () => {
+    expect(isFunctionType("(e: MouseEvent) => void")).toBe(true);
+    expect(isFunctionType("<T>(value: T) => T")).toBe(true);
+    expect(isFunctionType("(() => void) | undefined")).toBe(true);
+    expect(isFunctionType("null | ((value: string) => void)")).toBe(true);
+  });
+
+  test("rejects types that only contain a function type", () => {
+    expect(isFunctionType("{ onClose: () => void }")).toBe(false);
+    expect(isFunctionType("Array<() => void>")).toBe(false);
+    expect(isFunctionType("(() => void) | string")).toBe(false);
+    expect(isFunctionType("string")).toBe(false);
+    expect(isFunctionType(undefined)).toBe(false);
   });
 });
 

@@ -130,3 +130,23 @@ export function returnTypeOfFunctionType(type: string | undefined): string | und
   if (arrowIndex === -1) return undefined;
   return type.slice(arrowIndex + 2).trim() || undefined;
 }
+
+/** Members a union can add to a callback type without making it something else to call. */
+const NULLISH_TYPES = new Set(["null", "undefined"]);
+
+/**
+ * Whether `type` is a function type, alone or unioned with `null`/`undefined`
+ * (`(() => void) | undefined`). An object type with a callback member isn't.
+ */
+export function isFunctionType(type: string | undefined): boolean {
+  if (!type) return false;
+  const members = splitTopLevel(type, "|")
+    .map((member) => member.trim())
+    .filter((member) => member && !NULLISH_TYPES.has(member));
+  if (members.length !== 1) return false;
+  let [member] = members;
+  while (member.startsWith("(") && indexOfClosingBracket(member, 0) === member.length - 1) {
+    member = member.slice(1, -1).trim();
+  }
+  return (member.startsWith("(") || member.startsWith("<")) && indexOfTopLevelArrow(member) !== -1;
+}

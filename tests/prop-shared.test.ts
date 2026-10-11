@@ -152,7 +152,7 @@ describe("resolvePropTypeAndDocs: description/params/returnType merging", () => 
     expect(result.description).toBe("typedef description");
   });
 
-  test("does not consult typedefs when none are provided (runes today)", () => {
+  test("does not consult typedefs when none are provided", () => {
     const result = resolvePropTypeAndDocs({
       ...base,
       explicitType: "MyCallback",
@@ -184,51 +184,38 @@ describe("resolvePropTypeAndDocs: isFunction", () => {
     expect(result.isFunction).toBe(true);
   });
 
-  test("legacy export let does not infer isFunction from a function-shaped type (preserved mode difference)", () => {
+  test("infers isFunction from an explicit function-shaped type", () => {
     const result = resolvePropTypeAndDocs({
       initializerIsFunction: false,
       isFunctionDeclaration: false,
       explicitType: "() => void",
-    });
-    expect(result.isFunction).toBe(false);
-  });
-
-  test("runes $props() infers isFunction from an explicit function-shaped type when opted in", () => {
-    const result = resolvePropTypeAndDocs({
-      initializerIsFunction: false,
-      isFunctionDeclaration: false,
-      explicitType: "() => void",
-      inferIsFunctionFromTypeSignature: true,
     });
     expect(result.isFunction).toBe(true);
   });
 
-  test("runes $props() infers isFunction from JSDoc @param even without a function-shaped type", () => {
+  test("infers isFunction from JSDoc @param even without a function-shaped type", () => {
     const result = resolvePropTypeAndDocs({
       initializerIsFunction: false,
       isFunctionDeclaration: false,
       jsdocParams: [{ name: "x", type: "number" }],
-      inferIsFunctionFromTypeSignature: true,
     });
     expect(result.isFunction).toBe(true);
   });
 
-  test("runes $props() infers isFunction from JSDoc @returns even without a function-shaped type", () => {
+  test("infers isFunction from JSDoc @returns even without a function-shaped type", () => {
     const result = resolvePropTypeAndDocs({
       initializerIsFunction: false,
       isFunctionDeclaration: false,
       jsdocReturnType: "void",
-      inferIsFunctionFromTypeSignature: true,
     });
     expect(result.isFunction).toBe(true);
   });
 
-  test("a non-function type never infers isFunction, even when opted in", () => {
+  test("a non-function type never infers isFunction", () => {
     const result = resolvePropTypeAndDocs({
       initializerIsFunction: false,
       isFunctionDeclaration: false,
       explicitType: "string",
-      inferIsFunctionFromTypeSignature: true,
     });
     expect(result.isFunction).toBe(false);
   });
