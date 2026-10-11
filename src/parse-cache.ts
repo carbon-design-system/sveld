@@ -1,7 +1,8 @@
 import { hash as cryptoHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { version as sveldVersion } from "../package.json";
+import { findUp } from "./fs-listing";
 import type {
   ComponentParseResult,
   ParsedComponent,
@@ -51,10 +52,8 @@ function currentToolchainVersion(): string {
  * input is often `src/`, and the cache belongs in the project's `node_modules`.
  */
 function findProjectRoot(dir: string): string {
-  for (let current = resolve(dir); ; current = dirname(current)) {
-    if (existsSync(join(current, "package.json"))) return current;
-    if (dirname(current) === current) return resolve(dir);
-  }
+  const packageJson = findUp(dir, ["package.json"]);
+  return packageJson === null ? resolve(dir) : dirname(packageJson);
 }
 
 /** A relative `cache` path resolves against the project root. */

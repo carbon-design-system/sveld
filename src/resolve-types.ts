@@ -1,7 +1,8 @@
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import type { ExampleCheckSource } from "./example-check";
+import { findUp } from "./fs-listing";
 import { normalizeSeparators } from "./path";
 
 interface ExampleCheckTarget {
@@ -106,7 +107,7 @@ export class TypeResolver {
       };
     }
 
-    const tsconfigPath = findTsConfig(cwd);
+    const tsconfigPath = findUp(cwd, ["tsconfig.json"]);
     if (!tsconfigPath) {
       return {
         ok: false,
@@ -237,17 +238,4 @@ function formatExampleDiagnostic(diagnostic: TS, content: string): { line: numbe
   const virtualLine = content.slice(0, pos).split("\n").length;
   const line = Math.max(1, virtualLine - EXAMPLE_CODE_START_LINE + 1);
   return { line, text: String(diagnostic.text ?? "").trim() };
-}
-
-/** Walks upward from `dir` to find the nearest `tsconfig.json`. */
-function findTsConfig(dir: string): string | null {
-  let current = path.resolve(dir);
-  while (true) {
-    const candidate = path.join(current, "tsconfig.json");
-    if (existsSync(candidate)) return candidate;
-
-    const parent = path.dirname(current);
-    if (parent === current) return null;
-    current = parent;
-  }
 }
