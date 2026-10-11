@@ -15,7 +15,6 @@ import type {
   RunesPropsDeclarationMetadata,
   RunesPropTypeMetadata,
   SourceRange,
-  TypeImportBinding,
 } from "../model";
 import { indexOfClosingBracket, indexOfTopLevel, splitTopLevel } from "../type-text";
 import type { ParserContext, TypedefMember } from "./context";
@@ -37,6 +36,7 @@ import {
   getTypeReferenceName,
   trackAdditionalTypeDependencyNode,
 } from "./type-resolution";
+import { importSpecifierImportedName } from "./value-imports";
 import { resolveLocalVarJSDoc } from "./variable-jsdoc";
 
 const IDENTIFIER_TOKEN_REGEX = /[A-Za-z_$][\w$]*/g;
@@ -187,37 +187,16 @@ function collectScriptTypeDeclaration(
   exported: boolean,
 ) {
   if (statement.type === "ImportDeclaration" && statement.source?.value) {
-    for (const specifier of statement.specifiers ?? []) {
-      const localName = specifier.local?.name;
-      if (!localName) continue;
-      const isTypeOnly =
-        statement.importKind === "type" || (specifier.type === "ImportSpecifier" && specifier.importKind === "type");
-      if (!isTypeOnly) continue;
+    for (const specifier of statement.specifiers) {
+      const isNamed = specifier.type === "ImportSpecifier";
+      if (statement.importKind !== "type" && !(isNamed && specifier.importKind === "type")) continue;
 
-      let specifierType: TypeImportBinding["specifierType"] | undefined;
-      let importedName: string | undefined;
-
-      if (specifier.type === "ImportSpecifier") {
-        specifierType = "named";
-        importedName =
-          specifier.imported?.type === "Identifier"
-            ? specifier.imported.name
-            : typeof specifier.imported?.value === "string"
-              ? specifier.imported.value
-              : undefined;
-      } else if (specifier.type === "ImportDefaultSpecifier") {
-        specifierType = "default";
-      } else if (specifier.type === "ImportNamespaceSpecifier") {
-        specifierType = "namespace";
-      }
-
-      if (!specifierType) continue;
-
+      const localName = specifier.local.name;
       ctx.typeImportBindingsByLocalName.set(localName, {
-        importedName,
+        importedName: isNamed ? importSpecifierImportedName(specifier) : undefined,
         localName,
         source: String(statement.source.value),
-        specifierType,
+        specifierType: isNamed ? "named" : specifier.type === "ImportDefaultSpecifier" ? "default" : "namespace",
       });
     }
   }
