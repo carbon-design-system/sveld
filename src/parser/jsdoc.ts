@@ -403,10 +403,11 @@ function paramsWithNestedMembers(paramTags: JSDocTag[]): ComponentPropParam[] {
     .map((tag) => {
       const members = membersByParam.get(tag.name);
       const type = aliasType(tag.type);
+      const description = cleanDescription(joinDescriptionLines(tag.description.split("\n")));
       return {
         name: tag.name,
         type: members && OBJECT_PLACEHOLDER_TYPES.has(type) ? `{ ${members.join("; ")} }` : type,
-        description: cleanDescription(joinDescriptionLines(tag.description.split("\n"))),
+        ...(description ? { description } : {}),
         optional: tag.optional,
       };
     });

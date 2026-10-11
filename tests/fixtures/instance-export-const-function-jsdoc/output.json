@@ -17,7 +17,6 @@
         {
           "name": "value",
           "type": "string",
-          "description": "",
           "optional": false
         }
       ],
@@ -42,7 +41,6 @@
         {
           "name": "value",
           "type": "T",
-          "description": "",
           "optional": false
         }
       ],

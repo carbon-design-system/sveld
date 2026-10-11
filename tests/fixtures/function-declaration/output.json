@@ -87,7 +87,6 @@
         {
           "name": "n",
           "type": "number",
-          "description": "",
           "optional": false
         }
       ],

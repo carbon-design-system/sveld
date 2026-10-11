@@ -34,8 +34,7 @@
           "type": "string",
           "optional": false
         }
-      ],
-      "description": ""
+      ]
     }
   ],
   "diagnostics": []

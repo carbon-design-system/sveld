@@ -54,13 +54,11 @@
         {
           "name": "batchSelectedIds",
           "type": "import(\"svelte/store\").Writable<ReadonlyArray<DataTableRowId>>",
-          "description": "",
           "optional": false
         },
         {
           "name": "tableRows",
           "type": "import(\"svelte/store\").Writable<ReadonlyArray<Row>>",
-          "description": "",
           "optional": false
         },
         {

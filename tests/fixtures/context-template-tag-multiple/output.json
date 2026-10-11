@@ -57,7 +57,6 @@
         {
           "name": "selectedValue",
           "type": "import(\"svelte/store\").Writable<Value | undefined>",
-          "description": "",
           "optional": false
         },
         {

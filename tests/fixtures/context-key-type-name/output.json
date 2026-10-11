@@ -51,7 +51,6 @@
         {
           "name": "count",
           "type": "number",
-          "description": "",
           "optional": false
         }
       ]
@@ -63,7 +62,6 @@
         {
           "name": "count",
           "type": "number",
-          "description": "",
           "optional": false
         }
       ]
@@ -75,7 +73,6 @@
         {
           "name": "count",
           "type": "number",
-          "description": "",
           "optional": false
         }
       ]
@@ -99,7 +96,6 @@
         {
           "name": "count",
           "type": "number",
-          "description": "",
           "optional": false
         }
       ]
@@ -111,7 +107,6 @@
         {
           "name": "count",
           "type": "number",
-          "description": "",
           "optional": false
         }
       ]

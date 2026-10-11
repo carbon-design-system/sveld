@@ -23,7 +23,6 @@
         {
           "name": "url",
           "type": "string",
-          "description": "",
           "optional": false
         }
       ],
