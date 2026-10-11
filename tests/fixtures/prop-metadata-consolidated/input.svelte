@@ -18,6 +18,7 @@
   export let arrayDefault = [1, "two", false];
   export let objectDefault = { size: "md", count: 2 };
   export let callbackDefault = (value: string) => value.toUpperCase();
+  export let formatDefault = (count: number, unit?: string): string => `${count}${unit ?? ""}`;
   export let callDefault = makeDefault();
   export let memberDefault = Number.MAX_VALUE;
 
@@ -30,6 +31,6 @@
 </script>
 
 <p>
-  {typed}{documented}{literalDefault}{boolDefault}{arrayDefault.length}{objectDefault.size}{callbackDefault("x")}
+  {typed}{documented}{literalDefault}{boolDefault}{arrayDefault.length}{objectDefault.size}{callbackDefault("x")}{formatDefault(1)}
   {callDefault}{memberDefault}{expressionDefault}{unknown}
 </p>
