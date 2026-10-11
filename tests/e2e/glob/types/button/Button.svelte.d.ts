@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 export declare const tree: boolean;
 
-export declare function computeTreeLeafDepth(): any;
+export declare function computeTreeLeafDepth(node: any): any;
 
 /**
  * Finds the nearest parent tree node
