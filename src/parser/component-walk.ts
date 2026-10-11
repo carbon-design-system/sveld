@@ -276,7 +276,6 @@ function addForwardedEvent(ctx: ParserContext, node: AST.OnDirective, parent: AS
     ctx.events.set(eventName, {
       ...existing,
       description,
-      deprecated: existing.deprecated,
       source: existing.source || sourceRangeFromNode(ctx, node),
     });
   }
@@ -327,17 +326,17 @@ function recordBindDirective(
   if (binding.target !== target) binding.target = "mixed";
 
   if (isElementLikeType(parent.type)) {
+    const tag = parent.name;
     const tagLocal = "tag" in parent && isIdentifier(parent.tag) ? parent.tag.name : undefined;
-    const element = { tag: parent.name, namespace, ...(tagLocal ? { tagLocal } : {}) };
     const isRecorded = binding.elements.some(
-      (other) => other.tag === element.tag && other.namespace === namespace && other.tagLocal === tagLocal,
+      (other) => other.tag === tag && other.namespace === namespace && other.tagLocal === tagLocal,
     );
-    if (!isRecorded) binding.elements = [...binding.elements, element];
+    if (!isRecorded) binding.elements.push({ tag, namespace, ...(tagLocal ? { tagLocal } : {}) });
   } else {
     // Only an imported component can be named in the `.d.ts`: not `UI.Modal`, `<svelte:self>`, or a local.
     const imported = parent.type === "Component" ? importedBindingByName(ctx, parent.name) : undefined;
     if (!imported) return;
-    if (!binding.components.includes(parent.name)) binding.components = [...binding.components, parent.name];
+    if (!binding.components.includes(parent.name)) binding.components.push(parent.name);
     ctx.additionalImportedTypes.set(parent.name, { localName: parent.name, ...imported });
   }
   ctx.bindings.set(prop_name, binding);
