@@ -1,11 +1,12 @@
 # Component Index
 
-> 4 components exported from multi-export-typed@0.0.1.
+> 5 components exported from multi-export-typed@0.0.1.
 
 ## Components
 
 - [`Button`](#button)
 - [`Link`](#link)
+- [`Polymorphic`](#polymorphic)
 - [`Quote`](#quote)
 - [`SecondaryButton`](#secondarybutton)
 
@@ -49,6 +50,26 @@ None.
 | Event name | Type | Detail | Description |
 | :- | :- | :- | :- |
 | click | forwarded | -- | -- |
+
+## `Polymorphic`
+
+**Type parameters:** <code>&lt;Tag extends keyof HTMLElementTagNameMap = "div"></code>
+
+### Props
+
+| Prop name | Required | Kind | Reactive | Binding | Type | Default value | Description |
+| :- | :- | :- | :- | :- | :- | :- | :- |
+| tag | No | <code>let</code> | No | -- | <code>Tag</code> | <code>"div"</code> | Specify the element to render. |
+
+### Slots
+
+| Slot name | Default | Props | Fallback | Description |
+| :- | :- | :- | :- | :- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+
+### Events
+
+None.
 
 ## `Quote`
 

@@ -392,6 +392,10 @@ function genPropDef(
       def.extends === undefined
         ? `keyof $Props${genericsNameRef}`
         : `keyof ($Props${genericsNameRef} & ${def.extends.interface})`;
+    const omittedRestProps = `Omit<$RestProps${restPropsGenerics.ref}, ${omittedKeys}>`;
+    // Omitting from a union of element types (`tag: "div" | "section"`) is too
+    // complex for TypeScript, so omit from each element type in turn.
+    const restPropsSide = thisType ? `(${thisType} extends any ? ${omittedRestProps} : never)` : omittedRestProps;
 
     return {
       props_name,
@@ -399,7 +403,7 @@ function genPropDef(
     ${restPropsComment}type $RestProps${restPropsGenerics.name} = ${restPropsType};\n
     ${propsDecl}
 
-    export type ${props_name}${genericsName} = Omit<$RestProps${restPropsGenerics.ref}, ${omittedKeys}> & ${extendsPrefix}$Props${genericsNameRef};
+    export type ${props_name}${genericsName} = ${restPropsSide} & ${extendsPrefix}$Props${genericsNameRef};
   `,
     };
   }
