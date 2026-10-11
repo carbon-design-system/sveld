@@ -5,6 +5,7 @@
     {
       "name": "item",
       "kind": "let",
+      "description": "The item to show.",
       "type": "string",
       "typeSource": "typescript",
       "isFunction": false,
@@ -16,6 +17,41 @@
     {
       "name": "disabled",
       "kind": "let",
+      "type": "boolean",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "onclick",
+      "kind": "let",
+      "type": "(event: MouseEvent) => void",
+      "typeSource": "typescript",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "secret",
+      "kind": "let",
+      "internal": true,
+      "type": "string",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "inactive",
+      "kind": "let",
+      "deprecated": "Use `disabled`.",
       "type": "boolean",
       "typeSource": "typescript",
       "isFunction": false,

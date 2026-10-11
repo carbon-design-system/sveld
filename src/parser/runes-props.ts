@@ -363,35 +363,43 @@ export function parseRunesPropsDeclaration(ctx: ParserContext, node: VariableDec
       ctx.wholePropsLocals.add(declarator.id.name);
       ctx.restPropLocals.add(declarator.id.name);
 
-      for (const member of jsDocMembers?.values() ?? []) {
-        addProp(ctx, member.name, {
+      // No initializers, so each prop is typed and documented like a destructured one without a default.
+      const wholeObjectProps = [
+        ...Array.from(jsDocMembers?.values() ?? [], (member) => ({
           name: member.name,
-          kind: "let",
-          description: member.description,
-          type: member.type,
-          typeSource: "jsdoc",
-          isFunction: member.type.includes("=>"),
+          member,
+          typeMetadata: undefined,
+        })),
+        ...Array.from(metadata?.props ?? [], ([name, typeMetadata]) => ({ name, member: undefined, typeMetadata })),
+      ];
+      for (const { name, member, typeMetadata } of wholeObjectProps) {
+        const jsdoc = typeMetadata?.jsdoc;
+        const { type, typeSource, description, params, returnType, isFunction } = resolvePropTypeAndDocs({
+          explicitType: typeMetadata?.type,
+          jsdocType: jsdoc?.type ?? member?.type,
+          jsdocDescription: jsdoc?.description ?? member?.description,
+          jsdocParams: jsdoc?.params,
+          jsdocReturnType: jsdoc?.returnType,
+          initializerIsFunction: false,
           isFunctionDeclaration: false,
-          isRequired: !member.optional,
-          constant: false,
-          reactive: false,
+          inferIsFunctionFromTypeSignature: true,
         });
-      }
-      for (const [propName, typeMetadata] of metadata?.props ?? []) {
-        addProp(ctx, propName, {
-          name: propName,
+        recordPropSveldIgnore(ctx, name, jsdoc?.sveldIgnore);
+        addProp(ctx, name, {
+          name,
           kind: "let",
-          description: typeMetadata.jsdoc?.description,
-          deprecated: typeMetadata.jsdoc?.deprecated,
-          tags: typeMetadata.jsdoc?.tags,
-          type: typeMetadata.type,
-          typeSource: "typescript",
-          isFunction: false,
+          description,
+          ...propJsDocFields(jsdoc),
+          type,
+          typeSource,
+          params,
+          returnType,
+          isFunction,
           isFunctionDeclaration: false,
-          isRequired: !typeMetadata.optional,
+          isRequired: !(typeMetadata?.optional ?? member?.optional),
           constant: false,
           reactive: false,
-          source: typeMetadata.source,
+          source: typeMetadata?.source,
         });
       }
       continue;
