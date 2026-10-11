@@ -119,7 +119,7 @@
       "name": "computed",
       "kind": "let",
       "type": "string",
-      "typeSource": "jsdoc",
+      "typeSource": "default",
       "value": "createDefault()",
       "defaultValue": {
         "raw": "createDefault()",

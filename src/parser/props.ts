@@ -234,7 +234,9 @@ function processCallInitializer(
     // `resolvedType`, not `resolvedReturnType`, which would show up as the
     // prop's `returnType` even though it isn't a function.
     const sameFileReturnType = resolveSameFileCallReturnType(ctx, calleeName);
-    if (sameFileReturnType) return { ...result, resolvedType: sameFileReturnType };
+    if (sameFileReturnType?.declared) return { ...result, resolvedType: sameFileReturnType.type };
+    // Read off the function's `return`s, so it's as inferred as a literal default.
+    if (sameFileReturnType) return { ...result, type: sameFileReturnType.type };
 
     if (ctx.funcDecls.has(calleeName) || localFunctionValuedInitializer(ctx, calleeName)) {
       return { ...result, pendingCallDefault: { calleeName } };
@@ -555,21 +557,22 @@ export function resolveConstInitializer(ctx: ParserContext, name: string): Expre
  * literal returns via {@link inferReturnTypeFromNode}. Returns `undefined`
  * (not `"any"`) when nothing confident turns up.
  */
-function resolveSameFileCallReturnType(ctx: ParserContext, calleeName: string): string | undefined {
+/** What calling a same-file function returns; `declared` when JSDoc or TypeScript says so, not its body. */
+function resolveSameFileCallReturnType(
+  ctx: ParserContext,
+  calleeName: string,
+): { type: string; declared: boolean } | undefined {
   const resolvedJSDoc = resolveLocalVarJSDoc(ctx, calleeName);
-  if (resolvedJSDoc?.returnType) return resolvedJSDoc.returnType;
+  if (resolvedJSDoc?.returnType) return { type: resolvedJSDoc.returnType, declared: true };
 
   const funcNode = ctx.funcDecls.get(calleeName) ?? localFunctionValuedInitializer(ctx, calleeName);
   if (!funcNode) return undefined;
 
-  const tsReturnType = functionReturnTypeAnnotationText(ctx, funcNode);
-  if (tsReturnType) return tsReturnType;
-
-  const bindingReturnType = bindingCallableReturnTypeText(ctx, calleeName);
-  if (bindingReturnType) return bindingReturnType;
+  const declared = functionReturnTypeAnnotationText(ctx, funcNode) ?? bindingCallableReturnTypeText(ctx, calleeName);
+  if (declared) return { type: declared, declared: true };
 
   const inferred = inferReturnTypeFromNode(funcNode);
-  return inferred === "any" ? undefined : inferred;
+  return inferred === "any" ? undefined : { type: inferred, declared: false };
 }
 
 function localFunctionValuedInitializer(

@@ -142,7 +142,7 @@
       "name": "callDefault",
       "kind": "let",
       "type": "string",
-      "typeSource": "jsdoc",
+      "typeSource": "default",
       "value": "makeDefault()",
       "defaultValue": {
         "raw": "makeDefault()",
