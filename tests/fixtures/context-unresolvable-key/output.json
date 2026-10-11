@@ -40,6 +40,14 @@
       "message": "setContext key `dynamicKey` isn't a string literal, const-bound string, Symbol(), or imported `export const` string; the context is skipped.",
       "code": "sveld/context-key-unresolved",
       "severity": "warning"
+    },
+    {
+      "component": "context-unresolvable-key/input.svelte",
+      "kind": "context-key-unresolved",
+      "name": "mutableKey",
+      "message": "setContext key `mutableKey` isn't a string literal, const-bound string, Symbol(), or imported `export const` string; the context is skipped.",
+      "code": "sveld/context-key-unresolved",
+      "severity": "warning"
     }
   ]
 }

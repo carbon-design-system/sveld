@@ -6,16 +6,21 @@ export type ModalAPI = {
 };
 
 /**
+ * Log a message to the console
+ */
+export type MyLoggerContext = (message: string) => void;
+
+/**
  * Modal API object
  */
 export type ModalContext = ModalAPI;
 
-export type ContextImportedTypeProps = {
+export type ContextTypedValueProps = {
   children?: (this: void) => void;
 };
 
-export default class ContextImportedType extends SvelteComponentTyped<
-  ContextImportedTypeProps,
+export default class ContextTypedValue extends SvelteComponentTyped<
+  ContextTypedValueProps,
   Record<string, any>,
   { default: Record<string, never> }
 > {}

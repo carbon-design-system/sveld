@@ -31,6 +31,30 @@
           "optional": false
         }
       ]
+    },
+    {
+      "key": "notification",
+      "typeName": "NotificationContext",
+      "properties": [
+        {
+          "name": "notify",
+          "type": "(message: string) => void",
+          "description": "Push a notification message.",
+          "optional": false
+        }
+      ]
+    },
+    {
+      "key": "ModalKey",
+      "typeName": "ModalKeyContext",
+      "properties": [
+        {
+          "name": "notify",
+          "type": "(message: string) => void",
+          "description": "Push a notification message.",
+          "optional": false
+        }
+      ]
     }
   ],
   "diagnostics": []

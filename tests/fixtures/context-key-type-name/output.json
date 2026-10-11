@@ -1,0 +1,109 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "Carbon:Modal",
+      "typeName": "CarbonModalContext",
+      "properties": [
+        {
+          "name": "open",
+          "type": "() => void",
+          "description": "Open the modal",
+          "optional": false
+        }
+      ]
+    },
+    {
+      "key": "My Context",
+      "typeName": "MyContextContext",
+      "properties": [
+        {
+          "name": "open",
+          "type": "() => void",
+          "description": "Open the modal",
+          "optional": false
+        }
+      ]
+    },
+    {
+      "key": "App.data-table_v2",
+      "typeName": "AppDataTableV2Context",
+      "properties": [
+        {
+          "name": "open",
+          "type": "() => void",
+          "description": "Open the modal",
+          "optional": false
+        }
+      ]
+    },
+    {
+      "key": "@scope/ctx",
+      "typeName": "ScopeCtxContext",
+      "properties": [
+        {
+          "name": "count",
+          "type": "number",
+          "description": "",
+          "optional": false
+        }
+      ]
+    },
+    {
+      "key": "123",
+      "typeName": "_123Context",
+      "properties": [
+        {
+          "name": "count",
+          "type": "number",
+          "description": "",
+          "optional": false
+        }
+      ]
+    },
+    {
+      "key": "my key!",
+      "typeName": "MyKeyContext",
+      "properties": [
+        {
+          "name": "count",
+          "type": "number",
+          "description": "",
+          "optional": false
+        }
+      ]
+    },
+    {
+      "key": "simple-modal",
+      "typeName": "SimpleModalContext",
+      "properties": [
+        {
+          "name": "open",
+          "type": "() => void",
+          "description": "Open the modal",
+          "optional": false
+        }
+      ]
+    },
+    {
+      "key": "tabs",
+      "typeName": "TabsContext",
+      "properties": [
+        {
+          "name": "count",
+          "type": "number",
+          "description": "",
+          "optional": false
+        }
+      ]
+    }
+  ],
+  "diagnostics": []
+}
