@@ -21,6 +21,17 @@
       "reactive": false
     },
     {
+      "name": "id",
+      "localName": "elementId",
+      "kind": "let",
+      "typeSource": "unknown",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
       "name": "value",
       "kind": "let",
       "bindable": true,
@@ -138,6 +149,14 @@
   "generics": null,
   "contexts": [],
   "diagnostics": [
+    {
+      "component": "runes-prop-metadata-consolidated/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "id",
+      "message": "Prop \"id\" type could not be inferred; falling back to \"any\".",
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
+    },
     {
       "component": "runes-prop-metadata-consolidated/input.svelte",
       "kind": "prop-unknown-type",

@@ -1,0 +1,52 @@
+{
+  "syntaxMode": "runes",
+  "scriptLanguage": "ts",
+  "props": [
+    {
+      "name": "onmount",
+      "kind": "let",
+      "type": "Attachment",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "createTooltip",
+      "kind": "let",
+      "type": "(text: string) => Attachment",
+      "typeSource": "typescript",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "attachments",
+      "kind": "let",
+      "type": "Attachment[]",
+      "typeSource": "typescript",
+      "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}

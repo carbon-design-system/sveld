@@ -3,8 +3,9 @@
   "scriptLanguage": "ts",
   "props": [
     {
-      "name": "foo",
+      "name": "label",
       "kind": "let",
+      "description": "Badge label",
       "type": "string",
       "typeSource": "typescript",
       "isFunction": false,
@@ -14,7 +15,26 @@
       "reactive": false
     },
     {
-      "name": "bar",
+      "name": "tone",
+      "kind": "let",
+      "description": "Visual tone",
+      "deprecated": "Use `variant` instead.",
+      "type": "\"info\" | \"warn\"",
+      "typeSource": "typescript",
+      "value": "\"info\"",
+      "defaultValue": {
+        "raw": "\"info\"",
+        "kind": "literal",
+        "value": "info"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "count",
       "kind": "let",
       "type": "number",
       "typeSource": "typescript",

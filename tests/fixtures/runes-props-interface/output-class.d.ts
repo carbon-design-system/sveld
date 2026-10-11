@@ -1,8 +1,14 @@
 import { SvelteComponentTyped } from "svelte";
 
 interface Props {
-  foo: string;
-  bar?: number;
+  /** Badge label */
+  label: string;
+  /**
+   * Visual tone
+   * @deprecated Use `variant` instead.
+   */
+  tone?: "info" | "warn";
+  count?: number;
 }
 
 type $Props = Props;
