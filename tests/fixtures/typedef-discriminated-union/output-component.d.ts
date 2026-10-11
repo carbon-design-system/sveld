@@ -16,6 +16,24 @@ export type Status = {
   reason: string
 } | "pending";
 
+export interface Base {
+  id: string;
+  createdAt: number
+}
+
+export type User = Base & {
+  kind: "user";
+  name: string
+};
+
+export type Post = Base & {
+  kind: "post";
+  title: string;
+  body: string
+};
+
+export type Entity = User | Post;
+
 export type TypedefDiscriminatedUnionProps = {
   /**
    * @default { kind: "success", value: "ok" }
@@ -26,6 +44,11 @@ export type TypedefDiscriminatedUnionProps = {
    * @default "pending"
    */
   status?: Status;
+
+  /**
+   * @default { id: "1", createdAt: 0, kind: "user", name: "Ada" }
+   */
+  entity?: Entity;
 };
 
 export type TypedefDiscriminatedUnionExports = Record<string, never>;
