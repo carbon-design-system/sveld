@@ -24,7 +24,6 @@
         {
           "name": "value",
           "type": "Value$Type",
-          "description": "",
           "optional": false
         }
       ]

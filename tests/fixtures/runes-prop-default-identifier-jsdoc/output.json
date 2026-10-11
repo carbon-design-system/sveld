@@ -140,13 +140,11 @@
         {
           "name": "item",
           "type": "string",
-          "description": "",
           "optional": false
         },
         {
           "name": "index",
           "type": "number",
-          "description": "",
           "optional": false
         }
       ],

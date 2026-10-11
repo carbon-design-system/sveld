@@ -175,7 +175,7 @@ function parseContextObjectProperties(
     properties.push({
       name: propName,
       type: described.type,
-      description: described.description ?? jsdoc?.description,
+      description: described.description || jsdoc?.description || undefined,
       optional: false,
       ...(described.internal ? { internal: true } : {}),
     });
@@ -225,7 +225,7 @@ function parseContextValue(ctx: ParserContext, node: Node, key: string): Compone
       typeName,
       ...(members ? {} : { type: varInfo.type }),
       properties: members ?? [],
-      description: varInfo.description,
+      description: varInfo.description || undefined,
       ...(varInfo.internal ? { internal: true } : {}),
     };
   }

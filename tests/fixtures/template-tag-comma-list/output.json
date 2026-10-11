@@ -47,13 +47,11 @@
         {
           "name": "a",
           "type": "A",
-          "description": "",
           "optional": false
         },
         {
           "name": "b",
           "type": "B",
-          "description": "",
           "optional": false
         }
       ],

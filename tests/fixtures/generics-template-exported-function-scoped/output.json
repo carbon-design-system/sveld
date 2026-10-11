@@ -11,7 +11,6 @@
         {
           "name": "list",
           "type": "U[]",
-          "description": "",
           "optional": false
         }
       ],
@@ -52,13 +51,11 @@
         {
           "name": "nodes",
           "type": "T[]",
-          "description": "",
           "optional": false
         },
         {
           "name": "pred",
           "type": "(node: T) => boolean",
-          "description": "",
           "optional": false
         }
       ],
@@ -84,13 +81,11 @@
         {
           "name": "nodes",
           "type": "T[]",
-          "description": "",
           "optional": false
         },
         {
           "name": "key",
           "type": "(node: T) => K",
-          "description": "",
           "optional": false
         }
       ],
@@ -116,7 +111,6 @@
         {
           "name": "value",
           "type": "T",
-          "description": "",
           "optional": false
         }
       ],
