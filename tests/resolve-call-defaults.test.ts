@@ -198,6 +198,26 @@ describe("cross-file CallExpression prop-default resolution", () => {
     expect(prop?.type).toBe("string");
   });
 
+  test("E: an imported function returning a primitive conversion types the prop", async () => {
+    writeFileSync(path.join(dir, "utils.js"), "export const label = () => String(42);\n");
+    writeFileSync(
+      path.join(dir, "Converted.svelte"),
+      `<script>
+  import { label } from "./utils.js";
+  export let text = label();
+</script>
+<p>{text}</p>
+`,
+    );
+    writeFileSync(path.join(dir, "index.js"), `export { default as Converted } from "./Converted.svelte";\n`);
+
+    const result = await generateBundle(path.join(dir, "index.js"), true);
+    const component = byModuleName(result.allComponentsForTypes, "Converted");
+
+    expect(component?.props.find((p) => p.name === "text")?.type).toBe("string");
+    expect(component?.diagnostics?.some((d) => d.name === "text")).toBe(false);
+  });
+
   test("F: import after the export let (carbon-components-svelte props-then-imports style)", async () => {
     writeFileSync(path.join(dir, "utils.js"), UNIQUE_ID_WITH_JSDOC);
     writeFileSync(

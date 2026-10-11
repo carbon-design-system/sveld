@@ -178,8 +178,22 @@ function inferLiteralType(init: Expression): string | undefined {
     if (typeof value === "boolean") return "boolean";
   }
   if (init.type === "TemplateLiteral") return "string";
+  // Negative numeric literals parse as `UnaryExpression` (`-1`), not `Literal`.
+  if (init.type === "UnaryExpression" && (init.operator === "-" || init.operator === "+")) {
+    return init.argument.type === "Literal" && typeof init.argument.value === "number" ? "number" : undefined;
+  }
+  // `String(x)`, `Number(x)`, `Boolean(x)` convert whatever they're given.
+  if (init.type === "CallExpression" && init.callee.type === "Identifier") {
+    return PRIMITIVE_CONVERSIONS[init.callee.name];
+  }
   return undefined;
 }
+
+const PRIMITIVE_CONVERSIONS: Record<string, string | undefined> = {
+  String: "string",
+  Number: "number",
+  Boolean: "boolean",
+};
 
 /** `300`, `-1`, `"a"`, `true`, or a template with no expressions. */
 function staticPrimitiveValue(node: Expression): PrimitiveLiteral["value"] | undefined {
@@ -267,7 +281,7 @@ function portableDeclaredType(
 
 /**
  * Literal-only return inference for a function/arrow (same idea as
- * `inferReturnTypeFromNode` in props.ts). string/number/boolean/template only.
+ * `inferReturnTypeFromNode` in props.ts). Literals, templates, and `String()`/`Number()`/`Boolean()` calls only.
  */
 function inferAstLiteralReturnType(fn: FunctionLike): string | undefined {
   if (fn.async || fn.generator || fn.type === "TSDeclareFunction") return undefined;
