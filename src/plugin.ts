@@ -1,4 +1,4 @@
-import { dirname, isAbsolute, resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import {
   type GenerateBundleOptions,
   type GenerateBundleResult,
@@ -159,9 +159,7 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
       if (opts?.config) {
         const cwd = root ?? process.cwd();
         const fileConfig =
-          typeof opts.config === "string"
-            ? await loadConfigFrom(isAbsolute(opts.config) ? opts.config : resolve(cwd, opts.config))
-            : await loadConfig(cwd);
+          typeof opts.config === "string" ? await loadConfigFrom(resolve(cwd, opts.config)) : await loadConfig(cwd);
         mergedOpts = mergeConfig<PluginSveldOptions>(fileConfig, opts);
       }
       validateOptions(mergedOpts);

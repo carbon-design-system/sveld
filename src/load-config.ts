@@ -28,12 +28,10 @@ export interface SveldRuntimeOptions extends PluginSveldOptions {
    */
   check?: boolean | string;
   /**
-   * Minimum bump `--check` fails the run (exit `3`) on: `"major"` (default,
-   * preserves prior behavior), `"minor"`, or `"patch"`.
+   * Minimum bump `--check` fails the run (exit `3`) on: `"major"`
+   * (default), `"minor"`, or `"patch"`.
    */
   checkLevel?: "major" | "minor" | "patch";
-  /** Suppress writer progress logs (`created "..."` / `unchanged "..."`). */
-  quiet?: boolean;
   /**
    * Print the single selected `json` / `markdown` document to stdout
    * instead of writing it to disk. Requires exactly one of those two
@@ -42,9 +40,9 @@ export interface SveldRuntimeOptions extends PluginSveldOptions {
   stdout?: boolean;
   /**
    * Output format for the `--check` report and the `--report-diagnostics` /
-   * `--strict` diagnostics summary: `"text"` (default) or `"json"`.
-   * Channels are unchanged, the check report on stdout and diagnostics on
-   * stderr. CLI-only; `sveld()` ignores `format` for its own console output.
+   * `--strict` diagnostics summary: `"text"` (default) or `"json"`. The
+   * check report goes to stdout and the summary to stderr. `sveld()` prints
+   * only the summary.
    */
   format?: "text" | "json";
 }

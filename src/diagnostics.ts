@@ -250,10 +250,7 @@ export const DIAGNOSTIC_CODES = Object.fromEntries(KIND_ORDER.map((kind) => [kin
   string
 >;
 
-/**
- * Drop duplicates (same component, kind, and name). Each file is parsed twice
- * when building exports and `.d.ts`, so without this the CLI summary doubles.
- */
+/** Keeps the first diagnostic per component, kind, and name. */
 export function dedupeDiagnostics(diagnostics: SveldDiagnostic[]): SveldDiagnostic[] {
   const seen = new Set<string>();
   const result: SveldDiagnostic[] = [];
