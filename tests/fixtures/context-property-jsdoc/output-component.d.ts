@@ -1,7 +1,10 @@
 import type { Component } from "svelte";
 
 export type PanelsContext = {
-  /** Number of open panels */
+  /**
+   * Number of open panels.
+   * Zero when every panel is closed.
+   */
   count: number;
   /** Hidden from docs */
   secret: number;

@@ -2,7 +2,10 @@
   import { setContext } from "svelte";
   import { noop } from "./utils.js";
 
-  /** Number of open panels */
+  /**
+   * Number of open panels.
+   * Zero when every panel is closed.
+   */
   let count = $state(0);
 
   /**
