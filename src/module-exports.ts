@@ -17,7 +17,6 @@ import type {
 import { resolveStaticStringLiteral, unwrapTypeCastExpression } from "./ast-guards";
 import type { ModuleGraph, ModuleSource } from "./module-graph";
 import type { EntryExport } from "./parse-entry-exports";
-import { parseComments } from "./parser/comment-parser";
 import { collectReturnArguments } from "./parser/walk";
 import { getParserStack } from "./parser-stack";
 import { returnTypeOfFunctionType } from "./type-text";
@@ -255,7 +254,7 @@ function portableDeclaredType(
   annotation: string | undefined,
   rawJsDoc: string | undefined,
 ): InternalExport["declaredType"] {
-  const jsDocType = rawJsDoc ? getParserStack().getCommentTags(parseComments(rawJsDoc)).type?.type.trim() : undefined;
+  const jsDocType = rawJsDoc ? getParserStack().extractJsDocType(rawJsDoc) : undefined;
   const declared = annotation
     ? { type: annotation, source: "typescript" as const }
     : jsDocType

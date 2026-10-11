@@ -299,6 +299,8 @@ describe("cross-file imported-constant prop-default resolution", () => {
         'export const NAMED: Size = "sm";',
         '/** @type {"a" | "b"} */',
         'export const JSDOC = "a";',
+        "/** @type {*} */",
+        'export const ANY = "a";',
         "",
       ].join("\n"),
     );
@@ -306,12 +308,13 @@ describe("cross-file imported-constant prop-default resolution", () => {
     const component = await parseComponent(
       "Typed",
       `<script>
-  import { CAST, CHECKED, ANNOTATED, NAMED, JSDOC } from "./typed";
+  import { CAST, CHECKED, ANNOTATED, NAMED, JSDOC, ANY } from "./typed";
   export let cast = CAST;
   export let checked = CHECKED;
   export let annotated = ANNOTATED;
   export let named = NAMED;
   export let jsdoc = JSDOC;
+  export let any = ANY;
 </script>
 `,
     );
@@ -323,6 +326,7 @@ describe("cross-file imported-constant prop-default resolution", () => {
       // `Size` isn't in scope in the component's .d.ts.
       ["named", '"sm"', "string", "default"],
       ["jsdoc", '"a"', '"a" | "b"', "jsdoc"],
+      ["any", '"a"', "any", "jsdoc"],
     ]);
   });
 
