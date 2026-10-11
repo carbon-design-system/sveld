@@ -2,17 +2,17 @@ import { SvelteComponentTyped } from "svelte";
 
 export type RunesDerivedPropDefaultProps = {
   /**
-   * @default $derived(now.toISOString())
+   * @default now.toISOString()
    */
   label?: any;
 
   /**
-   * @default $derived(uniqueId())
+   * @default uniqueId()
    */
   theId?: string;
 
   /**
-   * @default $state(0)
+   * @default 0
    */
   theCount?: number;
 };

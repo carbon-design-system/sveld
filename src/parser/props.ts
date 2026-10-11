@@ -156,7 +156,7 @@ function processInitializerWithoutAssertion(ctx: ParserContext, init: unknown, d
       if (depth < 5) {
         const resolvedInit = resolveLocalVarInitializer(ctx, name);
         if (resolvedInit) {
-          const inner = processInitializer(ctx, resolvedInit, depth + 1);
+          const inner = processInitializer(ctx, unwrapStateInitializer(resolvedInit), depth + 1);
           const resolvedJSDoc = resolveLocalVarJSDoc(ctx, name);
           return {
             ...inner,
@@ -513,6 +513,25 @@ export function svelteStoreType(ctx: ParserContext, call: CallExpression): strin
       inferExpressionType(ctx, value, 0);
   }
   return `import("svelte/store").${store}<${valueType ?? "any"}>`;
+}
+
+/**
+ * The value inside `$state(x)`, `$state.raw(x)`, or `$derived(x)`: a prop defaulting to such a
+ * local defaults to `x`, and the rune call means nothing to a consumer.
+ */
+function unwrapStateInitializer(init: Expression): Expression {
+  if (init.type !== "CallExpression" || init.arguments.length !== 1) return init;
+  const [argument] = init.arguments;
+  if (argument.type === "SpreadElement") return init;
+  const { callee } = init;
+  const isRune =
+    (callee.type === "Identifier" && (callee.name === "$state" || callee.name === "$derived")) ||
+    (callee.type === "MemberExpression" &&
+      isIdentifier(callee.object) &&
+      callee.object.name === "$state" &&
+      isIdentifier(callee.property) &&
+      callee.property.name === "raw");
+  return isRune ? argument : init;
 }
 
 function resolveLocalVarInitializer(ctx: ParserContext, name: string, constOnly = false): Expression | undefined {
