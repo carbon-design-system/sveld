@@ -44,7 +44,7 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "{\n  a: string;\n  b: string;\n  c: number;\n  d: string;\n  e: \"pending\" | \"done\" | \"error\";\n  f: { deep: number };\n  g: Array<string>;\n  h: any;\n  i: number;\n  j: string;\n  computed: any;\n  chained: any;\n}"
+      "slot_props": "{\n  a: string;\n  b: string;\n  c: number;\n  d: string | undefined;\n  e: \"pending\" | \"done\" | \"error\";\n  f: { deep: number };\n  g: Array<string>;\n  h: any;\n  i: number;\n  j: string;\n  k: string;\n  computed: any;\n  chained: any;\n}"
     },
     {
       "name": "typed",

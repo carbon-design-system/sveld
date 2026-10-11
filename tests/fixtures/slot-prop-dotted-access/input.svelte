@@ -30,6 +30,9 @@
   /** @type {{ onClick: (e: MouseEvent) => void; label: string }} */
   export let item = { onClick: () => {}, label: "" };
 
+  /** @type {{ readonly id: string; format(): string }} */
+  let frozen = { id: "", format: () => "" };
+
   let key = "value";
 </script>
 
@@ -44,6 +47,7 @@
   h={inferred.noType}
   i={point.x}
   j={item.label}
+  k={frozen.id}
   computed={explicit[key]}
   chained={nested.inner.deep}
 />

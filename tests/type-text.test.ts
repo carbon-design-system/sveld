@@ -154,6 +154,13 @@ describe("parseObjectTypeLiteralMembers", () => {
     ]);
   });
 
+  test("reads a readonly member by its name", () => {
+    expect(parseObjectTypeLiteralMembers("{ readonly id: string; readonly label?: string }")).toEqual([
+      { name: "id", type: "string", optional: false },
+      { name: "label", type: "string", optional: true },
+    ]);
+  });
+
   test("keeps a comma after an arrow nested in a generic", () => {
     expect(parseObjectTypeLiteralMembers("{ a: Record<() => void, string>; b: number }")).toEqual([
       { name: "a", type: "Record<() => void, string>", optional: false },
