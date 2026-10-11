@@ -196,7 +196,7 @@
       "value": "!size",
       "defaultValue": {
         "raw": "!size",
-        "kind": "literal"
+        "kind": "expression"
       },
       "isFunction": false,
       "isFunctionDeclaration": false,
@@ -213,7 +213,7 @@
       "value": "typeof size",
       "defaultValue": {
         "raw": "typeof size",
-        "kind": "literal"
+        "kind": "expression"
       },
       "isFunction": false,
       "isFunctionDeclaration": false,
