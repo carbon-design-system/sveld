@@ -4,13 +4,13 @@ import type {
   BinaryExpression,
   CallExpression,
   ConditionalExpression,
+  Expression,
   FunctionDeclaration,
   FunctionExpression,
   Identifier,
   Literal,
   LogicalExpression,
   MemberExpression,
-  NewExpression,
   ObjectExpression,
   Property,
   SequenceExpression,
@@ -114,186 +114,154 @@ function jsdocCastType(ctx: ParserContext, init: object): string | undefined {
 }
 
 function processInitializerWithoutAssertion(ctx: ParserContext, init: unknown, depth: number): ProcessedInitializer {
-  let value: string | undefined;
-  let type: string | undefined;
-  let isFunction = false;
-
   if (!init || typeof init !== "object" || !("type" in init)) {
-    return { value, type, isFunction };
+    return { value: undefined, type: undefined, isFunction: false };
   }
 
-  const defaultValue = classifyDefaultValue(ctx, init);
+  const node = init as Expression;
+  const defaultValue = classifyDefaultValue(ctx, node);
+  const result = (value: string | undefined, type?: string): ProcessedInitializer => ({
+    value,
+    type,
+    isFunction: false,
+    defaultValue,
+  });
 
-  if (
-    init.type === "ObjectExpression" ||
-    init.type === "BinaryExpression" ||
-    init.type === "ArrayExpression" ||
-    init.type === "ArrowFunctionExpression" ||
-    init.type === "FunctionExpression"
-  ) {
-    value = sourceForExpression(ctx, init);
-    isFunction = init.type === "ArrowFunctionExpression" || init.type === "FunctionExpression";
-
-    if (init.type === "BinaryExpression") {
-      type = inferExpressionType(ctx, init, depth);
-    } else if (init.type === "ObjectExpression" || init.type === "ArrayExpression") {
-      type = literalType(init, "widen");
-    } else if (isFunction) {
-      type = inferFunctionTypeFromNode(init as ArrowFunctionExpression | FunctionExpression);
-      value = conciseFunctionDefaultText(ctx, init as ArrowFunctionExpression | FunctionExpression);
-    }
-  } else if (init.type === "UnaryExpression") {
-    value = nodeSourceText(ctx, init);
-    type = inferExpressionType(ctx, init, depth);
-  } else if (
-    init.type === "LogicalExpression" ||
-    init.type === "ConditionalExpression" ||
-    init.type === "SequenceExpression"
-  ) {
-    // The whole expression is the default (`size ?? "md"`), folded onto one
-    // line; a sequence keeps the parens it needs to read as one value.
-    const text = nodeSourceText(ctx, init)?.replace(LINE_BREAK_WITH_INDENT_REGEX, " ");
-    value = text !== undefined && init.type === "SequenceExpression" ? `(${text})` : text;
-    type = inferExpressionType(ctx, init, depth);
-  } else if (init.type === "NewExpression") {
-    value = nodeSourceText(ctx, init);
-    const callee = (init as NewExpression).callee;
-    if (isIdentifier(callee)) {
-      type = NEW_EXPRESSION_TYPES.get(callee.name) ?? callee.name;
-    }
-  } else if (init.type === "CallExpression") {
-    const callExpr = init as CallExpression;
-    value = nodeSourceText(ctx, init);
-
-    const callee = callExpr.callee;
-    const calleeName = isIdentifier(callee) ? callee.name : undefined;
-
-    // `$derived`/`$state` wrap a value. Unwrap like `$bindable`, keep the rune
-    // call text as `@default`.
-    if ((calleeName === "$derived" || calleeName === "$state") && callExpr.arguments.length === 1 && depth < 5) {
-      const inner = processInitializer(ctx, callExpr.arguments[0], depth + 1);
-      return { ...inner, value, defaultValue };
-    }
-
-    // Same-file function/const-arrow, or a named value import.
-    if (calleeName) {
-      const sameFileReturnType = resolveSameFileCallReturnType(ctx, calleeName);
-      if (sameFileReturnType) {
-        // Value prop: only resolvedType. resolvedReturnType would show up on
-        // prop.returnType even when isFunction is false.
-        return {
-          value,
-          type: undefined,
-          isFunction: false,
-          defaultValue,
-          resolvedType: sameFileReturnType,
-        };
-      }
-
-      if (ctx.funcDecls.has(calleeName) || localFunctionValuedInitializer(ctx, calleeName)) {
-        return { value, type: undefined, isFunction: false, defaultValue, pendingCallDefault: { calleeName } };
-      }
-
-      const importBinding = ctx.valueImportBindingsByLocalName.get(calleeName);
-      if (importBinding) {
-        return {
-          value,
-          type: undefined,
-          isFunction: false,
-          defaultValue,
-          pendingCallDefault: {
-            calleeName,
-            importSource: importBinding.source,
-            importedName: importBinding.importedName,
-          },
-        };
-      }
-    }
-
-    // Unknown callee, member call, IIFE, etc. Still pending so finalize uses
-    // "any" instead of the literal type "undefined".
-    return {
-      value,
-      type: undefined,
-      isFunction: false,
-      defaultValue,
-      pendingCallDefault: { calleeName: calleeName ?? nodeSourceText(ctx, callee) ?? "call" },
-    };
-  } else if (init.type === "Identifier") {
-    const ident = init as Identifier;
-    if (depth < 5) {
-      const resolvedInit = resolveLocalVarInitializer(ctx, ident.name);
-      if (resolvedInit) {
-        const inner = processInitializer(ctx, resolvedInit, depth + 1);
-        const resolvedJSDoc = resolveLocalVarJSDoc(ctx, ident.name);
-        return {
-          ...inner,
-          resolvedType: resolvedJSDoc?.type ?? inner.resolvedType,
-          resolvedDescription: resolvedJSDoc?.description ?? inner.resolvedDescription,
-          resolvedParams: resolvedJSDoc?.params ?? inner.resolvedParams,
-          resolvedReturnType: resolvedJSDoc?.returnType ?? inner.resolvedReturnType,
-        };
-      }
-
-      // `function defaultX() {}` has no initializer. Read JSDoc off the declaration.
-      if (ctx.funcDecls.has(ident.name)) {
-        const resolvedJSDoc = resolveLocalVarJSDoc(ctx, ident.name);
-        const funcNode = ctx.funcDecls.get(ident.name);
-        return {
-          value: funcNode ? conciseFunctionDefaultText(ctx, funcNode) : undefined,
-          type: undefined,
-          isFunction: true,
-          defaultValue: funcNode ? classifyDefaultValue(ctx, funcNode) : undefined,
-          resolvedType: resolvedJSDoc?.type ?? buildFunctionTypeFromParts(resolvedJSDoc, funcNode),
-          resolvedDescription: resolvedJSDoc?.description,
-          resolvedParams: resolvedJSDoc?.params,
-          resolvedReturnType: resolvedJSDoc?.returnType,
-        };
-      }
-    }
-    value = nodeSourceText(ctx, ident);
-
-    // Named value import. The cross-file pass may swap in the imported literal.
-    const importBinding = ctx.valueImportBindingsByLocalName.get(ident.name);
-    if (importBinding) {
+  switch (node.type) {
+    case "ObjectExpression":
+    case "ArrayExpression":
+      return result(sourceForExpression(ctx, node), literalType(node, "widen"));
+    case "BinaryExpression":
+      return result(sourceForExpression(ctx, node), inferExpressionType(ctx, node, depth));
+    case "ArrowFunctionExpression":
+    case "FunctionExpression":
       return {
-        value,
-        type,
-        isFunction,
-        defaultValue,
-        pendingConstDefault: { importSource: importBinding.source, importedName: importBinding.importedName },
+        ...result(conciseFunctionDefaultText(ctx, node), inferFunctionTypeFromNode(node)),
+        isFunction: true,
       };
+    case "UnaryExpression":
+      return result(nodeSourceText(ctx, node), inferExpressionType(ctx, node, depth));
+    case "LogicalExpression":
+    case "ConditionalExpression":
+    case "SequenceExpression": {
+      // The whole expression is the default (`size ?? "md"`), folded onto one
+      // line; a sequence keeps the parens it needs to read as one value.
+      const text = nodeSourceText(ctx, node)?.replace(LINE_BREAK_WITH_INDENT_REGEX, " ");
+      const value = text !== undefined && node.type === "SequenceExpression" ? `(${text})` : text;
+      return result(value, inferExpressionType(ctx, node, depth));
     }
-  } else if (init.type === "MemberExpression") {
-    value = nodeSourceText(ctx, init);
-    if (isNumericConstant(init)) {
-      type = "number";
+    case "NewExpression": {
+      const { callee } = node;
+      const type = isIdentifier(callee) ? (NEW_EXPRESSION_TYPES.get(callee.name) ?? callee.name) : undefined;
+      return result(nodeSourceText(ctx, node), type);
+    }
+    case "CallExpression":
+      return processCallInitializer(ctx, node, defaultValue, depth);
+    case "Identifier": {
+      const { name } = node;
+      if (depth < 5) {
+        const resolvedInit = resolveLocalVarInitializer(ctx, name);
+        if (resolvedInit) {
+          const inner = processInitializer(ctx, resolvedInit, depth + 1);
+          const resolvedJSDoc = resolveLocalVarJSDoc(ctx, name);
+          return {
+            ...inner,
+            resolvedType: resolvedJSDoc?.type ?? inner.resolvedType,
+            resolvedDescription: resolvedJSDoc?.description ?? inner.resolvedDescription,
+            resolvedParams: resolvedJSDoc?.params ?? inner.resolvedParams,
+            resolvedReturnType: resolvedJSDoc?.returnType ?? inner.resolvedReturnType,
+          };
+        }
+
+        // `function defaultX() {}` has no initializer. Read JSDoc off the declaration.
+        const funcNode = ctx.funcDecls.get(name);
+        if (funcNode) {
+          const resolvedJSDoc = resolveLocalVarJSDoc(ctx, name);
+          return {
+            value: conciseFunctionDefaultText(ctx, funcNode),
+            type: undefined,
+            isFunction: true,
+            defaultValue: classifyDefaultValue(ctx, funcNode),
+            resolvedType: resolvedJSDoc?.type ?? buildFunctionTypeFromParts(resolvedJSDoc, funcNode),
+            resolvedDescription: resolvedJSDoc?.description,
+            resolvedParams: resolvedJSDoc?.params,
+            resolvedReturnType: resolvedJSDoc?.returnType,
+          };
+        }
+      }
+
+      // Named value import. The cross-file pass may swap in the imported literal.
+      return withPendingConstDefault(result(nodeSourceText(ctx, node)), ctx.valueImportBindingsByLocalName.get(name));
+    }
+    case "MemberExpression":
+      // Member of a namespace import (`C.DELAY`). The cross-file pass may swap in the literal.
+      return withPendingConstDefault(
+        result(nodeSourceText(ctx, node), isNumericConstant(node) ? "number" : undefined),
+        importedMemberBinding(ctx, node),
+      );
+    case "TemplateLiteral":
+      return result(nodeSourceText(ctx, node), "string");
+    case "Literal":
+      return typeof node.raw === "string" ? result(node.raw, literalValueType(node)) : result(undefined);
+    default:
+      return result(undefined);
+  }
+}
+
+/** `initResult`, left for the cross-file pass to read the imported value `binding` names, if any. */
+function withPendingConstDefault(
+  initResult: ProcessedInitializer,
+  binding: { source: string; importedName: string; members?: string[] } | undefined,
+): ProcessedInitializer {
+  if (!binding) return initResult;
+  const { source: importSource, importedName, members } = binding;
+  return { ...initResult, pendingConstDefault: { importSource, importedName, ...(members ? { members } : {}) } };
+}
+
+/** A call default: a `$state`/`$derived` rune unwrapped, or a call whose type may resolve here or cross-file. */
+function processCallInitializer(
+  ctx: ParserContext,
+  call: CallExpression,
+  defaultValue: ComponentPropDefaultValue | undefined,
+  depth: number,
+): ProcessedInitializer {
+  const value = nodeSourceText(ctx, call);
+  const { callee } = call;
+  const calleeName = isIdentifier(callee) ? callee.name : undefined;
+
+  // `$derived`/`$state` wrap a value. Unwrap like `$bindable`, keep the rune
+  // call text as `@default`.
+  if ((calleeName === "$derived" || calleeName === "$state") && call.arguments.length === 1 && depth < 5) {
+    return { ...processInitializer(ctx, call.arguments[0], depth + 1), value, defaultValue };
+  }
+
+  const result = { value, type: undefined, isFunction: false, defaultValue };
+  if (calleeName) {
+    // `resolvedType`, not `resolvedReturnType`, which would show up as the
+    // prop's `returnType` even though it isn't a function.
+    const sameFileReturnType = resolveSameFileCallReturnType(ctx, calleeName);
+    if (sameFileReturnType) return { ...result, resolvedType: sameFileReturnType };
+
+    if (ctx.funcDecls.has(calleeName) || localFunctionValuedInitializer(ctx, calleeName)) {
+      return { ...result, pendingCallDefault: { calleeName } };
     }
 
-    // Member of a namespace import (`C.DELAY`). The cross-file pass may swap in the literal.
-    const importBinding = importedMemberBinding(ctx, init);
+    const importBinding = ctx.valueImportBindingsByLocalName.get(calleeName);
     if (importBinding) {
       return {
-        value,
-        type,
-        isFunction,
-        defaultValue,
-        pendingConstDefault: {
+        ...result,
+        pendingCallDefault: {
+          calleeName,
           importSource: importBinding.source,
           importedName: importBinding.importedName,
-          ...(importBinding.members ? { members: importBinding.members } : {}),
         },
       };
     }
-  } else if (init.type === "TemplateLiteral") {
-    value = nodeSourceText(ctx, init);
-    type = "string";
-  } else if ("raw" in init && typeof init.raw === "string") {
-    value = init.raw;
-    type = literalValueType(init as Literal);
   }
 
-  return { value, type, isFunction, defaultValue };
+  // Unknown callee, member call, IIFE, etc. Still pending so finalize uses
+  // "any" instead of the literal type "undefined".
+  return { ...result, pendingCallDefault: { calleeName: calleeName ?? nodeSourceText(ctx, callee) ?? "call" } };
 }
 
 /**
@@ -475,26 +443,23 @@ export function inferVariableInitializerType(ctx: ParserContext, name: string): 
     const funcDecl = ctx.funcDecls.get(name);
     return funcDecl && localFunctionType(ctx, name, funcDecl);
   }
-  if (!init || typeof init !== "object" || !("type" in init)) return undefined;
 
   if (init.type === "ArrowFunctionExpression" || init.type === "FunctionExpression") {
-    const fn = init as ArrowFunctionExpression | FunctionExpression;
-    return initializerCastType(ctx, fn) ?? localFunctionType(ctx, name, fn);
+    return initializerCastType(ctx, init) ?? localFunctionType(ctx, name, init);
   }
 
   if (init.type === "CallExpression") {
-    const call = init as CallExpression;
-    const storeType = svelteStoreType(ctx, call);
+    const storeType = svelteStoreType(ctx, init);
     if (storeType) return storeType;
 
-    const callee = sourceForExpression(ctx, call.callee);
+    const callee = sourceForExpression(ctx, init.callee);
     if (callee === "$state" || callee === "$state.raw" || callee === "$derived") {
-      const typeArgument = call.typeArguments?.params[0];
+      const typeArgument = init.typeArguments?.params[0];
       if (typeArgument) {
         trackAdditionalTypeDependencyNode(ctx, typeArgument);
         return sourceForExpression(ctx, typeArgument);
       }
-      if (callee === "$state.raw") return processInitializer(ctx, call.arguments[0], 1).type;
+      if (callee === "$state.raw") return processInitializer(ctx, init.arguments[0], 1).type;
     }
   }
 
@@ -561,7 +526,7 @@ export function svelteStoreType(ctx: ParserContext, call: CallExpression): strin
   return `import("svelte/store").${store}<${valueType ?? "any"}>`;
 }
 
-function resolveLocalVarInitializer(ctx: ParserContext, name: string, constOnly = false): unknown {
+function resolveLocalVarInitializer(ctx: ParserContext, name: string, constOnly = false): Expression | undefined {
   for (const decl of ctx.vars) {
     if (constOnly && decl.kind !== "const") continue;
     for (const declarator of decl.declarations) {
@@ -572,7 +537,7 @@ function resolveLocalVarInitializer(ctx: ParserContext, name: string, constOnly 
 }
 
 /** Unlike `let`/`var`, a `const` can't change at runtime, so only it can be a context key. */
-export function resolveConstInitializer(ctx: ParserContext, name: string): unknown {
+export function resolveConstInitializer(ctx: ParserContext, name: string): Expression | undefined {
   return resolveLocalVarInitializer(ctx, name, true);
 }
 
@@ -604,11 +569,7 @@ function localFunctionValuedInitializer(
   name: string,
 ): FunctionExpression | ArrowFunctionExpression | undefined {
   const init = resolveLocalVarInitializer(ctx, name);
-  if (!init || typeof init !== "object" || !("type" in init)) return undefined;
-  if (init.type === "ArrowFunctionExpression" || init.type === "FunctionExpression") {
-    return init as ArrowFunctionExpression | FunctionExpression;
-  }
-  return undefined;
+  return init?.type === "ArrowFunctionExpression" || init?.type === "FunctionExpression" ? init : undefined;
 }
 
 /** Return type from `const f: () => string = ...` when the arrow omits `): string`. */
@@ -660,15 +621,13 @@ function inferFunctionTypeFromNode(node: FunctionNode): string {
  * Turn params into `name: any`, or use `...args: any[]` when arity is unclear:
  * no params, destructuring, rest, or defaults.
  */
-function inferParamsFromNode(node: FunctionNode): string {
-  const params = node.params;
-  if (!Array.isArray(params) || params.length === 0) return "...args: any[]";
+function inferParamsFromNode({ params }: FunctionNode): string {
   const names: string[] = [];
   for (const param of params) {
     if (!isIdentifier(param)) return "...args: any[]";
     names.push(`${param.name}: any`);
   }
-  return names.join(", ");
+  return names.length > 0 ? names.join(", ") : "...args: any[]";
 }
 
 /**
@@ -726,13 +685,9 @@ export function unwrapBindableInitializer(init: unknown): { init?: unknown; bind
  * matter for a value default; `inferParamsFromNode`'s `: any` annotations
  * are for the prop's *type*, not this).
  */
-function paramsSourceText(ctx: ParserContext, node: FunctionNode): string {
-  const params = node.params;
-  if (!Array.isArray(params) || params.length === 0) return "";
-  const first = params[0] as { start?: number };
-  const last = params[params.length - 1] as { end?: number };
-  if (typeof first.start !== "number" || typeof last.end !== "number") return "";
-  return sourceAtPos(ctx, first.start, last.end) ?? "";
+function paramsSourceText(ctx: ParserContext, { params }: FunctionNode): string {
+  if (params.length === 0) return "";
+  return sourceAtPos(ctx, params[0].start, params[params.length - 1].end) ?? "";
 }
 
 /**
@@ -866,16 +821,9 @@ const NUMBER_CONSTANTS = new Set([
 const MATH_CONSTANTS = new Set(["PI", "E", "LN2", "LN10", "LOG2E", "LOG10E", "SQRT2", "SQRT1_2"]);
 
 /** `Number.MAX_SAFE_INTEGER`, `Math.PI`, and the other numeric constants on `Number` and `Math`. */
-function isNumericConstant(memberExpr: unknown): boolean {
-  if (!memberExpr || typeof memberExpr !== "object" || !("type" in memberExpr)) return false;
-  if (memberExpr.type !== "MemberExpression") return false;
-
-  const expr = memberExpr as MemberExpression;
-  const objectName = expr.object && "name" in expr.object ? (expr.object as Identifier).name : undefined;
-  const propertyName = expr.property && "name" in expr.property ? (expr.property as Identifier).name : undefined;
-
-  if (!objectName || !propertyName) return false;
-  if (objectName === "Number") return NUMBER_CONSTANTS.has(propertyName);
-  if (objectName === "Math") return MATH_CONSTANTS.has(propertyName);
+function isNumericConstant({ object, property }: MemberExpression): boolean {
+  if (!isIdentifier(object) || !isIdentifier(property)) return false;
+  if (object.name === "Number") return NUMBER_CONSTANTS.has(property.name);
+  if (object.name === "Math") return MATH_CONSTANTS.has(property.name);
   return false;
 }
