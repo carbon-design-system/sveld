@@ -497,11 +497,13 @@ function computeEventTypeString(event: ComponentDocApi["events"][number]): strin
       const isComponent = elementName && COMPONENT_NAME_REGEX.test(elementName);
       const isStandardEvent = !isComponent || STANDARD_DOM_EVENTS.has(event.name);
 
+      // On an element, a `null` detail is the native event's; a component's `@event {null}` is its own.
       const hasExplicitDetail =
-        event.detail !== undefined && event.detail !== "undefined" && !(event.detail === "null" && isStandardEvent);
-      const hasExplicitNullForCustomComponent = event.detail === "null" && !isStandardEvent;
+        event.detail !== undefined &&
+        event.detail !== "undefined" &&
+        !(event.detail === "null" && isStandardEvent && !isComponent);
 
-      if (hasExplicitDetail || hasExplicitNullForCustomComponent) return createDispatchedEventType(event.detail);
+      if (hasExplicitDetail) return createDispatchedEventType(event.detail);
       if (!isStandardEvent) return createDispatchedEventType();
       // `DocumentEventMap` has document-only events (`visibilitychange`) that `WindowEventMap` lacks.
       const eventMap = elementName === "svelte:document" ? "DocumentEventMap" : "WindowEventMap";

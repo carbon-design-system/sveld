@@ -26,6 +26,13 @@
     },
     {
       "type": "forwarded",
+      "name": "reset",
+      "element": "ListBoxSelection",
+      "description": "Shares a native event name, but the child dispatches it",
+      "detail": "null"
+    },
+    {
+      "type": "forwarded",
       "name": "search",
       "element": "ListBoxSelection",
       "description": "Search query changed",
