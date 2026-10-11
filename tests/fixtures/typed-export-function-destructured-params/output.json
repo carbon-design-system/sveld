@@ -5,7 +5,7 @@
     {
       "name": "move",
       "kind": "function",
-      "type": "(arg0: [number, number], arg1: { animate: boolean }) => any",
+      "type": "(arg0: [number, number], arg1: { animate: boolean }) => void",
       "typeSource": "typescript",
       "isFunction": true,
       "isFunctionDeclaration": true,
@@ -16,7 +16,7 @@
     {
       "name": "focus",
       "kind": "function",
-      "type": "(arg: { preventScroll: boolean }) => any",
+      "type": "(arg: { preventScroll: boolean }) => void",
       "typeSource": "typescript",
       "isFunction": true,
       "isFunctionDeclaration": true,

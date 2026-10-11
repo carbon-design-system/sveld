@@ -461,7 +461,8 @@ export function inferVariableInitializerType(ctx: ParserContext, name: string, e
  * its JSDoc, else what {@link inferFunctionTypeFromNode} reads off the node.
  */
 function localFunctionType(ctx: ParserContext, name: string, node: FunctionNode, exactArity: boolean): string {
-  const annotated = buildFunctionDeclarationSignature(ctx, node);
+  const returnType = exactArity ? inferFunctionValueReturnType(node) : inferReturnTypeFromNode(node);
+  const annotated = buildFunctionDeclarationSignature(ctx, node, returnType);
   if (annotated.hasAnnotations) return annotated.signature;
   const jsdoc = resolveLocalVarJSDoc(ctx, name);
   if (jsdoc?.type) return jsdoc.type;
@@ -650,10 +651,10 @@ function inferParamsFromNode({ params }: FunctionNode): string {
  * The type of a function that is itself the value (an `export function`, a
  * context member), not a prop's default: its TS annotations, else each param
  * as `any` (optional when it has a default, `any[]` when rest), returning
- * what {@link inferReturnTypeFromNode} reads.
+ * what {@link inferFunctionValueReturnType} reads.
  */
 export function inferFunctionValueType(ctx: ParserContext, node: FunctionNode): string {
-  const returnType = returnsNothing(node) ? (node.async ? "Promise<void>" : "void") : inferReturnTypeFromNode(node);
+  const returnType = inferFunctionValueReturnType(node);
   const annotated = buildFunctionDeclarationSignature(ctx, node, returnType);
   if (annotated.hasAnnotations) return annotated.signature;
   // A destructured param has no name of its own.
@@ -668,6 +669,14 @@ export function inferFunctionValueType(ctx: ParserContext, node: FunctionNode): 
     return `${isIdentifier(param) ? param.name : unnamed(index)}: any`;
   });
   return `(${params.join(", ")}) => ${returnType}`;
+}
+
+/**
+ * What calling a function value gives, read off its body: `void` (`Promise<void>`
+ * when async) when it returns no value, else {@link inferReturnTypeFromNode}.
+ */
+export function inferFunctionValueReturnType(node: FunctionNode): string {
+  return returnsNothing(node) ? (node.async ? "Promise<void>" : "void") : inferReturnTypeFromNode(node);
 }
 
 /** A block-bodied function with no `return` of a value: calling it gives `undefined`. */

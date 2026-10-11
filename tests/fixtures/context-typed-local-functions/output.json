@@ -1,0 +1,29 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "ts",
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "list",
+      "typeName": "ListContext",
+      "properties": [
+        {
+          "name": "select",
+          "type": "(id: string) => void",
+          "optional": false
+        },
+        {
+          "name": "count",
+          "type": "(items: string[]) => number",
+          "optional": false
+        }
+      ]
+    }
+  ],
+  "diagnostics": []
+}
