@@ -2,7 +2,12 @@ import type { Component } from "svelte";
 
 interface Props<T> {
   value: T;
-  onchange?: (v: T) => void;
+  onchange?: (T: T) => void;
+  kind?: "T" | T;
+  map?: {
+    T: T;
+    readonly label: T
+  };
 }
 
 type $Props = Props<string>;

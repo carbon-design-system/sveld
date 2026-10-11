@@ -16,9 +16,31 @@
     {
       "name": "onchange",
       "kind": "let",
-      "type": "(v: string) => void",
+      "type": "(T: string) => void",
       "typeSource": "typescript",
       "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "kind",
+      "kind": "let",
+      "type": "\"T\" | string",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "map",
+      "kind": "let",
+      "type": "{ T: string; readonly label: string }",
+      "typeSource": "typescript",
+      "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
