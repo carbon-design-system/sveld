@@ -2840,4 +2840,23 @@ describe("ComponentParser", () => {
       });
     });
   });
+
+  test("types `bind:this` on a `<svelte:element>` from its tag type parameter", () => {
+    const { props } = new ComponentParser().parseSvelteComponent(
+      `
+        <script>
+          /** @template {keyof HTMLElementTagNameMap} [Tag="div"] */
+
+          /** @type {Tag} */
+          export let tag = "div";
+          export let ref = null;
+        </script>
+
+        <svelte:element this={tag} bind:this={ref} />
+      `,
+      diagnostics,
+    );
+
+    expect(props.find((prop) => prop.name === "ref")?.type).toBe("null | HTMLElementTagNameMap[Tag]");
+  });
 });

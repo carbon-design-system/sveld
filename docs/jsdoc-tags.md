@@ -829,7 +829,7 @@ For a `<svelte:element>` whose tag is only known at runtime, use `@restProps {sv
 </svelte:element>
 ```
 
-The rest props become `SvelteHTMLElements[Tag]`, so `tag="a"` allows `href` and the default `div` doesn't. The generated type uses `NoInfer`, which needs TypeScript 5.4 or later.
+The rest props become `SvelteHTMLElements[Tag]`, so `tag="a"` allows `href` and the default `div` doesn't. A `bind:this` on the element is typed `HTMLElementTagNameMap[Tag]` the same way. The generated type uses `NoInfer`, which needs TypeScript 5.4 or later.
 
 A spread onto a component without `@restProps` raises [`sveld/rest-props-unresolved`](ci.md#diagnostic-codes).
 

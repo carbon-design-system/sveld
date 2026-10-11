@@ -16,6 +16,7 @@ import type {
   ComponentGenerics,
   ComponentParseResult,
   ComponentProp,
+  ComponentPropBindings,
   ComponentSlot,
   ForwardedEvent,
   ParsedComponent,
@@ -188,6 +189,24 @@ function componentInstanceType(name: string): string {
   return `(typeof ${name} extends abstract new (...args: any) => infer I ? I : typeof ${name} extends (...args: any) => infer R ? R : never)`;
 }
 
+/**
+ * The type `bind:this` gives a prop: each bound element's DOM type and each
+ * component's instance, as an array when bound by index. A `<svelte:element>`
+ * whose tag is a type parameter in `tagTypes` is that tag's element type.
+ */
+function boundPropType(binding: ComponentPropBindings, tagTypes: Map<string, string>): string {
+  const boundTypes = [
+    ...binding.elements
+      .sort((a, b) => (a.tag < b.tag ? -1 : a.tag > b.tag ? 1 : 0))
+      .map(({ tag, namespace, tagLocal }) => {
+        const tagType = tagLocal === undefined ? undefined : tagTypes.get(tagLocal);
+        return tagType ? `HTMLElementTagNameMap[${tagType}]` : getElementByTag(tag, namespace);
+      }),
+    ...binding.components.sort().map(componentInstanceType),
+  ].join(" | ");
+  return binding.target === "indexed" ? `(null | ${boundTypes})[]` : `null | ${boundTypes}`;
+}
+
 /** Props in output form: `bind:this` element types applied, and snippet props left to their slots. */
 function buildProps(ctx: ParserContext): ComponentProp[] {
   const snippetPropNames =
@@ -211,13 +230,7 @@ function buildProps(ctx: ParserContext): ComponentProp[] {
         return { ...prop, reactive };
       }
 
-      const boundTypes = [
-        ...binding.elements
-          .sort((a, b) => (a.tag < b.tag ? -1 : a.tag > b.tag ? 1 : 0))
-          .map(({ tag, namespace }) => getElementByTag(tag, namespace)),
-        ...binding.components.sort().map(componentInstanceType),
-      ].join(" | ");
-      const type = binding.target === "indexed" ? `(null | ${boundTypes})[]` : `null | ${boundTypes}`;
+      const type = boundPropType(binding, new Map());
       return { ...prop, type, typeSource: "inferred" as const, reactive };
     });
 }
@@ -579,18 +592,41 @@ function constrainedTypeParameters(generics: ComponentGenerics): Set<string> {
   return names;
 }
 
+/** Locals typed by a constrained type parameter, which can name an element: `tag` to `Tag`. */
+function tagTypeParameters(ctx: ParserContext, props: ComponentProp[]): Map<string, string> {
+  const constrained = constrainedTypeParameters(ctx.generics);
+  const tagTypes = new Map<string, string>();
+  for (const prop of props) {
+    const type = prop.type?.trim();
+    if (type && constrained.has(type)) tagTypes.set(prop.localName ?? prop.name, type);
+  }
+  return tagTypes;
+}
+
 /**
- * Rest props spread on `<svelte:element this={tag}>` follow `tag`'s type when
- * it's a constrained type parameter, so `tag="a"` allows `href`. An
- * unconstrained one might not be a tag name, so it keeps the generic type.
+ * A `<svelte:element this={tag}>` follows `tag`'s type when it's a constrained
+ * type parameter: rest props spread on it, so `tag="a"` allows `href`, and a
+ * `bind:this` ref. An unconstrained one might not be a tag name, so it's left alone.
  */
-function typeRestPropsFromTag(ctx: ParserContext, props: ComponentProp[]) {
+function typeFromTagTypeParameters(ctx: ParserContext, props: ComponentProp[]) {
+  const tagTypes = tagTypeParameters(ctx, props);
+  if (tagTypes.size === 0) return;
+
   const restProps = ctx.rest_props;
-  if (restProps?.type !== "Element" || restProps.name !== "svelte:element" || restProps.thisValue) return;
-  const tagProp = props.find((prop) => (prop.localName ?? prop.name) === ctx.restPropsTagLocal);
-  const typeParameter = tagProp?.type?.trim();
-  if (typeParameter && constrainedTypeParameters(ctx.generics).has(typeParameter)) {
-    ctx.rest_props = { ...restProps, thisType: typeParameter };
+  const restTagType = ctx.restPropsTagLocal === undefined ? undefined : tagTypes.get(ctx.restPropsTagLocal);
+  if (restProps?.type === "Element" && restProps.name === "svelte:element" && !restProps.thisValue && restTagType) {
+    ctx.rest_props = { ...restProps, thisType: restTagType };
+  }
+
+  for (const [index, prop] of props.entries()) {
+    const binding = ctx.bindings.get(prop.name);
+    if (
+      prop.typeSource !== "inferred" ||
+      !binding?.elements.some(({ tagLocal }) => tagLocal && tagTypes.has(tagLocal))
+    ) {
+      continue;
+    }
+    props[index] = { ...prop, type: boundPropType(binding, tagTypes) };
   }
 }
 
@@ -607,7 +643,7 @@ export function finalizeComponent(ctx: ParserContext, walk: ComponentWalkResult)
   const slots = buildSlots(ctx);
 
   resolveGenerics(ctx, props, slots);
-  typeRestPropsFromTag(ctx, props);
+  typeFromTagTypeParameters(ctx, props);
 
   const moduleExports = mapToArray(ctx.moduleExports);
   const events = serializeEvents(ctx);
