@@ -576,26 +576,24 @@ function functionReturnTypeAnnotationText(ctx: ParserContext, node: FunctionNode
 }
 
 /**
- * Build a function type from `@param`/`@returns` when `@type` is missing.
- * If JSDoc has no params or return either, try the function `node`, then
- * `(...args: any[]) => any`.
+ * A function type from JSDoc `@param`/`@returns` when `@type` is missing,
+ * else what {@link inferFunctionTypeFromNode} reads off `node`.
  */
 function buildFunctionTypeFromParts(
-  jsdoc?: { params?: ComponentPropParam[]; returnType?: string },
-  node?: FunctionNode,
+  jsdoc: { params?: ComponentPropParam[]; returnType?: string } | undefined,
+  node: FunctionNode,
 ): string {
   const returnType = jsdoc?.returnType ?? "any";
   const params = jsdoc?.params;
   if (params && params.length > 0) return `(${formatParamList(params)}) => ${returnType}`;
   if (jsdoc?.returnType) return `() => ${returnType}`;
-  return node ? inferFunctionTypeFromNode(node) : "(...args: any[]) => any";
+  return inferFunctionTypeFromNode(node);
 }
 
 /**
- * Guess arity and return type for a function default with no JSDoc `@type`.
- * Explicit `@type`/`@param`/`@returns` on the prop beat this every time.
- * A default's body is a weak signal for the prop contract. We only read
- * named params and literal returns. Everything else becomes `any`.
+ * A function default's type from its node alone: named params and literal
+ * returns, `any` for the rest. A default's body is a weak signal for the
+ * prop's contract, so the prop's own JSDoc always wins over this.
  */
 function inferFunctionTypeFromNode(node: FunctionNode): string {
   return `(${inferParamsFromNode(node)}) => ${inferReturnTypeFromNode(node)}`;

@@ -105,20 +105,11 @@ function buildTypeImportStatements(ctx: ParserContext, referencedImportedTypes: 
   >();
 
   for (const importedType of Array.from(referencedImportedTypes).sort()) {
-    const typeBinding = ctx.typeImportBindingsByLocalName.get(importedType);
-    const valueBinding = typeBinding
-      ? undefined
-      : (ctx.valueImportBindingsByLocalName.get(importedType) ?? ctx.additionalImportedTypes.get(importedType));
+    const valueBinding =
+      ctx.valueImportBindingsByLocalName.get(importedType) ?? ctx.additionalImportedTypes.get(importedType);
     const binding: TypeImportBinding | undefined =
-      typeBinding ??
-      (valueBinding
-        ? {
-            importedName: valueBinding.importedName,
-            localName: valueBinding.localName,
-            source: valueBinding.source,
-            specifierType: "named",
-          }
-        : undefined);
+      ctx.typeImportBindingsByLocalName.get(importedType) ??
+      (valueBinding ? { ...valueBinding, specifierType: "named" } : undefined);
     if (!binding) continue;
 
     const group = groupedImports.get(binding.source) ?? { default: [], named: [], namespace: [] };

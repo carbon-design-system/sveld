@@ -137,10 +137,10 @@ export function readClassDeclaration(
       constructorIndex = members.length;
       constructorBody = fn.type === "FunctionExpression" ? fn.body.body : undefined;
       // `constructor(public x: T)` also declares a property `x`.
-      fn.params.forEach((param, index) => {
-        if (param.type !== "TSParameterProperty" || isHidden(param.accessibility)) return;
+      for (const [index, param] of fn.params.entries()) {
+        if (param.type !== "TSParameterProperty" || isHidden(param.accessibility)) continue;
         const signatureParam = signature.params?.[index];
-        if (!signatureParam) return;
+        if (!signatureParam) continue;
         instanceProperties.add(signatureParam.name);
         members.push({
           kind: "property",
@@ -149,7 +149,7 @@ export function readClassDeclaration(
           ...(param.readonly ? { readonly: true as const } : {}),
           ...(signatureParam.description ? { description: signatureParam.description } : {}),
         });
-      });
+      }
       continue;
     }
 
