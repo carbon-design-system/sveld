@@ -1104,6 +1104,15 @@ describe("applyDiagnosticIgnores", () => {
     expect(result.ignored).toBeFalsy();
   });
 
+  test("`**/` matches whole path segments, not part of a file name", () => {
+    const ignored = (component: string, pattern: string) =>
+      applyDiagnosticIgnores([make({ component })], [{ component: pattern }])[0].ignored === true;
+    expect(ignored("./Legacy/Button.svelte", "./**/Button.svelte")).toBe(true);
+    expect(ignored("./Button.svelte", "./**/Button.svelte")).toBe(true);
+    expect(ignored("./Legacy/MyButton.svelte", "./**/Button.svelte")).toBe(false);
+    expect(ignored("./Legacy/MyButton.svelte", "./Legacy/**/Button.svelte")).toBe(false);
+  });
+
   test("every set field on a matcher must match", () => {
     const diagnostics = [make({})];
     const [result] = applyDiagnosticIgnores(diagnostics, [{ code: "sveld/prop-unknown-type", name: "nope" }]);
