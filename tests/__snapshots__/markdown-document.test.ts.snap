@@ -49,7 +49,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>{ prop: number } </code> | -- | Default content.<br />Spans two lines.<br />@deprecated Prefer the \`body\` slot.<br />@since 1.2.0 |
+| -- | Yes | <code>{ prop: number }</code> | -- | Default content.<br />Spans two lines.<br />@deprecated Prefer the \`body\` slot.<br />@since 1.2.0 |
 | title | No | -- | -- | Heading content.<br />@example &lt;Example&gt;Hi&lt;/Example&gt; |
 | footer | No | -- | -- | -- |
 
