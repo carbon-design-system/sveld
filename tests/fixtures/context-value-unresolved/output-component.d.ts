@@ -1,5 +1,7 @@
 import type { Component } from "svelte";
 
+export type StoreContext = import("svelte/store").Writable<number>;
+
 export type ContextValueUnresolvedProps = {
   children?: (this: void) => void;
 };

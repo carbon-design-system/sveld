@@ -121,7 +121,7 @@ Codes are stable, so use them (not `message`) in config and scripts.
 | `sveld/rest-props-unresolved` | `warning` | Spread rest props onto a plain element (or `svelte:element`), or add `@restProps`. |
 | `sveld/context-duplicate-key` | `warning` | Remove the duplicate `setContext` call or give it a distinct key. Only the first call's shape is used. |
 | `sveld/context-key-unresolved` | `warning` | Use a string literal, a `const` string, `Symbol()`, or an `export const` from a relative module as the key. Otherwise the context is left out. |
-| `sveld/context-value-unresolved` | `warning` | Pass an object literal or a typed variable as the value. Otherwise the context is left out. |
+| `sveld/context-value-unresolved` | `warning` | Pass an object literal, a typed variable, or a `svelte/store` store as the value. Otherwise the context is left out. |
 | `sveld/spread-unresolved` | `warning` | Spread a local object literal or a variable with a resolvable type. Otherwise the type widens to `Record<string, any>`. |
 | `sveld/export-unresolved` | `warning` | Export a local declaration directly. Move re-exports and classes into `<script context="module">`, where sveld writes them to the `.d.ts`. |
 | `sveld/module-export-conflict` | `warning` | Rename the module-script export. `default` always collides with the component, and a name matching `<Name>Props`/`<Name>Exports` breaks the `.d.ts`. |

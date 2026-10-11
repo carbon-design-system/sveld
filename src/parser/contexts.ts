@@ -191,6 +191,14 @@ function objectLiteralContext(ctx: ParserContext, objExpr: ObjectExpression, key
 
 function parseContextValue(ctx: ParserContext, node: Node, key: string): ComponentContext | null {
   if (isObjectExpression(node)) return objectLiteralContext(ctx, node, key);
+  const typed = (type: string) => ({ key, typeName: generateContextTypeName(key), type, properties: [] });
+  // A store passed as the whole value, or `null`/`undefined` to clear a parent's context.
+  if (node.type === "CallExpression") {
+    const storeType = svelteStoreType(ctx, node);
+    return storeType ? typed(storeType) : null;
+  }
+  if (node.type === "Literal" && node.value === null && node.raw === "null") return typed("null");
+  if (isIdentifier(node) && node.name === "undefined") return typed("undefined");
   if (!isIdentifier(node)) return null;
 
   // `getContext(key)` returns the variable itself, so the context's type is
