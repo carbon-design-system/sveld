@@ -13,6 +13,11 @@
       "type": "forwarded",
       "name": "keydown",
       "element": "svelte:window"
+    },
+    {
+      "type": "forwarded",
+      "name": "visibilitychange",
+      "element": "svelte:document"
     }
   ],
   "typedefs": [],

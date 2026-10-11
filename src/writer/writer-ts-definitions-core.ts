@@ -502,7 +502,10 @@ function computeEventTypeString(event: ComponentDocApi["events"][number]): strin
       const hasExplicitNullForCustomComponent = event.detail === "null" && !isStandardEvent;
 
       if (hasExplicitDetail || hasExplicitNullForCustomComponent) return createDispatchedEventType(event.detail);
-      return isStandardEvent ? `WindowEventMap["${event.name}"]` : createDispatchedEventType();
+      if (!isStandardEvent) return createDispatchedEventType();
+      // `DocumentEventMap` has document-only events (`visibilitychange`) that `WindowEventMap` lacks.
+      const eventMap = elementName === "svelte:document" ? "DocumentEventMap" : "WindowEventMap";
+      return `${eventMap}["${event.name}"]`;
     }
     default: {
       const _exhaustive: never = event;
