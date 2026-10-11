@@ -255,11 +255,17 @@ function extractName(line: CommentLine): { name: string; optional: boolean; defa
 
   let depth = 0;
   let consumed = 0;
-  for (const ch of source) {
-    if (depth === 0 && WHITESPACE_CHAR_REGEX.test(ch)) break;
-    if (ch === "[") depth++;
-    if (ch === "]") depth--;
-    consumed++;
+  // A quoted name (`@event "my change"`) runs to its closing quote, spaces included.
+  const closingQuote = source[0] === '"' || source[0] === "'" ? source.indexOf(source[0], 1) : -1;
+  if (closingQuote === -1) {
+    for (const ch of source) {
+      if (depth === 0 && WHITESPACE_CHAR_REGEX.test(ch)) break;
+      if (ch === "[") depth++;
+      if (ch === "]") depth--;
+      consumed++;
+    }
+  } else {
+    consumed = closingQuote + 1;
   }
 
   const token = depth === 0 ? source.slice(0, consumed) : "";

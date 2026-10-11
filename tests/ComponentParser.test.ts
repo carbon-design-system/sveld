@@ -429,6 +429,24 @@ describe("ComponentParser", () => {
     expect(result.events[0].detail).toBe("{ selected: boolean }");
   });
 
+  test("reads a quoted @event name with a space up to its closing quote", () => {
+    const source = `<script>
+  import { createEventDispatcher } from "svelte";
+  const dispatch = createEventDispatcher();
+
+  /** @event {string} "value change" Fires after the value settles. */
+</script>
+
+<button on:click={() => dispatch("value change", "")}>Change</button>`;
+
+    const [event] = new ComponentParser().parseSvelteComponent(source, diagnostics).events;
+    expect(event).toMatchObject({
+      name: "value change",
+      detail: "string",
+      description: "Fires after the value settles.",
+    });
+  });
+
   test("adds source locations for component metadata", () => {
     const parser = new ComponentParser();
     const source = `<script>
