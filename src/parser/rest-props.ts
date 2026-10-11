@@ -1,8 +1,14 @@
 import type { AST, Expression } from "sveast";
-import { isCallExpressionNamed, isIdentifier, isObjectExpression, unwrapTypeCastExpression } from "../ast-guards";
+import {
+  isCallExpressionNamed,
+  isComponentLikeType,
+  isElementLikeType,
+  isIdentifier,
+  isObjectExpression,
+  unwrapTypeCastExpression,
+} from "../ast-guards";
 import type { ComponentElement, RestProps } from "../model";
 import type { ParserContext } from "./context";
-import { isComponentLikeType, isElementLikeType } from "./element-kind";
 import { sourceRangeFromNode } from "./source-position";
 
 function createRestPropsFromParent(parent: unknown): RestProps {
