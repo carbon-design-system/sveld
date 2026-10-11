@@ -45,9 +45,10 @@ import { DEFAULT_SLOT_NAME } from "./slots";
 import { sourceForExpression, sourceRangeFromNode, sourceRangeFromOffsets } from "./source-position";
 import { buildPendingCrossFileCandidates, buildTypeScriptMetadata } from "./type-resolution";
 import { escapeRegExp } from "./utils";
-import { importedCalleeBinding } from "./value-imports";
+import { importedBindingByName, importedCalleeBinding } from "./value-imports";
 import { resolveLocalVarJSDoc } from "./variable-jsdoc";
 
+const SURROUNDING_QUOTES_REGEX = /^["']|["']$/g;
 const CONSTRAINED_TYPE_PARAMETER_REGEX = /^([\w$]+)\s+extends\s/;
 
 /** A JSDoc `@slot`/`@snippet` type of `{}`. */
@@ -670,7 +671,13 @@ export function finalizeComponent(ctx: ParserContext, walk: ComponentWalkResult)
   }
 
   // Spread only onto components, with no `@restProps` tag: another component's rest-prop shape is unknowable.
-  if (ctx.rest_props?.type === "InlineComponent") {
+  // `@extendProps` naming the component the rest props go to already types them.
+  const spreadTarget =
+    ctx.rest_props?.type === "InlineComponent" ? importedBindingByName(ctx, ctx.rest_props.name) : undefined;
+  // `extends.import` keeps the tag's quotes: `"./Link.svelte"`.
+  const extendsSource = ctx.extends?.import.replace(SURROUNDING_QUOTES_REGEX, "");
+  const extendsSpreadTarget = spreadTarget?.importedName === "default" && spreadTarget.source === extendsSource;
+  if (ctx.rest_props?.type === "InlineComponent" && !extendsSpreadTarget) {
     recordDiagnostic(
       ctx,
       "rest-props-unresolved",

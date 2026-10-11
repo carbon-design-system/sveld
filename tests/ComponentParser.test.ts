@@ -2869,4 +2869,25 @@ describe("ComponentParser", () => {
 
     expect(diagnostic?.source?.start).toEqual({ line: 5, column: 6 });
   });
+
+  test("doesn't flag rest props spread onto the component `@extendProps` names", () => {
+    const restPropsDiagnostics = (target: string) =>
+      new ComponentParser()
+        .parseSvelteComponent(
+          `
+            <script>
+              /** @extendProps {"./Link.svelte"} LinkProps */
+              import Link from "./Link.svelte";
+              import Button from "./Button.svelte";
+            </script>
+
+            <${target} {...$$restProps} />
+          `,
+          diagnostics,
+        )
+        .diagnostics?.filter(({ kind }) => kind === "rest-props-unresolved") ?? [];
+
+    expect(restPropsDiagnostics("Link")).toEqual([]);
+    expect(restPropsDiagnostics("Button")).toHaveLength(1);
+  });
 });
