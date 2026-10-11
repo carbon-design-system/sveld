@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 export type RadioButtonGroupContext = {
   selectedValue: import("svelte/store").Writable<string>;
-  add: (arg: any) => any;
+  add: (arg0: any) => any;
   update: (value: any) => any;
 };
 

@@ -6,8 +6,8 @@ export type DatePickerContext = {
   inputValue: import("svelte/store").Writable<number | string>;
   hasCalendar: import("svelte/store").Readable<any>;
   add: (data: any) => any;
-  declareRef: (arg: any) => any;
-  updateValue: (arg: any) => any;
+  declareRef: (arg0: any) => any;
+  updateValue: (arg0: any) => any;
   blurInput: (relatedTarget: any) => any;
   openCalendar: () => any;
   focusCalendar: () => any;

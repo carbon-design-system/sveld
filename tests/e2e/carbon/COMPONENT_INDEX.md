@@ -178,7 +178,7 @@
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -204,8 +204,8 @@
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
-| title | No | <code>Record&lt;string, never> </code> | <code>{title}</code> | -- |
+| -- | Yes | -- | -- | -- |
+| title | No | -- | <code>{title}</code> | -- |
 
 ### Events
 
@@ -254,7 +254,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -273,7 +273,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -297,7 +297,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>{props?: { ["aria-current"]?: string; class: "bx--link"; }} </code> | -- | -- |
+| -- | Yes | <code>{props?: { ["aria-current"]?: string; class: "bx--link"; }}</code> | -- | -- |
 
 ### Events
 
@@ -357,8 +357,8 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>{ props: { role: "button"; type?: string; tabindex: any; disabled: boolean; href?: string; class: string; [key: string]: any; } } </code> | -- | -- |
-| icon | No | <code>{ style: undefined &#124; string; } </code> | -- | -- |
+| -- | Yes | <code>{ props: { role: "button"; type?: string; tabindex: any; disabled: boolean; href?: string; class: string; [key: string]: any; } }</code> | -- | -- |
+| icon | No | <code>{ style: undefined &#124; string; }</code> | -- | -- |
 
 ### Events
 
@@ -383,7 +383,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -479,7 +479,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -519,7 +519,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | <code>{code}</code> | -- |
+| -- | Yes | -- | <code>{code}</code> | -- |
 
 ### Events
 
@@ -584,7 +584,7 @@ export type ColumnBreakpoint = ColumnSize | ColumnSizeDescriptor;
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>{props: { class: string; [key: string]: any; }} </code> | -- | -- |
+| -- | Yes | <code>{props: { class: string; [key: string]: any; }}</code> | -- | -- |
 
 ### Events
 
@@ -655,7 +655,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -682,7 +682,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -702,7 +702,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -728,7 +728,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | <code>{#if animation}<br />      {feedback &#124;&#124; $$restProps["aria-label"]}<br />    {/if}</code> | -- |
+| -- | Yes | -- | <code>{#if animation}<br />      {feedback &#124;&#124; $$restProps["aria-label"]}<br />    {/if}</code> | -- |
 
 ### Events
 
@@ -811,12 +811,12 @@ export interface DataTableCell { key: DataTableKey<Row>; value: DataTableValue; 
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
-| cell | No | <code>{ row: Row; cell: DataTableCell&lt;Row>; rowIndex: number; cellIndex: number; } </code> | <code>{cell.display ? cell.display(cell.value, row) : cell.value}</code> | -- |
-| cell-header | No | <code>{ header: DataTableNonEmptyHeader; } </code> | <code>{header.value}</code> | -- |
-| description | No | <code>Record&lt;string, never> </code> | <code>{description}</code> | -- |
-| expanded-row | No | <code>{ row: Row; } </code> | -- | -- |
-| title | No | <code>Record&lt;string, never> </code> | <code>{title}</code> | -- |
+| -- | Yes | -- | -- | -- |
+| cell | No | <code>{ row: Row; cell: DataTableCell&lt;Row>; rowIndex: number; cellIndex: number; }</code> | <code>{cell.display ? cell.display(cell.value, row) : cell.value}</code> | -- |
+| cell-header | No | <code>{ header: DataTableNonEmptyHeader; }</code> | <code>{header.value}</code> | -- |
+| description | No | -- | <code>{description}</code> | -- |
+| expanded-row | No | <code>{ row: Row; }</code> | -- | -- |
+| title | No | -- | <code>{title}</code> | -- |
 
 ### Events
 
@@ -881,7 +881,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -1037,8 +1037,8 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| above | No | <code>Record&lt;string, never> </code> | -- | -- |
-| below | No | <code>Record&lt;string, never> </code> | -- | -- |
+| above | No | -- | -- | -- |
+| below | No | -- | -- | -- |
 
 ### Events
 
@@ -1225,7 +1225,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -1243,7 +1243,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -1270,7 +1270,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -1291,7 +1291,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -1314,7 +1314,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -1344,7 +1344,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>{ props: { class: string; [key: string]: any; } } </code> | -- | -- |
+| -- | Yes | <code>{ props: { class: string; [key: string]: any; } }</code> | -- | -- |
 
 ### Events
 
@@ -1369,9 +1369,9 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
-| platform | No | <code>Record&lt;string, never> </code> | <code>{platformName}</code> | -- |
-| skip-to-content | No | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
+| platform | No | -- | <code>{platformName}</code> | -- |
+| skip-to-content | No | -- | -- | -- |
 
 ### Events
 
@@ -1401,8 +1401,8 @@ export interface HeaderActionSlideTransition { delay?: number; duration?: number
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
-| text | No | <code>Record&lt;string, never> </code> | <code>{#if text}<br />        &lt;span>{text}&lt;/span><br />      {/if}</code> | -- |
+| -- | Yes | -- | -- | -- |
+| text | No | -- | <code>{#if text}<br />        &lt;span>{text}&lt;/span><br />      {/if}</code> | -- |
 
 ### Events
 
@@ -1465,7 +1465,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | <code>&lt;svelte:component this={icon} /></code> | -- |
+| -- | Yes | -- | <code>&lt;svelte:component this={icon} /></code> | -- |
 
 ### Events
 
@@ -1485,7 +1485,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -1534,7 +1534,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -1559,7 +1559,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -1578,7 +1578,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -1596,7 +1596,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -1624,7 +1624,7 @@ export interface HeaderSearchResult { href: string; text: string; description?: 
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>{ result: HeaderSearchResult; index: number } </code> | <code>{result.text}<br />              {#if result.description}<br />                &lt;span>– {result.description}&lt;/span><br />              {/if}</code> | -- |
+| -- | Yes | <code>{ result: HeaderSearchResult; index: number }</code> | <code>{result.text}<br />              {#if result.description}<br />                &lt;span>– {result.description}&lt;/span><br />              {/if}</code> | -- |
 
 ### Events
 
@@ -1650,7 +1650,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -1743,8 +1743,8 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
-| actions | No | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
+| actions | No | -- | -- | -- |
 
 ### Events
 
@@ -1773,7 +1773,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -1804,7 +1804,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -1837,7 +1837,7 @@ export type ListBoxFieldTranslationId = "close" | "open";
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -1863,7 +1863,7 @@ export type ListBoxFieldTranslationId = "close" | "open";
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -1910,7 +1910,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -1936,7 +1936,7 @@ export type ListBoxSelectionTranslationId = "clearAll" | "clearSelection";
 | selectionCount | No | <code>let</code> | No | -- | <code>any</code> | <code>undefined</code> | Specify the number of selected items |
 | disabled | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to disable the list box selection |
 | translateWithId | No | <code>let</code> | No | -- | <code>(id: ListBoxSelectionTranslationId) => string</code> | <code>(id) => defaultTranslations[id]</code> | Override the default translation ids |
-| translationIds | No | <code>accessor</code> | No | -- | <code>{ clearAll: "clearAll"; clearSelection: "clearSelection" }</code> | <code>{     clearAll: "clearAll",     clearSelection: "clearSelection",   }</code> | Default translation ids |
+| translationIds | No | <code>accessor</code> | No | -- | <code>{ clearAll: "clearAll"; clearSelection: "clearSelection" }</code> | <code>{ clearAll: "clearAll", clearSelection: "clearSelection", }</code> | Default translation ids |
 
 ### Slots
 
@@ -1958,7 +1958,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -2019,9 +2019,9 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
-| heading | No | <code>Record&lt;string, never> </code> | <code>{modalHeading}</code> | -- |
-| label | No | <code>Record&lt;string, never> </code> | <code>{modalLabel}</code> | -- |
+| -- | Yes | -- | -- | -- |
+| heading | No | -- | <code>{modalHeading}</code> | -- |
+| label | No | -- | <code>{modalLabel}</code> | -- |
 
 ### Events
 
@@ -2050,7 +2050,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -2073,7 +2073,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -2097,7 +2097,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -2172,7 +2172,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -2240,7 +2240,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -2280,13 +2280,13 @@ export type NumberInputTranslationId = "increment" | "decrement";
 | translateWithId | No | <code>let</code> | No | -- | <code>(id: NumberInputTranslationId) => string</code> | <code>(id) => defaultTranslations[id]</code> | Override the default translation ids |
 | id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the input element |
 | name | No | <code>let</code> | No | -- | <code>string</code> | <code>undefined</code> | Specify a name attribute for the input |
-| translationIds | No | <code>accessor</code> | No | -- | <code>{ increment: "increment"; decrement: "decrement" }</code> | <code>{     increment: "increment",     decrement: "decrement",   }</code> | Default translation ids |
+| translationIds | No | <code>accessor</code> | No | -- | <code>{ increment: "increment"; decrement: "decrement" }</code> | <code>{ increment: "increment", decrement: "decrement", }</code> | Default translation ids |
 
 ### Slots
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| label | No | <code>Record&lt;string, never> </code> | <code>{label}</code> | -- |
+| label | No | -- | <code>{label}</code> | -- |
 
 ### Events
 
@@ -2333,7 +2333,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -2354,7 +2354,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -2388,8 +2388,8 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
-| menu | No | <code>Record&lt;string, never> </code> | <code>&lt;svelte:component<br />      this={icon}<br />      aria-label={iconDescription}<br />      title={iconDescription}<br />      class="bx--overflow-menu&#95;&#95;icon {iconClass}"<br />    /></code> | -- |
+| -- | Yes | -- | -- | -- |
+| menu | No | -- | <code>&lt;svelte:component<br />      this={icon}<br />      aria-label={iconDescription}<br />      title={iconDescription}<br />      class="bx--overflow-menu&#95;&#95;icon {iconClass}"<br />    /></code> | -- |
 
 ### Events
 
@@ -2422,7 +2422,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | <code>&lt;div class:bx--overflow-menu-options&#95;&#95;option-content={true}>{text}&lt;/div></code> | -- |
+| -- | Yes | -- | <code>&lt;div class:bx--overflow-menu-options&#95;&#95;option-content={true}>{text}&lt;/div></code> | -- |
 
 ### Events
 
@@ -2566,7 +2566,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -2619,7 +2619,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>{ props: { class: "bx--progress-label" } } </code> | <code>&lt;p class:bx--progress-label={true}>{label}&lt;/p></code> | -- |
+| -- | Yes | <code>{ props: { class: "bx--progress-label" } }</code> | <code>&lt;p class:bx--progress-label={true}>{label}&lt;/p></code> | -- |
 
 ### Events
 
@@ -2673,7 +2673,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -2722,7 +2722,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -2753,7 +2753,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>{ props: { class: string; [key: string]: any; } } </code> | -- | -- |
+| -- | Yes | <code>{ props: { class: string; [key: string]: any; } }</code> | -- | -- |
 
 ### Events
 
@@ -2846,7 +2846,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -2875,7 +2875,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -2921,7 +2921,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -2962,7 +2962,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -2978,7 +2978,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -3021,7 +3021,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -3106,7 +3106,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | <code>Skip to main content</code> | -- |
+| -- | Yes | -- | <code>Skip to main content</code> | -- |
 
 ### Events
 
@@ -3187,7 +3187,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -3209,7 +3209,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -3233,7 +3233,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -3254,7 +3254,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -3300,7 +3300,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -3350,7 +3350,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | <code>{text}</code> | -- |
+| -- | Yes | -- | <code>{text}</code> | -- |
 
 ### Events
 
@@ -3379,7 +3379,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | <code>{label}</code> | -- |
+| -- | Yes | -- | <code>{label}</code> | -- |
 
 ### Events
 
@@ -3402,7 +3402,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -3425,7 +3425,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -3441,7 +3441,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -3457,7 +3457,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -3482,7 +3482,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -3498,7 +3498,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -3523,7 +3523,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -3544,7 +3544,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -3570,8 +3570,8 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
-| content | No | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
+| content | No | -- | -- | -- |
 
 ### Events
 
@@ -3620,7 +3620,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>{ props: { class: "bx--tag&#95;&#95;label" } } </code> | -- | -- |
+| -- | Yes | <code>{ props: { class: "bx--tag&#95;&#95;label" } }</code> | -- | -- |
 
 ### Events
 
@@ -3786,7 +3786,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -3811,7 +3811,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -3845,7 +3845,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -3879,7 +3879,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -3910,7 +3910,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -4043,7 +4043,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -4061,7 +4061,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -4077,7 +4077,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -4093,7 +4093,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -4109,7 +4109,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -4168,9 +4168,9 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
-| icon | No | <code>Record&lt;string, never> </code> | <code>&lt;svelte:component<br />            this={icon}<br />            name={iconName}<br />          /></code> | -- |
-| triggerText | No | <code>Record&lt;string, never> </code> | <code>{triggerText}</code> | -- |
+| -- | Yes | -- | -- | -- |
+| icon | No | -- | <code>&lt;svelte:component<br />            this={icon}<br />            name={iconName}<br />          /></code> | -- |
+| triggerText | No | -- | <code>{triggerText}</code> | -- |
 
 ### Events
 
@@ -4197,8 +4197,8 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
-| tooltip | No | <code>Record&lt;string, never> </code> | <code>{tooltipText}</code> | -- |
+| -- | Yes | -- | -- | -- |
+| tooltip | No | -- | <code>{tooltipText}</code> | -- |
 
 ### Events
 
@@ -4226,8 +4226,8 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
-| text | No | <code>Record&lt;string, never> </code> | <code>{tooltipText}</code> | -- |
+| -- | Yes | -- | -- | -- |
+| text | No | -- | <code>{tooltipText}</code> | -- |
 
 ### Events
 
@@ -4251,7 +4251,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 

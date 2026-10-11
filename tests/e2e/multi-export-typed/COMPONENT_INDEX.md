@@ -25,7 +25,7 @@
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | <code>Click me</code> | -- |
+| -- | Yes | -- | <code>Click me</code> | -- |
 
 ### Events
 
@@ -43,7 +43,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | <code>Link text</code> | -- |
+| -- | Yes | -- | <code>Link text</code> | -- |
 
 ### Events
 
@@ -65,7 +65,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
@@ -84,7 +84,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | <code>{quote}</code> | -- |
+| -- | Yes | -- | <code>{quote}</code> | -- |
 
 ### Events
 
@@ -102,7 +102,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | <code>Click me</code> | -- |
+| -- | Yes | -- | <code>Click me</code> | -- |
 
 ### Events
 
