@@ -10,7 +10,6 @@ import {
   type Literal,
   type TemplateLiteral,
 } from "sveast";
-import { isLiteral } from "../ast-guards";
 import { getElementByTag } from "../element-tag-map";
 import type {
   ComponentContext,
@@ -129,11 +128,7 @@ function resolveDispatchedEvents(ctx: ParserContext, walk: ComponentWalkResult):
       if (eventNames.names.length === 0) continue;
 
       const detailArgument = callee.arguments[1];
-      // A `null` value is also how a regex/bigint literal the runtime can't build looks, so check `raw`.
-      const detail =
-        isLiteral(detailArgument) && detailArgument.raw === "null"
-          ? "null"
-          : dispatchDetailText(componentDetailTypeSource(ctx, callee.nestedBoundDetailNames), detailArgument);
+      const detail = dispatchDetailText(componentDetailTypeSource(ctx, callee.nestedBoundDetailNames), detailArgument);
 
       for (const name of eventNames.names) {
         addDispatchedEvent(ctx, {
