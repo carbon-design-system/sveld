@@ -48,7 +48,9 @@ import { escapeRegExp } from "./utils";
 import { importedBindingByName, importedCalleeBinding } from "./value-imports";
 import { resolveLocalVarJSDoc } from "./variable-jsdoc";
 
+/** A quote opening or closing the string. */
 const SURROUNDING_QUOTES_REGEX = /^["']|["']$/g;
+/** A constrained type parameter declaration, capturing its name: `Tag` in `Tag extends ...`. */
 const CONSTRAINED_TYPE_PARAMETER_REGEX = /^([\w$]+)\s+extends\s/;
 
 /** A JSDoc `@slot`/`@snippet` type of `{}`. */

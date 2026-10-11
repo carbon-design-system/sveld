@@ -1,4 +1,6 @@
+/** Each `*\/`, which would close a block comment. */
 const COMMENT_CLOSE_REGEX = /\*\//g;
+/** Each character with a special meaning in a regular expression. */
 const REGEX_SPECIAL_CHARS_REGEX = /[.*+?^${}()|[\]\\]/g;
 
 /** `text` matched literally inside a `RegExp`. */
