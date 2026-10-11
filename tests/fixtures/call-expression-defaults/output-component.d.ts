@@ -20,9 +20,26 @@ export type CallExpressionDefaultsProps = {
    * @default "hello".toUpperCase()
    */
   uppercased?: string;
+
+  /**
+   * @default uniqueId()
+   */
+  hoisted?: string;
+
+  /**
+   * @default exportedId()
+   */
+  hoistedExport?: string;
+
+  /**
+   * @default helper()
+   */
+  blockScoped?: any;
 };
 
-export type CallExpressionDefaultsExports = Record<string, never>;
+export type CallExpressionDefaultsExports = {
+  exportedId: () => string;
+};
 
 declare const CallExpressionDefaults: Component<
   CallExpressionDefaultsProps,

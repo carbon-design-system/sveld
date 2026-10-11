@@ -8,6 +8,10 @@ export default class ForwardedCustomEvents extends SvelteComponentTyped<
     /** Fired when clear button is clicked */
     clear: CustomEvent<KeyboardEvent | MouseEvent>;
     click: WindowEventMap["click"];
+    /** Dismiss button clicked with no data */
+    dismiss: CustomEvent<null>;
+    /** Search query changed */
+    search: CustomEvent<string>;
   },
   Record<string, never>
 > {}

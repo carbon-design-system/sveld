@@ -98,6 +98,27 @@
       "reactive": false
     },
     {
+      "name": "getUser",
+      "kind": "function",
+      "description": "`@return` is an alias for `@returns`.",
+      "type": "(id: string) => object",
+      "typeSource": "jsdoc",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "",
+          "optional": false
+        }
+      ],
+      "returnType": "object",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
       "name": "log",
       "kind": "function",
       "description": "Function with only @param, no @returns (should default to any)",

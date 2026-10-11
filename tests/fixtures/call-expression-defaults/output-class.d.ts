@@ -20,10 +20,27 @@ export type CallExpressionDefaultsProps = {
    * @default "hello".toUpperCase()
    */
   uppercased?: string;
+
+  /**
+   * @default uniqueId()
+   */
+  hoisted?: string;
+
+  /**
+   * @default exportedId()
+   */
+  hoistedExport?: string;
+
+  /**
+   * @default helper()
+   */
+  blockScoped?: any;
 };
 
 export default class CallExpressionDefaults extends SvelteComponentTyped<
   CallExpressionDefaultsProps,
   Record<string, any>,
   Record<string, never>
-> {}
+> {
+  exportedId: () => string;
+}

@@ -56,6 +56,23 @@
       "reactive": false
     },
     {
+      "name": "angleSizes",
+      "kind": "let",
+      "type": "Size[]",
+      "typeSource": "default",
+      "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
       "name": "checked",
       "kind": "let",
       "type": "{ type: string }",
@@ -67,6 +84,23 @@
         "value": {
           "type": "button"
         }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "count",
+      "kind": "let",
+      "type": "number",
+      "typeSource": "default",
+      "value": "5",
+      "defaultValue": {
+        "raw": "5",
+        "kind": "literal",
+        "value": 5
       },
       "isFunction": false,
       "isFunctionDeclaration": false,
