@@ -1,0 +1,94 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [
+    {
+      "name": "withCallback",
+      "kind": "const",
+      "type": "(cb: () => void) => string",
+      "typeSource": "jsdoc",
+      "value": "(cb) => \"\"",
+      "defaultValue": {
+        "raw": "(cb) => \"\"",
+        "kind": "function"
+      },
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false
+    },
+    {
+      "name": "curried",
+      "kind": "const",
+      "type": "<T>(value: T) => () => T",
+      "typeSource": "jsdoc",
+      "value": "(value) => () => value",
+      "defaultValue": {
+        "raw": "(value) => () => value",
+        "kind": "function"
+      },
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false
+    },
+    {
+      "name": "handlers",
+      "kind": "const",
+      "type": "{ onClose: () => void }",
+      "typeSource": "jsdoc",
+      "value": "{ onClose: () => {} }",
+      "defaultValue": {
+        "raw": "{ onClose: () => {} }",
+        "kind": "object"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false
+    },
+    {
+      "name": "maybeHandler",
+      "kind": "const",
+      "type": "(() => void) | null",
+      "typeSource": "jsdoc",
+      "value": "null",
+      "defaultValue": {
+        "raw": "null",
+        "kind": "literal",
+        "value": null
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false
+    },
+    {
+      "name": "reassignable",
+      "kind": "let",
+      "type": "(value: string) => void",
+      "typeSource": "jsdoc",
+      "value": "() => {}",
+      "defaultValue": {
+        "raw": "() => {}",
+        "kind": "function"
+      },
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}

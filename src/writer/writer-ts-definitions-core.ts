@@ -2,7 +2,7 @@ import type { ComponentClassMember, ComponentProp, DeprecatedValue } from "../mo
 import { getParsedComponentTypeScriptMetadata } from "../parsed-component-metadata";
 import { escapeCommentText, escapeRegExp, formatParamList } from "../parser/utils";
 import type { ComponentDocApi } from "../plugin";
-import { isTupleType, splitTopLevel } from "../type-text";
+import { indexOfTopLevelArrow, isTupleType, splitTopLevel } from "../type-text";
 import { formatGeneratedTypeScript } from "./format-generated-ts";
 
 const ANY_TYPE = "any";
@@ -19,6 +19,8 @@ const CUSTOM_EVENT_REGEX = /CustomEvent/;
 const COMPONENT_NAME_REGEX = /^[A-Z]/;
 const NEWLINE_REGEX = /\n/;
 const FUNCTION_TYPE_REGEX = /=>/;
+/** A type that can open a function type: its parameter list or type parameters. */
+const FUNCTION_TYPE_START_REGEX = /^\s*[(<]/;
 /** An `@default` tag line in a description. */
 const DESCRIPTION_DEFAULT_TAG_REGEX = /(?:^|\n)@default\b/;
 /** A comment line of only `*` plus trailing spaces, capturing all but the spaces. */
@@ -762,22 +764,24 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
       const prop = quoted ? { ...exported, name: privateExportName(exported.name) } : exported;
       let type_def: string;
 
-      const isFunctionType = prop.type !== undefined && FUNCTION_TYPE_REGEX.test(prop.type);
+      const arrowIndex = prop.type && FUNCTION_TYPE_START_REGEX.test(prop.type) ? indexOfTopLevelArrow(prop.type) : -1;
       const typeParameters = prop.typeParameters ? `<${prop.typeParameters}>` : "";
 
-      if (prop.kind === "const" && !isFunctionType) {
+      if (prop.kind === "const" && arrowIndex === -1) {
         type_def = `export declare const ${prop.name}: ${prop.type || ANY_TYPE};\n`;
+      } else if (prop.kind === "let") {
+        // `export let` (and `var`, recorded as `let`): a live binding, even when it holds a function.
+        type_def = `export declare let ${prop.name}: ${prop.type || ANY_TYPE};`;
       } else if (prop.params && prop.params.length > 0) {
         type_def = `export declare function ${prop.name}${typeParameters}(${formatParamList(prop.params)}): ${prop.returnType || ANY_TYPE};`;
       } else if (prop.returnType) {
         type_def = `export declare function ${prop.name}${typeParameters}(): ${prop.returnType};`;
-      } else if (isFunctionType && prop.type) {
+      } else if (prop.type && arrowIndex !== -1) {
         // A function type expression (e.g. from `@type`) rewritten as a function declaration.
-        const [first, second, ...rest] = prop.type.split("=>");
-        const rest_type = rest.map((item) => ` => ${item.trim()}`).join("");
-        type_def = `export declare function ${prop.name}${first.trimEnd()}: ${second.trim()}${rest_type};`;
+        const signature = prop.type.slice(0, arrowIndex).trimEnd();
+        const returnType = prop.type.slice(arrowIndex + 2).trim();
+        type_def = `export declare function ${prop.name}${signature}: ${returnType};`;
       } else {
-        // `export let` (and `var`, recorded as `let`): a live binding.
         type_def = `export declare let ${prop.name}: ${prop.type || ANY_TYPE};`;
       }
 
