@@ -9,7 +9,7 @@ export declare class Store<T> extends Base<T> implements Disposable {
 }
 
 export declare class NamedStore extends Store<string> implements Named {
-  name: any;
+  name: string;
 }
 
 export declare class FromHidden {}

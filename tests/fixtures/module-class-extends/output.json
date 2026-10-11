@@ -34,7 +34,7 @@
         {
           "kind": "property",
           "name": "name",
-          "type": "any"
+          "type": "string"
         }
       ],
       "extends": "Store<string>",
