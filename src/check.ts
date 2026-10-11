@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { isObject } from "./ast-guards";
 import type { ComponentDocApi, ComponentDocs } from "./bundle";
 import type { SveldRuntimeOptions } from "./load-config";
 import type { EntryExports } from "./parse-entry-exports";
@@ -260,7 +261,7 @@ const NON_SEMANTIC_KEYS = new Set(["description", "source", "componentCommentSou
 
 function stripNonSemanticFields(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(stripNonSemanticFields);
-  if (value !== null && typeof value === "object") {
+  if (isObject(value)) {
     const result: Record<string, unknown> = {};
     for (const [key, val] of Object.entries(value)) {
       if (NON_SEMANTIC_KEYS.has(key)) continue;
