@@ -6,6 +6,8 @@ export type RunesPropMetadataConsolidatedProps = {
    */
   class?: string;
 
+  id: any;
+
   /**
    * @default 0
    */

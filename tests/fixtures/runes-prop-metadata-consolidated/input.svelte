@@ -5,6 +5,7 @@
 
   let {
     class: className = "primary",
+    id: elementId,
     value = $bindable(0),
     open = $bindable(),
     items = [1, 2],
@@ -16,6 +17,7 @@
 </script>
 
 <button
+  id={elementId}
   class={className}
   onclick={onaction}
   data-open={open}

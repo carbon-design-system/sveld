@@ -1,10 +1,16 @@
 <script lang="ts">
   interface Props {
-    foo: string;
-    bar?: number;
+    /** Badge label */
+    label: string;
+    /**
+     * Visual tone
+     * @deprecated Use `variant` instead.
+     */
+    tone?: "info" | "warn";
+    count?: number;
   }
 
-  let { foo, bar }: Props = $props();
+  let { label, tone = "info", count }: Props = $props();
 </script>
 
-<p>{foo} {bar}</p>
+<span class={tone}>{label} {count}</span>
