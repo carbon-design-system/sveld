@@ -17,6 +17,22 @@
       "isRequired": false,
       "constant": false,
       "reactive": false
+    },
+    {
+      "name": "density",
+      "kind": "let",
+      "type": "Density",
+      "typeSource": "typescript",
+      "value": "Density.Compact",
+      "defaultValue": {
+        "raw": "Density.Compact",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
     }
   ],
   "moduleExports": [],

@@ -19,6 +19,23 @@
       "isRequired": false,
       "constant": false,
       "reactive": false
+    },
+    {
+      "name": "ref",
+      "kind": "let",
+      "type": "null | HTMLElementTagNameMap[Tag]",
+      "typeSource": "inferred",
+      "value": "null",
+      "defaultValue": {
+        "raw": "null",
+        "kind": "literal",
+        "value": null
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
     }
   ],
   "moduleExports": [],
