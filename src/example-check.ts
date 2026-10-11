@@ -122,6 +122,7 @@ function candidatesForKind(candidates: CheckExamplesCandidate[], kind: ExampleCh
     return matching.length === 0 ? [] : [{ component, sources: matching }];
   });
 }
+
 async function checkComponentExamplesSyntax(
   candidates: CheckExamplesCandidate[],
 ): Promise<Map<ComponentDocApi, SveldDiagnostic[]>> {
