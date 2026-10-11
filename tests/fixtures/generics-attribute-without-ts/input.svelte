@@ -1,3 +1,3 @@
-<script generics="Row extends { id: string }">
+<script generics="Row extends string">
   export let row;
 </script>

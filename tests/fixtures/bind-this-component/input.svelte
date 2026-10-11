@@ -1,8 +1,8 @@
 <script>
   import Modal from "./Modal.svelte";
   import Tooltip from "./Tooltip.svelte";
-  import { Popover } from "./ui.js";
   import * as UI from "./ui.js";
+  import { Popover } from "./ui.js";
 
   export let modalRef = null;
   export let tooltipRef = null;

@@ -28,22 +28,24 @@
     localShadow = true;
   }
 
-  items.map((paramShadow) => {
+  function toggle(paramShadow) {
+    // biome-ignore lint/style/noParameterAssign: the write must target the shadowing parameter
     paramShadow = !paramShadow;
-  });
+    return paramShadow;
+  }
 </script>
 
 <button on:click={update}>update</button>
 <Search bind:value />
-<input bind:value={boundInput} />
+<input bind:value={boundInput}>
 <Select bind:selected={pageSize} />
 <Search bind:ref />
 <ListBoxMenu bind:ref={listRef} />
 {#each values as _, i}
-  <input bind:value={values[i]} />
+  <input bind:value={values[i]}>
 {/each}
-<input bind:value={settings.name} />
-<input bind:value={rows[0].label} />
+<input bind:value={settings.name}>
+<input bind:value={rows[0].label}>
 
 <ListBox {passedThrough} />
 <button
