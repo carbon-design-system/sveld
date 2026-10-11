@@ -16,7 +16,7 @@ import {
   type SveldDiagnostic,
 } from "./diagnostics";
 import { getSvelteEntry, UNRESOLVED_ENTRY_MESSAGE } from "./get-svelte-entry";
-import { loadConfig, mergeConfig, type SveldRuntimeOptions, validateOptions } from "./load-config";
+import { loadConfigOption, mergeConfig, type SveldRuntimeOptions, validateOptions } from "./load-config";
 import { setQuiet } from "./logger";
 import { writeOutput, writeStdout } from "./plugin";
 import type { ComponentApiDocument } from "./writer/document-model";
@@ -121,6 +121,15 @@ export function reportRun(
   return { diagnostics, exitCode };
 }
 
+export interface SveldOptions extends Omit<SveldRuntimeOptions, "config"> {
+  /**
+   * Whether to load `sveld.config.{js,mjs,ts}` from the working directory and
+   * merge it under these options. `false` ignores it.
+   * @default true
+   */
+  config?: boolean;
+}
+
 /**
  * Programmatic entry point for sveld.
  *
@@ -135,13 +144,18 @@ export function reportRun(
  * });
  * ```
  */
-export async function sveld(opts?: SveldRuntimeOptions): Promise<SveldResult> {
+export async function sveld(opts?: SveldOptions): Promise<SveldResult> {
   if (opts && "input" in opts) {
     throw new Error("sveld: the `input` option was renamed to `entry`.");
   }
+  if (typeof (opts as SveldRuntimeOptions | undefined)?.config === "string") {
+    throw new Error(
+      "sveld: `config` takes `true` or `false`; import another config file and pass its options instead.",
+    );
+  }
 
   const { entry: entryOverride, ...runtimeOpts } = opts ?? {};
-  const fileConfig = await loadConfig();
+  const fileConfig = await loadConfigOption(runtimeOpts.config, process.cwd(), true);
   const input = getSvelteEntry(entryOverride ?? fileConfig.entry);
   if (input === null) {
     throw new Error(UNRESOLVED_ENTRY_MESSAGE);

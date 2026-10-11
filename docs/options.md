@@ -39,7 +39,7 @@ With no options, sveld generates TypeScript definitions only, for the entry name
 | `format` | `"text" \| "json"` | `"text"` | `--format` | Format of the `--check` report and diagnostics summary. |
 | `stdout` | `boolean` | `false` | `--stdout` | Print the JSON or Markdown document instead of writing files. See [CLI](#cli). |
 | `quiet` | `boolean` | `false` | `-q`, `--quiet` | Hide `created`/`unchanged` progress lines. |
-| `config` | `boolean \| string` | `false` | | Plugin only: load `sveld.config.*`. See [Vite plugin](#vite-plugin). |
+| `config` | `boolean \| string` | `false` (plugin), `true` (`sveld()`) | `--config` | Load `sveld.config.*` (`true`) or not (`false`); the plugin and CLI also take a path. See [Config file](#config-file). |
 | `watch` | `boolean` | `false` | | Plugin only: regenerate during `vite dev`. See [Vite plugin](#vite-plugin). |
 
 The CLI also takes `--config <path>`, `-h`/`--help`, and `-v`/`--version`.
@@ -193,7 +193,7 @@ export default defineConfig({
 });
 ```
 
-`--config <path>` loads a different file (relative to the working directory) instead of discovering one. A missing path exits `1`. A file that fails to load, or doesn't default-export an object, fails with an error naming the file.
+`--config <path>` loads a different file (relative to the working directory) instead of discovering one. A missing path exits `1`. `sveld({ config: false })` skips the config file. A file that fails to load, or doesn't default-export an object, fails with an error naming the file.
 
 Precedence, highest first: CLI flags or `sveld()` options, then the config file, then `package.json#svelte` and defaults. Object options (`typesOptions`, `jsonOptions`, `markdownOptions`) merge one level deep, so `npx sveld --types-format=component` keeps `outDir` and `preamble` from the file. Arrays and functions are replaced, not merged.
 

@@ -5,6 +5,7 @@ import {
   defineConfig,
   loadConfig,
   loadConfigFrom,
+  loadConfigOption,
   mergeConfig,
   resolveConfigPath,
   type SveldRuntimeOptions,
@@ -14,11 +15,17 @@ import type { PluginSveldOptions } from "../src/plugin";
 
 function withTempDir(prefix: string, run: (dir: string) => void | Promise<void>) {
   const dir = mkdtempSync(path.join(tmpdir(), prefix));
+  const cleanUp = () => rmSync(dir, { recursive: true, force: true });
+  let result: void | Promise<void>;
   try {
-    return run(dir);
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
+    result = run(dir);
+  } catch (error) {
+    cleanUp();
+    throw error;
   }
+  // An async `run` still needs the directory until it settles.
+  if (result instanceof Promise) return result.finally(cleanUp);
+  cleanUp();
 }
 
 describe("resolveConfigPath", () => {
@@ -41,6 +48,28 @@ describe("resolveConfigPath", () => {
       writeFileSync(path.join(dir, "sveld.config.ts"), "export default {};");
       writeFileSync(path.join(dir, "sveld.config.js"), "export default {};");
       expect(resolveConfigPath(dir)).toBe(path.join(dir, "sveld.config.js"));
+    });
+  });
+});
+
+describe("loadConfigOption", () => {
+  test("loads a path relative to cwd, and says when it doesn't exist", async () => {
+    await withTempDir("sveld-config-option-", async (dir) => {
+      writeFileSync(path.join(dir, "custom.config.js"), "export default { glob: true };");
+      await expect(loadConfigOption("custom.config.js", dir, false)).resolves.toEqual({ glob: true });
+      await expect(loadConfigOption("missing.config.js", dir, true)).rejects.toThrow(
+        'sveld: config file "missing.config.js" does not exist.',
+      );
+    });
+  });
+
+  test("discovers a config file when asked to, or by default when `discover` is set", async () => {
+    await withTempDir("sveld-config-option-", async (dir) => {
+      writeFileSync(path.join(dir, "sveld.config.js"), "export default { json: true };");
+      await expect(loadConfigOption(true, dir, false)).resolves.toEqual({ json: true });
+      await expect(loadConfigOption(undefined, dir, true)).resolves.toEqual({ json: true });
+      await expect(loadConfigOption(undefined, dir, false)).resolves.toEqual({});
+      await expect(loadConfigOption(false, dir, true)).resolves.toEqual({});
     });
   });
 });

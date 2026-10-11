@@ -1,13 +1,12 @@
 import { existsSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { join } from "node:path";
 import pkg from "../package.json" with { type: "json" };
 import { asSvelteEntryPoint } from "./brands";
 import { formatCheckReport, formatCheckReportJson } from "./check";
 import { resolveSvelteEntry } from "./get-svelte-entry";
 import { closestMatch } from "./levenshtein";
 import {
-  loadConfig,
-  loadConfigFrom,
+  loadConfigOption,
   mergeConfig,
   type SveldConfig,
   type SveldRuntimeOptions,
@@ -256,19 +255,6 @@ export function parseCliOptions(argv: string[]): CliParseResult {
   return { kind: "options", options };
 }
 
-/**
- * Loads the config file named by `--config` (relative to the working
- * directory), or discovers `sveld.config.{js,mjs,ts}` when it isn't set.
- */
-async function loadCliConfig(configPath: SveldConfig["config"]): Promise<SveldConfig> {
-  if (typeof configPath !== "string") return loadConfig();
-  const resolved = resolve(configPath);
-  if (!existsSync(resolved)) {
-    throw new Error(`sveld: config file "${configPath}" does not exist.`);
-  }
-  return loadConfigFrom(resolved);
-}
-
 /** Returns `true` when `value` is set to something outside `allowed`. */
 function isInvalid(value: unknown, allowed: readonly unknown[]): boolean {
   return value !== undefined && !allowed.includes(value);
@@ -305,7 +291,7 @@ export async function cli(process: NodeJS.Process) {
   const cliOptions = parsed.options;
   let fileConfig: SveldConfig;
   try {
-    fileConfig = await loadCliConfig(cliOptions.config);
+    fileConfig = await loadConfigOption(cliOptions.config, process.cwd(), true);
   } catch (error) {
     // The user's to fix, not a crash: print the reason, not sveld's (minified) stack.
     return usageError(error instanceof Error ? error.message : String(error));
