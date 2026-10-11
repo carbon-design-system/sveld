@@ -1,0 +1,50 @@
+{
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "panels",
+      "typeName": "PanelsContext",
+      "properties": [
+        {
+          "name": "count",
+          "type": "number",
+          "description": "Number of open panels",
+          "optional": false
+        },
+        {
+          "name": "secret",
+          "type": "number",
+          "description": "Hidden from docs",
+          "optional": false,
+          "internal": true
+        },
+        {
+          "name": "items",
+          "type": "number[]",
+          "optional": false
+        },
+        {
+          "name": "register",
+          "type": "(id: string) => void",
+          "description": "Adds an item to the group.",
+          "optional": false
+        }
+      ]
+    },
+    {
+      "key": "label",
+      "typeName": "LabelContext",
+      "type": "string",
+      "properties": [],
+      "description": "Current label"
+    }
+  ],
+  "diagnostics": []
+}

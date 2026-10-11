@@ -1,0 +1,64 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "merged",
+      "typeName": "MergedContext",
+      "properties": [
+        {
+          "name": "a",
+          "type": "number",
+          "optional": false
+        },
+        {
+          "name": "b",
+          "type": "string",
+          "optional": false
+        }
+      ]
+    },
+    {
+      "key": "widened",
+      "typeName": "WidenedContext",
+      "properties": [
+        {
+          "name": "c",
+          "type": "boolean",
+          "optional": false
+        }
+      ],
+      "hasUnresolvedSpread": true
+    }
+  ],
+  "diagnostics": [
+    {
+      "component": "context-spread/input.svelte",
+      "kind": "spread-unresolved",
+      "name": "widened",
+      "message": "Context \"widened\" spreads a value sveld can't resolve; its shape is widened to \"Record<string, any>\".",
+      "code": "sveld/spread-unresolved",
+      "severity": "warning"
+    },
+    {
+      "component": "context-spread/input.svelte",
+      "kind": "context-duplicate-key",
+      "name": "merged",
+      "message": "setContext(\"merged\", ...) was called more than once; only the first call's shape is used.",
+      "code": "sveld/context-duplicate-key",
+      "severity": "warning"
+    }
+  ]
+}

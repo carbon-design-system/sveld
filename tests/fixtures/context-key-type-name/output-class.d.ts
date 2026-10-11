@@ -36,6 +36,10 @@ export type TabsContext = {
   count: number;
 };
 
+export type TemplateKeyContext = {
+  count: number;
+};
+
 export type ContextKeyTypeNameProps = Record<string, never>;
 
 export default class ContextKeyTypeName extends SvelteComponentTyped<
