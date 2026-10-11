@@ -15,10 +15,10 @@ type $Props<Handler extends (value: string) => void = () => {}, Row extends Data
       }]) => void;
 };
 
-export type FuzzGenericsArrowTypeCommaProps<Handler extends (value: string) => void = () => {}, Row extends DataTableRow = DataTableRow> = $Props<Handler, Row>;
+export type GenericsAttributeArrowTypeProps<Handler extends (value: string) => void = () => {}, Row extends DataTableRow = DataTableRow> = $Props<Handler, Row>;
 
-export default class FuzzGenericsArrowTypeComma<Handler extends (value: string) => void = () => {}, Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
-  FuzzGenericsArrowTypeCommaProps<Handler, Row>,
+export default class GenericsAttributeArrowType<Handler extends (value: string) => void = () => {}, Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
+  GenericsAttributeArrowTypeProps<Handler, Row>,
   Record<string, any>,
   {
     default: {

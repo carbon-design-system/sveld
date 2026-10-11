@@ -144,7 +144,7 @@
       }
     },
     {
-      "includes": ["**/tests/fixtures/fuzz-generics-arrow-type-comma/input.svelte"],
+      "includes": ["**/tests/fixtures/generics-attribute-arrow-type/input.svelte"],
       "formatter": {
         "enabled": false
       }
