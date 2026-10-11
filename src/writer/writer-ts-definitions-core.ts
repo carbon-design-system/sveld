@@ -20,7 +20,6 @@ const COMPONENT_NAME_REGEX = /^[A-Z]/;
 const NEWLINE_REGEX = /\n/;
 const FUNCTION_TYPE_REGEX = /=>/;
 const DESCRIPTION_DEFAULT_TAG_REGEX = /(?:^|\n)@default\b/;
-const NEWLINE_TO_COMMENT_REGEX = /\n/g;
 const BLANK_COMMENT_LINE_REGEX = /^([ \t]*\*) +$/gm;
 const WHITESPACE_REGEX = /\s+/g;
 const SNIPPET_TYPE_REFERENCE_REGEX = /(^|[^.\w])Snippet(?:\s*<|\b)/;
@@ -37,9 +36,36 @@ function stripConstModifierForTypeAlias(constraint: string): string {
   return constraint.replace(LEADING_CONST_MODIFIER_REGEX, "");
 }
 
-function formatDescriptionForComment(description: string | undefined): string | undefined {
-  if (!description) return undefined;
-  return description.replace(NEWLINE_TO_COMMENT_REGEX, "\n* ");
+type JsDocTags = Array<{ name: string; body: string }> | undefined;
+
+/** A `/** ... *\/` block with one ` * ` line per entry, or `""` without lines. */
+function formatJsDocBlock(lines: string[]): string {
+  if (lines.length === 0) return EMPTY_STR;
+  return `/**\n * ${escapeCommentText(lines.join("\n * "))}\n */`;
+}
+
+function descriptionLines(description: string | undefined): string[] {
+  return description ? description.split("\n") : [];
+}
+
+function deprecatedLines(deprecated: DeprecatedValue | undefined): string[] {
+  if (deprecated === undefined) return [];
+  return (deprecated === true ? "@deprecated" : `@deprecated ${deprecated}`).split("\n");
+}
+
+function expandJsDocTagLines(tags: JsDocTags): string[] {
+  const lines: string[] = [];
+  for (const { name, body } of tags ?? []) {
+    if (!body) lines.push(`@${name}`);
+    else if (body.includes("\n")) lines.push(`@${name}`, ...body.split("\n"));
+    else lines.push(`@${name} ${body}`);
+  }
+  return lines;
+}
+
+/** JSDoc lines for a prop, accessor, module export, or class member: `@deprecated` precedes the other tags. */
+function memberJsDocLines(description: string | undefined, deprecated: DeprecatedValue | undefined, tags: JsDocTags) {
+  return [...descriptionLines(description), ...deprecatedLines(deprecated), ...expandJsDocTagLines(tags)];
 }
 
 function formatSingleLineComment(description: string | undefined): string {
@@ -47,61 +73,17 @@ function formatSingleLineComment(description: string | undefined): string {
   return `/** ${escapeCommentText(description)} */`;
 }
 
-function formatMultiLineComment(description: string | undefined): string {
-  if (!description) return "";
-  return `/**\n * ${escapeCommentText(description).replace(NEWLINE_TO_COMMENT_REGEX, "\n * ")}\n */`;
-}
-
 function formatComment(description: string | undefined): string {
-  return description?.includes("\n") ? formatMultiLineComment(description) : formatSingleLineComment(description);
+  return description?.includes("\n")
+    ? formatJsDocBlock(descriptionLines(description))
+    : formatSingleLineComment(description);
 }
 
-function formatDeprecatedJsDocLine(deprecated: DeprecatedValue | undefined): string | undefined {
-  if (deprecated === undefined) return undefined;
-  return deprecated === true ? "@deprecated" : `@deprecated ${deprecated}`;
-}
-
-function deprecatedCommentLine(deprecated: DeprecatedValue | undefined): string | undefined {
-  const line = formatDeprecatedJsDocLine(deprecated);
-  if (line === undefined) return undefined;
-  return `* ${line.replace(NEWLINE_TO_COMMENT_REGEX, "\n* ")}\n`;
-}
-
-function expandJsDocTagContent(name: string, body: string): string[] {
-  if (!body) return [`@${name}`];
-  if (!body.includes("\n")) return [`@${name} ${body}`];
-  return [`@${name}`, ...body.split("\n")];
-}
-
-function expandJsDocTagLines(tags: Array<{ name: string; body: string }> | undefined): string[] {
-  const lines: string[] = [];
-  for (const { name, body } of tags ?? []) {
-    lines.push(...expandJsDocTagContent(name, body));
-  }
-  return lines;
-}
-
-/** JSDoc for a slot or event (and the snippet/callback prop standing in for one). */
-function formatSlotJsDoc(
-  description: string | undefined,
-  tags: Array<{ name: string; body: string }> | undefined,
-  deprecated: DeprecatedValue | undefined,
-): string {
-  const deprecatedLine = formatDeprecatedJsDocLine(deprecated);
-  const tagLines = expandJsDocTagLines(tags);
-  const hasTags = tagLines.length > 0;
-  if (!hasTags && !deprecatedLine) return formatComment(description);
-  const lines: string[] = [];
-  if (description) lines.push(...description.split("\n"));
-  lines.push(...tagLines);
-  if (deprecatedLine) lines.push(...deprecatedLine.split("\n"));
-  return `/**\n * ${escapeCommentText(lines.join("\n * "))}\n */`;
-}
-
-function formatTagCommentLines(tags?: Array<{ name: string; body: string }>): string {
-  const tagLines = expandJsDocTagLines(tags);
-  if (tagLines.length === 0) return "";
-  return tagLines.map((line) => `* ${line}\n`).join("");
+/** JSDoc for a slot or event (and the snippet/callback prop standing in for one): `@deprecated` follows the other tags. */
+function formatSlotJsDoc(description: string | undefined, tags: JsDocTags, deprecated: DeprecatedValue | undefined) {
+  const tagLines = [...expandJsDocTagLines(tags), ...deprecatedLines(deprecated)];
+  if (tagLines.length === 0) return formatComment(description);
+  return formatJsDocBlock([...descriptionLines(description), ...tagLines]);
 }
 
 export function formatTsProps(props?: string) {
@@ -113,14 +95,11 @@ export function getTypeDefs(def: Pick<ComponentDocApi, "typedefs">) {
   if (def.typedefs.length === 0) return EMPTY_STR;
   return def.typedefs
     .map((typedef) => {
-      let typedefComment: string;
-      const tagLines = expandJsDocTagLines(typedef.tags);
-      if (tagLines.length === 0) {
-        typedefComment = typedef.description ? `${formatMultiLineComment(typedef.description)}\n` : "";
-      } else {
-        const lines = typedef.description ? [...typedef.description.split("\n"), ...tagLines] : tagLines;
-        typedefComment = `/**\n * ${escapeCommentText(lines.join("\n * "))}\n */\n`;
-      }
+      const comment = formatJsDocBlock([
+        ...descriptionLines(typedef.description),
+        ...expandJsDocTagLines(typedef.tags),
+      ]);
+      const typedefComment = comment ? `${comment}\n` : "";
       // Markdown prints this as is, not through the .d.ts formatter, so drop the
       // trailing space a paragraph break leaves on its ` * ` line.
       return `${typedefComment}export ${typedef.ts}`.replace(BLANK_COMMENT_LINE_REGEX, "$1");
@@ -203,7 +182,7 @@ export function getContextDefs(def: Pick<ComponentDocApi, "contexts" | "generics
         })
         .join("\n  ");
 
-      const contextComment = context.description ? `${formatMultiLineComment(context.description)}\n` : "";
+      const contextComment = context.description ? `${formatJsDocBlock(descriptionLines(context.description))}\n` : "";
       const { declSuffix: genericSuffix } = computeReferencedGenerics(
         def.generics,
         [context.type ?? "", ...context.properties.map((prop) => prop.type)].join("\n"),
@@ -231,29 +210,6 @@ export function getContextDefs(def: Pick<ComponentDocApi, "contexts" | "generics
  */
 function formatKey(key: string): string {
   return IDENTIFIER_REGEX.test(key) ? key : JSON.stringify(key);
-}
-
-function addCommentLine(value: string | boolean | undefined, returnValue?: string) {
-  if (!value) return undefined;
-  return `* ${returnValue || value}\n`;
-}
-
-function createPropComment(
-  description: string | undefined,
-  deprecated?: DeprecatedValue,
-  tags?: Array<{ name: string; body: string }>,
-): string {
-  return [
-    addCommentLine(formatDescriptionForComment(description)),
-    deprecatedCommentLine(deprecated),
-    formatTagCommentLines(tags),
-  ]
-    .filter(Boolean)
-    .join("");
-}
-
-function wrapCommentInJSDoc(commentLines: string): string {
-  return commentLines.length > 0 ? `/**\n${escapeCommentText(commentLines)}*/` : EMPTY_STR;
 }
 
 /**
@@ -311,18 +267,16 @@ function genPropDef(
       prop.value === undefined ||
       prop.value === "undefined";
 
-    const prop_comments = [
-      createPropComment(prop.description, prop.deprecated, prop.tags),
-      addCommentLine(prop.constant, "@constant"),
-      suppressDefault ? null : `* @default ${defaultValue}\n`,
-    ]
-      .filter(Boolean)
-      .join("");
+    const comment = formatJsDocBlock([
+      ...memberJsDocLines(prop.description, prop.deprecated, prop.tags),
+      ...(prop.constant ? ["@constant"] : []),
+      ...(suppressDefault ? [] : [`@default ${defaultValue}`]),
+    ]);
 
     const prop_value = prop.constant && !prop.isFunction ? prop.value : prop.type || ANY_TYPE;
 
     return `
-      ${wrapCommentInJSDoc(prop_comments)}
+      ${comment}
       ${formatKey(prop.name)}${prop.isRequired ? "" : "?"}: ${prop_value};`;
   });
 
@@ -622,9 +576,8 @@ function genAccessors(def: Pick<ComponentDocApi, "props">) {
   return def.props
     .filter((prop) => prop.isFunctionDeclaration || prop.kind === "const")
     .map((prop) => {
-      const prop_comments = createPropComment(prop.description, prop.deprecated, prop.tags);
       return `
-    ${wrapCommentInJSDoc(prop_comments)}
+    ${formatJsDocBlock(memberJsDocLines(prop.description, prop.deprecated, prop.tags))}
     ${formatKey(prop.name)}: ${generateFunctionType(prop)};`;
     })
     .join("\n");
@@ -745,24 +698,24 @@ function genComponentComment(def: Pick<ComponentDocApi, "componentComment">) {
  */
 function genModuleReExports(def: Pick<ComponentDocApi, "moduleExports">) {
   const statements: string[] = [];
-  const namedGroups = new Map<string, { comments: string; from: string; specifiers: string[] }>();
+  const namedGroups = new Map<string, { comment: string; from: string; specifiers: string[] }>();
 
   for (const prop of def.moduleExports) {
     if (prop.kind !== "re-export" || !prop.reExport) continue;
     const { from, imported } = prop.reExport;
-    const comments = createPropComment(prop.description, prop.deprecated, prop.tags);
+    const comment = formatJsDocBlock(memberJsDocLines(prop.description, prop.deprecated, prop.tags));
     const name = formatKey(prop.name);
 
     if (imported === "*") {
       const clause = prop.name === "*" ? "*" : `* as ${name}`;
-      statements.push(`${wrapCommentInJSDoc(comments)}\nexport ${clause} from ${JSON.stringify(from)};`);
+      statements.push(`${comment}\nexport ${clause} from ${JSON.stringify(from)};`);
       continue;
     }
 
-    const key = `${from}\0${comments}`;
+    const key = `${from}\0${comment}`;
     let group = namedGroups.get(key);
     if (!group) {
-      group = { comments, from, specifiers: [] };
+      group = { comment, from, specifiers: [] };
       namedGroups.set(key, group);
       statements.push(key);
     }
@@ -773,7 +726,7 @@ function genModuleReExports(def: Pick<ComponentDocApi, "moduleExports">) {
     .map((statement) => {
       const group = namedGroups.get(statement);
       if (!group) return statement;
-      return `${wrapCommentInJSDoc(group.comments)}\nexport { ${group.specifiers.join(", ")} } from ${JSON.stringify(group.from)};`;
+      return `${group.comment}\nexport { ${group.specifiers.join(", ")} } from ${JSON.stringify(group.from)};`;
     })
     .join("\n\n");
 }
@@ -814,14 +767,14 @@ function genModuleClassExport(prop: ComponentProp, declared: Set<string>): strin
   const typeParameters = prop.typeParameters ? `<${prop.typeParameters}>` : "";
   const members = (prop.members ?? [])
     .map((member) => {
-      const comment = wrapCommentInJSDoc(createPropComment(member.description, member.deprecated, member.tags));
+      const comment = formatJsDocBlock(memberJsDocLines(member.description, member.deprecated, member.tags));
       return [comment, `${formatClassMemberSignature(member)};`].filter(Boolean).join("\n");
     })
     .join("\n\n");
   const heritage = `${prop.extends ? ` extends ${prop.extends}` : ""}${prop.implements?.length ? ` implements ${prop.implements.join(", ")}` : ""}`;
   const header = `${renamed ? "" : "export "}declare ${prop.abstract ? "abstract " : ""}class ${localName}${typeParameters}${heritage}`;
   const declaration = [
-    wrapCommentInJSDoc(createPropComment(prop.description, prop.deprecated, prop.tags)),
+    formatJsDocBlock(memberJsDocLines(prop.description, prop.deprecated, prop.tags)),
     members ? `${header} {\n${members}\n}` : `${header} {}`,
     renamed ? exportClause : "",
   ];
@@ -838,8 +791,6 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
       // `export { a as "some-name" }`: declare under a private identifier, then export it by the string name.
       const quoted = !IDENTIFIER_REGEX.test(exported.name);
       const prop = quoted ? { ...exported, name: privateExportName(exported.name) } : exported;
-      const prop_comments = createPropComment(prop.description, prop.deprecated, prop.tags);
-
       let type_def: string;
 
       const isFunctionType = prop.type !== undefined && FUNCTION_TYPE_REGEX.test(prop.type);
@@ -866,7 +817,7 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
       }
 
       return `
-      ${wrapCommentInJSDoc(prop_comments)}
+      ${formatJsDocBlock(memberJsDocLines(prop.description, prop.deprecated, prop.tags))}
       ${type_def}`;
     })
     .join("\n");
