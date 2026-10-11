@@ -73,7 +73,43 @@ export function nodeSourceText(ctx: ParserContext, node: unknown) {
   return sourceAtPos(ctx, start, end);
 }
 
+/** A run of whitespace. */
+const WHITESPACE_RUN_REGEX = /\s+/g;
+
 /** `nodeSourceText` with newlines folded to spaces. */
 export function sourceForExpression(ctx: ParserContext, node: unknown) {
   return nodeSourceText(ctx, node)?.replace(NEWLINE_CR_REGEX, " ");
+}
+
+/**
+ * `node`'s source on one line with its comments dropped, for a literal default
+ * shown as `@default`: a `// px` folded onto one line would comment out the rest.
+ */
+export function compactSourceText(ctx: ParserContext, node: unknown) {
+  const text = nodeSourceText(ctx, node);
+  return text === undefined ? undefined : stripComments(text).replace(WHITESPACE_RUN_REGEX, " ");
+}
+
+/** Removes `//` and `/* *\/` comments outside string and template literals. */
+function stripComments(text: string): string {
+  let result = "";
+  let quote: string | undefined;
+  for (let index = 0; index < text.length; index++) {
+    const char = text[index];
+    if (quote) {
+      result += char;
+      if (char === "\\") result += text[++index] ?? "";
+      else if (char === quote) quote = undefined;
+    } else if (char === "/" && text[index + 1] === "/") {
+      const lineEnd = text.indexOf("\n", index);
+      index = (lineEnd === -1 ? text.length : lineEnd) - 1;
+    } else if (char === "/" && text[index + 1] === "*") {
+      const commentEnd = text.indexOf("*/", index + 2);
+      index = commentEnd === -1 ? text.length : commentEnd + 1;
+    } else {
+      if (char === '"' || char === "'" || char === "`") quote = char;
+      result += char;
+    }
+  }
+  return result;
 }

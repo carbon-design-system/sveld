@@ -3,7 +3,7 @@ import type { Component } from "svelte";
 export type ObjectDefaultLineCommentProps = {
   /**
    * Spacing scale
-   * @default { small: 4, // px large: 16 /* px *\/, }
+   * @default { small: 4, large: 16 , }
    */
   spacing?: {
     small: number;
@@ -12,7 +12,7 @@ export type ObjectDefaultLineCommentProps = {
 
   /**
    * Breakpoints
-   * @default [ 320, // phone 768, ]
+   * @default [ 320, 768, ]
    */
   breakpoints?: number[];
 };
