@@ -10,7 +10,7 @@
       "typeSource": "default",
       "value": "{ url: /https?:\\/\\//, quote: /\"/, }",
       "defaultValue": {
-        "raw": "{     url: /https?:\\/\\//, // scheme and slashes     quote: /\"/,   }",
+        "raw": "{ url: /https?:\\/\\//, quote: /\"/, }",
         "kind": "object"
       },
       "isFunction": false,
@@ -27,7 +27,7 @@
       "typeSource": "default",
       "value": "[ \"  \", \"a // b\", `one\\ntwo`, ]",
       "defaultValue": {
-        "raw": "[     \"  \", // two spaces     \"a // b\",     `one two`,   ]",
+        "raw": "[ \"  \", \"a // b\", `one\\ntwo`, ]",
         "kind": "array",
         "value": [
           "  ",

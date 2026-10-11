@@ -44,7 +44,7 @@
       "typeSource": "default",
       "value": "compact ? \"compact-spacing-with-tight-line-height\" : theme === \"print\" ? \"print-friendly-spacing\" : \"comfortable-spacing\"",
       "defaultValue": {
-        "raw": "compact       ? \"compact-spacing-with-tight-line-height\"       : theme === \"print\"         ? \"print-friendly-spacing\"         : \"comfortable-spacing\"",
+        "raw": "compact ? \"compact-spacing-with-tight-line-height\" : theme === \"print\" ? \"print-friendly-spacing\" : \"comfortable-spacing\"",
         "kind": "expression"
       },
       "isFunction": false,

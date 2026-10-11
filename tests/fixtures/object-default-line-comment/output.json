@@ -10,7 +10,7 @@
       "typeSource": "default",
       "value": "{ small: 4, large: 16 , }",
       "defaultValue": {
-        "raw": "{     small: 4, // px     large: 16 /* px */,   }",
+        "raw": "{ small: 4, large: 16 , }",
         "kind": "object",
         "value": {
           "small": 4,
@@ -31,7 +31,7 @@
       "typeSource": "default",
       "value": "[ 320, 768, ]",
       "defaultValue": {
-        "raw": "[     320, // phone     768,   ]",
+        "raw": "[ 320, 768, ]",
         "kind": "array",
         "value": [
           320,

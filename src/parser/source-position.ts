@@ -4,7 +4,8 @@ import { isObject } from "../ast-guards";
 import type { SourcePosition, SourceRange } from "../model";
 import type { ParserContext } from "./context";
 
-const NEWLINE_CR_REGEX = /[\r\n]+/g;
+/** Line breaks plus the indentation around them. */
+const LINE_BREAKS_WITH_INDENT_REGEX = /[^\S\r\n]*[\r\n]+\s*/g;
 
 function sourcePositionFromOffset(ctx: ParserContext, offset: number): SourcePosition | undefined {
   if (!ctx.source || offset < 0 || offset > ctx.source.length) return undefined;
@@ -77,9 +78,9 @@ export function nodeSourceText(ctx: ParserContext, node: unknown) {
 /** A run of whitespace. */
 const WHITESPACE_RUN_REGEX = /\s+/g;
 
-/** `nodeSourceText` with newlines folded to spaces. */
+/** `nodeSourceText` on one line: each line break and its indentation become one space. */
 export function sourceForExpression(ctx: ParserContext, node: unknown) {
-  return nodeSourceText(ctx, node)?.replace(NEWLINE_CR_REGEX, " ");
+  return nodeSourceText(ctx, node)?.replace(LINE_BREAKS_WITH_INDENT_REGEX, " ");
 }
 
 /** A line break inside a template literal's text. */
