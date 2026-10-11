@@ -29,17 +29,15 @@ export function maybeSetRestProps(ctx: ParserContext, parent: unknown) {
   const restProps = createRestPropsFromParent(parent);
   if (!restProps) return;
 
-  if (ctx.rest_props === undefined) {
-    ctx.rest_props = restProps;
-    return;
-  }
-
   // A plain element target is typeable; a component target is not. Prefer the
   // first element target seen over an earlier component target, regardless of
   // template order, so one untypeable spread doesn't shadow a typeable one.
-  if (ctx.rest_props.type === "InlineComponent" && restProps.type === "Element") {
-    ctx.rest_props = restProps;
+  if (ctx.rest_props !== undefined && !(ctx.rest_props.type === "InlineComponent" && restProps.type === "Element")) {
+    return;
   }
+  ctx.rest_props = restProps;
+  const tag = parent && typeof parent === "object" && "tag" in parent ? parent.tag : undefined;
+  ctx.restPropsTagLocal = restProps.name === "svelte:element" && isIdentifier(tag) ? tag.name : undefined;
 }
 
 /** The rest props name (`$$restProps` or a runes rest local) an object literal initializer spreads. */

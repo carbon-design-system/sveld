@@ -814,6 +814,23 @@ For a `<svelte:element>` whose tag is only known at runtime, use `@restProps {sv
 </svelte:element>
 ```
 
+`HTMLAttributes<HTMLElement>` only allows attributes every element has, so `<Box tag="a" href="/">` fails to type-check. To let the rest props follow the tag, type `tag` with a type parameter constrained to tag names. No `@restProps` tag is needed:
+
+```svelte
+<script>
+  /** @template {keyof HTMLElementTagNameMap} [Tag="div"] */
+
+  /** @type {Tag} */
+  export let tag = "div";
+</script>
+
+<svelte:element this={tag} {...$$restProps}>
+  <slot />
+</svelte:element>
+```
+
+The rest props become `SvelteHTMLElements[Tag]`, so `tag="a"` allows `href` and the default `div` doesn't. The generated type uses `NoInfer`, which needs TypeScript 5.4 or later.
+
 A spread onto a component without `@restProps` raises [`sveld/rest-props-unresolved`](ci.md#diagnostic-codes).
 
 ## `@extendProps`

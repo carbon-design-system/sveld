@@ -517,6 +517,11 @@ export interface ComponentElement {
    * ```
    */
   thisValue?: string;
+  /**
+   * The type parameter a dynamic tag is typed with, so rest props follow it:
+   * `Tag` for `<svelte:element this={tag}>` with `tag` typed `Tag`.
+   */
+  thisType?: string;
   /** From `@restProps` JSDoc. */
   description?: string;
 }

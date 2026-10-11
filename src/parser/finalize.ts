@@ -13,6 +13,7 @@ import {
 import { getElementByTag } from "../element-tag-map";
 import type {
   ComponentContext,
+  ComponentGenerics,
   ComponentParseResult,
   ComponentProp,
   ComponentSlot,
@@ -23,6 +24,7 @@ import type {
   TypeDef,
 } from "../model";
 import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "../parsed-component-metadata";
+import { splitTopLevel } from "../type-text";
 import { isValidTypeText } from "../type-text-validity";
 import type { ComponentWalkResult } from "./component-walk";
 import { getPropTypeByLocalOrPublic, type ParserContext, resolvePublicPropName } from "./context";
@@ -44,6 +46,8 @@ import { buildPendingCrossFileCandidates, buildTypeScriptMetadata } from "./type
 import { escapeRegExp } from "./utils";
 import { importedCalleeBinding } from "./value-imports";
 import { resolveLocalVarJSDoc } from "./variable-jsdoc";
+
+const CONSTRAINED_TYPE_PARAMETER_REGEX = /^([\w$]+)\s+extends\s/;
 
 /** A JSDoc `@slot`/`@snippet` type of `{}`. */
 const EMPTY_OBJECT_TYPE_REGEX = /^\{\s*\}$/;
@@ -565,6 +569,31 @@ function recordInternalTypedefReferences(
   }
 }
 
+/** Type parameters declared with a constraint (`Tag extends keyof HTMLElementTagNameMap`). */
+function constrainedTypeParameters(generics: ComponentGenerics): Set<string> {
+  const names = new Set<string>();
+  for (const declaration of splitTopLevel(generics?.[1] ?? "", ",")) {
+    const name = declaration.trim().match(CONSTRAINED_TYPE_PARAMETER_REGEX)?.[1];
+    if (name) names.add(name);
+  }
+  return names;
+}
+
+/**
+ * Rest props spread on `<svelte:element this={tag}>` follow `tag`'s type when
+ * it's a constrained type parameter, so `tag="a"` allows `href`. An
+ * unconstrained one might not be a tag name, so it keeps the generic type.
+ */
+function typeRestPropsFromTag(ctx: ParserContext, props: ComponentProp[]) {
+  const restProps = ctx.rest_props;
+  if (restProps?.type !== "Element" || restProps.name !== "svelte:element" || restProps.thisValue) return;
+  const tagProp = props.find((prop) => (prop.localName ?? prop.name) === ctx.restPropsTagLocal);
+  const typeParameter = tagProp?.type?.trim();
+  if (typeParameter && constrainedTypeParameters(ctx.generics).has(typeParameter)) {
+    ctx.rest_props = { ...restProps, thisType: typeParameter };
+  }
+}
+
 /** Builds the parse result from `ctx` and what {@link walkComponent} collected. */
 export function finalizeComponent(ctx: ParserContext, walk: ComponentWalkResult): ComponentParseResult {
   const dispatchedEvents = resolveDispatchedEvents(ctx, walk);
@@ -578,6 +607,7 @@ export function finalizeComponent(ctx: ParserContext, walk: ComponentWalkResult)
   const slots = buildSlots(ctx);
 
   resolveGenerics(ctx, props, slots);
+  typeRestPropsFromTag(ctx, props);
 
   const moduleExports = mapToArray(ctx.moduleExports);
   const events = serializeEvents(ctx);

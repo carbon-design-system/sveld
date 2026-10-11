@@ -350,7 +350,7 @@ function genPropDef(
     def.extends === undefined ? "" : `Omit<${def.extends.interface}, keyof $Props${genericsNameRef}> & `;
 
   if (def.rest_props?.type === "Element") {
-    const { name, thisValue, description } = def.rest_props;
+    const { name, thisValue, thisType, description } = def.rest_props;
     let restPropsType: string;
     if (name !== "svelte:element") {
       restPropsType = name
@@ -359,6 +359,9 @@ function genPropDef(
         .join(" & ");
     } else if (thisValue) {
       restPropsType = `SvelteHTMLElements["${thisValue}"]`;
+    } else if (thisType) {
+      // `NoInfer` keeps the other props from inferring the tag, so no `tag` means its default.
+      restPropsType = `NoInfer<SvelteHTMLElements[${thisType}]>`;
     } else {
       // Dynamic `this`: the element type is unknown at compile time.
       restPropsType = "HTMLAttributes<HTMLElement>";
@@ -383,6 +386,8 @@ function genPropDef(
 
       ${dataAttributes}
     };`;
+    // A tag typed by a type parameter needs the component's type parameters in scope.
+    const restPropsGenerics = thisType ? { name: genericsName, ref: genericsNameRef } : { name: "", ref: "" };
     const omittedKeys =
       def.extends === undefined
         ? `keyof $Props${genericsNameRef}`
@@ -391,10 +396,10 @@ function genPropDef(
     return {
       props_name,
       prop_def: `
-    ${restPropsComment}type $RestProps = ${restPropsType};\n
+    ${restPropsComment}type $RestProps${restPropsGenerics.name} = ${restPropsType};\n
     ${propsDecl}
 
-    export type ${props_name}${genericsName} = Omit<$RestProps, ${omittedKeys}> & ${extendsPrefix}$Props${genericsNameRef};
+    export type ${props_name}${genericsName} = Omit<$RestProps${restPropsGenerics.ref}, ${omittedKeys}> & ${extendsPrefix}$Props${genericsNameRef};
   `,
     };
   }
@@ -1001,9 +1006,13 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
       SNIPPET_TYPE_REFERENCE_REGEX.test(exports_def));
 
   const needsSvelteHTMLElements =
-    rest_props?.type === "Element" && (rest_props.name !== "svelte:element" || rest_props.thisValue);
+    rest_props?.type === "Element" &&
+    (rest_props.name !== "svelte:element" || rest_props.thisValue || rest_props.thisType);
   const needsHTMLAttributes =
-    rest_props?.type === "Element" && rest_props.name === "svelte:element" && !rest_props.thisValue;
+    rest_props?.type === "Element" &&
+    rest_props.name === "svelte:element" &&
+    !rest_props.thisValue &&
+    !rest_props.thisType;
 
   const componentTypeImport = useComponentFormat
     ? useComponentInterface
