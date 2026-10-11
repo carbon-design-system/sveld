@@ -22,6 +22,7 @@
   setContext("my key!", { count });
   setContext(CONTEXT_KEY, { open });
   setContext(ALIAS_KEY, { count });
+  setContext(`template-key`, { count });
 </script>
 
 <div></div>

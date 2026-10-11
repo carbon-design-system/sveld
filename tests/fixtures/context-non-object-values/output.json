@@ -1,0 +1,43 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "count",
+      "typeName": "CountContext",
+      "type": "import(\"svelte/store\").Writable<number>",
+      "properties": []
+    },
+    {
+      "key": "level",
+      "typeName": "LevelContext",
+      "type": "import(\"svelte/store\").Readable<number>",
+      "properties": []
+    },
+    {
+      "key": "parent",
+      "typeName": "ParentContext",
+      "type": "undefined",
+      "properties": []
+    },
+    {
+      "key": "group",
+      "typeName": "GroupContext",
+      "type": "null",
+      "properties": []
+    }
+  ],
+  "diagnostics": []
+}
