@@ -76,7 +76,7 @@
     {
       "name": "format",
       "kind": "function",
-      "type": "() => any",
+      "type": "(value: any) => any",
       "typeSource": "inferred",
       "isFunction": true,
       "isFunctionDeclaration": true,

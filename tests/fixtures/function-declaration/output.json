@@ -37,8 +37,60 @@
     {
       "name": "add",
       "kind": "function",
+      "type": "(a: any, b: any) => any",
+      "typeSource": "inferred",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "reset",
+      "kind": "function",
       "type": "() => any",
       "typeSource": "inferred",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "format",
+      "kind": "function",
+      "type": "(value: any, locale?: any, ...rest: any[]) => string",
+      "typeSource": "inferred",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "pick",
+      "kind": "function",
+      "type": "(arg0: any) => any",
+      "typeSource": "inferred",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "double",
+      "kind": "function",
+      "type": "(n: number) => any",
+      "typeSource": "jsdoc",
+      "params": [
+        {
+          "name": "n",
+          "type": "number",
+          "description": "",
+          "optional": false
+        }
+      ],
       "isFunction": true,
       "isFunctionDeclaration": true,
       "isRequired": false,

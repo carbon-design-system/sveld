@@ -10,7 +10,15 @@ export type FunctionDeclarationProps = {
 export type FunctionDeclarationExports = {
   fnB: (...args: any[]) => any;
 
-  add: () => any;
+  add: (a: any, b: any) => any;
+
+  reset: () => any;
+
+  format: (value: any, locale?: any, ...rest: any[]) => string;
+
+  pick: (arg0: any) => any;
+
+  double: (n: number) => any;
 
   /**
    * Multiplies two numbers

@@ -1,6 +1,6 @@
 import { SvelteComponentTyped } from "svelte";
 
-export declare function format(): any;
+export declare function format(value: any): any;
 
 export type ExportSpecifierBindingsProps = {
   /**
