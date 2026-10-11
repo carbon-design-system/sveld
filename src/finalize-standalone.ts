@@ -8,7 +8,6 @@ export interface FinalizeWithoutCrossFileResolutionOptions {
   filePath?: string;
 }
 
-/** A message's closing period. */
 const TRAILING_PERIOD_REGEX = /\.$/;
 
 const FILE_ACCESS = "resolving it needs file access (generateBundle or the CLI)";

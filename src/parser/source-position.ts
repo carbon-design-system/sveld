@@ -3,7 +3,6 @@ import { isObject } from "../ast-guards";
 import type { SourcePosition, SourceRange } from "../model";
 import type { ParserContext } from "./context";
 
-/** A run of line breaks. */
 export const NEWLINE_CR_REGEX = /[\r\n]+/g;
 
 function sourcePositionFromOffset(ctx: ParserContext, offset: number): SourcePosition | undefined {

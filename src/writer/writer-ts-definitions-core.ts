@@ -13,31 +13,23 @@ const EMPTY_EVENTS = "Record<string, any>";
 /** Avoids banned `{}` type; use `Record<string, never>` for empty objects. */
 const EMPTY_OBJECT = "Record<string, never>";
 
-/** A plain identifier, which needs no quotes as a key or export name. */
 const IDENTIFIER_REGEX = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
-/** An event detail type that already names `CustomEvent`. */
 const CUSTOM_EVENT_REGEX = /CustomEvent/;
 /** A capitalized name: a component rather than an HTML element. */
 const COMPONENT_NAME_REGEX = /^[A-Z]/;
-/** A line break. */
 const NEWLINE_REGEX = /\n/;
-/** The `=>` of a function type. */
 const FUNCTION_TYPE_REGEX = /=>/;
 /** An `@default` tag line in a description. */
 const DESCRIPTION_DEFAULT_TAG_REGEX = /(?:^|\n)@default\b/;
 /** A comment line of only `*` plus trailing spaces, capturing all but the spaces. */
 const BLANK_COMMENT_LINE_REGEX = /^([ \t]*\*) +$/gm;
-/** Each whitespace run. */
 const WHITESPACE_REGEX = /\s+/g;
 /** A reference to the `Snippet` type, not as a member (`x.Snippet`) or part of a longer name. */
 const SNIPPET_TYPE_REFERENCE_REGEX = /(^|[^.\w])Snippet(?:\s*<|\b)/;
 /** A preserved `import type { Snippet } from "svelte"`. */
 const PRESERVED_SNIPPET_IMPORT_REGEX = /import\s+type\s+[^;]*\bSnippet\b[^;]*from\s+"svelte";/;
-/** A type parameter's leading `const` modifier. */
 const LEADING_CONST_MODIFIER_REGEX = /^const\s+/;
-/** A declaration's leading `export `. */
 const LEADING_EXPORT_REGEX = /^export /;
-/** Each character an identifier can't contain. */
 const NON_IDENTIFIER_CHAR_REGEX = /[^\w$]/g;
 
 /**

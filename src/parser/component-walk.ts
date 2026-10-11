@@ -45,9 +45,7 @@ import { sourceAtPos, sourceRangeFromNode } from "./source-position";
 import { collectValueImportBindings, importedBindingByName } from "./value-imports";
 import { isTypeOnlySubtree } from "./walk";
 
-/** The `@component` tag opening a component doc comment. */
 const COMPONENT_COMMENT_REGEX = /^@component/;
-/** Each carriage return. */
 const CARRIAGE_RETURN_REGEX = /\r/g;
 
 /** Keep in sync with the cases in {@link walkComponent}'s `enter`. */
