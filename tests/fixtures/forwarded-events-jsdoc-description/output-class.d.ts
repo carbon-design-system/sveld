@@ -1,9 +1,9 @@
 import { SvelteComponentTyped } from "svelte";
 
-export type ForwardedEventsTypedProps = Record<string, never>;
+export type ForwardedEventsJsdocDescriptionProps = Record<string, never>;
 
-export default class ForwardedEventsTyped extends SvelteComponentTyped<
-  ForwardedEventsTypedProps,
+export default class ForwardedEventsJsdocDescription extends SvelteComponentTyped<
+  ForwardedEventsJsdocDescriptionProps,
   {
     blur: WindowEventMap["blur"];
     /** Fired when the button is clicked */
