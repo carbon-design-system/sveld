@@ -2890,4 +2890,29 @@ describe("ComponentParser", () => {
     expect(restPropsDiagnostics("Link")).toEqual([]);
     expect(restPropsDiagnostics("Button")).toHaveLength(1);
   });
+
+  test("types a context property from its JSDoc", () => {
+    const result = new ComponentParser().parseSvelteComponent(
+      `
+        <script>
+          import { setContext } from "svelte";
+          import { noop } from "./utils";
+
+          setContext("group", {
+            /**
+             * Adds an item to the group.
+             * @type {(id: string) => void}
+             */
+            register: noop,
+          });
+        </script>
+      `,
+      diagnostics,
+    );
+
+    expect(result.contexts?.[0]?.properties).toEqual([
+      { name: "register", type: "(id: string) => void", description: "Adds an item to the group.", optional: false },
+    ]);
+    expect(result.diagnostics?.filter(({ kind }) => kind === "context-any-type")).toEqual([]);
+  });
 });
