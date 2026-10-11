@@ -1,6 +1,8 @@
 import { BACKTICK_REGEX } from "./markdown-format-utils";
 
+/** Each run of characters GitHub drops from a heading slug. */
 const NON_SLUG_CHAR_REGEX = /[^\w\- ]+/g;
+/** Each whitespace run, which becomes a `-` in a heading slug. */
 const SLUG_SPACE_REGEX = /\s+/g;
 const TOC_PLACEHOLDER = "<!-- __TOC__ -->";
 

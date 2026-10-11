@@ -57,9 +57,13 @@ const GUTTER = "*";
 const BLOCK_CLOSE = "*/";
 const FENCE = "```";
 
+/** Leading whitespace. */
 const LEADING_WS_REGEX = /^\s+/;
+/** One whitespace character. */
 const WHITESPACE_CHAR_REGEX = /\s/;
+/** A line opening a tag (`@param ...`); an `@scope/pkg` mention is not one. */
 const TAG_SECTION_START_REGEX = /^@[^\s/]+(?=\s|$)/;
+/** A tag's `@name` and the whitespace after it, capturing the name. */
 const TAG_PREFIX_REGEX = /^@(\S+)\s*/;
 
 /** Tags that mean nothing without a name, so the name may wrap onto a line of its own. */

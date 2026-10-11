@@ -1,7 +1,9 @@
 import type { ComponentProp, DeprecatedValue } from "../model";
 import { formatClassMemberSignature, formatTsProps } from "./writer-ts-definitions-core";
 
+/** Each backtick. */
 export const BACKTICK_REGEX = /`/g;
+/** Each whitespace run. */
 export const WHITESPACE_REGEX = /\s+/g;
 
 export const MD_TYPE_UNDEFINED = "--";
@@ -17,14 +19,21 @@ export const CSS_PART_TABLE_HEADER = "| Part name | Description |\n| :- | :- |\n
 export const CSS_PROPERTY_TABLE_HEADER =
   "| Property name | Type | Default value | Description |\n| :- | :- | :- | :- |\n";
 
+/** Each `|`, which would split a table cell. */
 const PIPE_REGEX = /\|/g;
+/** Each `<`. */
 const LT_REGEX = /</g;
+/** Each `>`. */
 const GT_REGEX = />/g;
+/** Each line break. */
 const NEWLINE_REGEX = /\n/g;
+/** A plain identifier, readable with `.name` access. */
 const IDENTIFIER_REGEX = /^[A-Za-z_$][\w$]*$/;
+/** A line break and the whitespace around it. */
 const LINE_BREAK_REGEX = /\s*\n\s*/g;
 // An entity-like `&`, a tag-opening `<`, `|`, a backtick, `*`, a backslash escape, or a word-edge `_`.
 const CODE_ESCAPE_REGEX = /&(?=#?\w+;)|<(?=[A-Za-z/!?])|[|`*]|\\(?=[!-/:-@[-`{-~])|(?<![A-Za-z0-9])_|_(?![A-Za-z0-9])/g;
+/** Any character {@link CODE_ESCAPE_REGEX} may encode, for a fast no-op check. */
 const CODE_ESCAPE_CHAR_REGEX = /[&<|`*\\_]/;
 
 /**
@@ -43,6 +52,7 @@ function codeCell(text: string): string {
   return `<code>${escapeCodeText(text.includes("\n") ? text.replace(LINE_BREAK_REGEX, " ") : text)}</code>`;
 }
 
+/** `{@link target}` or `{@link target|text}`, capturing both parts. */
 const JSDOC_LINK_REGEX = /\{@link\s+([^{}\s|]+)(?:\|([^{}]+))?\}/g;
 
 /** `{@link target|text}` to `[text](target)`. JSON and `.d.ts` keep the tag verbatim. */
@@ -68,8 +78,11 @@ function proseText(text: string): string {
   return escapeHtml(rewriteJsDocLinks(text));
 }
 
+/** A code fence opening line, capturing its indent, marker, and info string. */
 const FENCE_OPEN_REGEX = /^([ \t]*)(`{3,}|~{3,})(.*)$/;
+/** A leading line break. */
 const LEADING_NEWLINE_REGEX = /^\n/;
+/** A trailing line break. */
 const TRAILING_NEWLINE_REGEX = /\n$/;
 
 /**

@@ -22,8 +22,11 @@ interface ExampleCheckDiagnostic {
 // biome-ignore lint/suspicious/noExplicitAny: native-preview API is loaded lazily and typed structurally.
 type TS = any;
 
+/** Each character unsafe in a generated file name. */
 const NON_FILENAME_CHAR_REGEX = /[^A-Za-z0-9_-]/g;
+/** Each character an identifier can't contain. */
 const NON_IDENTIFIER_CHAR_REGEX = /[^A-Za-z0-9_$]/g;
+/** A leading digit, which an identifier can't start with. */
 const LEADING_DIGIT_REGEX = /^[0-9]/;
 const EXAMPLE_CODE_START_LINE = 2;
 const MIN_SUPPORTED_TS_MAJOR = 7;

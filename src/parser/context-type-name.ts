@@ -3,6 +3,7 @@
  * appear in an identifier (`-`, `.`, `:`, `/`, `@`, whitespace, ...), which also drops them.
  */
 const CONTEXT_KEY_SPLIT_REGEX = /(?:_|[^\p{ID_Continue}$])+/u;
+/** A first character an identifier can start with. */
 const IDENTIFIER_START_REGEX = /^[\p{ID_Start}$]/u;
 
 /** Turn `simple-modal` into `SimpleModalContext`, `@scope/ctx` into `ScopeCtxContext`, and `123` into `_123Context`. */

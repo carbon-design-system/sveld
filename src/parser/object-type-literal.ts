@@ -1,7 +1,10 @@
 import { indexOfTopLevel, splitTopLevel } from "../type-text";
 
+/** A `{ ... }` type literal, capturing its body. */
 const OBJECT_TYPE_LITERAL_REGEX = /^\{([\s\S]*)\}$/;
+/** A plain identifier member name. */
 const MEMBER_NAME_REGEX = /^[A-Za-z_$][\w$]*$/;
+/** An index signature key: `[key: string]`. */
 const INDEX_SIGNATURE_REGEX = /^\[[\w$]+\s*:[^\]]+\]$/;
 
 export interface ObjectTypeLiteralMember {

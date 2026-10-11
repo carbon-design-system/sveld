@@ -21,6 +21,7 @@ export interface ExampleCheckSource {
   source?: SourceRange;
 }
 
+/** A whole fenced code block, capturing its language and body. */
 const FENCE_REGEX = /^```([\w-]*)\r?\n([\s\S]*?)\r?\n?```$/;
 
 const COMPILE_FENCE_LANGS = new Set(["", "js", "jsx", "ts", "tsx", "javascript", "typescript"]);
