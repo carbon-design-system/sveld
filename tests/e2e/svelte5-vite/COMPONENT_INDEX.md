@@ -42,7 +42,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>{ value: string } </code> | -- | -- |
+| -- | Yes | <code>{ value: string }</code> | -- | -- |
 
 ### Events
 

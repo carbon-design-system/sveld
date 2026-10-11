@@ -11,7 +11,7 @@ export interface MultiSelectItem {
 }
 
 export type MultiSelectContext = {
-  declareRef: (arg: any) => any;
+  declareRef: (arg0: any) => any;
 };
 
 type $RestProps = SvelteHTMLElements["div"];

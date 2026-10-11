@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "generator": {
     "name": "sveld",
-    "version": "0.38.2",
+    "version": "0.38.6",
     "svelteVersion": "5.57.1"
   },
   "total": 156,
@@ -4381,7 +4381,7 @@
             "raw": "undefined",
             "kind": "expression"
           },
-          "isFunction": false,
+          "isFunction": true,
           "isFunctionDeclaration": false,
           "isRequired": false,
           "constant": false,
@@ -5304,7 +5304,7 @@
             },
             {
               "name": "add",
-              "type": "(arg: any) => any",
+              "type": "(arg0: any) => any",
               "optional": false
             },
             {
@@ -7337,12 +7337,12 @@
             },
             {
               "name": "declareRef",
-              "type": "(arg: any) => any",
+              "type": "(arg0: any) => any",
               "optional": false
             },
             {
               "name": "updateValue",
-              "type": "(arg: any) => any",
+              "type": "(arg0: any) => any",
               "optional": false
             },
             {
@@ -8425,7 +8425,7 @@
             "raw": "undefined",
             "kind": "expression"
           },
-          "isFunction": false,
+          "isFunction": true,
           "isFunctionDeclaration": false,
           "isRequired": false,
           "constant": false,
@@ -16232,7 +16232,7 @@
           "description": "Default translation ids",
           "type": "{ clearAll: \"clearAll\"; clearSelection: \"clearSelection\" }",
           "typeSource": "default",
-          "value": "{     clearAll: \"clearAll\",     clearSelection: \"clearSelection\",   }",
+          "value": "{ clearAll: \"clearAll\", clearSelection: \"clearSelection\", }",
           "defaultValue": {
             "raw": "{     clearAll: \"clearAll\",     clearSelection: \"clearSelection\",   }",
             "kind": "object",
@@ -18373,7 +18373,7 @@
             "raw": "undefined",
             "kind": "expression"
           },
-          "isFunction": false,
+          "isFunction": true,
           "isFunctionDeclaration": false,
           "isRequired": false,
           "constant": false,
@@ -18806,7 +18806,7 @@
           "properties": [
             {
               "name": "declareRef",
-              "type": "(arg: any) => any",
+              "type": "(arg0: any) => any",
               "optional": false
             }
           ],
@@ -19936,7 +19936,7 @@
           "description": "Default translation ids",
           "type": "{ increment: \"increment\"; decrement: \"decrement\" }",
           "typeSource": "jsdoc",
-          "value": "{     increment: \"increment\",     decrement: \"decrement\",   }",
+          "value": "{ increment: \"increment\", decrement: \"decrement\", }",
           "defaultValue": {
             "raw": "{     increment: \"increment\",     decrement: \"decrement\",   }",
             "kind": "object",
@@ -21057,7 +21057,7 @@
             },
             {
               "name": "add",
-              "type": "(arg: any) => any",
+              "type": "(arg0: any) => any",
               "optional": false
             },
             {
@@ -24215,7 +24215,7 @@
             },
             {
               "name": "add",
-              "type": "(arg: any) => any",
+              "type": "(arg0: any) => any",
               "optional": false
             },
             {
@@ -33753,7 +33753,7 @@
             },
             {
               "name": "add",
-              "type": "(arg: any) => any",
+              "type": "(arg0: any) => any",
               "optional": false
             },
             {

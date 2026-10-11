@@ -19,7 +19,7 @@
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| -- | Yes | -- | -- | -- |
 
 ### Events
 
