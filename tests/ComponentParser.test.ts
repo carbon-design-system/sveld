@@ -823,7 +823,7 @@ describe("ComponentParser", () => {
       );
       expect(types).toEqual({
         select: "(id: string, focus?: boolean) => void",
-        remove: "(index: number) => any",
+        remove: "(index: number) => void",
       });
     });
 

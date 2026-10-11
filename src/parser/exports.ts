@@ -23,6 +23,7 @@ import { processNodeJSDoc } from "./jsdoc";
 import { propJsDocFields, resolvePropTypeAndDocs, withExplicitDefault } from "./prop-shared";
 import {
   addProp,
+  inferFunctionValueReturnType,
   inferFunctionValueType,
   literalType,
   processInitializer,
@@ -235,7 +236,9 @@ export function collectExportDeclarators(
   if (declaration.type === "FunctionDeclaration") {
     if (!declaration.id) return declarators;
     const accessorSignature =
-      ctx.scriptLanguage === "ts" ? buildFunctionDeclarationSignature(ctx, declaration) : undefined;
+      ctx.scriptLanguage === "ts"
+        ? buildFunctionDeclarationSignature(ctx, declaration, inferFunctionValueReturnType(declaration))
+        : undefined;
     declarators.push({
       prop_name: specifier?.exportedName ?? declaration.id.name,
       kind: "function",

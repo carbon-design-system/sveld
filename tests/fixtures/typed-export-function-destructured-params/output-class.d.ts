@@ -9,7 +9,7 @@ export default class TypedExportFunctionDestructuredParams extends SvelteCompone
   Record<string, any>,
   Record<string, never>
 > {
-  move: (arg0: [number, number], arg1: { animate: boolean }) => any;
+  move: (arg0: [number, number], arg1: { animate: boolean }) => void;
 
-  focus: (arg: { preventScroll: boolean }) => any;
+  focus: (arg: { preventScroll: boolean }) => void;
 }
