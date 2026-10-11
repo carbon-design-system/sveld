@@ -75,9 +75,9 @@
       "description": "A long ternary spread over several lines",
       "type": "string",
       "typeSource": "default",
-      "value": "theme === \"dark\" ? \"light-text-on-dark-background\" : theme === \"light\" ? \"dark-text-on-light-background\" : \"neutral\"",
+      "value": "theme === \"dark\"\n  ? \"light-text-on-dark-background\"\n  : theme === \"light\"\n    ? \"dark-text-on-light-background\"\n    : \"neutral\"",
       "defaultValue": {
-        "raw": "theme === \"dark\" ? \"light-text-on-dark-background\" : theme === \"light\" ? \"dark-text-on-light-background\" : \"neutral\"",
+        "raw": "theme === \"dark\"\n  ? \"light-text-on-dark-background\"\n  : theme === \"light\"\n    ? \"dark-text-on-light-background\"\n    : \"neutral\"",
         "kind": "expression"
       },
       "isFunction": false,

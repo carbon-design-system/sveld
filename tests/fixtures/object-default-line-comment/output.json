@@ -8,9 +8,9 @@
       "description": "Spacing scale",
       "type": "{ small: number; large: number }",
       "typeSource": "default",
-      "value": "{ small: 4, large: 16 , }",
+      "value": "{\n  small: 4,\n  large: 16 ,\n}",
       "defaultValue": {
-        "raw": "{ small: 4, large: 16 , }",
+        "raw": "{\n  small: 4,\n  large: 16 ,\n}",
         "kind": "object",
         "value": {
           "small": 4,
@@ -29,9 +29,9 @@
       "description": "Breakpoints",
       "type": "number[]",
       "typeSource": "default",
-      "value": "[ 320, 768, ]",
+      "value": "[\n  320,\n  768,\n]",
       "defaultValue": {
-        "raw": "[ 320, 768, ]",
+        "raw": "[\n  320,\n  768,\n]",
         "kind": "array",
         "value": [
           320,

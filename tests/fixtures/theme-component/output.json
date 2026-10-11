@@ -137,9 +137,9 @@
       "kind": "const",
       "type": "Record<CarbonTheme, string>",
       "typeSource": "jsdoc",
-      "value": "{ white: \"White\", g10: \"Gray 10\", g80: \"Gray 80\", g90: \"Gray 90\", g100: \"Gray 100\", }",
+      "value": "{\n  white: \"White\",\n  g10: \"Gray 10\",\n  g80: \"Gray 80\",\n  g90: \"Gray 90\",\n  g100: \"Gray 100\",\n}",
       "defaultValue": {
-        "raw": "{ white: \"White\", g10: \"Gray 10\", g80: \"Gray 80\", g90: \"Gray 90\", g100: \"Gray 100\", }",
+        "raw": "{\n  white: \"White\",\n  g10: \"Gray 10\",\n  g80: \"Gray 80\",\n  g90: \"Gray 90\",\n  g100: \"Gray 100\",\n}",
         "kind": "object",
         "value": {
           "white": "White",

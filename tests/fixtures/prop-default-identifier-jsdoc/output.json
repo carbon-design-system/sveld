@@ -9,7 +9,7 @@
       "type": "(text: string) => void | Promise<void>",
       "typeSource": "jsdoc",
       "defaultValue": {
-        "raw": "async (text) => { await navigator.clipboard.writeText(text); }",
+        "raw": "async (text) => {\n  await navigator.clipboard.writeText(text);\n}",
         "kind": "function"
       },
       "isFunction": true,
@@ -104,7 +104,7 @@
       "typeSource": "jsdoc",
       "value": "() => true",
       "defaultValue": {
-        "raw": "function defaultShouldFilter() { return true; }",
+        "raw": "function defaultShouldFilter() {\n  return true;\n}",
         "kind": "function"
       },
       "isFunction": true,
@@ -120,7 +120,7 @@
       "typeSource": "jsdoc",
       "value": "(value) => String(value)",
       "defaultValue": {
-        "raw": "function defaultFormat(value) { return String(value); }",
+        "raw": "function defaultFormat(value) {\n  return String(value);\n}",
         "kind": "function"
       },
       "isFunction": true,
@@ -137,7 +137,7 @@
       "typeSource": "jsdoc",
       "value": "() => \"No results\"",
       "defaultValue": {
-        "raw": "function defaultRenderEmpty() { return \"No results\"; }",
+        "raw": "function defaultRenderEmpty() {\n  return \"No results\";\n}",
         "kind": "function"
       },
       "isFunction": true,
@@ -154,7 +154,7 @@
       "typeSource": "jsdoc",
       "value": "() => \"\"",
       "defaultValue": {
-        "raw": "function defaultGetKey() { return \"\"; }",
+        "raw": "function defaultGetKey() {\n  return \"\";\n}",
         "kind": "function"
       },
       "params": [
@@ -184,7 +184,7 @@
       "typeSource": "jsdoc",
       "value": "(key) => key",
       "defaultValue": {
-        "raw": "function defaultTranslate(key) { return key; }",
+        "raw": "function defaultTranslate(key) {\n  return key;\n}",
         "kind": "function"
       },
       "isFunction": true,

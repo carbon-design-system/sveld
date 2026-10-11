@@ -19,7 +19,7 @@ import { returnTypeOfFunctionType } from "../type-text";
 import type { ParserContext } from "./context";
 import { trackPropLocalName } from "./context";
 import { extractJsDocType } from "./jsdoc";
-import { compactSourceText, nodeSourceText, sourceAtPos, sourceForExpression } from "./source-position";
+import { defaultSourceText, nodeSourceText, sourceAtPos, sourceForExpression } from "./source-position";
 import { buildFunctionDeclarationSignature, trackAdditionalTypeDependencyNode } from "./type-resolution";
 import { formatParamList } from "./utils";
 import { importedMemberBinding } from "./value-imports";
@@ -50,9 +50,6 @@ export function queuePendingCrossFileDefault(
     ctx.pendingConstDefaultCandidates.push({ propName, location, ...initResult.pendingConstDefault });
   }
 }
-
-/** A line break plus the indentation around it, folded to one space in default text. */
-const LINE_BREAK_WITH_INDENT_REGEX = /[^\S\r\n]*[\r\n]\s*/g;
 
 const NEW_EXPRESSION_TYPES = new Map([
   ["Date", "Date"],
@@ -124,9 +121,9 @@ function processInitializerWithoutAssertion(ctx: ParserContext, init: unknown, d
   switch (node.type) {
     case "ObjectExpression":
     case "ArrayExpression":
-      return result(compactSourceText(ctx, node), literalType(node, "widen"));
+      return result(defaultSourceText(ctx, node), literalType(node, "widen"));
     case "BinaryExpression":
-      return result(sourceForExpression(ctx, node), inferExpressionType(ctx, node, depth));
+      return result(defaultSourceText(ctx, node), inferExpressionType(ctx, node, depth));
     case "ArrowFunctionExpression":
     case "FunctionExpression":
       return {
@@ -134,13 +131,13 @@ function processInitializerWithoutAssertion(ctx: ParserContext, init: unknown, d
         isFunction: true,
       };
     case "UnaryExpression":
-      return result(nodeSourceText(ctx, node), inferExpressionType(ctx, node, depth));
+      return result(defaultSourceText(ctx, node), inferExpressionType(ctx, node, depth));
     case "LogicalExpression":
     case "ConditionalExpression":
     case "SequenceExpression": {
-      // The whole expression is the default (`size ?? "md"`), folded onto one
-      // line; a sequence keeps the parens it needs to read as one value.
-      const text = nodeSourceText(ctx, node)?.replace(LINE_BREAK_WITH_INDENT_REGEX, " ");
+      // The whole expression is the default (`size ?? "md"`); a sequence keeps
+      // the parens it needs to read as one value.
+      const text = defaultSourceText(ctx, node);
       const value = text !== undefined && node.type === "SequenceExpression" ? `(${text})` : text;
       return result(value, inferExpressionType(ctx, node, depth));
     }
@@ -758,7 +755,7 @@ function conciseFunctionDefaultText(ctx: ParserContext, node: FunctionNode): str
     expr.type === "ObjectExpression" ? `(${exprText})` : exprText;
 
   if (body.type !== "BlockStatement") {
-    const exprText = sourceForExpression(ctx, body);
+    const exprText = defaultSourceText(ctx, body);
     return exprText === undefined ? undefined : `${asyncPrefix}(${params}) => ${arrowBody(body, exprText)}`;
   }
 
@@ -767,7 +764,7 @@ function conciseFunctionDefaultText(ctx: ParserContext, node: FunctionNode): str
 
   const [stmt] = statements;
   if (statements.length === 1 && stmt.type === "ReturnStatement" && stmt.argument) {
-    const exprText = sourceForExpression(ctx, stmt.argument);
+    const exprText = defaultSourceText(ctx, stmt.argument);
     if (exprText !== undefined) return `${asyncPrefix}(${params}) => ${arrowBody(stmt.argument, exprText)}`;
   }
   return undefined;
@@ -797,11 +794,7 @@ function classifyDefaultValue(
   ctx: ParserContext,
   node: Expression | FunctionDeclaration,
 ): ComponentPropDefaultValue | undefined {
-  // An object or array's `// comment` would comment out the rest once on one line.
-  const raw =
-    node.type === "ObjectExpression" || node.type === "ArrayExpression"
-      ? compactSourceText(ctx, node)
-      : sourceForExpression(ctx, node);
+  const raw = defaultSourceText(ctx, node);
   if (!raw) return undefined;
 
   const kind = defaultValueKind(node);
