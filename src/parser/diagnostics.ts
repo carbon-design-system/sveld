@@ -54,6 +54,12 @@ export function recordSveldIgnore(
   ctx.sveldIgnoreDirectives.set(key, existing);
 }
 
+/** A prop's `@sveld-ignore` codes, for {@link recordSveldIgnore} and diagnostics reported after parsing. */
+export function recordPropSveldIgnore(ctx: ParserContext, propName: string, codes: string[] | undefined) {
+  recordSveldIgnore(ctx, "prop-unknown-type", propName, codes);
+  if (codes && codes.length > 0) ctx.propIgnoreCodes.set(propName, codes);
+}
+
 export function isSveldIgnored(ctx: ParserContext, kind: SveldDiagnosticKind, name: string): boolean {
   const codes = ctx.sveldIgnoreDirectives.get(ignoreKey(kind, name));
   if (!codes) return false;

@@ -162,6 +162,28 @@ describe("parse cache", () => {
     );
   });
 
+  test("a warm run keeps a prop's `@sveld-ignore` for an override", async () => {
+    writeFileSync(
+      join(dir, "Button.svelte"),
+      BUTTON.replace(
+        "export let primary = false;",
+        "export let primary = false;\n  /** @type {string} */\n  export let variant;",
+      ),
+    );
+    writeFileSync(
+      join(dir, "SecondaryButton.svelte"),
+      SECONDARY_BUTTON.replace(
+        "export let secondary = true;",
+        "export let secondary = true;\n  /**\n   * @type {number}\n   * @sveld-ignore sveld/extend-props-override\n   */\n  export let variant;",
+      ),
+    );
+    const override = (result: Awaited<ReturnType<typeof generateBundle>>) =>
+      result.diagnostics.find((diagnostic) => diagnostic.kind === "extend-props-override");
+
+    expect(override(await generateBundle(dir, true, { cache: cacheFile }))?.ignored).toBe(true);
+    expect(override(await generateBundle(dir, true, { cache: cacheFile }))?.ignored).toBe(true);
+  });
+
   test("values resolved from an imported module aren't saved as part of the cached parse", async () => {
     const entry = join(dir, "entry.js");
     writeFileSync(entry, 'export { default as Tip } from "./Tip.svelte";\n');

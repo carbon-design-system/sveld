@@ -155,6 +155,8 @@ export interface ParserContext {
 
   /** `@sveld-ignore` codes keyed by `"<kind>:<name>"`; see `recordSveldIgnore`. */
   readonly sveldIgnoreDirectives: Map<string, Set<string>>;
+  /** `@sveld-ignore` codes from each prop's JSDoc, for diagnostics reported after parsing. */
+  readonly propIgnoreCodes: Map<string, string[]>;
 }
 
 /** Fresh {@link ParserContext}. Keep in sync with new fields on {@link ParserContext}. */
@@ -227,6 +229,7 @@ export function createParserContext(): ParserContext {
     variableInfoCache: new Map(),
     variableInfoCacheBuilt: false,
     sveldIgnoreDirectives: new Map(),
+    propIgnoreCodes: new Map(),
   };
 }
 

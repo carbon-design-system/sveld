@@ -5,7 +5,7 @@
 import type { TSNode } from "sveast";
 import type { SveldDiagnostic } from "./diagnostics";
 import type { ElementNamespace } from "./element-tag-map";
-import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "./parsed-component-metadata";
+import { PARSED_COMPONENT_PROP_IGNORES, PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "./parsed-component-metadata";
 
 /** Structured JSDoc tag (e.g. `{ name: "since", body: "1.2.0" }`). */
 export interface JsDocPassthroughTag {
@@ -666,4 +666,5 @@ export interface ParsedComponent {
   diagnostics?: SveldDiagnostic[];
   /** Writer-only TypeScript metadata. Not serialized to JSON. */
   [PARSED_COMPONENT_TYPE_SCRIPT_METADATA]?: ParsedComponentTypeScriptMetadata;
+  [PARSED_COMPONENT_PROP_IGNORES]?: Record<string, string[]>;
 }

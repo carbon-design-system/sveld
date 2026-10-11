@@ -1,8 +1,10 @@
 /** Checks that span components, run once every component has parsed and been resolved. */
+
 import { dirname } from "node:path";
 import type { ComponentDocApi, ComponentDocs, ResolveComponentFilePath } from "./bundle";
 import { createDiagnostic, type SveldDiagnostic } from "./diagnostics";
 import type { ModuleGraph } from "./module-graph";
+import { getParsedComponentPropIgnores } from "./parsed-component-metadata";
 import { MODULE_EXTENSIONS } from "./path";
 import { exportsTypeName, propsTypeName } from "./writer/writer-ts-definitions-core";
 
@@ -105,14 +107,15 @@ export function createExtendsTargetValidator(
     for (const ownProp of component.props) {
       const baseProp = target.props.find((prop) => prop.name === ownProp.name);
       if (baseProp && baseProp.type !== ownProp.type) {
-        diagnostics.push(
-          createDiagnostic({
-            component: component.filePath,
-            kind: "extend-props-override",
-            name: ownProp.name,
-            message: `Own prop "${ownProp.name}" (${ownProp.type}) overrides "${expectedInterface}"'s "${ownProp.name}" (${baseProp.type}).`,
-          }),
-        );
+        const diagnostic = createDiagnostic({
+          component: component.filePath,
+          kind: "extend-props-override",
+          name: ownProp.name,
+          message: `Own prop "${ownProp.name}" (${ownProp.type}) overrides "${expectedInterface}"'s "${ownProp.name}" (${baseProp.type}).`,
+        });
+        const ignoreCodes = getParsedComponentPropIgnores(component)?.[ownProp.name];
+        const ignored = ignoreCodes?.some((code) => code === "" || code === diagnostic.code);
+        diagnostics.push(ignored ? { ...diagnostic, ignored: true } : diagnostic);
       }
     }
     return diagnostics;

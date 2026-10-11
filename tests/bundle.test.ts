@@ -229,6 +229,29 @@ describe("generateBundle validates @extends/@extendProps targets", () => {
     );
   });
 
+  test("ignores an override with `@sveld-ignore` on the prop", async () => {
+    writeFileSync(
+      path.join(dir, "Narrow.svelte"),
+      `<script>
+  /** @extendProps {"./Base.svelte"} BaseProps */
+
+  /**
+   * @type {number}
+   * @sveld-ignore sveld/extend-props-override
+   */
+  export let variant = 1;
+</script>
+`,
+    );
+
+    const result = await generateBundle(dir, true);
+    const component = byModuleName(result.allComponentsForTypes, "Narrow");
+
+    expect(component?.diagnostics).toContainEqual(
+      expect.objectContaining({ kind: "extend-props-override", name: "variant", ignored: true }),
+    );
+  });
+
   test("does not flag a matching target with no colliding prop names", async () => {
     writeFileSync(
       path.join(dir, "Clean.svelte"),
