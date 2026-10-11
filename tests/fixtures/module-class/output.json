@@ -57,7 +57,7 @@
             },
             {
               "name": "name",
-              "type": "any",
+              "type": "string",
               "optional": true
             },
             {
@@ -70,7 +70,7 @@
         {
           "kind": "property",
           "name": "name",
-          "type": "any",
+          "type": "string",
           "readonly": true
         },
         {

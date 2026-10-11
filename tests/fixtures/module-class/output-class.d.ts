@@ -15,9 +15,9 @@ export declare class Store<T extends object = Record<string, unknown>> {
 
   label?: string;
 
-  constructor(initial: T, name?: any, options?: Options);
+  constructor(initial: T, name?: string, options?: Options);
 
-  readonly name: any;
+  readonly name: string;
 
   /**
    * Creates a store.

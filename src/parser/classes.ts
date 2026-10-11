@@ -10,6 +10,7 @@ import type {
 import type { ComponentClassMember, ComponentPropParam } from "../model";
 import type { ParserContext } from "./context";
 import { processNodeJSDoc } from "./jsdoc";
+import { literalType } from "./props";
 import {
   getTypeAnnotationText,
   getTypeNodeText,
@@ -50,9 +51,15 @@ function stripAngleBrackets(typeParameters: string | undefined): string | undefi
   return typeParameters?.slice(1, -1).trim() || undefined;
 }
 
+/** The widened type of a param's literal default (`name = "store"` is `string`). */
+function defaultValueType(rawParam: MethodDefinition["value"]["params"][number] | undefined): string | undefined {
+  const param = rawParam?.type === "TSParameterProperty" ? rawParam.parameter : rawParam;
+  return param?.type === "AssignmentPattern" ? literalType(param.right, "widen") : undefined;
+}
+
 /**
  * A method or constructor's params, return type, and own type parameters:
- * each from its TypeScript annotation, else its JSDoc tag, else `any`.
+ * each from its TypeScript annotation, else its JSDoc tag, else its literal default, else `any`.
  */
 function readMethodSignature(
   ctx: ParserContext,
@@ -61,11 +68,11 @@ function readMethodSignature(
 ): Pick<ComponentClassMember, "params" | "returnType" | "typeParameters"> {
   const parts = readFunctionDeclarationParts(ctx, fn);
   const jsdocParams = new Map((jsdoc?.params ?? []).map((param) => [param.name, param]));
-  const params = parts.params.map(({ name, type, optional, rest }): ComponentPropParam => {
+  const params = parts.params.map(({ name, type, optional, rest }, index): ComponentPropParam => {
     const doc = jsdocParams.get(name);
     return {
       name: rest ? `...${name}` : name,
-      type: type ?? doc?.type ?? (rest ? "any[]" : "any"),
+      type: type ?? doc?.type ?? defaultValueType(fn.params[index]) ?? (rest ? "any[]" : "any"),
       ...(doc?.description ? { description: doc.description } : {}),
       ...(!rest && (optional || doc?.optional) ? { optional: true } : {}),
     };
@@ -120,7 +127,11 @@ export function readClassDeclaration(
       members.push({
         kind: "property",
         name,
-        type: getTypeAnnotationText(ctx, member.typeAnnotation) ?? jsdoc?.type ?? "any",
+        type:
+          getTypeAnnotationText(ctx, member.typeAnnotation) ??
+          jsdoc?.type ??
+          literalType(member.value, "widen") ??
+          "any",
         ...modifiers,
         ...(member.readonly ? { readonly: true as const } : {}),
         ...memberDocs(jsdoc),

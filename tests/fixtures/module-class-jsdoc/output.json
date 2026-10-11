@@ -18,7 +18,7 @@
         {
           "kind": "property",
           "name": "limit",
-          "type": "any",
+          "type": "number",
           "static": true,
           "description": "Max length; untyped."
         },

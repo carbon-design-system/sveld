@@ -9,7 +9,7 @@ export declare class List<T> {
   /**
    * Max length; untyped.
    */
-  static limit: any;
+  static limit: number;
 
   untyped: any;
 
