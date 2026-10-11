@@ -1,7 +1,10 @@
 import { existsSync, readFileSync } from "node:fs";
-import { dirname, isAbsolute, join, relative, resolve } from "node:path";
+import { dirname, isAbsolute, relative, resolve } from "node:path";
+import { findUp } from "./fs-listing";
 import { MODULE_EXTENSIONS, normalizeSeparators } from "./path";
 import { type ParsedTsConfig, parseTsConfig } from "./validate";
+
+const CONFIG_FILE_NAMES = ["tsconfig.json", "jsconfig.json"];
 
 const pathPatternRegexCache = new Map<string, RegExp>();
 
@@ -33,21 +36,6 @@ function pathAliasTargetExists(fullPath: string): boolean {
 function patternPrefixLength(pattern: string): number {
   const wildcardIndex = pattern.indexOf("*");
   return wildcardIndex === -1 ? pattern.length : wildcardIndex;
-}
-
-function findConfig(startDir: string): string | null {
-  let dir = startDir;
-  const root = resolve(dir, "/");
-
-  while (dir !== root) {
-    for (const configName of ["tsconfig.json", "jsconfig.json"]) {
-      const configPath = join(dir, configName);
-      if (existsSync(configPath)) return configPath;
-    }
-    dir = dirname(dir);
-  }
-
-  return null;
 }
 
 function parseConfig(configPath: string, configCache: Map<string, ParsedTsConfig | null>): ParsedTsConfig | null {
@@ -132,7 +120,7 @@ export class PathAliases {
       return { resolved: importPath, unresolved: false, searched: "" };
     }
 
-    const configPath = findConfig(fromDir);
+    const configPath = findUp(fromDir, CONFIG_FILE_NAMES);
     const compilerOptions = configPath ? parseConfig(configPath, this.configs)?.compilerOptions : undefined;
     const paths = compilerOptions?.paths;
     if (!configPath || !compilerOptions || !paths) {
