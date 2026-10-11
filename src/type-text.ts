@@ -88,38 +88,33 @@ export function splitTopLevel(text: string, separators: string): string[] {
   return parts;
 }
 
-/** Index of the first top-level character in `chars`, or -1. */
-export function indexOfTopLevel(text: string, chars: string): number {
-  let found = -1;
-  scanTypeText(text, (index, depth) => {
-    if (depth === 0 && chars.includes(text[index])) found = index;
-    return found !== -1;
-  });
-  return found;
-}
-
-/** Index of the `=` of the first top-level `=>`, or -1. */
-export function indexOfTopLevelArrow(text: string): number {
-  let found = -1;
-  scanTypeText(text, (index, depth) => {
-    if (depth === 0 && text[index] === "=" && text[index + 1] === ">") found = index;
-    return found !== -1;
-  });
-  return found;
-}
-
-/** Index of the bracket closing the one at `openIndex`, or -1 when it never closes. */
-export function indexOfClosingBracket(text: string, openIndex: number): number {
+/** Index of the first character `matches` accepts, scanning from `start`, or -1. */
+function findIndex(text: string, matches: (index: number, depth: number) => boolean, start = 0): number {
   let found = -1;
   scanTypeText(
     text,
     (index, depth) => {
-      if (depth === 0) found = index;
+      if (matches(index, depth)) found = index;
       return found !== -1;
     },
-    openIndex,
+    start,
   );
   return found;
+}
+
+/** Index of the first top-level character in `chars`, or -1. */
+export function indexOfTopLevel(text: string, chars: string): number {
+  return findIndex(text, (index, depth) => depth === 0 && chars.includes(text[index]));
+}
+
+/** Index of the `=` of the first top-level `=>`, or -1. */
+export function indexOfTopLevelArrow(text: string): number {
+  return findIndex(text, (index, depth) => depth === 0 && text[index] === "=" && text[index + 1] === ">");
+}
+
+/** Index of the bracket closing the one at `openIndex`, or -1 when it never closes. */
+export function indexOfClosingBracket(text: string, openIndex: number): number {
+  return findIndex(text, (_index, depth) => depth === 0, openIndex);
 }
 
 /** Whether `text` is a tuple type (`[A, B]`), not an array of one (`[A, B][]`). */
