@@ -10,6 +10,7 @@ import {
   type Literal,
   type TemplateLiteral,
 } from "sveast";
+import { isLiteral } from "../ast-guards";
 import { getElementByTag } from "../element-tag-map";
 import type {
   ComponentContext,
@@ -35,9 +36,8 @@ import {
   addDispatchedEvent,
   addHostDispatchedEvent,
   componentDetailTypeSource,
-  deriveDetailType,
+  dispatchDetailText,
   findDispatcherArgument,
-  literalDetailToTypeText,
 } from "./events";
 import { accumulateGeneric, parseGenericsAttribute } from "./generics";
 import { normalizeRunesCallbackProps, registerTypedDispatcherEvents } from "./runes-props";
@@ -56,10 +56,6 @@ const EMPTY_OBJECT_TYPE_REGEX = /^\{\s*\}$/;
 
 function mapToArray<T>(map: Map<string, T> | Map<string | null, T>) {
   return Array.from(map.values());
-}
-
-function literalValue(node: unknown): Literal["value"] | undefined {
-  return node && typeof node === "object" && "value" in node ? (node as Literal).value : undefined;
 }
 
 /** What a dispatcher call's event-name argument can evaluate to. */
@@ -131,25 +127,21 @@ function resolveDispatchedEvents(ctx: ParserContext, walk: ComponentWalkResult):
       dynamicName ||= eventNames.dynamic;
       if (eventNames.names.length === 0) continue;
 
-      const event_argument = callee.arguments[1];
-      const structuralDetail = deriveDetailType(
-        componentDetailTypeSource(ctx, callee.nestedBoundDetailNames),
-        event_argument,
-      );
-      const event_detail = structuralDetail === undefined ? literalValue(event_argument) : undefined;
+      const detailArgument = callee.arguments[1];
       // A `null` value is also how a regex/bigint literal the runtime can't build looks, so check `raw`.
-      const isNullLiteral = event_detail === null && (event_argument as Literal).raw === "null";
+      const detail =
+        isLiteral(detailArgument) && detailArgument.raw === "null"
+          ? "null"
+          : dispatchDetailText(componentDetailTypeSource(ctx, callee.nestedBoundDetailNames), detailArgument);
 
-      for (const event_name of eventNames.names) {
+      for (const name of eventNames.names) {
         addDispatchedEvent(ctx, {
-          name: event_name,
-          detail:
-            structuralDetail ??
-            (isNullLiteral ? "null" : event_detail == null ? "" : literalDetailToTypeText(event_detail)),
-          has_argument: Boolean(event_argument),
+          name,
+          detail,
+          has_argument: Boolean(detailArgument),
           source: sourceRangeFromNode(ctx, callee.node),
         });
-        actuallyDispatchedEvents.add(event_name);
+        actuallyDispatchedEvents.add(name);
       }
     }
   }
