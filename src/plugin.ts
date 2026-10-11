@@ -132,7 +132,6 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
     try {
       const { result: next } = await bundle.update(changed);
       await writeOutput(next, mergedOpts, input);
-      next.cache?.save();
     } catch (error) {
       console.error("sveld: failed to regenerate types in watch mode:", error);
     }
@@ -176,9 +175,7 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
         // generateBundle/writeBundle. A failure must not crash the dev server.
         try {
           bundle = await createSveldBundle(input, mergedOpts.glob === true, toGenerateBundleOptions(mergedOpts));
-          const initial = await bundle.result;
-          await writeOutput(initial, mergedOpts, input);
-          initial.cache?.save();
+          await writeOutput(await bundle.result, mergedOpts, input);
         } catch (error) {
           console.error("sveld: failed to generate initial types in watch mode:", error);
         }
@@ -198,8 +195,6 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
         this.error(UNRESOLVED_ENTRY_MESSAGE);
       }
       await writeOutput(result, mergedOpts, input);
-      // Persists the `.d.ts` text writeOutput just cached.
-      result.cache?.save();
     },
     handleHotUpdate(ctx) {
       scheduleUpdate(ctx.file);
@@ -210,7 +205,11 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
   };
 }
 
-/** `.d.ts` covers every discovered component; JSON and Markdown only the exported ones. */
+/**
+ * `.d.ts` covers every discovered component; JSON and Markdown only the
+ * exported ones. Then saves the parse cache: `generateBundle` saved parses
+ * only, and this adds the `.d.ts` text the types writer cached.
+ */
 export async function writeOutput(result: GenerateBundleResult, opts: PluginSveldOptions, input: string) {
   const inputDir = dirname(input);
 
@@ -243,6 +242,8 @@ export async function writeOutput(result: GenerateBundleResult, opts: PluginSvel
       entryExports: result.entryExports,
     } satisfies WriteMarkdownOptions);
   }
+
+  result.cache?.save();
 }
 
 /** Prints the `json` or `markdown` document to stdout. The CLI ensures exactly one is set. */
