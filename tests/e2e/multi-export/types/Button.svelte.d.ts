@@ -26,5 +26,5 @@ export default class Button extends SvelteComponentTyped<
   { click: WindowEventMap["click"] },
   { default: Record<string, never> }
 > {
-  print: () => any;
+  print: () => void;
 }

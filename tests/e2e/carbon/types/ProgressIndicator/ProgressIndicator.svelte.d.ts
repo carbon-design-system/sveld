@@ -4,8 +4,8 @@ import type { SvelteHTMLElements } from "svelte/elements";
 export type ProgressIndicatorContext = {
   steps: import("svelte/store").Writable<any[]>;
   stepsById: import("svelte/store").Readable<any>;
-  add: (step: any) => any;
-  change: (index: any) => any;
+  add: (step: any) => void;
+  change: (index: any) => void;
 };
 
 type $RestProps = SvelteHTMLElements["ul"];

@@ -5,12 +5,12 @@ export type DatePickerContext = {
   range: import("svelte/store").Readable<any>;
   inputValue: import("svelte/store").Writable<number | string>;
   hasCalendar: import("svelte/store").Readable<any>;
-  add: (data: any) => any;
-  declareRef: (arg0: any) => any;
-  updateValue: (arg0: any) => any;
-  blurInput: (relatedTarget: any) => any;
-  openCalendar: () => any;
-  focusCalendar: () => any;
+  add: (data: any) => void;
+  declareRef: (arg: any) => void;
+  updateValue: (arg: any) => void;
+  blurInput: (relatedTarget: any) => void;
+  openCalendar: () => void;
+  focusCalendar: () => void;
 };
 
 type $RestProps = SvelteHTMLElements["div"];

@@ -3,8 +3,8 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 export type TileGroupContext = {
   selectedValue: import("svelte/store").Writable<string>;
-  add: (arg0: any) => any;
-  update: (value: any) => any;
+  add: (arg: any) => void;
+  update: (value: any) => void;
 };
 
 type $RestProps = SvelteHTMLElements["fieldset"];
