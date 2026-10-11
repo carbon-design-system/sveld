@@ -723,6 +723,7 @@ export function formatClassMemberSignature(member: ComponentClassMember): string
   ].join("");
   const optional = member.optional ? "?" : "";
   if (member.kind === "property") return `${modifiers}${formatKey(member.name)}${optional}: ${member.type ?? ANY_TYPE}`;
+  if (member.kind === "index") return `${modifiers}${member.name}: ${member.type ?? ANY_TYPE}`;
   const params = formatParamList(member.params ?? []);
   if (member.kind === "constructor") return `constructor(${params})`;
   const typeParameters = member.typeParameters ? `<${member.typeParameters}>` : "";

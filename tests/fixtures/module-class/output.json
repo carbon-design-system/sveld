@@ -48,6 +48,11 @@
           "optional": true
         },
         {
+          "kind": "index",
+          "name": "[key: string]",
+          "type": "unknown"
+        },
+        {
           "kind": "constructor",
           "name": "constructor",
           "params": [

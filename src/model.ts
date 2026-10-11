@@ -263,9 +263,12 @@ export interface ComponentPropReExport {
  * `protected` members, and `@internal`/`@ignore` ones, are left out.
  */
 export interface ComponentClassMember {
-  /** `"property"` covers fields, constructor parameter properties, and getter/setter pairs. */
-  kind: "constructor" | "method" | "property";
-  /** Member name; `"constructor"` for the constructor. */
+  /**
+   * `"property"` covers fields, constructor parameter properties, and getter/setter pairs;
+   * `"index"` is an index signature (`[key: string]: unknown`).
+   */
+  kind: "constructor" | "method" | "property" | "index";
+  /** Member name; `"constructor"` for the constructor, the bracketed key (`[key: string]`) for an index signature. */
   name: string;
   /** Property type text; `"any"` when neither TypeScript nor JSDoc types it. */
   type?: string;

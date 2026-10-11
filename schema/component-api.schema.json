@@ -267,7 +267,7 @@
       "description": "A public member of a `kind: \"class\"` module export. Private, protected, and `@internal` members are left out.",
       "properties": {
         "kind": {
-          "enum": ["constructor", "method", "property"],
+          "enum": ["constructor", "method", "property", "index"],
           "description": "`property` covers fields, constructor parameter properties, and getter/setter pairs."
         },
         "name": { "type": "string" },
