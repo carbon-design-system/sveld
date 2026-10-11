@@ -24,6 +24,7 @@ import {
   inferFunctionValueType,
   inferVariableInitializerType,
   literalValueType,
+  processInitializer,
   resolveConstInitializer,
   svelteStoreType,
 } from "./props";
@@ -100,9 +101,7 @@ function describeContextValue(
   prop: Node,
   value: Node | undefined,
 ): VariableTypeInfo {
-  if (isIdentifier(value)) {
-    const varInfo = findContextVariableType(ctx, value.name);
-    if (varInfo) return varInfo;
+  const untyped = (): VariableTypeInfo => {
     recordDiagnostic(
       ctx,
       "context-any-type",
@@ -111,7 +110,8 @@ function describeContextValue(
       sourceRangeFromNode(ctx, prop),
     );
     return { type: "any" };
-  }
+  };
+  if (isIdentifier(value)) return findContextVariableType(ctx, value.name) ?? untyped();
   if (value?.type === "ArrowFunctionExpression" || value?.type === "FunctionExpression") {
     return { type: inferFunctionValueType(ctx, value) };
   }
@@ -129,8 +129,13 @@ function describeContextValue(
     const memberType = objectType && extractPropertyType(objectType, value.property.name);
     if (memberType) return { type: memberType };
   }
-  const storeType = value?.type === "CallExpression" ? svelteStoreType(ctx, value) : undefined;
-  return { type: storeType ?? "any" };
+  if (value === undefined) return { type: "any" };
+  const storeType = value.type === "CallExpression" ? svelteStoreType(ctx, value) : undefined;
+  if (storeType) return { type: storeType };
+  // Anything else types the way a prop default would (`a ?? b`, `cond ? x : y`, a call's `@returns`).
+  const processed = processInitializer(ctx, value);
+  const type = processed.type ?? processed.resolvedType;
+  return type ? { type } : untyped();
 }
 
 function parseContextObjectProperties(

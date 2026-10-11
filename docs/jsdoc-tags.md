@@ -766,7 +766,7 @@ The value must be an object literal or a variable. Any other expression (such as
 export type ModalContext = import("./types").ModalAPI;
 ```
 
-A variable sveld can't type gives `any` with [`sveld/context-any-type`](ci.md#diagnostic-codes).
+Any other value (`dense ? "sm" : "md"`, a call to a function with `@returns`, `registry.register` off a typed local) is typed the way a prop default would be. A value sveld can't type gives `any` with [`sveld/context-any-type`](ci.md#diagnostic-codes), so `strict` catches it; give its declaration, or the property itself, a `@type`.
 
 ## `@restProps`
 

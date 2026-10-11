@@ -1,0 +1,72 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "dense",
+      "kind": "let",
+      "type": "boolean",
+      "typeSource": "default",
+      "value": "false",
+      "defaultValue": {
+        "raw": "false",
+        "kind": "literal",
+        "value": false
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "Group",
+      "typeName": "GroupContext",
+      "properties": [
+        {
+          "name": "size",
+          "type": "string",
+          "optional": false
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "optional": false
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "optional": false
+        },
+        {
+          "name": "inherited",
+          "type": "any",
+          "optional": false
+        }
+      ]
+    }
+  ],
+  "diagnostics": [
+    {
+      "component": "context-expression-values/input.svelte",
+      "kind": "context-any-type",
+      "name": "inherited",
+      "message": "Context \"Group\" property \"inherited\" has no type annotation; defaulted to \"any\".",
+      "code": "sveld/context-any-type",
+      "severity": "warning"
+    }
+  ]
+}
