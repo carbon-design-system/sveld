@@ -15,24 +15,24 @@ type $Props<Handler extends (value: string) => void = () => {}, Row extends Data
       }]) => void;
 };
 
-export type FuzzGenericsArrowTypeCommaProps<Handler extends (value: string) => void = () => {}, Row extends DataTableRow = DataTableRow> = $Props<Handler, Row>;
+export type GenericsAttributeArrowTypeProps<Handler extends (value: string) => void = () => {}, Row extends DataTableRow = DataTableRow> = $Props<Handler, Row>;
 
-export type FuzzGenericsArrowTypeCommaExports = Record<string, never>;
+export type GenericsAttributeArrowTypeExports = Record<string, never>;
 
-interface FuzzGenericsArrowTypeCommaComponent {
+interface GenericsAttributeArrowTypeComponent {
   new <Handler extends (value: string) => void = () => {}, Row extends DataTableRow = DataTableRow>(
-    options: ComponentConstructorOptions<FuzzGenericsArrowTypeCommaProps<Handler, Row>>
-  ): SvelteComponent<FuzzGenericsArrowTypeCommaProps<Handler, Row>> & FuzzGenericsArrowTypeCommaExports;
+    options: ComponentConstructorOptions<GenericsAttributeArrowTypeProps<Handler, Row>>
+  ): SvelteComponent<GenericsAttributeArrowTypeProps<Handler, Row>> & GenericsAttributeArrowTypeExports;
   <Handler extends (value: string) => void = () => {}, Row extends DataTableRow = DataTableRow>(
     this: void,
     internals: ComponentInternals,
-    props: FuzzGenericsArrowTypeCommaProps<Handler, Row>
+    props: GenericsAttributeArrowTypeProps<Handler, Row>
   ): {
     $on?(type: string, callback: (e: any) => void): () => void;
-    $set?(props: Partial<FuzzGenericsArrowTypeCommaProps<Handler, Row>>): void;
-  } & FuzzGenericsArrowTypeCommaExports;
+    $set?(props: Partial<GenericsAttributeArrowTypeProps<Handler, Row>>): void;
+  } & GenericsAttributeArrowTypeExports;
   element?: typeof HTMLElement;
   z_$$bindings?: "";
 }
-declare const FuzzGenericsArrowTypeComma: FuzzGenericsArrowTypeCommaComponent;
-export default FuzzGenericsArrowTypeComma;
+declare const GenericsAttributeArrowType: GenericsAttributeArrowTypeComponent;
+export default GenericsAttributeArrowType;

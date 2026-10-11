@@ -1,4 +1,4 @@
-import { SvelteComponentTyped } from "svelte";
+import type { Component } from "svelte";
 
 export declare const bool: string;
 
@@ -20,12 +20,15 @@ export declare function b2(...args: any[]): any;
 
 export declare function b3(): () => false;
 
-export type ContextModuleProps = Record<string, never>;
+export type ModuleScriptExportsProps = Record<string, never>;
 
-export default class ContextModule extends SvelteComponentTyped<
-  ContextModuleProps,
-  Record<string, any>,
-  Record<string, never>
-> {
+export type ModuleScriptExportsExports = {
   a: string;
-}
+};
+
+declare const ModuleScriptExports: Component<
+  ModuleScriptExportsProps,
+  ModuleScriptExportsExports,
+  ""
+>;
+export default ModuleScriptExports;

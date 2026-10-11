@@ -39,7 +39,7 @@ const COMMITTED_OUTPUT_REGEX = /^output/;
 const TS_SOURCE_REGEX = /\.ts$/;
 /**
  * An import of a committed output (`from "./output-class"`). Such a sibling is
- * a consumer-side check of the default output (`context-module/types.ts`),
+ * a consumer-side check of the default output (`module-script-exports/types.ts`),
  * not a dependency of the `.d.ts`, so it's left out.
  */
 const IMPORTS_COMMITTED_OUTPUT_REGEX = /from\s+["']\.\/output/;
