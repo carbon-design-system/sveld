@@ -57,6 +57,25 @@ describe("parseEntryExports", () => {
     });
   });
 
+  test("types an unannotated const from a negative number or a primitive conversion", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "sveld-entry-exports-literals-"));
+    try {
+      writeFileSync(
+        path.join(dir, "index.ts"),
+        ["export const MIN = -1;", "export const LABEL = String(42);", ""].join("\n"),
+      );
+
+      const exports = await parseEntryExports(path.join(dir, "index.ts"));
+
+      expect(exports.map(({ name, type }) => [name, type])).toEqual([
+        ["LABEL", "string"],
+        ["MIN", "number"],
+      ]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   test("documents a re-exported function declaration as a signature", async () => {
     const exports = await parseEntryExports(entryFile);
 
