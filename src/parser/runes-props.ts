@@ -573,6 +573,7 @@ export function registerTypedDispatcherEvents(
 ) {
   if (typeArgument) {
     for (const [name, member] of buildRunesPropTypeMetadataMap(ctx, typeArgument, localTypeDeclarationNodes(ctx))) {
+      ctx.typedDispatcherEventNames.add(name);
       addDispatchedEvent(ctx, { name, detail: member.type, has_argument: true, source: member.source });
     }
     return;
@@ -586,6 +587,7 @@ export function registerTypedDispatcherEvents(
   for (const rawMember of splitTopLevel(body, ";,")) {
     const parsedMember = splitMemberNameAndType(rawMember.trim());
     if (!parsedMember) continue;
+    ctx.typedDispatcherEventNames.add(parsedMember.name);
     addDispatchedEvent(ctx, {
       name: parsedMember.name,
       detail: parsedMember.type,

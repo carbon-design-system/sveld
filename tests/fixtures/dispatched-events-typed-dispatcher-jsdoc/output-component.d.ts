@@ -6,6 +6,7 @@ export type DispatchedEventsTypedDispatcherJsdocExports = Record<string, never>;
 
 type $Events = {
   "a;b": CustomEvent<number>;
+  /** Documented, and declared by the dispatcher type but never dispatched here. */
   cancel: CustomEvent<null>;
   "change:value": CustomEvent<string>;
   save: CustomEvent<{ id: string }>;
