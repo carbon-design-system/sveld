@@ -17,6 +17,7 @@ import type { ComponentContext, ComponentContextProp, SourceRange } from "../mod
 import type { ParserContext } from "./context";
 import { generateContextTypeName } from "./context-type-name";
 import { recordDiagnostic } from "./diagnostics";
+import { processNodeJSDoc } from "./jsdoc";
 import { parseObjectTypeLiteralMembers } from "./object-type-literal";
 import { inferVariableInitializerType, literalValueType, resolveConstInitializer, svelteStoreType } from "./props";
 import { isBoundInNestedScope, isCalleeBoundInNestedScope } from "./scopes";
@@ -151,13 +152,14 @@ function parseContextObjectProperties(
     // getter; a setter alone is typed by its parameter.
     if (prop.kind === "set" && hasGetter(objExpr, propName)) continue;
     const accessor = prop.kind === "get" || prop.kind === "set" ? (prop.value as FunctionExpression) : undefined;
+    const jsdoc = processNodeJSDoc(ctx, prop);
     const annotated = accessor
       ? prop.kind === "get"
         ? annotationText(ctx, accessor, "returnType")
         : annotationText(ctx, accessor.params[0], "typeAnnotation")
-      : undefined;
+      : jsdoc?.type;
     const described = annotated
-      ? { type: annotated }
+      ? { type: annotated, description: jsdoc?.description }
       : describeContextValue(
           ctx,
           key,
@@ -169,7 +171,7 @@ function parseContextObjectProperties(
     properties.push({
       name: propName,
       type: described.type,
-      description: described.description,
+      description: described.description ?? jsdoc?.description,
       optional: false,
       ...(described.internal ? { internal: true } : {}),
     });
