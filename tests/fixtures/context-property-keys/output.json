@@ -1,0 +1,39 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "Form",
+      "typeName": "FormContext",
+      "properties": [
+        {
+          "name": "aria-label",
+          "type": "string",
+          "optional": false
+        },
+        {
+          "name": "data-id",
+          "type": "number",
+          "optional": false
+        },
+        {
+          "name": "0",
+          "type": "boolean",
+          "optional": false
+        },
+        {
+          "name": "plain",
+          "type": "string",
+          "optional": false
+        }
+      ]
+    }
+  ],
+  "diagnostics": []
+}
