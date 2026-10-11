@@ -68,37 +68,47 @@ export type SveldDiagnosticKind =
 /** `"error"` fails `--strict=errors`; `"warning"` only fails plain `--strict`. */
 export type SveldDiagnosticSeverity = "error" | "warning";
 
-/** Errors: sveld emitted broken, unverified, or unmodeled output. Warnings: it fell back to a guess. */
-const DIAGNOSTIC_SEVERITIES: Record<SveldDiagnosticKind, SveldDiagnosticSeverity> = {
-  "prop-unknown-type": "warning",
-  "context-any-type": "warning",
-  "slot-missing-type": "warning",
-  "slot-not-rendered": "warning",
-  "event-no-source": "warning",
-  "dispatch-escapes": "warning",
-  "example-compile-error": "error",
-  "example-syntax-error": "error",
-  "syntax-skipped": "error",
-  "type-syntax-error": "error",
-  "rest-props-unresolved": "warning",
-  "context-duplicate-key": "warning",
-  "context-key-unresolved": "warning",
-  "context-value-unresolved": "warning",
-  "spread-unresolved": "warning",
-  "export-unresolved": "warning",
-  "module-export-conflict": "warning",
-  "extend-props-target-missing": "error",
-  "extend-props-duplicate": "warning",
-  "extend-props-override": "warning",
-  "jsdoc-unknown-tag": "warning",
-  "typedef-duplicate": "warning",
-  "property-duplicate": "warning",
-  "generics-conflict": "warning",
-  "event-description-ambiguous": "warning",
-  "jsdoc-tag-dropped": "warning",
-  "internal-typedef-referenced": "error",
-  "cross-file-unresolved": "warning",
-  "export-ambiguous": "warning",
+/**
+ * Each kind's severity and its heading in the text summary, in summary
+ * order. Errors: sveld emitted broken, unverified, or unmodeled output.
+ * Warnings: it fell back to a guess.
+ */
+const DIAGNOSTIC_KINDS: Record<SveldDiagnosticKind, { severity: SveldDiagnosticSeverity; label: string }> = {
+  "prop-unknown-type": { severity: "warning", label: "Props without inferred types" },
+  "context-any-type": { severity: "warning", label: "Context values typed as `any`" },
+  "slot-missing-type": { severity: "warning", label: "@slot/@snippet tags missing a {Type} annotation" },
+  "slot-not-rendered": { severity: "warning", label: "@slot/@snippet tags for slots the component doesn't render" },
+  "event-no-source": { severity: "warning", label: "@event tags with no dispatch or callback" },
+  "dispatch-escapes": { severity: "warning", label: "Dispatchers passed to functions sveld can't follow" },
+  "example-compile-error": { severity: "error", label: "@example blocks that failed to compile" },
+  "example-syntax-error": { severity: "error", label: "@example blocks that failed to parse" },
+  "syntax-skipped": { severity: "error", label: "Component syntax sveld skipped" },
+  "type-syntax-error": { severity: "error", label: "JSDoc types that aren't valid TypeScript" },
+  "rest-props-unresolved": { severity: "warning", label: "$$restProps spread only onto components" },
+  "context-duplicate-key": { severity: "warning", label: "Duplicate setContext keys" },
+  "context-key-unresolved": { severity: "warning", label: "setContext keys sveld couldn't resolve" },
+  "context-value-unresolved": { severity: "warning", label: "setContext values sveld couldn't describe" },
+  "spread-unresolved": { severity: "warning", label: "Unresolved spreads widened to Record<string, any>" },
+  "export-unresolved": { severity: "warning", label: "Unresolved named export specifiers" },
+  "module-export-conflict": { severity: "warning", label: "Module-script exports colliding with generated names" },
+  "extend-props-target-missing": {
+    severity: "error",
+    label: "@extends/@extendProps targets that couldn't be verified",
+  },
+  "extend-props-duplicate": { severity: "warning", label: "Duplicate @extends/@extendProps tags" },
+  "extend-props-override": { severity: "warning", label: "Own props overriding an @extends target's prop" },
+  "jsdoc-unknown-tag": { severity: "warning", label: "Unknown JSDoc tags" },
+  "typedef-duplicate": { severity: "warning", label: "Duplicate @typedef/@callback names" },
+  "property-duplicate": { severity: "warning", label: "Duplicate @property names" },
+  "generics-conflict": { severity: "warning", label: "Duplicate @generics/@template names" },
+  "event-description-ambiguous": {
+    severity: "warning",
+    label: "Text after an @event read as the next tag's description",
+  },
+  "jsdoc-tag-dropped": { severity: "warning", label: "Passthrough JSDoc tags that couldn't attach" },
+  "internal-typedef-referenced": { severity: "error", label: "Public types referencing an @internal typedef" },
+  "cross-file-unresolved": { severity: "warning", label: "Imports a standalone parse couldn't read" },
+  "export-ambiguous": { severity: "warning", label: "Ambiguous `export *` names left out of the entry exports" },
 };
 
 /** One place sveld had to guess a type instead of inferring it. */
@@ -133,7 +143,7 @@ export function createDiagnostic(input: SveldDiagnosticInput): SveldDiagnostic {
   return {
     ...input,
     code: DIAGNOSTIC_CODES[input.kind],
-    severity: DIAGNOSTIC_SEVERITIES[input.kind],
+    severity: DIAGNOSTIC_KINDS[input.kind].severity,
   };
 }
 
@@ -204,40 +214,7 @@ export function applyDiagnosticIgnores(
   );
 }
 
-const KIND_LABELS: Record<SveldDiagnosticKind, string> = {
-  "prop-unknown-type": "Props without inferred types",
-  "context-any-type": "Context values typed as `any`",
-  "slot-missing-type": "@slot/@snippet tags missing a {Type} annotation",
-  "slot-not-rendered": "@slot/@snippet tags for slots the component doesn't render",
-  "event-no-source": "@event tags with no dispatch or callback",
-  "dispatch-escapes": "Dispatchers passed to functions sveld can't follow",
-  "example-compile-error": "@example blocks that failed to compile",
-  "example-syntax-error": "@example blocks that failed to parse",
-  "syntax-skipped": "Component syntax sveld skipped",
-  "type-syntax-error": "JSDoc types that aren't valid TypeScript",
-  "rest-props-unresolved": "$$restProps spread only onto components",
-  "context-duplicate-key": "Duplicate setContext keys",
-  "context-key-unresolved": "setContext keys sveld couldn't resolve",
-  "context-value-unresolved": "setContext values sveld couldn't describe",
-  "spread-unresolved": "Unresolved spreads widened to Record<string, any>",
-  "export-unresolved": "Unresolved named export specifiers",
-  "module-export-conflict": "Module-script exports colliding with generated names",
-  "extend-props-target-missing": "@extends/@extendProps targets that couldn't be verified",
-  "extend-props-duplicate": "Duplicate @extends/@extendProps tags",
-  "extend-props-override": "Own props overriding an @extends target's prop",
-  "jsdoc-unknown-tag": "Unknown JSDoc tags",
-  "typedef-duplicate": "Duplicate @typedef/@callback names",
-  "property-duplicate": "Duplicate @property names",
-  "generics-conflict": "Duplicate @generics/@template names",
-  "event-description-ambiguous": "Text after an @event read as the next tag's description",
-  "jsdoc-tag-dropped": "Passthrough JSDoc tags that couldn't attach",
-  "internal-typedef-referenced": "Public types referencing an @internal typedef",
-  "cross-file-unresolved": "Imports a standalone parse couldn't read",
-  "export-ambiguous": "Ambiguous `export *` names left out of the entry exports",
-};
-
-/** Summary display order. */
-const KIND_ORDER = Object.keys(KIND_LABELS) as SveldDiagnosticKind[];
+const KIND_ORDER = Object.keys(DIAGNOSTIC_KINDS) as SveldDiagnosticKind[];
 
 /**
  * Stable, namespaced identifier for a {@link SveldDiagnosticKind}, e.g.
@@ -288,7 +265,7 @@ export function formatDiagnosticsSummary(diagnostics: SveldDiagnostic[]): string
     if (forKind.length === 0) continue;
 
     lines.push("");
-    lines.push(`${KIND_LABELS[kind]} (${forKind.length}):`);
+    lines.push(`${DIAGNOSTIC_KINDS[kind].label} (${forKind.length}):`);
 
     const byComponent = new Map<string, SveldDiagnostic[]>();
     for (const diagnostic of forKind) {
