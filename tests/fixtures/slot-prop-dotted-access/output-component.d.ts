@@ -24,13 +24,14 @@ export type SlotPropDottedAccessProps = {
         a: string;
         b: string;
         c: number;
-        d: string;
+        d: string | undefined;
         e: "pending" | "done" | "error";
         f: { deep: number };
         g: Array<string>;
         h: any;
         i: number;
         j: string;
+        k: string;
         computed: any;
         chained: any;
       }]) => void;

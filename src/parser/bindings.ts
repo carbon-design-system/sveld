@@ -5,12 +5,16 @@ import { getPropTypeByLocalOrPublic } from "./context";
 import { findVariableTypeAndDescription } from "./variable-jsdoc";
 
 const WORD_CHAR_REGEX = /\w/;
+/** A member's `readonly` modifier. */
+const READONLY_MODIFIER_REGEX = /^readonly\s+/;
 
 function extractPropertyType(typeStr: string, propName: string): string | undefined {
   const trimmed = typeStr.trim();
   if (!trimmed.startsWith("{") || !trimmed.endsWith("}")) return undefined;
 
-  const segments = splitTopLevel(trimmed.slice(1, -1), ";,").map((segment) => segment.trim());
+  const segments = splitTopLevel(trimmed.slice(1, -1), ";,").map((segment) =>
+    segment.trim().replace(READONLY_MODIFIER_REGEX, ""),
+  );
 
   for (const segment of segments) {
     if (!segment.startsWith(propName)) continue;
@@ -18,8 +22,12 @@ function extractPropertyType(typeStr: string, propName: string): string | undefi
     // `propName` is only a prefix of this member's name.
     if (WORD_CHAR_REGEX.test(afterName.charAt(0))) continue;
     let rest = afterName.trimStart();
-    if (rest.startsWith("?")) rest = rest.slice(1).trimStart();
-    if (rest.startsWith(":")) return rest.slice(1).trim();
+    const optional = rest.startsWith("?");
+    if (optional) rest = rest.slice(1).trimStart();
+    if (!rest.startsWith(":")) continue;
+    // Reading an optional member can give `undefined`.
+    const type = rest.slice(1).trim();
+    return optional ? `${type} | undefined` : type;
   }
 
   return undefined;

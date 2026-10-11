@@ -2,6 +2,8 @@ import { indexOfTopLevel, splitTopLevel } from "../type-text";
 
 const OBJECT_TYPE_LITERAL_REGEX = /^\{([\s\S]*)\}$/;
 const MEMBER_NAME_REGEX = /^[A-Za-z_$][\w$]*$/;
+/** A member's `readonly` modifier. */
+const READONLY_MODIFIER_REGEX = /^readonly\s+/;
 /** An index signature key: `[key: string]`. */
 const INDEX_SIGNATURE_REGEX = /^\[[\w$]+\s*:[^\]]+\]$/;
 
@@ -39,7 +41,7 @@ export function parseObjectTypeLiteralMembers(
     const colonIndex = indexOfTopLevel(member, ":");
     if (colonIndex === -1) return null;
 
-    let name = member.slice(0, colonIndex).trim();
+    let name = member.slice(0, colonIndex).trim().replace(READONLY_MODIFIER_REGEX, "");
     const type = member.slice(colonIndex + 1).trim();
     if (!type) return null;
     if (skipIndexSignatures && INDEX_SIGNATURE_REGEX.test(name)) continue;
