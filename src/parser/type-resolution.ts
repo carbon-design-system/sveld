@@ -239,7 +239,7 @@ export function buildEnumLocalTypeDeclarationCode(
 
 type FunctionDeclarationLike = Pick<BaseFunction | TSDeclareMethod, "params" | "returnType" | "typeParameters">;
 
-export interface FunctionDeclarationParam {
+interface FunctionDeclarationParam {
   name: string;
   type?: string;
   optional: boolean;
