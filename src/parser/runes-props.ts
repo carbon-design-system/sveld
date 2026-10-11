@@ -39,7 +39,12 @@ import {
 import { importSpecifierImportedName } from "./value-imports";
 import { resolveLocalVarJSDoc } from "./variable-jsdoc";
 
-const IDENTIFIER_TOKEN_REGEX = /[A-Za-z_$][\w$]*/g;
+/** A quoted string literal type, or an identifier. */
+const STRING_OR_IDENTIFIER_REGEX = /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|[A-Za-z_$][\w$]*/g;
+/** What follows a member or parameter name: an optional `?`, then `:`. */
+const NAME_COLON_REGEX = /^\s*\??\s*:/;
+/** What precedes a member or parameter name. */
+const BEFORE_NAME_REGEX = /(?:^|[{;,(\n]|\breadonly)\s*$/;
 
 /**
  * Maps a referenced interface/type-alias's own type-parameter names (`Props<T>`) to the
@@ -72,7 +77,15 @@ function buildTypeParameterSubstitutions(
 
 function substituteTypeParameters(type: string, substitutions: Map<string, string>): string {
   if (substitutions.size === 0) return type;
-  return type.replace(IDENTIFIER_TOKEN_REGEX, (token) => substitutions.get(token) ?? token);
+  return type.replace(STRING_OR_IDENTIFIER_REGEX, (token: string, offset: number) => {
+    const substitute = substitutions.get(token);
+    if (substitute === undefined) return token;
+    const before = type.slice(0, offset);
+    // A member access (`Ns.T`), or a property or parameter name (`{ T: T }`), isn't the type parameter.
+    if (before.trimEnd().endsWith(".")) return token;
+    if (BEFORE_NAME_REGEX.test(before) && NAME_COLON_REGEX.test(type.slice(offset + token.length))) return token;
+    return substitute;
+  });
 }
 
 /** Flatten a runes `$props()` type node into prop name -> metadata, following local aliases and intersections. */
