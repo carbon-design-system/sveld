@@ -1,7 +1,12 @@
-import type { AST, ImportDeclaration } from "sveast";
+import type { AST, ImportDeclaration, ImportSpecifier } from "sveast";
 import { isIdentifier, isMemberExpression } from "../ast-guards";
 import type { ComponentPropReExport } from "../model";
 import type { ParserContext } from "./context";
+
+/** The export an `import { x as y }` specifier names: `x`, or `"x-y"`'s string. */
+export function importSpecifierImportedName({ imported }: ImportSpecifier): string {
+  return imported.type === "Identifier" ? imported.name : imported.value;
+}
 
 /** Named value imports by local name, for cross-file call-default resolution. */
 export function collectValueImportBindings(ctx: ParserContext, node: ImportDeclaration): void {
@@ -12,10 +17,7 @@ export function collectValueImportBindings(ctx: ParserContext, node: ImportDecla
     if (specifier.type !== "ImportSpecifier" || specifier.importKind === "type") continue;
 
     const localName = specifier.local.name;
-    const { imported } = specifier;
-    const importedName =
-      imported.type === "Identifier" ? imported.name : typeof imported.value === "string" ? imported.value : localName;
-
+    const importedName = importSpecifierImportedName(specifier);
     ctx.valueImportBindingsByLocalName.set(localName, { localName, importedName, source });
   }
 }
@@ -106,8 +108,7 @@ export function collectReExportableImports(script: AST.Script): Map<string, Comp
       let imported: string;
       if (specifier.type === "ImportDefaultSpecifier") imported = "default";
       else if (specifier.type === "ImportNamespaceSpecifier") imported = "*";
-      else if (specifier.imported.type === "Identifier") imported = specifier.imported.name;
-      else imported = String(specifier.imported.value ?? localName);
+      else imported = importSpecifierImportedName(specifier);
       imports.set(localName, { from, imported });
     }
   }
