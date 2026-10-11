@@ -408,22 +408,9 @@ export type InternalComponentSlot = Omit<ComponentSlot, "slot_props"> & {
 };
 
 /** Event forwarded with `on:eventname` and no handler. */
-export interface ForwardedEvent {
-  type: "forwarded";
-  name: string;
+export interface ForwardedEvent extends Omit<SerializedForwardedEvent, "element"> {
   /** Element or component that forwards the event. */
   element: ComponentInlineElement | ComponentElement;
-  /** From JSDoc `@event`. */
-  description?: string;
-  /** From `@deprecated` JSDoc. */
-  deprecated?: DeprecatedValue;
-  /** Detail type from `@event`. */
-  detail?: string;
-  /** `@since` / `@example` tags in source order. */
-  tags?: JsDocPassthroughTag[];
-  /** True from `@ignore`/`@internal` JSDoc; excluded from every output by `buildComponentApiDocument`. */
-  internal?: boolean;
-  source?: SourceRange;
 }
 
 /** Event from `createEventDispatcher()`, `dispatch()`, or `$host().dispatchEvent()`. */
