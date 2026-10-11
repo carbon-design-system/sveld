@@ -359,7 +359,6 @@ function collectScriptTypeDeclaration(
  */
 export function collectScriptTypeInfo(ctx: ParserContext, parsed: AST.Root) {
   ctx.runesPropsDeclarationMetadataByDeclaratorStart.clear();
-  ctx.explicitPropTypesByName.clear();
   ctx.explicitVariableTypesByName.clear();
   ctx.explicitVariableTypeNodesByName.clear();
   ctx.typeImportBindingsByLocalName.clear();
@@ -409,21 +408,15 @@ export function collectScriptTypeInfo(ctx: ParserContext, parsed: AST.Root) {
   for (const statement of body) {
     collectScriptTypeDeclaration(ctx, statement, false);
 
-    const exported = statement.type === "ExportNamedDeclaration";
-    const declaration = exported ? statement.declaration : statement;
-    if (declaration?.type !== "VariableDeclaration") continue;
-    for (const { id } of declaration.declarations) {
+    // An exported variable's annotation is read with the export (`collectExportDeclarators`).
+    if (statement.type !== "VariableDeclaration") continue;
+    for (const { id } of statement.declarations) {
       if (id.type !== "Identifier") continue;
       const explicitType = getTypeAnnotationText(ctx, id.typeAnnotation);
       if (!explicitType) continue;
       const typeNode = id.typeAnnotation?.typeAnnotation;
-      if (exported) {
-        ctx.explicitPropTypesByName.set(id.name, explicitType);
-        trackAdditionalTypeDependencyNode(ctx, typeNode);
-      } else {
-        ctx.explicitVariableTypesByName.set(id.name, explicitType);
-        if (typeNode) ctx.explicitVariableTypeNodesByName.set(id.name, typeNode);
-      }
+      ctx.explicitVariableTypesByName.set(id.name, explicitType);
+      if (typeNode) ctx.explicitVariableTypeNodesByName.set(id.name, typeNode);
     }
   }
 

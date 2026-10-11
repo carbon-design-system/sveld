@@ -1,0 +1,95 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "ts",
+  "props": [
+    {
+      "name": "label",
+      "kind": "let",
+      "type": "string | number",
+      "typeSource": "typescript",
+      "value": "\"\"",
+      "defaultValue": {
+        "raw": "\"\"",
+        "kind": "literal",
+        "value": ""
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [
+    {
+      "name": "sizes",
+      "kind": "const",
+      "type": "Size[]",
+      "typeSource": "typescript",
+      "value": "[\"sm\", \"lg\"]",
+      "defaultValue": {
+        "raw": "[\"sm\", \"lg\"]",
+        "kind": "array",
+        "value": [
+          "sm",
+          "lg"
+        ]
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false
+    },
+    {
+      "name": "registry",
+      "kind": "const",
+      "type": "Map<string, Item>",
+      "typeSource": "typescript",
+      "value": "new Map()",
+      "defaultValue": {
+        "raw": "new Map()",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false
+    },
+    {
+      "name": "current",
+      "kind": "let",
+      "type": "Item | undefined",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "fallback",
+      "kind": "const",
+      "type": "Size",
+      "typeSource": "typescript",
+      "value": "\"sm\"",
+      "defaultValue": {
+        "raw": "\"sm\"",
+        "kind": "literal",
+        "value": "sm"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}

@@ -97,7 +97,6 @@ export interface ParserContext {
 
   readonly runesPropsDeclarationMetadataByDeclaratorStart: Map<number, RunesPropsDeclarationMetadata>;
   readonly typedRunesPropsDeclarations: RunesPropsDeclarationMetadata[];
-  readonly explicitPropTypesByName: Map<string, string>;
   readonly explicitVariableTypesByName: Map<string, string>;
   /** The annotation node behind each {@link explicitVariableTypesByName} entry. */
   readonly explicitVariableTypeNodesByName: Map<string, TSNode>;
@@ -199,7 +198,6 @@ export function createParserContext(): ParserContext {
     deferredEventNoSourceDiagnostics: [],
     runesPropsDeclarationMetadataByDeclaratorStart: new Map(),
     typedRunesPropsDeclarations: [],
-    explicitPropTypesByName: new Map(),
     explicitVariableTypesByName: new Map(),
     explicitVariableTypeNodesByName: new Map(),
     typeImportBindingsByLocalName: new Map(),
