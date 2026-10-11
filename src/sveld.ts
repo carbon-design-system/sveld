@@ -85,13 +85,7 @@ export async function buildAndWrite(
     ? await runCheck(result.components, resolveCheckSnapshotFile(options), { entryExports: result.entryExports })
     : undefined;
 
-  if (toStdout) {
-    await writeStdout(result, options, input);
-  } else {
-    await writeOutput(result, options, input);
-    // generateBundle() saved parses only; this adds the `.d.ts` text writeOutput cached.
-    result.cache?.save();
-  }
+  await (toStdout ? writeStdout : writeOutput)(result, options, input);
   return { result, check };
 }
 
