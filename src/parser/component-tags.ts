@@ -28,6 +28,8 @@ import { sourceRangeFromCommentTag } from "./source-position";
 import { formatParamList } from "./utils";
 
 const GENERIC_DEFAULT_EQUALS_REGEX = /\s*=\s*/;
+/** An import specifier written without quotes (`./Button.svelte`). */
+const UNQUOTED_SPECIFIER_REGEX = /^[^"'`\s]\S*$/;
 
 /** `Name<Row=DataTableRow,Header=Foo>` to `Name<Row = DataTableRow, Header = Foo>`, as sveld spaces other generics. */
 function normalizeGenericNameSpacing(name: string): string {
@@ -709,7 +711,8 @@ class CommentBlockReader {
     }
     this.ctx.extends = {
       interface: name,
-      import: type,
+      // `@extendProps {./Button.svelte}` reads as `{"./Button.svelte"}`.
+      import: UNQUOTED_SPECIFIER_REGEX.test(type) ? JSON.stringify(type) : type,
     };
     this.isFirstTag = false;
   }
