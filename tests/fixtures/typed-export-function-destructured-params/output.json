@@ -1,0 +1,47 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "ts",
+  "props": [
+    {
+      "name": "move",
+      "kind": "function",
+      "type": "(arg0: [number, number], arg1: { animate: boolean }) => any",
+      "typeSource": "typescript",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "focus",
+      "kind": "function",
+      "type": "(arg: { preventScroll: boolean }) => any",
+      "typeSource": "typescript",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [
+    {
+      "name": "merge",
+      "kind": "function",
+      "type": "(arg0: { a: string }, arg1: { b: number }) => string",
+      "typeSource": "typescript",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
