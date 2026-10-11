@@ -8,7 +8,9 @@ import { sourceRangeFromNode } from "./source-position";
 import { escapeCommentText } from "./utils";
 import { findTrackedVariableType } from "./variable-jsdoc";
 
+/** Each line break. */
 const NEWLINES_REGEX = /\n/g;
+/** A plain identifier, which needs no quotes as an object type key. */
 const IDENTIFIER_REGEX = /^[A-Za-z_$][\w$]*$/;
 
 /**

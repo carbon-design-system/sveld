@@ -44,11 +44,10 @@ function findContextVariableType(
 }
 
 /**
- * Resolves `{...identifier}` inside a `setContext` object literal to a property
- * list: either the spread-of-a-literal's own properties (recursively, so a chain
- * of `const` object literals merges all the way down) or, when the identifier
- * only has a resolvable JSDoc/native object-type annotation, that type's members.
- * Returns `null` when neither resolves, so the caller can widen to `Record<string, any>`.
+ * `{...identifier}` in a `setContext` object literal: the properties of the
+ * `const` object literal it's bound to (recursively), else the members of its
+ * object-type annotation. `null` when neither resolves, so the caller widens
+ * to `Record<string, any>`.
  */
 function resolveSpreadShape(ctx: ParserContext, argument: unknown, key: string): ComponentContextProp[] | null {
   if (!isIdentifier(argument)) return null;
