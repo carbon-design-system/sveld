@@ -62,12 +62,18 @@ describe("parseEntryExports", () => {
     try {
       writeFileSync(
         path.join(dir, "index.ts"),
-        ["export const MIN = -1;", "export const LABEL = String(42);", ""].join("\n"),
+        [
+          "export const MIN = -1;",
+          "export const LABEL = String(42);",
+          "export const label = () => String(42);",
+          "",
+        ].join("\n"),
       );
 
       const exports = await parseEntryExports(path.join(dir, "index.ts"));
 
       expect(exports.map(({ name, type }) => [name, type])).toEqual([
+        ["label", "() => string"],
         ["LABEL", "string"],
         ["MIN", "number"],
       ]);
