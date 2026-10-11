@@ -20,7 +20,7 @@ import type {
 import { indexOfClosingBracket, indexOfTopLevel, splitTopLevel } from "../type-text";
 import type { ParserContext, TypedefMember } from "./context";
 import { trackPropLocalName } from "./context";
-import { recordSveldIgnore } from "./diagnostics";
+import { recordPropSveldIgnore } from "./diagnostics";
 import { addDispatchedEvent } from "./events";
 import { collectGenericsAttributeTypeDependencies } from "./generics";
 import { processNodeJSDoc } from "./jsdoc";
@@ -492,7 +492,7 @@ export function parseRunesPropsDeclaration(ctx: ParserContext, node: VariableDec
 
       if (bindable) ctx.reactive_vars.add(propName);
 
-      recordSveldIgnore(ctx, "prop-unknown-type", propName, propertyJSDoc?.sveldIgnore);
+      recordPropSveldIgnore(ctx, propName, propertyJSDoc?.sveldIgnore);
 
       addProp(ctx, propName, {
         name: propName,

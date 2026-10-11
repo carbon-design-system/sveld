@@ -24,7 +24,7 @@ import type {
   SourceRange,
   TypeDef,
 } from "../model";
-import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "../parsed-component-metadata";
+import { PARSED_COMPONENT_PROP_IGNORES, PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "../parsed-component-metadata";
 import { splitTopLevel } from "../type-text";
 import { isValidTypeText } from "../type-text-validity";
 import type { ComponentWalkResult } from "./component-walk";
@@ -713,6 +713,9 @@ export function finalizeComponent(ctx: ParserContext, walk: ComponentWalkResult)
 
   const typeScriptMetadata = buildTypeScriptMetadata(ctx);
   if (typeScriptMetadata) parsedComponent[PARSED_COMPONENT_TYPE_SCRIPT_METADATA] = typeScriptMetadata;
+  if (ctx.propIgnoreCodes.size > 0) {
+    parsedComponent[PARSED_COMPONENT_PROP_IGNORES] = Object.fromEntries(ctx.propIgnoreCodes);
+  }
 
   const pending = buildPendingCrossFileCandidates(ctx);
   return pending ? { component: parsedComponent, pending } : { component: parsedComponent };

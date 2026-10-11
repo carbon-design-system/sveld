@@ -8,11 +8,11 @@ import type {
   ParsedComponentTypeScriptMetadata,
   PendingCrossFileCandidates,
 } from "./model";
-import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "./parsed-component-metadata";
+import { PARSED_COMPONENT_PROP_IGNORES, PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "./parsed-component-metadata";
 import { VERSION as svelteVersion } from "./svelte-version";
 
 /** Bumped whenever the on-disk cache shape changes in a way old caches can't read. */
-const CACHE_FORMAT_VERSION = 10;
+const CACHE_FORMAT_VERSION = 11;
 
 /** Relative to the project root. */
 export const DEFAULT_CACHE_FILE = join("node_modules", ".cache", "sveld", "parse-cache.json");
@@ -23,6 +23,8 @@ interface ParseCacheEntry {
   component: ParsedComponent;
   /** `component[PARSED_COMPONENT_TYPE_SCRIPT_METADATA]`: JSON drops symbol keys. */
   typeScriptMetadata?: ParsedComponentTypeScriptMetadata;
+  /** `component[PARSED_COMPONENT_PROP_IGNORES]`, for the same reason. */
+  propIgnores?: Record<string, string[]>;
   pending?: PendingCrossFileCandidates;
   /** Generated `.d.ts` text, keyed by the serialized emit options. */
   generatedText?: { key: string; text: string };
@@ -124,14 +126,16 @@ export class ParseCache {
 
     // A copy: the cross-file passes mutate props and diagnostics in place, and
     // those results must not be saved as if they came from this source alone.
-    const { component, typeScriptMetadata, pending } = structuredClone({
+    const { component, typeScriptMetadata, propIgnores, pending } = structuredClone({
       component: entry.component,
       typeScriptMetadata: entry.typeScriptMetadata,
+      propIgnores: entry.propIgnores,
       pending: entry.pending,
     });
     if (typeScriptMetadata !== undefined) {
       component[PARSED_COMPONENT_TYPE_SCRIPT_METADATA] = typeScriptMetadata;
     }
+    if (propIgnores !== undefined) component[PARSED_COMPONENT_PROP_IGNORES] = propIgnores;
     return pending === undefined ? { component } : { component, pending };
   }
 
@@ -143,6 +147,7 @@ export class ParseCache {
       ...structuredClone({
         component,
         typeScriptMetadata: component[PARSED_COMPONENT_TYPE_SCRIPT_METADATA],
+        propIgnores: component[PARSED_COMPONENT_PROP_IGNORES],
         pending,
       }),
     });

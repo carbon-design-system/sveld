@@ -18,7 +18,7 @@ import type {
 } from "sveast";
 import type { ComponentPropDefaultValue, ProcessedInitializer } from "../model";
 import type { ParserContext } from "./context";
-import { recordDiagnostic, recordSveldIgnore } from "./diagnostics";
+import { recordDiagnostic, recordPropSveldIgnore } from "./diagnostics";
 import { processNodeJSDoc } from "./jsdoc";
 import { resolvePropTypeAndDocs } from "./prop-shared";
 import { addProp, literalType, processInitializer, queuePendingCrossFileDefault } from "./props";
@@ -366,7 +366,7 @@ function addInstanceDeclarationExports(
     const { type, typeSource, description, params, returnType, isFunction, typeParameters } =
       resolveExportDeclaratorTypeAndDocs(ctx, declarator, jsdocInfo);
 
-    recordSveldIgnore(ctx, "prop-unknown-type", prop_name, jsdocInfo?.sveldIgnore);
+    recordPropSveldIgnore(ctx, prop_name, jsdocInfo?.sveldIgnore);
 
     addProp(ctx, prop_name, {
       name: prop_name,
