@@ -150,16 +150,20 @@ function matchByKey<T>(oldItems: T[], newItems: T[], key: (item: T) => string) {
   return { added, removed, common };
 }
 
+/** Records a change to one named item of `component`, as `` `${label} "${name}" ${change}` ``. */
+function changeRecorder(changes: ApiChange[], component: string, kind: ApiChange["kind"], label: string) {
+  return (name: string, bump: SemverBump, change: string) =>
+    changes.push({ component, kind, name, bump, message: `${label} "${name}" ${change}` });
+}
+
 function diffPropList(
   component: string,
   kind: "prop" | "moduleExport",
   oldProps: Prop[],
   newProps: Prop[],
 ): ApiChange[] {
-  const label = kind === "prop" ? "prop" : "export";
   const changes: ApiChange[] = [];
-  const push = (name: string, bump: SemverBump, change: string) =>
-    changes.push({ component, kind, name, bump, message: `${label} "${name}" ${change}` });
+  const push = changeRecorder(changes, component, kind, kind === "prop" ? "prop" : "export");
   const { added, removed, common } = matchByKey(oldProps, newProps, (prop) => prop.name);
 
   for (const [name, prop] of added) {
@@ -210,25 +214,15 @@ function diffPropList(
 
 function diffEvents(component: string, oldEvents: Event[], newEvents: Event[]): ApiChange[] {
   const changes: ApiChange[] = [];
+  const push = changeRecorder(changes, component, "event", "event");
   const { added, removed, common } = matchByKey(oldEvents, newEvents, (event) => event.name);
 
-  for (const [name] of added) {
-    changes.push({ component, kind: "event", name, bump: "minor", message: `event "${name}" added` });
-  }
-
-  for (const name of removed) {
-    changes.push({ component, kind: "event", name, bump: "major", message: `event "${name}" removed` });
-  }
+  for (const [name] of added) push(name, "minor", "added");
+  for (const name of removed) push(name, "major", "removed");
 
   for (const [name, oldEvent, newEvent] of common) {
     if (oldEvent.type !== newEvent.type) {
-      changes.push({
-        component,
-        kind: "event",
-        name,
-        bump: "major",
-        message: `event "${name}" changed from ${oldEvent.type} to ${newEvent.type}`,
-      });
+      push(name, "major", `changed from ${oldEvent.type} to ${newEvent.type}`);
       continue;
     }
 
@@ -236,13 +230,7 @@ function diffEvents(component: string, oldEvents: Event[], newEvents: Event[]): 
     const newDetail = newEvent.type === "dispatched" ? newEvent.detail : undefined;
     const detailBump = classifyTypeChange(oldDetail, newDetail);
     if (detailBump !== "none") {
-      changes.push({
-        component,
-        kind: "event",
-        name,
-        bump: detailBump,
-        message: `event "${name}" detail changed from \`${oldDetail ?? "unknown"}\` to \`${newDetail ?? "unknown"}\``,
-      });
+      push(name, detailBump, `detail changed from \`${oldDetail ?? "unknown"}\` to \`${newDetail ?? "unknown"}\``);
     }
   }
 
@@ -251,26 +239,16 @@ function diffEvents(component: string, oldEvents: Event[], newEvents: Event[]): 
 
 function diffSlots(component: string, oldSlots: Slot[], newSlots: Slot[]): ApiChange[] {
   const changes: ApiChange[] = [];
+  const push = changeRecorder(changes, component, "slot", "slot");
   const { added, removed, common } = matchByKey(oldSlots, newSlots, (slot) => slot.name ?? "default");
 
-  for (const [name] of added) {
-    changes.push({ component, kind: "slot", name, bump: "minor", message: `slot "${name}" added` });
-  }
-
-  for (const name of removed) {
-    changes.push({ component, kind: "slot", name, bump: "major", message: `slot "${name}" removed` });
-  }
+  for (const [name] of added) push(name, "minor", "added");
+  for (const name of removed) push(name, "major", "removed");
 
   for (const [name, oldSlot, newSlot] of common) {
     const bump = classifyTypeChange(oldSlot.slot_props, newSlot.slot_props);
     if (bump !== "none") {
-      changes.push({
-        component,
-        kind: "slot",
-        name,
-        bump,
-        message: `slot "${name}" props changed from \`${oldSlot.slot_props ?? "none"}\` to \`${newSlot.slot_props ?? "none"}\``,
-      });
+      push(name, bump, `props changed from \`${oldSlot.slot_props ?? "none"}\` to \`${newSlot.slot_props ?? "none"}\``);
     }
   }
 
