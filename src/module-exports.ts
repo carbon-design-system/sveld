@@ -23,6 +23,8 @@ import { getParserStack } from "./parser-stack";
 import { returnTypeOfFunctionType } from "./type-text";
 
 const NEWLINE_REGEX = /\r?\n/;
+/** The leading `*` of a JSDoc block's line. */
+const JSDOC_LINE_PREFIX_REGEX = /^\s*\*+/;
 
 export type ExportedFunction =
   | FunctionDeclaration
@@ -38,7 +40,6 @@ type DeclarationLike =
   | Declaration
   | MaybeNamedClassDeclaration
   | MaybeNamedFunctionDeclaration;
-const JSDOC_LINE_PREFIX_REGEX = /^\s*\*+/;
 
 /** `parseEntryExports` strips the fields public `EntryExport` doesn't have. */
 export interface InternalExport extends Omit<EntryExport, "source"> {
