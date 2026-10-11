@@ -1,4 +1,5 @@
 import path from "node:path";
+import { isObject } from "../ast-guards";
 import { removeSvelteExt } from "../create-exports";
 import { info } from "../logger";
 import type { EntryExports } from "../parse-entry-exports";
@@ -42,7 +43,7 @@ export interface WriteJsonOptions extends JsonOptions {
 
 /** `EntryExport.source` is a module path string, not a range, so it fails this check. */
 function isSourceRange(value: unknown): value is { start: unknown; end: unknown } {
-  return typeof value === "object" && value !== null && !Array.isArray(value) && "start" in value && "end" in value;
+  return isObject(value) && !Array.isArray(value) && "start" in value && "end" in value;
 }
 
 /** For `jsonOptions.source: false`. */
@@ -50,7 +51,7 @@ function stripSourceRanges<T>(value: T): T {
   if (Array.isArray(value)) {
     return value.map((item) => stripSourceRanges(item)) as T;
   }
-  if (value !== null && typeof value === "object") {
+  if (isObject(value)) {
     const result: Record<string, unknown> = {};
     for (const [key, item] of Object.entries(value)) {
       if ((key === "source" || key === "componentCommentSource") && isSourceRange(item)) continue;
