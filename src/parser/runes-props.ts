@@ -121,6 +121,17 @@ function buildRunesPropTypeMetadataMap(
       mergeMembers(typeNode.members ?? []);
       break;
     case "TSInterfaceDeclaration":
+      // Inherited members first, so the interface's own members override them.
+      for (const heritage of typeNode.extends ?? []) {
+        const reference = {
+          type: "TSTypeReference",
+          typeName: heritage.expression,
+          typeArguments: heritage.typeParameters,
+          start: heritage.start,
+          end: heritage.end,
+        } as TSTypeReference;
+        mergeNested(reference);
+      }
       mergeMembers(typeNode.body?.body ?? []);
       break;
     case "TSTypeAliasDeclaration":
