@@ -5,9 +5,9 @@
     props: {
       variant: { attribute: "data-variant" },
       active: { reflect: true },
-      tags: { type: "Array" }
+      tags: { type: "Array" },
     },
-    extend: (ceClass) => ceClass
+    extend: (ceClass) => ceClass,
   }}
 />
 

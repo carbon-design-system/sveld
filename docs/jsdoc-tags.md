@@ -283,13 +283,13 @@ export type ComponentProps = {
 
 `@property` documents one field of an object. sveld reads it in two places only:
 
-| Context | Behavior |
-| :- | :- |
-| After `@typedef {object} Name`, in the same block | Builds `Name`'s fields. See [`@typedef`](#documenting-fields-with-property). |
-| After `@event name`, in the same block | Builds the event's detail type. See [`@event`](#event-details-with-property). |
-| On a plain prop | Not structured. Folded into the prop's description as literal text. |
-| Before a `@slot` / `@snippet` line | Dropped. |
-| Inside `@callback` | Not read. Use `@param`. |
+| Context                                           | Behavior                                                                      |
+| :------------------------------------------------ | :---------------------------------------------------------------------------- |
+| After `@typedef {object} Name`, in the same block | Builds `Name`'s fields. See [`@typedef`](#documenting-fields-with-property).  |
+| After `@event name`, in the same block            | Builds the event's detail type. See [`@event`](#event-details-with-property). |
+| On a plain prop                                   | Not structured. Folded into the prop's description as literal text.           |
+| Before a `@slot` / `@snippet` line                | Dropped.                                                                      |
+| Inside `@callback`                                | Not read. Use `@param`.                                                       |
 
 A description can wrap onto continuation lines, which run until the next tag. Indent them past the `*` gutter to keep them attached to the tag. An unindented line right above an `@event`/`@typedef`/`@slot` with no description of its own is read as that tag's description instead, and an unindented line after an event's last `@property` describes the event. A blank line between indented paragraphs is kept as a paragraph break.
 
@@ -724,15 +724,14 @@ Consumers import the type from the component:
 
 ### Keys
 
-| Key form | Example | Generated type |
-| --- | --- | --- |
-| String literal | `setContext("simple-modal", …)` | `SimpleModalContext` |
-| Static template literal | `` setContext(`simple-modal`, …) `` | `SimpleModalContext` |
-| `const`-bound string | `const KEY = "simple-modal";`<br>`setContext(KEY, …)` | `SimpleModalContext` |
-| `Symbol()` / `Symbol.for()` | `setContext(Symbol("tabs"), …)` | `TabsContext` |
-| Imported `export const` string | `import { KEY } from "./keys.js";`<br>`setContext(KEY, …)` | `SimpleModalContext` |
+| Key form                          | Example                                                           | Generated type       |
+| --------------------------------- | ----------------------------------------------------------------- | -------------------- |
+| String literal                    | `setContext("simple-modal", …)`                                   | `SimpleModalContext` |
+| Static template literal           | ``setContext(`simple-modal`, …)``                                 | `SimpleModalContext` |
+| `const`-bound string              | `const KEY = "simple-modal";`<br>`setContext(KEY, …)`             | `SimpleModalContext` |
+| `Symbol()` / `Symbol.for()`       | `setContext(Symbol("tabs"), …)`                                   | `TabsContext`        |
+| Imported `export const` string    | `import { KEY } from "./keys.js";`<br>`setContext(KEY, …)`        | `SimpleModalContext` |
 | Namespace-imported `export const` | `import * as keys from "./keys.js";`<br>`setContext(keys.KEY, …)` | `SimpleModalContext` |
-
 - `const` identifiers are followed up to 5 levels deep. `let`, `var`, and props are skipped because they can change at runtime.
 - A symbol takes its name from its description. `const ModalKey = Symbol()` with no description uses the binding name: `ModalKeyContext`.
 - An imported key is read from a relative `.js`/`.ts` module (following re-exports) that declares it as an `export const` string or static template literal. This needs the whole library build.

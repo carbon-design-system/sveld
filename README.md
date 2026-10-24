@@ -240,27 +240,27 @@ See [CI](docs/ci.md) for exit codes, the change classification table, diagnostic
 
 ## JSDoc tags
 
-| Tag | Use it to | Example |
-| :- | :- | :- |
-| [`@type`](docs/jsdoc-tags.md#type) | Type a prop | `@type {"sm" \| "md" \| "lg"}` |
-| [`@default`](docs/jsdoc-tags.md#default) | Override the inferred default shown in docs | `@default () => true` |
-| [`@typedef`](docs/jsdoc-tags.md#typedef) | Declare a shared, exported type | `@typedef {{ id: string }} Item` |
-| [`@property`](docs/jsdoc-tags.md#property) | Document a field of a `@typedef {object}` or event detail | `@property {string} [label] - Label text` |
-| [`@callback`](docs/jsdoc-tags.md#callback) | Declare a function type | `@callback OnChange` + `@param`/`@returns` |
-| [`@slot` / `@snippet`](docs/jsdoc-tags.md#slot--snippet) | Type slot or snippet props | `@slot {{ item: Item }} row` |
-| [`@event`](docs/jsdoc-tags.md#event) | Type a dispatched event's detail | `@event {{ id: string }} save` |
-| [`@param` / `@returns`](docs/jsdoc-tags.md#accessor-props) | Type an exported function | `@param {string} id` |
-| [`@restProps`](docs/jsdoc-tags.md#restprops) | Name the element rest props are spread onto | `@restProps {button \| a}` |
-| [`@extendProps`](docs/jsdoc-tags.md#extendprops) | Extend another component's props | `@extendProps {"./Button.svelte"} ButtonProps` |
-| [`@template` / `@generics`](docs/jsdoc-tags.md#template--generics) | Declare generics in a JS component | `@template {Item} [T=Item]` |
-| [`@bindable`](docs/jsdoc-tags.md#bindable) | Document a prop's `bind:` contract | `@bindable writable` |
-| [`@deprecated`](docs/jsdoc-tags.md#deprecated) | Mark a prop, event, slot, or export deprecated | `@deprecated Use "size" instead.` |
-| [`@ignore` / `@internal`](docs/jsdoc-tags.md#ignore--internal) | Hide from every output | `@internal` |
-| [`@since` / `@see` / `@example`](docs/jsdoc-tags.md#since-see-example) | Pass structured tags through to all outputs | `@since 1.2.0` |
-| [`{@link}`](docs/jsdoc-tags.md#link) | Link in a description | `{@link https://example.com\|docs}` |
-| [`@csspart` / `@cssprop`](docs/jsdoc-tags.md#csspart--cssprop) | Document shadow-DOM styling hooks | `@cssprop {Color} [--bg=white]` |
-| [`@sveld-ignore`](docs/ci.md#ignoring-diagnostics) | Suppress a diagnostic | `@sveld-ignore sveld/prop-unknown-type` |
-| [`<!-- @component -->`](docs/jsdoc-tags.md#component-comments) | Document the component itself | `<!-- @component Renders a button. -->` |
+| Tag                                                                    | Use it to                                                 | Example                                        |
+| :--------------------------------------------------------------------- | :-------------------------------------------------------- | :--------------------------------------------- |
+| [`@type`](docs/jsdoc-tags.md#type)                                     | Type a prop                                               | `@type {"sm" \| "md" \| "lg"}`                 |
+| [`@default`](docs/jsdoc-tags.md#default)                               | Override the inferred default shown in docs               | `@default () => true`                          |
+| [`@typedef`](docs/jsdoc-tags.md#typedef)                               | Declare a shared, exported type                           | `@typedef {{ id: string }} Item`               |
+| [`@property`](docs/jsdoc-tags.md#property)                             | Document a field of a `@typedef {object}` or event detail | `@property {string} [label] - Label text`      |
+| [`@callback`](docs/jsdoc-tags.md#callback)                             | Declare a function type                                   | `@callback OnChange` + `@param`/`@returns`     |
+| [`@slot` / `@snippet`](docs/jsdoc-tags.md#slot--snippet)               | Type slot or snippet props                                | `@slot {{ item: Item }} row`                   |
+| [`@event`](docs/jsdoc-tags.md#event)                                   | Type a dispatched event's detail                          | `@event {{ id: string }} save`                 |
+| [`@param` / `@returns`](docs/jsdoc-tags.md#accessor-props)             | Type an exported function                                 | `@param {string} id`                           |
+| [`@restProps`](docs/jsdoc-tags.md#restprops)                           | Name the element rest props are spread onto               | `@restProps {button \| a}`                     |
+| [`@extendProps`](docs/jsdoc-tags.md#extendprops)                       | Extend another component's props                          | `@extendProps {"./Button.svelte"} ButtonProps` |
+| [`@template` / `@generics`](docs/jsdoc-tags.md#template--generics)     | Declare generics in a JS component                        | `@template {Item} [T=Item]`                    |
+| [`@bindable`](docs/jsdoc-tags.md#bindable)                             | Document a prop's `bind:` contract                        | `@bindable writable`                           |
+| [`@deprecated`](docs/jsdoc-tags.md#deprecated)                         | Mark a prop, event, slot, or export deprecated            | `@deprecated Use "size" instead.`              |
+| [`@ignore` / `@internal`](docs/jsdoc-tags.md#ignore--internal)         | Hide from every output                                    | `@internal`                                    |
+| [`@since` / `@see` / `@example`](docs/jsdoc-tags.md#since-see-example) | Pass structured tags through to all outputs               | `@since 1.2.0`                                 |
+| [`{@link}`](docs/jsdoc-tags.md#link)                                   | Link in a description                                     | `{@link https://example.com\|docs}`            |
+| [`@csspart` / `@cssprop`](docs/jsdoc-tags.md#csspart--cssprop)         | Document shadow-DOM styling hooks                         | `@cssprop {Color} [--bg=white]`                |
+| [`@sveld-ignore`](docs/ci.md#ignoring-diagnostics)                     | Suppress a diagnostic                                     | `@sveld-ignore sveld/prop-unknown-type`        |
+| [`<!-- @component -->`](docs/jsdoc-tags.md#component-comments)         | Document the component itself                             | `<!-- @component Renders a button. -->`        |
 
 Context types come from `setContext` calls with no tag needed. See [Context](docs/jsdoc-tags.md#context).
 

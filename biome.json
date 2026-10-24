@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.5.14/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.6.3/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -16,6 +16,7 @@
       "!!**/tests/e2e/**/*.svelte",
       "!!**/tests/e2e/**/*.d.ts",
       "!!**/tests/e2e/**/*.json",
+      "!!**/tests/e2e/**/*.md",
       "!!**/tests/e2e/cli-crash/**/*"
     ]
   },
@@ -29,6 +30,11 @@
     "formatter": {
       "enabled": true,
       "indentScriptAndStyle": true
+    }
+  },
+  "markdown": {
+    "formatter": {
+      "formatEmbeds": false
     }
   },
   "linter": {
