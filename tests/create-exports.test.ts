@@ -10,6 +10,17 @@ describe("createExports", () => {
     expect(createExports(source)).toEqual('export { default } from "./Component.svelte";');
   });
 
+  test("passes a types-only `export *` through as written", () => {
+    const source = mockParsedExports({
+      Component: mockParsedExport("./Component.svelte", { default: true }),
+      "*:./types.js": mockParsedExport("./types.js", { star: true }),
+    });
+
+    expect(createExports(source)).toEqual(
+      'export * from "./types.js";\nexport { default as Component } from "./Component.svelte";',
+    );
+  });
+
   test("single default export (declaration)", () => {
     const source = mockParsedExports({
       Component: mockParsedExport("./Component.svelte", { default: true }),

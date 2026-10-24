@@ -27,6 +27,27 @@ describe("parseExports", () => {
     }
   });
 
+  test("keeps an `export *` of a types-only module, a `.d.ts` beside an empty `.js`", () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "sveld-parse-exports-types-"));
+
+    try {
+      writeFileSync(path.join(dir, "types.js"), "export {};\n");
+      writeFileSync(path.join(dir, "types.d.ts"), 'export type Theme = "light" | "dark";\n');
+      mkdirSync(path.join(dir, "Button"));
+      writeFileSync(path.join(dir, "Button", "index.js"), 'export { default as Button } from "./Button.svelte";\n');
+      writeFileSync(path.join(dir, "Button", "Button.svelte"), "<button />\n");
+
+      const source = 'export * from "./types.js";\nexport * from "./Button/index.js";\n';
+
+      const result = parseExports(source, dir);
+      expect(result["*:./types.js"]).toEqual({ source: "./types.js", default: false, star: true });
+      // A barrel that brings components is flattened, not kept as a star.
+      expect(Object.keys(result).sort()).toEqual(["*:./types.js", "Button"]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   test("single default export", () => {
     const source = `export { default } from "./Component.svelte";`;
 

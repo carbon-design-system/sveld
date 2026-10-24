@@ -17,6 +17,20 @@ By default sveld writes to `types/` (set `typesOptions.outDir` to change it):
 
 `typesOptions.preamble` prepends text to `index.d.ts`, and `typesOptions.indexTypes` also re-exports each component's `Props` type from it. See [`typesOptions`](options.md#typesoptions).
 
+A JavaScript entry cannot export a type, so to publish types from it, put them in a `.d.ts` beside an empty `.js` and star-export that module. An `export * from "./types.js"` whose target brings no component or value exports is kept as written in `index.d.ts`, where TypeScript resolves it to `types.d.ts`:
+
+```js
+// src/index.js
+export { default as Button } from "./Button.svelte";
+export * from "./types.js"; // types.js is `export {};`, types.d.ts has the types
+```
+
+```ts
+// types/index.d.ts
+export { default as Button } from "./Button.svelte";
+export * from "./types.js";
+```
+
 ### Formats
 
 `typesOptions.format` (CLI: `--types-format`) picks the shape of each component's `.d.ts`.
