@@ -17,42 +17,42 @@ sveld runs from the CLI, as a Vite/Rollup plugin, or from Node with `sveld()`. A
 
 With no options, sveld generates TypeScript definitions only, for the entry named by `package.json#svelte`.
 
-| Option | Type | Default | CLI flag | Description |
-| :- | :- | :- | :- | :- |
-| `entry` | `string` | `package.json#svelte` | `--entry` | Entry point to uncompiled Svelte source. |
-| `glob` | `boolean` | `false` | `--glob` | Also write a `.d.ts` for every `*.svelte` file under the entry's directory, including ones the entry doesn't export. See [CLI](#cli) for a directory entry. |
-| `documentExports` | `boolean` | `false` | | Document the barrel's non-component exports. See [Entry exports](output.md#entry-exports). |
-| `types` | `boolean` | `true` | `--types` | Write `.d.ts` files. |
-| `typesOptions` | `object` | | | See [`typesOptions`](#typesoptions). |
-| `json` | `boolean` | `false` | `--json` | Write `COMPONENT_API.json`. |
-| `jsonOptions` | `object` | | | See [`jsonOptions`](#jsonoptions). |
-| `markdown` | `boolean` | `false` | `--markdown` | Write `COMPONENT_INDEX.md`. |
-| `markdownOptions` | `object` | | | See [`markdownOptions`](#markdownoptions). |
-| `failFast` | `boolean` | `false` | `--fail-fast` | Stop at the first component that fails to parse. Otherwise the failure is reported and the other components' output is still written. |
-| `cache` | `boolean \| string` | `true` | `--cache[=<path>]` | Persistent parse cache. See [Parse cache](#parse-cache). |
-| `checkExamples` | `boolean \| "syntax"` | `false` | `--check-examples[=syntax]` | Compile-check `@example` blocks. See [CI](ci.md#checking-example-blocks). |
-| `reportDiagnostics` | `boolean` | `false` | `--report-diagnostics` | Print diagnostics. See [CI](ci.md#diagnostics). |
-| `strict` | `boolean \| "errors"` | `false` | `--strict[=errors]` | Exit `4` when diagnostics exist. Implies `reportDiagnostics`. |
-| `diagnostics.ignore` | `Array<{ code?, component?, name? }>` | | | Mark matching diagnostics ignored. See [Ignoring diagnostics](ci.md#ignoring-diagnostics). |
-| `check` | `boolean \| string` | `false` | `--check[=<path>]` | Diff the API against a committed snapshot. See [`--check`](ci.md#api-drift-checks---check). |
-| `checkLevel` | `"major" \| "minor" \| "patch"` | `"major"` | `--check-level` | Minimum bump that fails `--check`. |
-| `format` | `"text" \| "json"` | `"text"` | `--format` | Format of the `--check` report and diagnostics summary. |
-| `stdout` | `boolean` | `false` | `--stdout` | Print the JSON or Markdown document instead of writing files. See [CLI](#cli). |
-| `quiet` | `boolean` | `false` | `-q`, `--quiet` | Hide `created`/`unchanged` progress lines. |
-| `config` | `boolean \| string` | `false` (plugin), `true` (`sveld()`) | `--config` | Load `sveld.config.*` (`true`) or not (`false`); the plugin and CLI also take a path. See [Config file](#config-file). |
-| `watch` | `boolean` | `false` | | Plugin only: regenerate during `vite dev`. See [Vite plugin](#vite-plugin). |
+| Option               | Type                                  | Default                              | CLI flag                    | Description                                                                                                                                                 |
+| :------------------- | :------------------------------------ | :----------------------------------- | :-------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `entry`              | `string`                              | `package.json#svelte`                | `--entry`                   | Entry point to uncompiled Svelte source.                                                                                                                    |
+| `glob`               | `boolean`                             | `false`                              | `--glob`                    | Also write a `.d.ts` for every `*.svelte` file under the entry's directory, including ones the entry doesn't export. See [CLI](#cli) for a directory entry. |
+| `documentExports`    | `boolean`                             | `false`                              |                             | Document the barrel's non-component exports. See [Entry exports](output.md#entry-exports).                                                                  |
+| `types`              | `boolean`                             | `true`                               | `--types`                   | Write `.d.ts` files.                                                                                                                                        |
+| `typesOptions`       | `object`                              |                                      |                             | See [`typesOptions`](#typesoptions).                                                                                                                        |
+| `json`               | `boolean`                             | `false`                              | `--json`                    | Write `COMPONENT_API.json`.                                                                                                                                 |
+| `jsonOptions`        | `object`                              |                                      |                             | See [`jsonOptions`](#jsonoptions).                                                                                                                          |
+| `markdown`           | `boolean`                             | `false`                              | `--markdown`                | Write `COMPONENT_INDEX.md`.                                                                                                                                 |
+| `markdownOptions`    | `object`                              |                                      |                             | See [`markdownOptions`](#markdownoptions).                                                                                                                  |
+| `failFast`           | `boolean`                             | `false`                              | `--fail-fast`               | Stop at the first component that fails to parse. Otherwise the failure is reported and the other components' output is still written.                       |
+| `cache`              | `boolean \| string`                   | `true`                               | `--cache[=<path>]`          | Persistent parse cache. See [Parse cache](#parse-cache).                                                                                                    |
+| `checkExamples`      | `boolean \| "syntax"`                 | `false`                              | `--check-examples[=syntax]` | Compile-check `@example` blocks. See [CI](ci.md#checking-example-blocks).                                                                                   |
+| `reportDiagnostics`  | `boolean`                             | `false`                              | `--report-diagnostics`      | Print diagnostics. See [CI](ci.md#diagnostics).                                                                                                             |
+| `strict`             | `boolean \| "errors"`                 | `false`                              | `--strict[=errors]`         | Exit `4` when diagnostics exist. Implies `reportDiagnostics`.                                                                                               |
+| `diagnostics.ignore` | `Array<{ code?, component?, name? }>` |                                      |                             | Mark matching diagnostics ignored. See [Ignoring diagnostics](ci.md#ignoring-diagnostics).                                                                  |
+| `check`              | `boolean \| string`                   | `false`                              | `--check[=<path>]`          | Diff the API against a committed snapshot. See [`--check`](ci.md#api-drift-checks---check).                                                                 |
+| `checkLevel`         | `"major" \| "minor" \| "patch"`       | `"major"`                            | `--check-level`             | Minimum bump that fails `--check`.                                                                                                                          |
+| `format`             | `"text" \| "json"`                    | `"text"`                             | `--format`                  | Format of the `--check` report and diagnostics summary.                                                                                                     |
+| `stdout`             | `boolean`                             | `false`                              | `--stdout`                  | Print the JSON or Markdown document instead of writing files. See [CLI](#cli).                                                                              |
+| `quiet`              | `boolean`                             | `false`                              | `-q`, `--quiet`             | Hide `created`/`unchanged` progress lines.                                                                                                                  |
+| `config`             | `boolean \| string`                   | `false` (plugin), `true` (`sveld()`) | `--config`                  | Load `sveld.config.*` (`true`) or not (`false`); the plugin and CLI also take a path. See [Config file](#config-file).                                      |
+| `watch`              | `boolean`                             | `false`                              |                             | Plugin only: regenerate during `vite dev`. See [Vite plugin](#vite-plugin).                                                                                 |
 
 The CLI also takes `--config <path>`, `-h`/`--help`, and `-v`/`--version`.
 
 ## `typesOptions`
 
-| Key | Type | Default | Description |
-| :- | :- | :- | :- |
-| `outDir` | `string` | `"types"` | Output directory, relative to the project root. |
-| `format` | `"class" \| "component"` | `"class"` | `.d.ts` shape. CLI: `--types-format`. See [Formats](output.md#formats). |
-| `preamble` | `string` | `""` | Text prepended to `index.d.ts`. |
-| `indexTypes` | `boolean` | `false` | Also re-export each component's types from `index.d.ts`. CLI: `--types-index-types`. |
-| `transform` | `(text, context) => string \| Promise<string>` | | Rewrite each file's text before it's written. |
+| Key          | Type                                           | Default   | Description                                                                          |
+| :----------- | :--------------------------------------------- | :-------- | :----------------------------------------------------------------------------------- |
+| `outDir`     | `string`                                       | `"types"` | Output directory, relative to the project root.                                      |
+| `format`     | `"class" \| "component"`                       | `"class"` | `.d.ts` shape. CLI: `--types-format`. See [Formats](output.md#formats).              |
+| `preamble`   | `string`                                       | `""`      | Text prepended to `index.d.ts`.                                                      |
+| `indexTypes` | `boolean`                                      | `false`   | Also re-export each component's types from `index.d.ts`. CLI: `--types-index-types`. |
+| `transform`  | `(text, context) => string \| Promise<string>` |           | Rewrite each file's text before it's written.                                        |
 
 ### `preamble`
 
@@ -107,21 +107,21 @@ sveld({
 
 ## `jsonOptions`
 
-| Key | Type | Default | Description |
-| :- | :- | :- | :- |
-| `outFile` | `string` | `"COMPONENT_API.json"` | Path of the combined document, relative to the project root. Ignored when `outDir` is set. |
-| `outDir` | `string` | | Write one `<Name>.api.json` per component into this directory instead. |
-| `source` | `boolean` | `true` | Set `false` to omit every `source`/`componentCommentSource` range, which shrinks the file noticeably for large libraries. |
+| Key       | Type      | Default                | Description                                                                                                               |
+| :-------- | :-------- | :--------------------- | :------------------------------------------------------------------------------------------------------------------------ |
+| `outFile` | `string`  | `"COMPONENT_API.json"` | Path of the combined document, relative to the project root. Ignored when `outDir` is set.                                |
+| `outDir`  | `string`  |                        | Write one `<Name>.api.json` per component into this directory instead.                                                    |
+| `source`  | `boolean` | `true`                 | Set `false` to omit every `source`/`componentCommentSource` range, which shrinks the file noticeably for large libraries. |
 
 `source: false` doesn't affect entry exports' `source` field, which is the declaring module's path.
 
 ## `markdownOptions`
 
-| Key | Type | Default | Description |
-| :- | :- | :- | :- |
-| `outFile` | `string` | `"COMPONENT_INDEX.md"` | Path of the combined document. Ignored when `outDir` is set. |
-| `outDir` | `string` | | Write one `<Name>.md` per component plus an index `README.md` (which holds the Exports section when `documentExports` is on). |
-| `onAppend` | `(type, document, components) => void` | | Called for every heading, quote, paragraph, divider, and raw block written. |
+| Key        | Type                                   | Default                | Description                                                                                                                   |
+| :--------- | :------------------------------------- | :--------------------- | :---------------------------------------------------------------------------------------------------------------------------- |
+| `outFile`  | `string`                               | `"COMPONENT_INDEX.md"` | Path of the combined document. Ignored when `outDir` is set.                                                                  |
+| `outDir`   | `string`                               |                        | Write one `<Name>.md` per component plus an index `README.md` (which holds the Exports section when `documentExports` is on). |
+| `onAppend` | `(type, document, components) => void` |                        | Called for every heading, quote, paragraph, divider, and raw block written.                                                   |
 
 `onAppend` receives the block `type`, the in-progress `MarkdownDocument`, and the component map. It fires for the index and every per-component file. Use it to add content, for example a summary under the title:
 
@@ -235,13 +235,13 @@ const { document, diagnostics, errors, check, exitCode } = await sveld({
 
 `sveld()` resolves to a `SveldResult`:
 
-| Field | Description |
-| :- | :- |
-| `document` | The component API document, the same object `json: true` writes. Always populated. See [Custom output](output.md#custom-output). |
-| `diagnostics` | Every diagnostic from the run, whether or not they were printed. See [Diagnostics](ci.md#diagnostics). |
-| `errors` | Components that failed to parse. |
-| `check` | The `check` result, when `check` is set. |
-| `exitCode` | The exit code the CLI would use (`0`-`4`, lowest applicable wins). `sveld()` never sets `process.exitCode` itself. |
+| Field         | Description                                                                                                                      |
+| :------------ | :------------------------------------------------------------------------------------------------------------------------------- |
+| `document`    | The component API document, the same object `json: true` writes. Always populated. See [Custom output](output.md#custom-output). |
+| `diagnostics` | Every diagnostic from the run, whether or not they were printed. See [Diagnostics](ci.md#diagnostics).                           |
+| `errors`      | Components that failed to parse.                                                                                                 |
+| `check`       | The `check` result, when `check` is set.                                                                                         |
+| `exitCode`    | The exit code the CLI would use (`0`-`4`, lowest applicable wins). `sveld()` never sets `process.exitCode` itself.               |
 
 ```js
 import { formatCheckReport, sveld } from "sveld";

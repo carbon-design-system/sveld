@@ -31,6 +31,7 @@
 </script>
 
 <p>
-  {typed}{documented}{literalDefault}{boolDefault}{arrayDefault.length}{objectDefault.size}{callbackDefault("x")}{formatDefault(1)}
+  {typed}{documented}{literalDefault}{boolDefault}{arrayDefault.length}{objectDefault.size}
+  {callbackDefault("x")}{formatDefault(1)}
   {callDefault}{memberDefault}{expressionDefault}{unknown}
 </p>

@@ -12,13 +12,13 @@ sveld has two CI gates: `--check` fails on API changes against a committed snaps
 
 ## Exit codes
 
-| Code | Meaning |
-| --- | --- |
-| `0` | Success |
-| `1` | Usage or configuration error: unknown flag, bad flag value, unresolvable entry, unresolved re-export or path alias, missing or outdated `--check` snapshot |
-| `2` | Generation failure: a component failed to parse, or an unrecoverable error. Without `--fail-fast`, the other components' output is still written. |
-| `3` | Breaking API change found by `--check` |
-| `4` | Diagnostics present under `--strict` |
+| Code | Meaning                                                                                                                                                    |
+| ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0`  | Success                                                                                                                                                    |
+| `1`  | Usage or configuration error: unknown flag, bad flag value, unresolvable entry, unresolved re-export or path alias, missing or outdated `--check` snapshot |
+| `2`  | Generation failure: a component failed to parse, or an unrecoverable error. Without `--fail-fast`, the other components' output is still written.          |
+| `3`  | Breaking API change found by `--check`                                                                                                                     |
+| `4`  | Diagnostics present under `--strict`                                                                                                                       |
 
 When more than one applies, each failure is still reported and the process exits with the lowest code. `sveld()` returns the same code as `exitCode` without setting `process.exitCode`.
 
@@ -38,32 +38,32 @@ Suggested semver bump: major.
     [BREAKING] prop "href" removed
 ```
 
-| Change | Bump |
-| --- | --- |
-| Component added | `minor` |
-| Component removed | `major` |
-| Prop/export added (optional) | `minor` |
-| Prop/export added (required) | `major` |
-| Prop/export removed | `major` |
-| Prop/export became required | `major` |
-| Prop/export became optional | `minor` |
-| Prop/export type widened (union gained a member) | `minor` |
-| Prop/export type narrowed (union lost a member) | `major` |
-| Prop/export type changed (anything else) | `major` |
-| Function-typed prop/export gained a trailing optional param | `minor` |
-| Function-typed prop/export lost a param, or return type changed | `major` |
-| Prop gained a writable binding (`bind:`-able) | `minor` |
-| Prop lost a writable binding | `major` |
-| Prop/export default value changed (type unchanged) | `patch` |
-| `@deprecated` added | `minor` |
-| `@deprecated` removed | `patch` |
-| `constant`/`reactive` flag flipped | `minor` |
-| Event/slot added | `minor` |
-| Event/slot removed | `major` |
-| Event detail / slot props type widened | `minor` |
-| Event detail / slot props type narrowed or otherwise changed | `major` |
-| `generics`, `@restProps`, `@extends`, or context shape changed | `major` (not classified further) |
-| Description-only change | not reported |
+| Change                                                          | Bump                             |
+| --------------------------------------------------------------- | -------------------------------- |
+| Component added                                                 | `minor`                          |
+| Component removed                                               | `major`                          |
+| Prop/export added (optional)                                    | `minor`                          |
+| Prop/export added (required)                                    | `major`                          |
+| Prop/export removed                                             | `major`                          |
+| Prop/export became required                                     | `major`                          |
+| Prop/export became optional                                     | `minor`                          |
+| Prop/export type widened (union gained a member)                | `minor`                          |
+| Prop/export type narrowed (union lost a member)                 | `major`                          |
+| Prop/export type changed (anything else)                        | `major`                          |
+| Function-typed prop/export gained a trailing optional param     | `minor`                          |
+| Function-typed prop/export lost a param, or return type changed | `major`                          |
+| Prop gained a writable binding (`bind:`-able)                   | `minor`                          |
+| Prop lost a writable binding                                    | `major`                          |
+| Prop/export default value changed (type unchanged)              | `patch`                          |
+| `@deprecated` added                                             | `minor`                          |
+| `@deprecated` removed                                           | `patch`                          |
+| `constant`/`reactive` flag flipped                              | `minor`                          |
+| Event/slot added                                                | `minor`                          |
+| Event/slot removed                                              | `major`                          |
+| Event detail / slot props type widened                          | `minor`                          |
+| Event detail / slot props type narrowed or otherwise changed    | `major`                          |
+| `generics`, `@restProps`, `@extends`, or context shape changed  | `major` (not classified further) |
+| Description-only change                                         | not reported                     |
 
 Marking a public member [`@internal`](jsdoc-tags.md#ignore--internal) counts as removing it.
 
@@ -106,37 +106,37 @@ Severities: `error` means sveld emitted broken or incomplete output (a syntax it
 
 Codes are stable, so use them (not `message`) in config and scripts.
 
-| Code | Severity | Fix |
-| --- | --- | --- |
-| `sveld/prop-unknown-type` | `warning` | Add a TypeScript annotation, a `@type` tag, or an initializer sveld can infer a type from. |
-| `sveld/context-any-type` | `warning` | Annotate the `setContext` value (or the variable it reads) with `@type` or a TypeScript type. |
-| `sveld/slot-missing-type` | `warning` | Add the `{Type}` to the `@slot`/`@snippet` tag (e.g. `@slot {{}} name`). Until then it's `Record<string, never>`. |
-| `sveld/slot-not-rendered` | `warning` | Render the slot (`<slot name>` or `{@render}`), or remove the stale `@slot`/`@snippet` tag. If the name is the first word of a default slot's description, write `@slot {{}} - description`. |
-| `sveld/event-no-source` | `warning` | Dispatch the event, forward it (`on:name`), or add a matching `on<name>` callback prop. Otherwise remove the stale `@event` tag. |
-| `sveld/dispatch-escapes` | `warning` | The dispatcher is passed somewhere sveld can't follow (a package import, a local function, a computed event name, or passed on again). Document its events with `@event`, then add `@sveld-ignore sveld/dispatch-escapes` to the dispatcher's JSDoc. |
-| `sveld/example-compile-error` | `error` | Fix the `@example` TS/JS block so it type-checks, or remove it. |
-| `sveld/example-syntax-error` | `error` | Fix the `@example` `svelte`/`html` markup so it parses, or remove it. |
-| `sveld/syntax-skipped` | `error` | Rewrite the flagged syntax in a form sveld can model. The message says what was skipped. |
-| `sveld/type-syntax-error` | `error` | Fix the JSDoc `{type}` so it parses as TypeScript: close the bracket, drop the trailing `\|`, turn a `//` comment into `/* */` (it would comment out the rest of the `.d.ts` line), or rewrite closure syntax (`{?string}` as `{string \| null}`, `{Array.<string>}` as `{string[]}`). Until then it's `any`. |
-| `sveld/rest-props-unresolved` | `warning` | Spread rest props onto a plain element (or `svelte:element`), or add `@restProps`. |
-| `sveld/context-duplicate-key` | `warning` | Remove the duplicate `setContext` call or give it a distinct key. Only the first call's shape is used. |
-| `sveld/context-key-unresolved` | `warning` | Use a string literal, a `const` string, `Symbol()`, or an `export const` from a relative module as the key. Otherwise the context is left out. |
-| `sveld/context-value-unresolved` | `warning` | Pass an object literal, a typed variable, or a `svelte/store` store as the value. Otherwise the context is left out. |
-| `sveld/spread-unresolved` | `warning` | Spread a local object literal or a variable with a resolvable type. Otherwise the type widens to `Record<string, any>`. |
-| `sveld/export-unresolved` | `warning` | Export a local declaration directly. Move re-exports and classes into `<script context="module">`, where sveld writes them to the `.d.ts`. |
-| `sveld/module-export-conflict` | `warning` | Rename the module-script export. `default` always collides with the component, and a name matching `<Name>Props`/`<Name>Exports` breaks the `.d.ts`. |
-| `sveld/extend-props-target-missing` | `error` | Point `@extendProps` at a file that exists, and for a `.svelte` target, name its `<Name>Props` type exactly. |
-| `sveld/extend-props-duplicate` | `warning` | Remove the extra `@extendProps` tag. Only the last one is used. |
-| `sveld/extend-props-override` | `warning` | Rename the prop, or accept that it overrides the target's prop of the same name. |
-| `sveld/jsdoc-unknown-tag` | `warning` | Fix the tag name if it's a typo (`@depreacted`). Otherwise no action needed; the tag passes through. |
-| `sveld/typedef-duplicate` | `warning` | Rename one of the `@typedef`/`@callback` declarations. Only the later one is kept. |
-| `sveld/property-duplicate` | `warning` | Remove the duplicate `@property`. Only the later one is kept. |
-| `sveld/generics-conflict` | `warning` | Give each `@generics`/`@template` declaration a distinct name. |
-| `sveld/event-description-ambiguous` | `warning` | Put the description above its `@event` tag, indent it as a continuation, or give each event its own comment block. |
-| `sveld/jsdoc-tag-dropped` | `warning` | Move the tag next to a `@slot`/`@snippet`/`@event`/`@typedef`/`@callback` in the same block so it has something to attach to. |
-| `sveld/internal-typedef-referenced` | `error` | Remove `@internal` from the typedef, or stop referencing it from public types. |
-| `sveld/cross-file-unresolved` | `warning` | Only from [`sveld/browser`](options.md#browser)'s standalone parse: an imported value needs the imported file. Run the full build, or inline the value. |
-| `sveld/export-ambiguous` | `warning` | Two `export *` statements in the entry barrel bring in the same name, so it's not exported. Export it explicitly from the barrel. Only with `documentExports`. |
+| Code                                | Severity  | Fix                                                                                                                                                                                                                                                                                                           |
+| ----------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sveld/prop-unknown-type`           | `warning` | Add a TypeScript annotation, a `@type` tag, or an initializer sveld can infer a type from.                                                                                                                                                                                                                    |
+| `sveld/context-any-type`            | `warning` | Annotate the `setContext` value (or the variable it reads) with `@type` or a TypeScript type.                                                                                                                                                                                                                 |
+| `sveld/slot-missing-type`           | `warning` | Add the `{Type}` to the `@slot`/`@snippet` tag (e.g. `@slot {{}} name`). Until then it's `Record<string, never>`.                                                                                                                                                                                             |
+| `sveld/slot-not-rendered`           | `warning` | Render the slot (`<slot name>` or `{@render}`), or remove the stale `@slot`/`@snippet` tag. If the name is the first word of a default slot's description, write `@slot {{}} - description`.                                                                                                                  |
+| `sveld/event-no-source`             | `warning` | Dispatch the event, forward it (`on:name`), or add a matching `on<name>` callback prop. Otherwise remove the stale `@event` tag.                                                                                                                                                                              |
+| `sveld/dispatch-escapes`            | `warning` | The dispatcher is passed somewhere sveld can't follow (a package import, a local function, a computed event name, or passed on again). Document its events with `@event`, then add `@sveld-ignore sveld/dispatch-escapes` to the dispatcher's JSDoc.                                                          |
+| `sveld/example-compile-error`       | `error`   | Fix the `@example` TS/JS block so it type-checks, or remove it.                                                                                                                                                                                                                                               |
+| `sveld/example-syntax-error`        | `error`   | Fix the `@example` `svelte`/`html` markup so it parses, or remove it.                                                                                                                                                                                                                                         |
+| `sveld/syntax-skipped`              | `error`   | Rewrite the flagged syntax in a form sveld can model. The message says what was skipped.                                                                                                                                                                                                                      |
+| `sveld/type-syntax-error`           | `error`   | Fix the JSDoc `{type}` so it parses as TypeScript: close the bracket, drop the trailing `\|`, turn a `//` comment into `/* */` (it would comment out the rest of the `.d.ts` line), or rewrite closure syntax (`{?string}` as `{string \| null}`, `{Array.<string>}` as `{string[]}`). Until then it's `any`. |
+| `sveld/rest-props-unresolved`       | `warning` | Spread rest props onto a plain element (or `svelte:element`), or add `@restProps`.                                                                                                                                                                                                                            |
+| `sveld/context-duplicate-key`       | `warning` | Remove the duplicate `setContext` call or give it a distinct key. Only the first call's shape is used.                                                                                                                                                                                                        |
+| `sveld/context-key-unresolved`      | `warning` | Use a string literal, a `const` string, `Symbol()`, or an `export const` from a relative module as the key. Otherwise the context is left out.                                                                                                                                                                |
+| `sveld/context-value-unresolved`    | `warning` | Pass an object literal, a typed variable, or a `svelte/store` store as the value. Otherwise the context is left out.                                                                                                                                                                                          |
+| `sveld/spread-unresolved`           | `warning` | Spread a local object literal or a variable with a resolvable type. Otherwise the type widens to `Record<string, any>`.                                                                                                                                                                                       |
+| `sveld/export-unresolved`           | `warning` | Export a local declaration directly. Move re-exports and classes into `<script context="module">`, where sveld writes them to the `.d.ts`.                                                                                                                                                                    |
+| `sveld/module-export-conflict`      | `warning` | Rename the module-script export. `default` always collides with the component, and a name matching `<Name>Props`/`<Name>Exports` breaks the `.d.ts`.                                                                                                                                                          |
+| `sveld/extend-props-target-missing` | `error`   | Point `@extendProps` at a file that exists, and for a `.svelte` target, name its `<Name>Props` type exactly.                                                                                                                                                                                                  |
+| `sveld/extend-props-duplicate`      | `warning` | Remove the extra `@extendProps` tag. Only the last one is used.                                                                                                                                                                                                                                               |
+| `sveld/extend-props-override`       | `warning` | Rename the prop, or accept that it overrides the target's prop of the same name.                                                                                                                                                                                                                              |
+| `sveld/jsdoc-unknown-tag`           | `warning` | Fix the tag name if it's a typo (`@depreacted`). Otherwise no action needed; the tag passes through.                                                                                                                                                                                                          |
+| `sveld/typedef-duplicate`           | `warning` | Rename one of the `@typedef`/`@callback` declarations. Only the later one is kept.                                                                                                                                                                                                                            |
+| `sveld/property-duplicate`          | `warning` | Remove the duplicate `@property`. Only the later one is kept.                                                                                                                                                                                                                                                 |
+| `sveld/generics-conflict`           | `warning` | Give each `@generics`/`@template` declaration a distinct name.                                                                                                                                                                                                                                                |
+| `sveld/event-description-ambiguous` | `warning` | Put the description above its `@event` tag, indent it as a continuation, or give each event its own comment block.                                                                                                                                                                                            |
+| `sveld/jsdoc-tag-dropped`           | `warning` | Move the tag next to a `@slot`/`@snippet`/`@event`/`@typedef`/`@callback` in the same block so it has something to attach to.                                                                                                                                                                                 |
+| `sveld/internal-typedef-referenced` | `error`   | Remove `@internal` from the typedef, or stop referencing it from public types.                                                                                                                                                                                                                                |
+| `sveld/cross-file-unresolved`       | `warning` | Only from [`sveld/browser`](options.md#browser)'s standalone parse: an imported value needs the imported file. Run the full build, or inline the value.                                                                                                                                                       |
+| `sveld/export-ambiguous`            | `warning` | Two `export *` statements in the entry barrel bring in the same name, so it's not exported. Export it explicitly from the barrel. Only with `documentExports`.                                                                                                                                                |
 
 The list is also exported as `DIAGNOSTIC_CODES`.
 

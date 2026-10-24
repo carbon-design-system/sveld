@@ -19,5 +19,5 @@
 />
 
 <!-- These are dispatched custom events -->
-<button on:click={() => dispatch('expand')}>Expand</button>
-<button on:click={() => dispatch('collapse')}>Collapse</button>
+<button on:click={() => dispatch("expand")}>Expand</button>
+<button on:click={() => dispatch("collapse")}>Collapse</button>

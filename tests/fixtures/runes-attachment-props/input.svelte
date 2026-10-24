@@ -14,4 +14,10 @@
 
 <div {@attach onmount}>content</div>
 <div {@attach createTooltip?.("hello")}>content</div>
-<div {@attach (node) => { for (const attach of attachments) attach(node); }}>content</div>
+<div
+  {@attach (node) => {
+    for (const attach of attachments) attach(node);
+  }}
+>
+  content
+</div>

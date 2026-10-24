@@ -35,21 +35,21 @@ bun install
 
 ## Scripts
 
-| Script | What it does |
-| --- | --- |
-| `bun test` | Unit and fixture snapshot tests (`bun test --parallel`). |
-| `bun run test:update` | Rewrite the fixture outputs (`tests/fixtures/**`) to match the current parser and writers. |
-| `bun run build` | Bundle `src/index.ts`, `src/cli-entry.ts`, and `src/browser.ts` to `dist/`, emit `.d.ts`, write a publish-ready `dist/package.json`. Add `-w` / `--watch` for watch mode. |
-| `bun run typecheck` | `bun check` over `src/` and `tests/`. |
-| `bun run test:fixtures-types` | Type-check the generated fixture outputs (`tests/fixtures/**`). |
-| `bun run test:types-matrix` | Regenerate every fixture's `.d.ts` under a matrix of `typesOptions` combinations and type-check each set. Add `--keep` to keep the temp output. |
-| `bun run test:svelte-versions` | Type-check every legacy fixture's `class`-format `.d.ts` against Svelte 3 and Svelte 4 (installed into a temp dir). |
-| `bun run test:e2e` | Link sveld into the downstream packages under `tests/e2e/`, run `sveld` (or `build` for Vite fixtures), and `typecheck` generated types where configured. |
-| `bun run test:inferred-types` | Write each inferred prop type back into its component and svelte-check it (run after `test:e2e`, which installs svelte-check). |
-| `bun run bench` | Time the parse/write pipeline against the carbon e2e fixture. Flags: `--runs <n>`, `--cache`, `--entry <path>`. Output goes to a temp dir; compare medians from one invocation, not absolute times across sessions. |
-| `bun run lint:fix:changed` | Lint, format, and organize imports for files changed vs `main` (`biome check --write --unsafe --changed`). Use this while iterating. |
-| `bun run lint` | Lint, format, and import-order check across the repo, same as CI (`biome check --error-on-warnings`). No writes. |
-| `bun run format` / `bun run lint:fix` | Biome format / full fix across the repo. |
+| Script                                | What it does                                                                                                                                                                                                        |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bun test`                            | Unit and fixture snapshot tests (`bun test --parallel`).                                                                                                                                                            |
+| `bun run test:update`                 | Rewrite the fixture outputs (`tests/fixtures/**`) to match the current parser and writers.                                                                                                                          |
+| `bun run build`                       | Bundle `src/index.ts`, `src/cli-entry.ts`, and `src/browser.ts` to `dist/`, emit `.d.ts`, write a publish-ready `dist/package.json`. Add `-w` / `--watch` for watch mode.                                           |
+| `bun run typecheck`                   | `bun check` over `src/` and `tests/`.                                                                                                                                                                               |
+| `bun run test:fixtures-types`         | Type-check the generated fixture outputs (`tests/fixtures/**`).                                                                                                                                                     |
+| `bun run test:types-matrix`           | Regenerate every fixture's `.d.ts` under a matrix of `typesOptions` combinations and type-check each set. Add `--keep` to keep the temp output.                                                                     |
+| `bun run test:svelte-versions`        | Type-check every legacy fixture's `class`-format `.d.ts` against Svelte 3 and Svelte 4 (installed into a temp dir).                                                                                                 |
+| `bun run test:e2e`                    | Link sveld into the downstream packages under `tests/e2e/`, run `sveld` (or `build` for Vite fixtures), and `typecheck` generated types where configured.                                                           |
+| `bun run test:inferred-types`         | Write each inferred prop type back into its component and svelte-check it (run after `test:e2e`, which installs svelte-check).                                                                                      |
+| `bun run bench`                       | Time the parse/write pipeline against the carbon e2e fixture. Flags: `--runs <n>`, `--cache`, `--entry <path>`. Output goes to a temp dir; compare medians from one invocation, not absolute times across sessions. |
+| `bun run lint:fix:changed`            | Lint, format, and organize imports for files changed vs `main` (`biome check --write --unsafe --changed`). Use this while iterating.                                                                                |
+| `bun run lint`                        | Lint, format, and import-order check across the repo, same as CI (`biome check --error-on-warnings`). No writes.                                                                                                    |
+| `bun run format` / `bun run lint:fix` | Biome format / full fix across the repo.                                                                                                                                                                            |
 
 Scope test and lint runs to what you touched. The full test suite and a repo-wide `biome` pass surface unrelated noise.
 
@@ -141,7 +141,7 @@ Name cases after the behavior under test, grouping by feature prefix to match th
 
 ### End-to-end tests
 
-[`tests/test-e2e.ts`](tests/test-e2e.ts) (`bun run test:e2e`) `bun link`s the locally built sveld into each project under `tests/e2e/`, installs, and runs that project's `sveld` script (CLI fixtures) or `build` (Vite-based fixtures). When a project defines `typecheck`, the harness also runs `tsc` against generated `types/`, and when it defines `svelte-check`, it checks the consumer components under `test/` against them. These are real downstream consumers — `single-export`, `multi-export`, `multi-export-typed`, `glob`, `path-aliases`, `sveltekit`, `svelte5-vite`, and a large `carbon` fixture mirroring carbon-components-svelte. A failure means generated types don't compile in a real project. Build sveld first (`bun run build`) so the link resolves the current code. The link registry lives in this checkout (`node_modules/.cache/e2e-link`, or `BUN_INSTALL_GLOBAL_DIR` if set), so parallel checkouts don't link each other's build. CI runs the e2e suite (`bun run test:e2e`) on all three OSes; run it locally too when changing output shape or export resolution.
+[`tests/test-e2e.ts`](tests/test-e2e.ts) (`bun run test:e2e`) links the locally built sveld (`bun link`) into each project under `tests/e2e/`, installs, and runs that project's `sveld` script (CLI fixtures) or `build` (Vite-based fixtures). When a project defines `typecheck`, the harness also runs `tsc` against generated `types/`, and when it defines `svelte-check`, it checks the consumer components under `test/` against them. These are real downstream consumers — `single-export`, `multi-export`, `multi-export-typed`, `glob`, `path-aliases`, `sveltekit`, `svelte5-vite`, and a large `carbon` fixture mirroring carbon-components-svelte. A failure means generated types don't compile in a real project. Build sveld first (`bun run build`) so the link resolves the current code. The link registry lives in this checkout (`node_modules/.cache/e2e-link`, or `BUN_INSTALL_GLOBAL_DIR` if set), so parallel checkouts don't link each other's build. CI runs the e2e suite (`bun run test:e2e`) on all three OSes; run it locally too when changing output shape or export resolution.
 
 ### Svelte version coverage
 
@@ -233,11 +233,11 @@ The following applies only to maintainers.
 
 #### Versioning
 
-| Bump | When |
-| --- | --- |
-| **Patch** (`0.35.1`) | Bug fixes, performance, and correctness; no intentional API breaks |
-| **Minor** (`0.35.0`) | New features; breaking changes go in **Breaking Changes** if any |
-| **Major** | Large incompatible shifts (rare; follow existing [`CHANGELOG.md`](CHANGELOG.md) precedent) |
+| Bump                 | When                                                                                       |
+| -------------------- | ------------------------------------------------------------------------------------------ |
+| **Patch** (`0.35.1`) | Bug fixes, performance, and correctness; no intentional API breaks                         |
+| **Minor** (`0.35.0`) | New features; breaking changes go in **Breaking Changes** if any                           |
+| **Major**            | Large incompatible shifts (rare; follow existing [`CHANGELOG.md`](CHANGELOG.md) precedent) |
 
 #### Checklist
 
@@ -296,10 +296,10 @@ Combine commits only when the same PR was split across multiple commits.
 
 #### Release notes files
 
-| File | Purpose |
-| --- | --- |
+| File                                        | Purpose                                                                                      |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | [`releases/vX.Y.Z.md`](releases/v0.35.1.md) | Minimal body for GitHub — title plus **Breaking Changes** / **Features** / **Fixes** bullets |
-| [`release-X.Y.Z.md`](release-0.35.1.md) | Full notes — same bullets, then themed narrative sections after `---` |
+| [`release-X.Y.Z.md`](release-0.35.1.md)     | Full notes — same bullets, then themed narrative sections after `---`                        |
 
 For `release-X.Y.Z.md`, group by theme rather than by commit (`## Performance`, `## Breaking changes`, and so on). Call out breaking changes and performance gains with concrete numbers when the commits provide them. End with **Upgrade notes** (migration steps and `npm i -D sveld@X.Y.Z`). Keep prose short; use paragraphs and bullet lists; no emoji.
 
