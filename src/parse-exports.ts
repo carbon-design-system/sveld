@@ -12,6 +12,12 @@ export type ParsedExports = Record<
     source: RelativeSourcePath;
     default: boolean;
     mixed?: boolean;
+    /**
+     * An `export * from` the barrel keeps as written: its target brought no
+     * exports sveld reads, so it is a types-only module, a `.d.ts` next to an
+     * empty `.js`, that TypeScript resolves on its own. Keyed `*:<source>`.
+     */
+    star?: true;
   }
 >;
 
@@ -113,7 +119,15 @@ function readExports(
 
       resolving.delete(file_path);
 
-      for (const [key, value] of Object.entries(exports)) {
+      const entries = Object.entries(exports);
+      // Nothing sveld reads came through: a types-only module, declared in a
+      // `.d.ts` beside an empty `.js`. The `.d.ts` barrel keeps the statement
+      // as written, so TypeScript re-exports the types.
+      if (entries.length === 0 && !SVELTE_EXT_REGEX.test(specifier)) {
+        const source = asRelativeSourcePath(normalizeSeparators(specifier));
+        exports_by_identifier[`*:${specifier}`] = { source, default: false, star: true };
+      }
+      for (const [key, value] of entries) {
         // A relative source is relative to the re-exported file's directory,
         // which is the specifier itself only when it names a directory.
         const source = asRelativeSourcePath(

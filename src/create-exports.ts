@@ -4,14 +4,18 @@ import { SVELTE_EXT_REGEX } from "./path";
 /** `{ Button: { source: "./Button.svelte", default: true } }` gives `export { default as Button } from "./Button.svelte";`. */
 export function createExports(parsed_exports: ParsedExports): string {
   const groupedBySource = new Map<string, Array<{ id: string; exportee: ParsedExports[string] }>>();
+  const exportStatements: string[] = [];
 
   for (const [id, exportee] of Object.entries(parsed_exports)) {
+    // A types-only module passes through as the `export *` it was.
+    if (exportee.star) {
+      exportStatements.push(`export * from "${exportee.source}";`);
+      continue;
+    }
     const existing = groupedBySource.get(exportee.source) ?? [];
     existing.push({ id, exportee });
     groupedBySource.set(exportee.source, existing);
   }
-
-  const exportStatements: string[] = [];
 
   for (const [source, exports] of groupedBySource) {
     const isSvelteFile = SVELTE_EXT_REGEX.test(source);
