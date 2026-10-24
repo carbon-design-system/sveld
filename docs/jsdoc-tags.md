@@ -845,6 +845,23 @@ When a component wraps another, `@extendProps` makes its props extend the wrappe
 
 The path is relative to the component. For a `.svelte` target, the name must match that component's generated `<Name>Props` type exactly. The target can also be a TypeScript module that exports the named type. A missing target raises [`sveld/extend-props-target-missing`](ci.md#diagnostic-codes).
 
+When the target is generic, pass its type arguments after the name, so the wrapper's own type parameter reaches the inherited props. The import takes the bare name; the props alias keeps the arguments:
+
+```js
+/**
+ * @template [T=any]
+ * @extendProps {"./Chart.svelte"} ChartProps<T>
+ */
+```
+
+```ts
+import type { ChartProps } from "./Chart.svelte";
+
+export type LineChartProps<T = any> = Omit<ChartProps<T>, keyof $Props<T>> & $Props<T>;
+```
+
+Without the arguments, `ChartProps` falls back to its default type parameter, and props such as `x: keyof T` lose the wrapper's row type.
+
 ## `@template` / `@generics`
 
 For `lang="ts"` components, declare generics with Svelte's [`generics` attribute](https://svelte.dev/docs/svelte/typescript); sveld reads it directly:

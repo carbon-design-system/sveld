@@ -209,6 +209,21 @@ describe("generateBundle validates @extends/@extendProps targets", () => {
     );
   });
 
+  test("accepts an @extendProps interface with type arguments, importing the bare name", async () => {
+    writeFileSync(
+      path.join(dir, "Generic.svelte"),
+      `<script>\n  /**\n   * @template [T=any]\n   * @extendProps {"./Base.svelte"} BaseProps<T>\n   */\n  /** @type {T} */\n  export let row = undefined;\n</script>\n`,
+    );
+
+    const result = await generateBundle(dir, true);
+    const component = byModuleName(result.allComponentsForTypes, "Generic");
+
+    expect(component?.diagnostics ?? []).not.toContainEqual(
+      expect.objectContaining({ kind: "extend-props-target-missing" }),
+    );
+    expect(component?.extends).toEqual({ interface: "BaseProps<T>", import: '"./Base.svelte"' });
+  });
+
   test("flags an own prop that collides with a same-named prop of a different type on the target", async () => {
     writeFileSync(
       path.join(dir, "Collide.svelte"),

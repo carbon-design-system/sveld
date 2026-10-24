@@ -1,0 +1,42 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "curve",
+      "kind": "let",
+      "description": "Specify the curve.",
+      "type": "\"linear\" | \"monotone\"",
+      "typeSource": "jsdoc",
+      "value": "\"linear\"",
+      "defaultValue": {
+        "raw": "\"linear\"",
+        "kind": "literal",
+        "value": "linear"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": [
+    "T",
+    "T = any"
+  ],
+  "rest_props": {
+    "type": "InlineComponent",
+    "name": "Base"
+  },
+  "extends": {
+    "interface": "BaseProps<T>",
+    "import": "\"./Base.svelte\""
+  },
+  "contexts": [],
+  "diagnostics": []
+}

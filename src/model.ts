@@ -522,7 +522,10 @@ export interface ComponentElement {
 
 export type RestProps = undefined | ComponentInlineElement | ComponentElement;
 
-/** JSDoc `@extends` target. */
+/**
+ * JSDoc `@extends` target. `interface` is the text after the specifier, type
+ * arguments included (`ChartProps<T>`); the import takes the bare name.
+ */
 export interface Extends {
   /** Interface name (e.g. `"ButtonProps"`). */
   interface: string;
