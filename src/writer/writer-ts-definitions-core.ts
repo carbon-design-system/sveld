@@ -657,7 +657,15 @@ function genComponentInterfaceDeclaration(def: {
 
 function genImports(def: Pick<ComponentDocApi, "extends">) {
   if (def.extends === undefined) return "";
-  return `import type { ${def.extends.interface} } from ${def.extends.import};`;
+  // `@extends {"./Chart.svelte"} ChartProps<T>` imports `ChartProps` and
+  // references `ChartProps<T>`, so a preset keeps its base's row type.
+  return `import type { ${extendsTypeName(def.extends.interface)} } from ${def.extends.import};`;
+}
+
+/** The identifier of an `@extends` interface, without its type arguments: `ChartProps<T>` → `ChartProps`. */
+export function extendsTypeName(reference: string) {
+  const open = reference.indexOf("<");
+  return (open === -1 ? reference : reference.slice(0, open)).trim();
 }
 
 function genComponentComment(def: Pick<ComponentDocApi, "componentComment">) {

@@ -6,7 +6,7 @@ import { createDiagnostic, type SveldDiagnostic } from "./diagnostics";
 import type { ModuleGraph } from "./module-graph";
 import { getParsedComponentPropIgnores } from "./parsed-component-metadata";
 import { MODULE_EXTENSIONS } from "./path";
-import { exportsTypeName, propsTypeName } from "./writer/writer-ts-definitions-core";
+import { exportsTypeName, extendsTypeName, propsTypeName } from "./writer/writer-ts-definitions-core";
 
 /** An import's extensions, and a component's: `"./Base"` may name `Base.svelte`. */
 const EXTENDS_TARGET_EXTENSIONS = [...MODULE_EXTENSIONS, ".svelte"];
@@ -92,7 +92,8 @@ export function createExtendsTargetValidator(
     if (!target) return [];
 
     const expectedInterface = propsTypeName(target.moduleName);
-    if (extendsInfo.interface !== expectedInterface) {
+    // `ChartProps<T>` names `ChartProps`; the arguments are the extender's to pass.
+    if (extendsTypeName(extendsInfo.interface) !== expectedInterface) {
       return [
         createDiagnostic({
           component: component.filePath,
