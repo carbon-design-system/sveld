@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.38.11](https://github.com/carbon-design-system/sveld/releases/tag/v0.38.11) - 2026-10-25
+
+**Features**
+
+- name the context and property behind a `--check` context change (9b9431a)
+
+**Fixes**
+
+- honor `@internal` on a `setContext` call and an untyped `const` (24541d4)
+- support TypeScript 7.1's async API in `--check-examples` (0371ddd, #552)
+
 ## [0.38.10](https://github.com/carbon-design-system/sveld/releases/tag/v0.38.10) - 2026-10-25
 
 **Features**
