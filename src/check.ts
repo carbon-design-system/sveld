@@ -17,6 +17,7 @@ const PARAM_NAME_SPLIT_REGEX = /[:=]/;
 type Prop = ComponentDocApi["props"][number];
 type Event = ComponentDocApi["events"][number];
 type Slot = ComponentDocApi["slots"][number];
+type Context = NonNullable<ComponentDocApi["contexts"]>[number];
 
 export type SemverBump = "major" | "minor" | "patch" | "none";
 
@@ -27,9 +28,11 @@ export type CheckLevel = "major" | "minor" | "patch";
 export interface ApiChange {
   /** Component `moduleName` this change belongs to, or `"*"` for document-wide notices. */
   component: string;
-  kind: "component" | "prop" | "moduleExport" | "event" | "slot" | "shape" | "schema";
-  /** Prop, event, slot, or shape-field name, when applicable. */
+  kind: "component" | "prop" | "moduleExport" | "event" | "slot" | "context" | "shape" | "schema";
+  /** Prop, event, slot, context key, or shape-field name, when applicable. */
   name?: string;
+  /** For `kind: "context"`, the context property the change is about. Absent when it's the context as a whole. */
+  property?: string;
   bump: SemverBump;
   message: string;
 }
@@ -256,6 +259,78 @@ function diffSlots(component: string, oldSlots: Slot[], newSlots: Slot[]): ApiCh
   return changes;
 }
 
+/** A context's type for messages: the whole `type` when it has one, else its property object. */
+function describeContextType(context: Context): string {
+  return context.type === undefined ? "an object of properties" : `\`${context.type}\``;
+}
+
+/**
+ * A context is read by `getContext`, so removing a property or changing its
+ * type is breaking and adding one is not. A type change is classified the
+ * same way as an event's `detail`.
+ */
+function diffContexts(component: string, oldContexts: Context[] = [], newContexts: Context[] = []): ApiChange[] {
+  const changes: ApiChange[] = [];
+  const { added, removed, common } = matchByKey(oldContexts, newContexts, (context) => context.key);
+
+  for (const [key] of added) {
+    changes.push({ component, kind: "context", name: key, bump: "minor", message: `context "${key}" added` });
+  }
+
+  for (const key of removed) {
+    changes.push({ component, kind: "context", name: key, bump: "major", message: `context "${key}" removed` });
+  }
+
+  for (const [key, oldContext, newContext] of common) {
+    const push = (bump: SemverBump, change: string, property?: string) =>
+      changes.push({
+        component,
+        kind: "context",
+        name: key,
+        ...(property === undefined ? {} : { property }),
+        bump,
+        message: `context "${key}" ${property === undefined ? "" : `property "${property}" `}${change}`,
+      });
+
+    if (oldContext.typeName !== newContext.typeName) {
+      push("major", `type name changed from \`${oldContext.typeName}\` to \`${newContext.typeName}\``);
+    }
+
+    if (Boolean(oldContext.hasUnresolvedSpread) !== Boolean(newContext.hasUnresolvedSpread)) {
+      push("major", `${newContext.hasUnresolvedSpread ? "gained" : "lost"} an unresolved spread`);
+    }
+
+    if (oldContext.type !== undefined || newContext.type !== undefined) {
+      if (oldContext.type !== newContext.type) {
+        const bump =
+          oldContext.type !== undefined && newContext.type !== undefined
+            ? classifyTypeChange(oldContext.type, newContext.type)
+            : "major";
+        push(bump, `type changed from ${describeContextType(oldContext)} to ${describeContextType(newContext)}`);
+      }
+      continue;
+    }
+
+    const props = matchByKey(oldContext.properties, newContext.properties, (prop) => prop.name);
+
+    for (const [name] of props.added) push("minor", "added", name);
+    for (const name of props.removed) push("major", "removed", name);
+
+    for (const [name, oldProp, newProp] of props.common) {
+      if (oldProp.optional !== newProp.optional) {
+        push(newProp.optional ? "major" : "minor", `became ${newProp.optional ? "optional" : "required"}`, name);
+      }
+
+      const typeBump = classifyTypeChange(oldProp.type, newProp.type);
+      if (typeBump !== "none") {
+        push(typeBump, `type changed from \`${oldProp.type}\` to \`${newProp.type}\``, name);
+      }
+    }
+  }
+
+  return changes;
+}
+
 /** JSDoc-only fields ignored when diffing types. */
 const NON_SEMANTIC_KEYS = new Set(["description", "source", "componentCommentSource", "tags"]);
 
@@ -272,8 +347,8 @@ function stripNonSemanticFields(value: unknown): unknown {
   return value;
 }
 
-/** Fields not covered by `diffPropList`/`diffEvents`/`diffSlots`. Any change is breaking. */
-const SHAPE_FIELDS = ["generics", "rest_props", "extends", "contexts", "typedefs"] as const;
+/** Fields not covered by `diffPropList`/`diffEvents`/`diffSlots`/`diffContexts`. Any change is breaking. */
+const SHAPE_FIELDS = ["generics", "rest_props", "extends", "typedefs"] as const;
 
 function diffShape(component: string, oldComponent: ComponentDocApi, newComponent: ComponentDocApi): ApiChange[] {
   const changes: ApiChange[] = [];
@@ -296,6 +371,7 @@ function diffComponent(oldComponent: ComponentDocApi, newComponent: ComponentDoc
     ...diffPropList(name, "moduleExport", oldComponent.moduleExports, newComponent.moduleExports),
     ...diffEvents(name, oldComponent.events, newComponent.events),
     ...diffSlots(name, oldComponent.slots, newComponent.slots),
+    ...diffContexts(name, oldComponent.contexts, newComponent.contexts),
     ...diffShape(name, oldComponent, newComponent),
   ];
 }

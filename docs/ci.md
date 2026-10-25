@@ -63,8 +63,23 @@ Suggested semver bump: major.
 | Event/slot removed                                              | `major`                          |
 | Event detail / slot props type widened                          | `minor`                          |
 | Event detail / slot props type narrowed or otherwise changed    | `major`                          |
-| `generics`, `@restProps`, `@extends`, or context shape changed  | `major` (not classified further) |
+| Context added                                                   | `minor`                          |
+| Context removed                                                 | `major`                          |
+| Context property added                                          | `minor`                          |
+| Context property removed                                        | `major`                          |
+| Context property became optional                                | `major`                          |
+| Context property became required                                | `minor`                          |
+| Context property type or whole-context type changed             | as for a prop's type             |
+| `generics`, `@restProps`, `@extends`, or `@typedef` changed     | `major` (not classified further) |
 | Description-only change                                         | not reported                     |
+
+A context change names the context key and the property, one line per property:
+
+```
+  Modal
+    [BREAKING] context "carbon:Modal" property "isInitialFocus" removed
+    [additive] context "carbon:Modal" property "open" added
+```
 
 Marking a public member [`@internal`](jsdoc-tags.md#ignore--internal) counts as removing it.
 
@@ -206,11 +221,14 @@ sveld --check --format=json | jq '.changes[] | select(.bump == "major")'
   "snapshotExists": true,
   "snapshotFile": "COMPONENT_API.json",
   "changes": [
-    { "component": "Button", "kind": "prop", "name": "target", "bump": "major", "message": "prop \"target\" added (required)" }
+    { "component": "Button", "kind": "prop", "name": "target", "bump": "major", "message": "prop \"target\" added (required)" },
+    { "component": "Modal", "kind": "context", "name": "carbon:Modal", "property": "isInitialFocus", "bump": "major", "message": "context \"carbon:Modal\" property \"isInitialFocus\" removed" }
   ],
   "bump": "major"
 }
 ```
+
+A `context` change carries the context key in `name` and, when it is about one property, that property in `property`.
 
 The diagnostics envelope is `{ "kind": "diagnostics", "schemaVersion": 1, "diagnostics": [...] }` and includes ignored diagnostics with `ignored: true`. Each envelope has its own `schemaVersion`, separate from `COMPONENT_API.json`'s.
 
