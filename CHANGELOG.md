@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.38.10](https://github.com/carbon-design-system/sveld/releases/tag/v0.38.10) - 2026-10-25
+
+**Features**
+
+- add `--format=github` to annotate diagnostics on the PR diff (1473b57)
+
+**Fixes**
+
+- locate `extend-props-override` on the overriding prop (2f0a785)
+- leave `typescript` external in the bundle so `--check-examples` runs (9b28a7e)
+
 ## [0.38.9](https://github.com/carbon-design-system/sveld/releases/tag/v0.38.9) - 2026-10-24
 
 **Features**
