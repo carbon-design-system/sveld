@@ -56,7 +56,7 @@ Options:
   --types-index-types    Sets typesOptions.indexTypes; also re-exports generated types from index.d.ts (pass --types-index-types=false to disable)
   --check[=<path>]      Diff the parsed API against a committed snapshot; exit 3 on a breaking change (default path: COMPONENT_API.json)
   --check-level=<major|minor|patch>  Minimum bump --check fails the run on (default: major)
-  --format=<text|json>  Output format for the --check report and the diagnostics summary (default: text)
+  --format=<text|json|github>  Output format for the --check report and the diagnostics summary (default: text); github also prints each diagnostic as a GitHub Actions annotation
   -h, --help            Print this help message and exit
   -v, --version         Print the installed sveld version and exit
 
@@ -215,7 +215,7 @@ function parseCliFlagValue(flag: string, value: string | boolean, arg: string): 
     case "types-index-types":
       return option({ typesOptions: { indexTypes: isTrue } });
     case "format":
-      return option(stringValue === undefined ? {} : { format: stringValue as "text" | "json" });
+      return option(stringValue === undefined ? {} : { format: stringValue as "text" | "json" | "github" });
     case "check-level":
       return option(stringValue === undefined ? {} : { checkLevel: stringValue as "major" | "minor" | "patch" });
     default:
@@ -311,8 +311,8 @@ export async function cli(process: NodeJS.Process) {
     }
   }
 
-  if (isInvalid(options.format, ["text", "json"])) {
-    return usageError(`sveld: --format must be "text" or "json"; got "${options.format}".`);
+  if (isInvalid(options.format, ["text", "json", "github"])) {
+    return usageError(`sveld: --format must be "text", "json", or "github"; got "${options.format}".`);
   }
   if (isInvalid(options.strict, [true, false, "errors"])) {
     return usageError(`sveld: --strict must be "errors" when given a value; got "${options.strict}".`);
@@ -357,7 +357,7 @@ export async function cli(process: NodeJS.Process) {
   }
 
   const { result, check } = run;
-  const { exitCode } = reportRun(result, check, options);
+  const { exitCode } = reportRun(result, check, options, input);
 
   if (check) {
     if (options.format === "json") {

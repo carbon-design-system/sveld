@@ -165,6 +165,10 @@ describe("parseCliOptions", () => {
     expect(parseCliOptions(["--format=text"])).toEqual({ kind: "options", options: { format: "text" } });
   });
 
+  test("--format=github sets format to github", () => {
+    expect(parseCliOptions(["--format=github"])).toEqual({ kind: "options", options: { format: "github" } });
+  });
+
   test("a bare --format is ignored", () => {
     expect(parseCliOptions(["--format"])).toEqual({ kind: "options", options: {} });
   });
@@ -959,7 +963,9 @@ describe("cli() --format usage error", () => {
     await cli(process);
 
     expect(process.exitCode).toBe(1);
-    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('--format must be "text" or "json"; got "yaml"'));
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('--format must be "text", "json", or "github"; got "yaml"'),
+    );
     expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(false);
     expect(existsSync(join(dir, "types"))).toBe(false);
   });

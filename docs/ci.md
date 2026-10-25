@@ -9,6 +9,7 @@ sveld has two CI gates: `--check` fails on API changes against a committed snaps
 - [Ignoring diagnostics](#ignoring-diagnostics)
 - [Checking `@example` blocks](#checking-example-blocks)
 - [Machine-readable output](#machine-readable-output)
+- [GitHub Actions annotations](#github-actions-annotations)
 
 ## Exit codes
 
@@ -212,3 +213,24 @@ sveld --check --format=json | jq '.changes[] | select(.bump == "major")'
 ```
 
 The diagnostics envelope is `{ "kind": "diagnostics", "schemaVersion": 1, "diagnostics": [...] }` and includes ignored diagnostics with `ignored: true`. Each envelope has its own `schemaVersion`, separate from `COMPONENT_API.json`'s.
+
+## GitHub Actions annotations
+
+In a workflow, `--format=github` (`format: "github"`) prints each diagnostic as an [annotation](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-commands#setting-a-warning-message) before the usual summary. GitHub places it on the line in the pull request's diff and lists it in the run's summary, so a finding doesn't hide in the job log.
+
+```yaml
+- run: npx sveld --json --strict --format=github
+```
+
+```
+::warning file=src/Card/Card.svelte,line=90,col=5,endLine=90,endColumn=35,title=sveld/context-any-type::Context "carbon:Card" property "part" has no type annotation; defaulted to "any".
+sveld: 1 diagnostic (0 errors, 1 warning).
+...
+```
+
+- `error` diagnostics become `::error`, `warning` ones `::warning`. The title is the [diagnostic code](#diagnostic-codes).
+- Paths are relative to `GITHUB_WORKSPACE` (the repository root on a runner), or to the working directory when it isn't set. Run sveld from the repository root, or set `GITHUB_WORKSPACE`, so they match the checkout.
+- A diagnostic without a `source` range annotates its file without a line. An `ignored` one is left out.
+- GitHub shows only the first 10 errors and 10 warnings per step, so sveld prints errors first.
+- Annotations go to `stderr` with the summary, so `--stdout` still has `stdout` to itself. The `--check` report is unchanged.
+- Nothing switches this on by itself, not even `GITHUB_ACTIONS`: `--format` is the only way, so a local run and CI print the same thing.

@@ -40,11 +40,16 @@ export interface SveldRuntimeOptions extends PluginSveldOptions {
   stdout?: boolean;
   /**
    * Output format for the `--check` report and the `--report-diagnostics` /
-   * `--strict` diagnostics summary: `"text"` (default) or `"json"`. The
-   * check report goes to stdout and the summary to stderr. `sveld()` prints
-   * only the summary.
+   * `--strict` diagnostics summary: `"text"` (default), `"json"`, or
+   * `"github"`. The check report goes to stdout and the summary to stderr.
+   * `sveld()` prints only the summary.
+   *
+   * `"github"` prints the text report and summary, preceded by one GitHub
+   * Actions annotation per diagnostic (`::warning file=...::message`), so
+   * findings appear on the pull request's diff. Annotation paths are relative
+   * to `GITHUB_WORKSPACE`, or the working directory when it isn't set.
    */
-  format?: "text" | "json";
+  format?: "text" | "json" | "github";
 }
 
 /**

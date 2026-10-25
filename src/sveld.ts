@@ -1,4 +1,5 @@
-import { dirname } from "node:path";
+import { realpathSync, statSync } from "node:fs";
+import { dirname, relative, resolve } from "node:path";
 import { type ComponentParseError, type GenerateBundleResult, generateBundle, toGenerateBundleOptions } from "./bundle";
 import {
   bumpMeetsLevel,
@@ -11,6 +12,7 @@ import {
 import {
   failingDiagnostics,
   filterSpeculativeDiagnostics,
+  formatDiagnosticsGithub,
   formatDiagnosticsSummary,
   formatDiagnosticsSummaryJson,
   type SveldDiagnostic,
@@ -18,6 +20,7 @@ import {
 import { getSvelteEntry, UNRESOLVED_ENTRY_MESSAGE } from "./get-svelte-entry";
 import { loadConfigOption, mergeConfig, type SveldRuntimeOptions, validateOptions } from "./load-config";
 import { setQuiet } from "./logger";
+import { normalizeSeparators } from "./path";
 import { writeOutput, writeStdout } from "./plugin";
 import type { ComponentApiDocument } from "./writer/document-model";
 import { buildJsonDocument } from "./writer/writer-json";
@@ -90,14 +93,30 @@ export async function buildAndWrite(
 }
 
 /**
+ * Maps a diagnostic's `component` (relative to the entry's directory) to a
+ * path relative to the repository root, which is where GitHub places an
+ * annotation. `GITHUB_WORKSPACE` is the root on a runner; elsewhere it's
+ * the working directory.
+ */
+function githubFileResolver(input: string): (component: string) => string {
+  // Resolved through symlinks on both sides, so a symlinked checkout (macOS
+  // `/tmp`) can't turn the relative path into `../../...`.
+  const rootDir = realpathSync(statSync(input).isFile() ? dirname(input) : input);
+  const workspace = realpathSync(process.env.GITHUB_WORKSPACE || process.cwd());
+  return (component) => normalizeSeparators(relative(workspace, resolve(rootDir, component)));
+}
+
+/**
  * Prints the run's diagnostics summary to stderr when `reportDiagnostics` or
  * `strict` asks for it, and resolves the exit code. Shared by the CLI and
- * `sveld()` so their reporting and exit codes can't drift apart.
+ * `sveld()` so their reporting and exit codes can't drift apart. `input` is
+ * the resolved entry, which `format: "github"` needs to place annotations.
  */
 export function reportRun(
   result: GenerateBundleResult,
   check: CheckResult | undefined,
   options: SveldRuntimeOptions,
+  input: string,
 ): { diagnostics: SveldDiagnostic[]; exitCode: ExitCode } {
   const shouldReport = options.reportDiagnostics || options.strict;
   const diagnostics = filterSpeculativeDiagnostics(result.diagnostics, shouldReport);
@@ -106,6 +125,12 @@ export function reportRun(
     if (options.format === "json") {
       process.stderr.write(formatDiagnosticsSummaryJson(diagnostics));
     } else {
+      // The annotations land on the diff; the grouped summary stays in the
+      // log, where an annotation shows only its message, not its file.
+      if (options.format === "github") {
+        const annotations = formatDiagnosticsGithub(diagnostics, githubFileResolver(input));
+        if (annotations) console.error(annotations);
+      }
       console.error(formatDiagnosticsSummary(diagnostics));
     }
   }
@@ -164,7 +189,7 @@ export async function sveld(opts?: SveldOptions): Promise<SveldResult> {
   validateOptions(merged);
   setQuiet(merged.quiet === true);
   const { result, check: checkResult } = await buildAndWrite(input, merged);
-  const { diagnostics, exitCode } = reportRun(result, checkResult, merged);
+  const { diagnostics, exitCode } = reportRun(result, checkResult, merged, input);
 
   const document = buildJsonDocument(result.components, {
     inputDir: dirname(input),
