@@ -288,6 +288,83 @@ export function formatDiagnosticsSummary(diagnostics: SveldDiagnostic[]): string
   return lines.join("\n");
 }
 
+/** GitHub Actions workflow-command escaping: `%`, CR, and LF everywhere. */
+function escapeCommandData(value: string): string {
+  return value.replaceAll("%", "%25").replaceAll("\r", "%0D").replaceAll("\n", "%0A");
+}
+
+/** A property value also escapes the `:` and `,` that delimit properties. */
+function escapeCommandProperty(value: string): string {
+  return escapeCommandData(value).replaceAll(":", "%3A").replaceAll(",", "%2C");
+}
+
+/**
+ * One GitHub Actions workflow command (`::warning file=...::message`), which
+ * the runner turns into an annotation on the PR's diff and the run summary.
+ * Properties with no value are left out.
+ */
+function formatGithubAnnotation(annotation: {
+  severity: "error" | "warning";
+  title: string;
+  message: string;
+  file?: string;
+  line?: number;
+  column?: number;
+  endLine?: number;
+  endColumn?: number;
+}): string {
+  const properties: Array<[string, string | number | undefined]> = [
+    ["file", annotation.file],
+    ["line", annotation.line],
+    ["col", annotation.column],
+    ["endLine", annotation.endLine],
+    ["endColumn", annotation.endColumn],
+    ["title", annotation.title],
+  ];
+  const rendered = properties
+    .filter((entry): entry is [string, string | number] => entry[1] !== undefined)
+    .map(([key, value]) => `${key}=${escapeCommandProperty(String(value))}`)
+    .join(",");
+  return `::${annotation.severity} ${rendered}::${escapeCommandData(annotation.message)}`;
+}
+
+/**
+ * One annotation per active diagnostic, errors first: GitHub shows only the
+ * first 10 errors and 10 warnings of a step, so a flood of warnings must not
+ * hide an error. `resolveFile` maps a diagnostic's `component` to the path
+ * GitHub should place it at, relative to the repository root.
+ *
+ * A diagnostic with no `source` still annotates its file, without a line.
+ * `col` is 1-based on GitHub, unlike {@link SourcePosition}'s `column`, and
+ * GitHub rejects columns on a range that spans lines, so those are left out.
+ */
+export function formatDiagnosticsGithub(
+  diagnostics: SveldDiagnostic[],
+  resolveFile: (component: string) => string,
+): string {
+  const active = diagnostics.filter((diagnostic) => !diagnostic.ignored);
+  const ordered = [
+    ...active.filter((diagnostic) => diagnostic.severity === "error"),
+    ...active.filter((diagnostic) => diagnostic.severity !== "error"),
+  ];
+
+  return ordered
+    .map(({ source, ...diagnostic }) => {
+      const sameLine = source !== undefined && source.start.line === source.end.line;
+      return formatGithubAnnotation({
+        severity: diagnostic.severity,
+        title: diagnostic.code,
+        message: diagnostic.message,
+        file: resolveFile(diagnostic.component),
+        line: source?.start.line,
+        column: sameLine ? source.start.column + 1 : undefined,
+        endLine: source?.end.line,
+        endColumn: sameLine ? source.end.column + 1 : undefined,
+      });
+    })
+    .join("\n");
+}
+
 /** Envelope schema version for {@link DiagnosticsJson}. Bump when the shape of `diagnostics` changes incompatibly. */
 export const DIAGNOSTICS_SCHEMA_VERSION = 1;
 

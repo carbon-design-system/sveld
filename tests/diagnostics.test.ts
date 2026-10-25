@@ -6,6 +6,7 @@ import {
   createDiagnostic,
   dedupeDiagnostics,
   failingDiagnostics,
+  formatDiagnosticsGithub,
   formatDiagnosticsSummary,
   formatDiagnosticsSummaryJson,
   type SveldDiagnostic,
@@ -1068,6 +1069,67 @@ describe("diagnostics helpers", () => {
   });
 });
 
+describe("formatDiagnosticsGithub", () => {
+  const make = (overrides: Partial<SveldDiagnosticInput>): SveldDiagnostic =>
+    createDiagnostic({
+      component: "./Card/Card.svelte",
+      kind: "context-any-type",
+      name: "part",
+      message: "message",
+      ...overrides,
+    });
+  const toRepoPath = (component: string) => `src/${component.slice(2)}`;
+
+  test("places a warning at its 1-based line and column", () => {
+    const source = { start: { line: 90, column: 4 }, end: { line: 90, column: 34 } };
+
+    expect(formatDiagnosticsGithub([make({ source, message: 'Context "x" has no type.' })], toRepoPath)).toBe(
+      '::warning file=src/Card/Card.svelte,line=90,col=5,endLine=90,endColumn=35,title=sveld/context-any-type::Context "x" has no type.',
+    );
+  });
+
+  test("annotates the file alone when the diagnostic has no source", () => {
+    expect(formatDiagnosticsGithub([make({})], toRepoPath)).toBe(
+      "::warning file=src/Card/Card.svelte,title=sveld/context-any-type::message",
+    );
+  });
+
+  test("drops columns from a range that spans lines", () => {
+    const source = { start: { line: 3, column: 2 }, end: { line: 5, column: 7 } };
+
+    expect(formatDiagnosticsGithub([make({ source })], toRepoPath)).toBe(
+      "::warning file=src/Card/Card.svelte,line=3,endLine=5,title=sveld/context-any-type::message",
+    );
+  });
+
+  test("escapes the characters that would end a workflow command early", () => {
+    const diagnostic = make({
+      component: "./a,b:c.svelte",
+      message: "100% wrong\nsecond line\r",
+    });
+
+    expect(formatDiagnosticsGithub([diagnostic], toRepoPath)).toBe(
+      "::warning file=src/a%2Cb%3Ac.svelte,title=sveld/context-any-type::100%25 wrong%0Asecond line%0D",
+    );
+  });
+
+  test("lists errors before warnings and leaves out ignored diagnostics", () => {
+    const lines = formatDiagnosticsGithub(
+      [
+        make({ name: "a", message: "warning" }),
+        make({ name: "b", message: "ignored", ignored: true }),
+        make({ name: "c", kind: "syntax-skipped", message: "error" }),
+      ],
+      toRepoPath,
+    ).split("\n");
+
+    expect(lines).toEqual([
+      "::error file=src/Card/Card.svelte,title=sveld/syntax-skipped::error",
+      "::warning file=src/Card/Card.svelte,title=sveld/context-any-type::warning",
+    ]);
+  });
+});
+
 describe("applyDiagnosticIgnores", () => {
   const make = (overrides: Partial<SveldDiagnosticInput>): SveldDiagnostic =>
     createDiagnostic({
@@ -1273,6 +1335,49 @@ describe("sveld() strict mode", () => {
     });
 
     expect(exitCode).toBe(4);
+  });
+});
+
+describe("sveld() format: github", () => {
+  let absoluteDir: string;
+  let relativeDir: string;
+  let previousWorkspace: string | undefined;
+  let errorSpy: ReturnType<typeof jest.spyOn>;
+
+  beforeEach(() => {
+    previousWorkspace = process.env.GITHUB_WORKSPACE;
+    process.env.GITHUB_WORKSPACE = process.cwd();
+    errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    jest.spyOn(console, "log").mockImplementation(() => {});
+    absoluteDir = mkdtempSync(join(process.cwd(), "sveld-github-format-"));
+    relativeDir = basename(absoluteDir);
+    writeFileSync(
+      join(absoluteDir, "Phantom.svelte"),
+      "<script>\n  /** @event {CustomEvent<null>} phantom */\n  export let label;\n</script>\n<button>{label}</button>\n",
+    );
+  });
+
+  afterEach(() => {
+    rmSync(absoluteDir, { recursive: true, force: true });
+    if (previousWorkspace === undefined) delete process.env.GITHUB_WORKSPACE;
+    else process.env.GITHUB_WORKSPACE = previousWorkspace;
+    jest.restoreAllMocks();
+  });
+
+  test("annotates each diagnostic at its path from GITHUB_WORKSPACE, then prints the summary", async () => {
+    await sveld({ entry: relativeDir, glob: true, types: false, reportDiagnostics: true, format: "github" });
+
+    const printed = errorSpy.mock.calls.map((call: unknown[]) => String(call[0]));
+    const annotations = printed.filter((message: string) => message.startsWith("::"));
+    expect(annotations).toContainEqual(expect.stringContaining(`::warning file=${relativeDir}/Phantom.svelte,line=2,`));
+    expect(annotations).toContainEqual(expect.stringContaining("title=sveld/event-no-source::"));
+    expect(printed.some((message: string) => message.includes(" diagnostics ("))).toBe(true);
+  });
+
+  test("prints no annotations when no diagnostics are reported", async () => {
+    await sveld({ entry: relativeDir, glob: true, types: false, format: "github" });
+
+    expect(errorSpy.mock.calls.some((call: unknown[]) => String(call[0]).startsWith("::"))).toBe(false);
   });
 });
 
