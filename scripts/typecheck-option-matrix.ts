@@ -8,7 +8,7 @@
  * Each option set gets its own directory, `<tmp>/<set>/<fixture>/`, holding
  * the component's `.d.ts` plus the fixture's sibling `.ts` / `.d.ts` files
  * (e.g. `module-script-types/base.d.ts`) so relative imports resolve. Then
- * one `tsc` (TypeScript 7) runs per set, all sets in parallel. The temp dir
+ * one `bun check` runs per set, all sets in parallel. The temp dir
  * lives inside the repo so `moduleResolution: "bundler"` finds the repo's
  * own `node_modules/svelte`.
  *
@@ -47,7 +47,7 @@ const IMPORTS_COMMITTED_OUTPUT_REGEX = /from\s+["']\.\/output/;
 const BACKSLASH_REGEX = /\\/g;
 
 export interface OptionSet {
-  /** Directory name for the set; shows up in `tsc` error paths. */
+  /** Directory name for the set; shows up in `bun check` error paths. */
   name: string;
   options: WriteTsDefinitionOptions;
 }
@@ -60,7 +60,7 @@ export const OPTION_MATRIX: OptionSet[] = [
 export interface SetResult {
   name: string;
   ok: boolean;
-  /** `tsc` stdout + stderr; paths are relative to the set's directory. */
+  /** `bun check` stdout + stderr; paths are relative to the set's directory. */
   output: string;
   ms: number;
 }
@@ -70,7 +70,7 @@ export interface MatrixResult {
   failures: SetResult[];
   fixtureCount: number;
   /** Wall-clock milliseconds per phase. */
-  timings: { parse: number; write: number; tsc: number };
+  timings: { parse: number; write: number; check: number };
 }
 
 export interface RunOptionMatrixOptions {
@@ -137,13 +137,6 @@ async function loadFixtures(names?: string[]): Promise<Fixture[]> {
   return loaded.filter((fixture) => fixture !== null);
 }
 
-function resolveTscBin(): string {
-  // TypeScript 7 (native), not the `tsc` on PATH (TypeScript 6 via
-  // `@typescript/old`): about 0.4s for all fixtures instead of about 3s.
-  const packageJson = Bun.resolveSync("typescript/package.json", REPO_ROOT);
-  return path.join(path.dirname(packageJson), "bin", "tsc");
-}
-
 function writeSet(
   setDir: string,
   set: OptionSet,
@@ -169,12 +162,12 @@ function writeSet(
   writeFileSync(path.join(setDir, "tsconfig.json"), `${JSON.stringify(tsconfig, null, 2)}\n`);
 }
 
-async function typecheckSet(tscBin: string, setDir: string, name: string): Promise<SetResult> {
+async function typecheckSet(setDir: string, name: string): Promise<SetResult> {
   const start = performance.now();
-  // One single-threaded tsc per set, all at once, beat one multi-threaded tsc
-  // per set run in turn: tsc phase median 1.8s vs 3.1s (7 interleaved runs).
+  // `bun check` reports the same errors as TypeScript 7's tsc, about 4x
+  // faster here. `--all` keeps it from grouping repeated errors.
   const proc = Bun.spawn({
-    cmd: [process.execPath, tscBin, "--noEmit", "--pretty", "false", "--singleThreaded", "-p", "tsconfig.json"],
+    cmd: [process.execPath, "check", "--no-pretty", "--all", "-p", "tsconfig.json"],
     cwd: setDir,
     stdout: "pipe",
     stderr: "pipe",
@@ -200,14 +193,13 @@ export async function runOptionMatrix(options: RunOptionMatrixOptions = {}): Pro
       writeSet(path.join(tmpDir, set.name), set, fixtures, options.write, options.compilerOptions);
     }
     const t2 = performance.now();
-    const tscBin = resolveTscBin();
-    const results = await Promise.all(sets.map((set) => typecheckSet(tscBin, path.join(tmpDir, set.name), set.name)));
+    const results = await Promise.all(sets.map((set) => typecheckSet(path.join(tmpDir, set.name), set.name)));
     const t3 = performance.now();
     return {
       sets: results,
       failures: results.filter((result) => !result.ok),
       fixtureCount: fixtures.length,
-      timings: { parse: t1 - t0, write: t2 - t1, tsc: t3 - t2 },
+      timings: { parse: t1 - t0, write: t2 - t1, check: t3 - t2 },
     };
   } finally {
     if (options.keep) console.log(`Kept ${tmpDir}`);
@@ -226,10 +218,10 @@ if (import.meta.main) {
     console.error(failure.output);
   }
   const total = Math.round(performance.now() - start);
-  const { parse, write, tsc } = result.timings;
+  const { parse, write, check } = result.timings;
   console.log(
     `\n${result.fixtureCount} fixtures x ${result.sets.length} option sets in ${total}ms ` +
-      `(parse ${Math.round(parse)}ms, write ${Math.round(write)}ms, tsc ${Math.round(tsc)}ms)`,
+      `(parse ${Math.round(parse)}ms, write ${Math.round(write)}ms, check ${Math.round(check)}ms)`,
   );
   if (result.failures.length > 0) process.exit(1);
 }
