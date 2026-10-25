@@ -75,6 +75,9 @@ async function buildEntry(entrypoints: string[], target: "node" | "browser") {
     // Default Bun treats `node_modules` as external. Bundle them so sveast
     // ships inside `dist`.
     packages: "bundle",
+    // Not bundled: TypeScript's API locates its native binary from its own
+    // package.json, which a copy inside sveld's chunk can't find.
+    external: ["typescript", "typescript/*"],
     // Emit the parser stack (behind `./parser-stack`'s dynamic import) as its
     // own chunk instead of inlining it, so a fully cached CLI run never loads it.
     // index.ts and cli-entry.ts share this dynamic import, so building them
