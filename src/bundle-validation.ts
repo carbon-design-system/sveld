@@ -113,6 +113,7 @@ export function createExtendsTargetValidator(
           kind: "extend-props-override",
           name: ownProp.name,
           message: `Own prop "${ownProp.name}" (${ownProp.type}) overrides "${expectedInterface}"'s "${ownProp.name}" (${baseProp.type}).`,
+          source: ownProp.source,
         });
         const ignoreCodes = getParsedComponentPropIgnores(component)?.[ownProp.name];
         const ignored = ignoreCodes?.some((code) => code === "" || code === diagnostic.code);
