@@ -244,6 +244,26 @@ describe("generateBundle validates @extends/@extendProps targets", () => {
     );
   });
 
+  test("locates an override on the overriding prop", async () => {
+    writeFileSync(
+      path.join(dir, "Collide.svelte"),
+      `<script>
+  /** @extendProps {"./Base.svelte"} BaseProps */
+
+  /** @type {number} */
+  export let variant = 1;
+</script>
+`,
+    );
+
+    const result = await generateBundle(dir, true);
+    const diagnostic = byModuleName(result.allComponentsForTypes, "Collide")?.diagnostics?.find(
+      (d) => d.kind === "extend-props-override",
+    );
+
+    expect(diagnostic?.source?.start.line).toBe(5);
+  });
+
   test("ignores an override with `@sveld-ignore` on the prop", async () => {
     writeFileSync(
       path.join(dir, "Narrow.svelte"),
