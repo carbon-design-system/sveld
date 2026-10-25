@@ -18,7 +18,7 @@ interface ExampleCheckDiagnostic {
   message: string;
 }
 
-// Structural types for `typescript/unstable/async` so AST-only builds skip the `typescript` package.
+// Structural types for TypeScript's async API so AST-only builds skip the `typescript` package.
 // biome-ignore lint/suspicious/noExplicitAny: native-preview API is loaded lazily and typed structurally.
 type TS = any;
 
@@ -27,7 +27,9 @@ const NON_IDENTIFIER_CHAR_REGEX = /[^A-Za-z0-9_$]/g;
 const LEADING_DIGIT_REGEX = /^[0-9]/;
 const EXAMPLE_CODE_START_LINE = 2;
 const MIN_SUPPORTED_TS_MAJOR = 7;
-const REQUIREMENT_TEXT = `TypeScript ${MIN_SUPPORTED_TS_MAJOR} or later, which provides \`typescript/unstable/async\``;
+const REQUIREMENT_TEXT = `TypeScript ${MIN_SUPPORTED_TS_MAJOR} or later, which provides \`typescript/async\` (\`typescript/unstable/async\` in 7.0)`;
+// TypeScript 7.1 moved the async API from `typescript/unstable/async` to `typescript/async`.
+const ASYNC_API_SPECIFIERS = ["typescript/async", "typescript/unstable/async"];
 
 interface TypeScriptLoadResult {
   installed: boolean;
@@ -62,12 +64,14 @@ async function defaultImportTs(cwd: string): Promise<TypeScriptLoadResult> {
 
   if (!isSupportedVersion(version)) return { installed: true, version };
 
-  try {
-    const module = await import("typescript/unstable/async");
-    return { installed: true, version, module };
-  } catch {
-    return { installed: true, version };
+  for (const specifier of ASYNC_API_SPECIFIERS) {
+    try {
+      // biome-ignore lint/performance/noAwaitInLoops: the first specifier that resolves wins.
+      const module = await import(specifier);
+      return { installed: true, version, module };
+    } catch {}
   }
+  return { installed: true, version };
 }
 
 /**
@@ -77,6 +81,7 @@ async function defaultImportTs(cwd: string): Promise<TypeScriptLoadResult> {
 export class TypeResolver {
   // Assigned in `create()`, after `createFileSystem()` can close over `this`.
   private api: TS = null;
+  private usesFileSystemLayer = false;
   private readonly tsconfigPath: string;
   private readonly overlay = new Map<string, string>();
 
@@ -117,7 +122,12 @@ export class TypeResolver {
     }
 
     const resolver = new TypeResolver(tsconfigPath);
-    resolver.api = new loaded.module.API({ cwd, fs: resolver.createFileSystem() });
+    // TypeScript 7.1 takes the overlay as a per-snapshot filesystem layer;
+    // 7.0 reads it through host filesystem callbacks.
+    resolver.usesFileSystemLayer = typeof loaded.module.API.prototype?.createSnapshot === "function";
+    resolver.api = resolver.usesFileSystemLayer
+      ? new loaded.module.API({ cwd })
+      : new loaded.module.API({ cwd, fs: resolver.createFileSystem() });
     return { ok: true, resolver };
   }
 
@@ -141,10 +151,15 @@ export class TypeResolver {
 
     if (examples.length === 0) return results;
 
-    const snapshot = await this.api.updateSnapshot({
-      openProject: this.tsconfigPath,
-      fileChanges: { created: examples.map((example) => example.file) },
-    });
+    const snapshot = this.usesFileSystemLayer
+      ? await this.api.createSnapshot({
+          openProjects: [this.tsconfigPath],
+          fileSystem: { kind: "layer", files: Object.fromEntries(this.overlay) },
+        })
+      : await this.api.updateSnapshot({
+          openProject: this.tsconfigPath,
+          fileChanges: { created: examples.map((example) => example.file) },
+        });
 
     try {
       const project = await snapshot.getDefaultProjectForFile(examples[0].file);
@@ -183,6 +198,7 @@ export class TypeResolver {
     await this.api?.close?.();
   }
 
+  /** TypeScript 7.0 only: falls back to the real filesystem wherever a callback returns `undefined`. */
   private createFileSystem() {
     return {
       readFile: (fileName: string) => this.overlay.get(normalizeSeparators(fileName)),

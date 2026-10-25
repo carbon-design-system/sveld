@@ -186,7 +186,7 @@ export default defineConfig({
     - Line 1: Cannot find name 'formatValue'. [sveld/example-compile-error]
 ```
 
-The TS/JS check needs `typescript` 7+ (for `typescript/unstable/async`) and a `tsconfig.json`. If either is missing, the run fails instead of skipping examples: `sveld()` throws and the CLI exits `2`. `checkExamples: "syntax"` (`--check-examples=syntax`) runs only the markup check and never loads TypeScript.
+The TS/JS check needs `typescript` 7+ (for its async API: `typescript/async`, or `typescript/unstable/async` in 7.0) and a `tsconfig.json`. If either is missing, the run fails instead of skipping examples: `sveld()` throws and the CLI exits `2`. `checkExamples: "syntax"` (`--check-examples=syntax`) runs only the markup check and never loads TypeScript.
 
 Both are `error` severity, so `--strict` or `--strict=errors` fails CI on a broken example.
 
