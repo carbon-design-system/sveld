@@ -120,7 +120,7 @@ function enterCallExpression(
   }
 
   if (calleeName === "setContext") {
-    parseSetContextCall(ctx, callExpr);
+    parseSetContextCall(ctx, callExpr, parent?.type === "ExpressionStatement" ? parent : null);
   }
 
   if (callExpr.arguments.length > 0) {

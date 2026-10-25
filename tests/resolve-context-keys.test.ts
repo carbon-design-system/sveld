@@ -154,6 +154,29 @@ describe("cross-file setContext key resolution", () => {
     ]);
   });
 
+  test("an imported key is hidden by @internal on its setContext call", async () => {
+    writeFileSync(path.join(dir, "keys.js"), `export const MODAL_KEY = "carbon:Modal";\n`);
+    writeFileSync(
+      path.join(dir, "Modal.svelte"),
+      `<script>
+  import { setContext } from "svelte";
+  import { MODAL_KEY } from "./keys.js";
+
+  /** @internal */
+  setContext(MODAL_KEY, { open: true });
+</script>
+<div><slot /></div>
+`,
+    );
+    writeFileSync(path.join(dir, "index.js"), `export { default as Modal } from "./Modal.svelte";\n`);
+
+    const result = await generateBundle(path.join(dir, "index.js"), true);
+
+    expect(byModuleName(result.allComponentsForTypes, "Modal")?.contexts).toMatchObject([
+      { key: "carbon:Modal", internal: true },
+    ]);
+  });
+
   test("keeps an imported key in source order among same-file keys", async () => {
     writeFileSync(path.join(dir, "keys.js"), `export const MODAL_KEY = "carbon:Modal";\n`);
     writeFileSync(
