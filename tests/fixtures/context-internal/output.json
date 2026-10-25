@@ -1,0 +1,60 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "internal:call",
+      "typeName": "InternalCallContext",
+      "properties": [
+        {
+          "name": "register",
+          "type": "() => void",
+          "optional": false
+        }
+      ],
+      "internal": true
+    },
+    {
+      "key": "internal:empty",
+      "typeName": "InternalEmptyContext",
+      "properties": [],
+      "internal": true
+    },
+    {
+      "key": "internal:variable",
+      "typeName": "InternalVariableContext",
+      "properties": [
+        {
+          "name": "open",
+          "type": "boolean",
+          "optional": false
+        }
+      ],
+      "internal": true
+    },
+    {
+      "key": "public",
+      "typeName": "PublicContext",
+      "properties": [
+        {
+          "name": "open",
+          "type": "boolean",
+          "optional": false
+        }
+      ]
+    }
+  ],
+  "diagnostics": []
+}

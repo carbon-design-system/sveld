@@ -232,7 +232,10 @@ function parseContextValue(ctx: ParserContext, node: Node, key: string): Compone
 
   // An untyped `const` object literal describes itself, as it does when spread.
   const initializer = annotated ? undefined : resolveConstInitializer(ctx, varName);
-  if (isObjectExpression(initializer)) return objectLiteralContext(ctx, initializer, key);
+  if (isObjectExpression(initializer)) {
+    const { internal } = findVariableJsDoc(ctx, varName);
+    return { ...objectLiteralContext(ctx, initializer, key), ...(internal ? { internal } : {}) };
+  }
 
   const varInfo = annotated ?? findContextVariableType(ctx, varName);
   if (varInfo) {
@@ -366,8 +369,16 @@ function recordContextValueUnresolved(
   );
 }
 
-/** Parse `setContext(key, value)`. Imported keys go to `pendingContextKeyCandidates`. */
-export function parseSetContextCall(ctx: ParserContext, callExpr: SimpleCallExpression) {
+/**
+ * Parse `setContext(key, value)`. Imported keys go to `pendingContextKeyCandidates`.
+ * `statement` is the call's own expression statement, whose `@internal`/`@ignore`
+ * JSDoc hides the context.
+ */
+export function parseSetContextCall(
+  ctx: ParserContext,
+  callExpr: SimpleCallExpression,
+  statement: { leadingComments?: unknown[]; start?: number } | null,
+) {
   const keyArg = callExpr.arguments[0];
   if (!keyArg) return;
 
@@ -389,6 +400,7 @@ export function parseSetContextCall(ctx: ParserContext, callExpr: SimpleCallExpr
   if (!valueArg) return;
 
   const callSource = sourceRangeFromNode(ctx, callExpr);
+  const callInternal = processNodeJSDoc(ctx, statement)?.internal === true;
 
   if (resolution.kind === "pending") {
     // The key resolves later; until then the imported name labels diagnostics.
@@ -403,7 +415,7 @@ export function parseSetContextCall(ctx: ParserContext, callExpr: SimpleCallExpr
         properties: contextInfo.properties,
         description: contextInfo.description,
         ...(contextInfo.hasUnresolvedSpread ? { hasUnresolvedSpread: true } : {}),
-        ...(contextInfo.internal ? { internal: true } : {}),
+        ...(contextInfo.internal || callInternal ? { internal: true } : {}),
         source: callSource,
       });
     } else {
@@ -430,5 +442,9 @@ export function parseSetContextCall(ctx: ParserContext, callExpr: SimpleCallExpr
     return;
   }
 
-  ctx.contexts.set(contextKey, { ...contextInfo, source: callSource });
+  ctx.contexts.set(contextKey, {
+    ...contextInfo,
+    ...(callInternal ? { internal: true } : {}),
+    source: callSource,
+  });
 }

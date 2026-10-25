@@ -81,7 +81,7 @@ A context change names the context key and the property, one line per property:
     [additive] context "carbon:Modal" property "open" added
 ```
 
-Marking a public member [`@internal`](jsdoc-tags.md#ignore--internal) counts as removing it.
+Marking a public member [`@internal`](jsdoc-tags.md#ignore--internal) counts as removing it. A context that is an implementation detail, like one only the library's own components read, should be tagged `@internal` on its [`setContext` call](jsdoc-tags.md#ignore--internal) so `--check` never sees it.
 
 - `--check` never writes the snapshot. To update it, run `sveld --json` (or `sveld --json --check`) and commit the file.
 - A missing snapshot exits `1`, so a mistyped path can't pass CI. The exception is `sveld --json --check`, which writes it in the same run, prints a notice, and exits `0`.

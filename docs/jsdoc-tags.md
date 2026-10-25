@@ -1009,7 +1009,16 @@ The `.d.ts` gets an `@deprecated` line, so editors strike the symbol through. JS
 </script>
 ```
 
-For a context, tag the JSDoc on the value variable. A property inside a `setContext` object literal can be hidden by tagging the variable it refers to:
+For a context, tag the JSDoc on the `setContext` call or on the value variable:
+
+```svelte
+<script>
+  /** @internal */
+  setContext(MODAL_KEY, {});
+</script>
+```
+
+A property inside a `setContext` object literal can be hidden by tagging the variable it refers to:
 
 ```svelte
 <script>
