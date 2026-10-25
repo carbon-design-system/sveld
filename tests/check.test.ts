@@ -471,16 +471,176 @@ describe("diffApiDocuments", () => {
         },
       ]);
     });
+  });
 
-    test("a description-only context change is not reported", () => {
-      const before = mockComponentDocApi("Tabs", "Tabs.svelte", {
-        contexts: [{ key: "tabs", typeName: "TabsContext", description: "old", properties: [] }],
+  describe("contexts", () => {
+    type ContextDoc = NonNullable<ComponentDocApi["contexts"]>[number];
+    type ContextProp = ContextDoc["properties"][number];
+
+    function contextProp(name: string, type: string, overrides?: Partial<ContextProp>): ContextProp {
+      return { name, type, optional: false, ...overrides };
+    }
+
+    function contextDoc(properties: ContextProp[], overrides?: Partial<ContextDoc>): ContextDoc {
+      return { key: "carbon:Modal", typeName: "CarbonModalContext", properties, ...overrides };
+    }
+
+    function diffContexts(before: ContextDoc[], after: ContextDoc[]) {
+      return diffApiDocuments(
+        document([mockComponentDocApi("Modal", "Modal.svelte", { contexts: before })]),
+        document([mockComponentDocApi("Modal", "Modal.svelte", { contexts: after })]),
+      );
+    }
+
+    test("a removed property names the context and the property", () => {
+      const changes = diffContexts(
+        [contextDoc([contextProp("isInitialFocus", "(node: any) => any")])],
+        [contextDoc([])],
+      );
+
+      expect(changes).toEqual([
+        {
+          component: "Modal",
+          kind: "context",
+          name: "carbon:Modal",
+          property: "isInitialFocus",
+          bump: "major",
+          message: 'context "carbon:Modal" property "isInitialFocus" removed',
+        },
+      ]);
+    });
+
+    test("an added property is additive", () => {
+      const changes = diffContexts([contextDoc([])], [contextDoc([contextProp("open", "boolean")])]);
+
+      expect(changes).toEqual([
+        {
+          component: "Modal",
+          kind: "context",
+          name: "carbon:Modal",
+          property: "open",
+          bump: "minor",
+          message: 'context "carbon:Modal" property "open" added',
+        },
+      ]);
+    });
+
+    test("a changed property type shows both types and is classified like a prop's", () => {
+      const narrowed = diffContexts(
+        [contextDoc([contextProp("size", '"sm" | "lg"')])],
+        [contextDoc([contextProp("size", '"sm"')])],
+      );
+      expect(narrowed).toMatchObject([
+        {
+          property: "size",
+          bump: "major",
+          message: 'context "carbon:Modal" property "size" type changed from `"sm" | "lg"` to `"sm"`',
+        },
+      ]);
+
+      const widened = diffContexts(
+        [contextDoc([contextProp("size", '"sm"')])],
+        [contextDoc([contextProp("size", '"sm" | "lg"')])],
+      );
+      expect(widened).toMatchObject([{ property: "size", bump: "minor" }]);
+    });
+
+    test("a property turning optional is breaking and turning required is additive", () => {
+      const required = contextDoc([contextProp("close", "() => void")]);
+      const optional = contextDoc([contextProp("close", "() => void", { optional: true })]);
+
+      expect(diffContexts([required], [optional])).toMatchObject([
+        { property: "close", bump: "major", message: 'context "carbon:Modal" property "close" became optional' },
+      ]);
+      expect(diffContexts([optional], [required])).toMatchObject([
+        { property: "close", bump: "minor", message: 'context "carbon:Modal" property "close" became required' },
+      ]);
+    });
+
+    test("reports each property and leaves untouched ones out", () => {
+      const changes = diffContexts(
+        [contextDoc([contextProp("a", "string"), contextProp("b", "number"), contextProp("c", "boolean")])],
+        [contextDoc([contextProp("c", "boolean"), contextProp("a", "number"), contextProp("d", "string")])],
+      );
+
+      expect(changes.map(({ property, bump }) => [property, bump])).toEqual([
+        ["d", "minor"],
+        ["b", "major"],
+        ["a", "major"],
+      ]);
+    });
+
+    test("an added context is additive and a removed one is breaking", () => {
+      const modal = contextDoc([]);
+      const layer = contextDoc([], { key: "carbon:Layer", typeName: "CarbonLayerContext" });
+
+      expect(diffContexts([modal], [modal, layer])).toEqual([
+        {
+          component: "Modal",
+          kind: "context",
+          name: "carbon:Layer",
+          bump: "minor",
+          message: 'context "carbon:Layer" added',
+        },
+      ]);
+      expect(diffContexts([modal, layer], [modal])).toEqual([
+        {
+          component: "Modal",
+          kind: "context",
+          name: "carbon:Layer",
+          bump: "major",
+          message: 'context "carbon:Layer" removed',
+        },
+      ]);
+    });
+
+    test("a context typed as a whole is classified on that type", () => {
+      const store = (type: string) => contextDoc([], { key: "carbon:Layer", typeName: "CarbonLayerContext", type });
+
+      expect(diffContexts([store("Readable<number>")], [store("Readable<number>")])).toEqual([]);
+      expect(diffContexts([store("Readable<number>")], [store("Writable<number>")])).toMatchObject([
+        {
+          name: "carbon:Layer",
+          bump: "major",
+          message: 'context "carbon:Layer" type changed from `Readable<number>` to `Writable<number>`',
+        },
+      ]);
+      expect(
+        diffContexts(
+          [store("Readable<number>")],
+          [contextDoc([], { key: "carbon:Layer", typeName: "CarbonLayerContext" })],
+        ),
+      ).toMatchObject([
+        {
+          bump: "major",
+          message: 'context "carbon:Layer" type changed from `Readable<number>` to an object of properties',
+        },
+      ]);
+    });
+
+    test("a renamed context type or a new unresolved spread is breaking", () => {
+      expect(diffContexts([contextDoc([])], [contextDoc([], { typeName: "ModalContext" })])).toMatchObject([
+        {
+          bump: "major",
+          message: 'context "carbon:Modal" type name changed from `CarbonModalContext` to `ModalContext`',
+        },
+      ]);
+      expect(diffContexts([contextDoc([])], [contextDoc([], { hasUnresolvedSpread: true })])).toMatchObject([
+        { bump: "major", message: 'context "carbon:Modal" gained an unresolved spread' },
+      ]);
+    });
+
+    test("descriptions and source ranges are not reported", () => {
+      const before = contextDoc([contextProp("open", "boolean", { description: "old" })], {
+        description: "old",
+        source: { start: { line: 1, column: 0 }, end: { line: 1, column: 5 } },
       });
-      const after = mockComponentDocApi("Tabs", "Tabs.svelte", {
-        contexts: [{ key: "tabs", typeName: "TabsContext", description: "new", properties: [] }],
+      const after = contextDoc([contextProp("open", "boolean", { description: "new" })], {
+        description: "new",
+        source: { start: { line: 9, column: 0 }, end: { line: 9, column: 5 } },
       });
 
-      expect(diffApiDocuments(document([before]), document([after]))).toEqual([]);
+      expect(diffContexts([before], [after])).toEqual([]);
     });
   });
 });
