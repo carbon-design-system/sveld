@@ -27,10 +27,10 @@
     "test:svelte-versions": "bun scripts/typecheck-svelte-versions.ts",
     "test:e2e": "bun tests/test-e2e.ts",
     "test:inferred-types": "bun scripts/check-inferred-types.ts",
-    "format": "biome format --write .",
-    "lint": "biome check --error-on-warnings .",
-    "lint:fix": "biome check --write --unsafe .",
-    "lint:fix:changed": "biome check --write --unsafe --changed --no-errors-on-unmatched",
+    "format": "bun fmt --svelte",
+    "lint": "bun lint --no-script --max-warnings=0 --report-unused-disable-directives && bun fmt --svelte --check",
+    "lint:fix": "bun lint --no-script --fix && bun fmt --svelte",
+    "lint:fix:changed": "bun lint --no-script --fix --changed && bun fmt --svelte --changed",
     "knip": "knip-bun",
     "build": "bun scripts/build.ts",
     "bench": "bun scripts/bench.ts",
@@ -39,7 +39,6 @@
     "typecheck": "bun check && bun check --project tsconfig.excluded.json"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.6.3",
     "@types/bun": "^1.4.4",
     "@types/jest": "^30.0.0",
     "@typescript/typescript6": "^6.0.2",

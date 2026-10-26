@@ -261,7 +261,7 @@ console.log(`sveld bench: ${relative(process.cwd(), args.entry)} — ${args.runs
 const timings: RunTiming[] = [];
 try {
   for (let run = 1; run <= args.runs; run++) {
-    // biome-ignore lint/performance/noAwaitInLoops: runs must execute sequentially so each phase is timed in isolation.
+    // oxlint-disable-next-line no-await-in-loop -- runs must execute sequentially so each phase is timed in isolation.
     const timing = await benchOnce(args.entry, cacheFile, sharedOutDir ?? join(workDir, `run-${run}`), args.stages);
     timings.push(timing);
     console.log(`run ${run}  ${formatTiming(timing, args.stages)}`);

@@ -47,11 +47,11 @@ bun install
 | `bun run test:e2e`                    | Link sveld into the downstream packages under `tests/e2e/`, run `sveld` (or `build` for Vite fixtures), and `typecheck` generated types where configured.                                                           |
 | `bun run test:inferred-types`         | Write each inferred prop type back into its component and svelte-check it (run after `test:e2e`, which installs svelte-check).                                                                                      |
 | `bun run bench`                       | Time the parse/write pipeline against the carbon e2e fixture. Flags: `--runs <n>`, `--cache`, `--entry <path>`. Output goes to a temp dir; compare medians from one invocation, not absolute times across sessions. |
-| `bun run lint:fix:changed`            | Lint, format, and organize imports for files changed vs `main` (`biome check --write --unsafe --changed`). Use this while iterating.                                                                                |
-| `bun run lint`                        | Lint, format, and import-order check across the repo, same as CI (`biome check --error-on-warnings`). No writes.                                                                                                    |
-| `bun run format` / `bun run lint:fix` | Biome format / full fix across the repo.                                                                                                                                                                            |
+| `bun run lint:fix:changed`            | Lint with fixes and format the files changed vs `main` (`bun lint --fix --changed`, `bun fmt --changed`). Use this while iterating.                                                                                 |
+| `bun run lint`                        | Lint and format check across the repo, same as CI (`bun lint` with no warnings allowed, then `bun fmt --check`). No writes.                                                                                         |
+| `bun run format` / `bun run lint:fix` | `bun fmt` / lint with fixes plus `bun fmt` across the repo.                                                                                                                                                         |
 
-Scope test and lint runs to what you touched. The full test suite and a repo-wide `biome` pass surface unrelated noise.
+Scope test and lint runs to what you touched. The full test suite and a repo-wide lint pass surface unrelated noise.
 
 ## How sveld works
 
@@ -83,16 +83,16 @@ Most feature work and bug fixes land in [`src/parser/*.ts`](src/parser) (the pha
 
 ## Conventions
 
-Biome enforces most of this in CI (`biome ci --error-on-warnings`); the rest is by convention across `src/`. Config: [`biome.json`](biome.json) — 120-column lines, space indent, multiline attributes.
+`bun lint` and `bun fmt` enforce most of this in CI (`bun run lint`); the rest is by convention across `src/`. Both need Bun canary, which [`.bun-version`](.bun-version) pins. Lint config: [`.oxlintrc.json`](.oxlintrc.json). Format config: [`.oxfmtrc.json`](.oxfmtrc.json), 120-column lines. `.svelte` files are formatted with `--svelte`, but only their `<script>` is linted.
 
-- **No `any`.** `noExplicitAny` is an error. Prefer `unknown` and narrow with a guard from [`ast-guards.ts`](src/ast-guards.ts). Add a guard there rather than casting inline; the parser leans on these to keep AST handling type-safe.
-- **Hoist regexes to module scope.** `useTopLevelRegex` is an error — a regex literal inside a function fails lint. Declare it as a named top-level `const`; add a one-line comment only when the name doesn't already say what it matches or why.
+- **No `any`.** `typescript/no-explicit-any` is an error. Prefer `unknown` and narrow with a guard from [`ast-guards.ts`](src/ast-guards.ts). Add a guard there rather than casting inline; the parser leans on these to keep AST handling type-safe.
+- **Hoist regexes to module scope.** A regex literal inside a function fails lint (a `no-restricted-syntax` selector; stateful `g`/`y` regexes are exempt). Declare it as a named top-level `const`; add a one-line comment only when the name doesn't already say what it matches or why.
 - **Normalize paths; never compare raw separators.** CI runs on Windows, macOS, and Linux. Route paths through [`normalizeSeparators`](src/path.ts) and the branded helpers in [`brands.ts`](src/brands.ts) (`asNormalizedPath`, `asRelativeSourcePath`, `asSvelteEntryPoint`). The brands are compile-time tags that keep a normalized path from being confused with a raw one — keep a value branded once it's normalized instead of re-deriving it. Tests that touch file paths normalize separators too (see [`fixtures.test.ts`](tests/fixtures.test.ts)).
-- **Use `node:` import specifiers.** `useNodejsImportProtocol` is an error: `import { join } from "node:path"`, not `"path"`.
-- **No barrel re-exports, namespace imports, or import cycles.** `noReExportAll`, `noNamespaceImport`, and `noImportCycles` are errors. Export named bindings explicitly (see [`index.ts`](src/index.ts)).
-- **No `await` inside loops and no `Array#forEach`.** `noAwaitInLoops` and `noForEach` are errors. Build the work and `await Promise.all(...)`, or use a `for...of` with the awaits hoisted; use `for...of` / `map` instead of `forEach`.
-- **ESM only in `src/`.** `noCommonJs` is an error. The lone exception is [`cli.js`](cli.js), the published bin shim, which is overridden in `biome.json`.
-- **No parameter reassignment, no implicit booleans, default params last.** `noParameterAssign`, `noImplicitBoolean`, `useDefaultParameterLast`.
+- **Use `node:` import specifiers.** `unicorn/prefer-node-protocol` is an error: `import { join } from "node:path"`, not `"path"`.
+- **No barrel re-exports, namespace imports, or import cycles.** `export *` (a `no-restricted-syntax` selector), `import/no-namespace`, and `import/no-cycle` are errors. Export named bindings explicitly (see [`index.ts`](src/index.ts)).
+- **No `await` inside loops and no `Array#forEach`.** `no-await-in-loop` and `unicorn/no-array-for-each` are errors. Build the work and `await Promise.all(...)`, or use a `for...of` with the awaits hoisted; use `for...of` / `map` instead of `forEach`.
+- **ESM only.** `import/no-commonjs` is an error.
+- **No parameter reassignment, default params last.** `no-param-reassign`, `default-param-last`.
 - Document non-obvious parser and build logic with a short comment explaining _why_ (see the bundling notes in [`scripts/build.ts`](scripts/build.ts) and the regex docblocks in `src/parser/`). Skip comments that restate the code.
 
 Fixtures (`tests/fixtures/**`) and the downstream e2e projects (`tests/e2e/**`) run under relaxed lint rules on purpose — they intentionally contain odd or invalid component code to exercise the parser. Don't "fix" their lint warnings.
@@ -180,7 +180,7 @@ It imports the parser and writers from `../src` directly (see [`playground/vite.
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every PR across Ubuntu, Windows, and macOS:
 
 1. Install dependencies
-2. `biome ci --error-on-warnings`
+2. `bun run lint`
 3. `bun run build`
 4. `bun run test`
 5. `bun run test:fixtures-types`

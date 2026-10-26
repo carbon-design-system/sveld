@@ -319,7 +319,7 @@ function genPropDef(
       const own = props.trim() === "" ? "" : ` & ${ownMembers}`;
       declarations = [`type $Props${genericsName} = ${def.canonicalPropsType}${own};`, exportProps(propsRef)];
     } else if (props.trim() === "") {
-      // Never emit `{}`: Svelte 4 rejects it and Biome bans it.
+      // Never emit `{}`: Svelte 4 rejects it and lint rules ban it.
       declarations = [exportProps(def.extends?.interface ?? EMPTY_OBJECT)];
     } else if (def.extends === undefined) {
       declarations = [exportProps(ownMembers)];
@@ -348,7 +348,7 @@ function genPropDef(
 
   // Preserves `data-*` attrs for Svelte 3 HTML-extending components.
   // See https://github.com/sveltejs/language-tools/issues/1825
-  // biome-ignore lint/suspicious/noTemplateCurlyInString: a TypeScript template literal type
+  // oxlint-disable-next-line no-template-curly-in-string -- a TypeScript template literal type
   const dataAttributes = "[key: `data-${string}`]: unknown;";
 
   const restPropsComment = description ? `${formatComment(description)}\n` : "";

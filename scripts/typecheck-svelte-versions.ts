@@ -1,3 +1,4 @@
+/* oxlint-disable no-await-in-loop -- each version installs into its own dir; two at once only race on bun's cache. */
 /**
  * Typechecks every legacy fixture's `format: "class"` `.d.ts` against
  * Svelte 3 and Svelte 4, which the README says the default output supports.
@@ -30,7 +31,6 @@ for (const version of SVELTE_VERSIONS) {
   try {
     const dependencies = { svelte: version };
     writeFileSync(path.join(root, "package.json"), `${JSON.stringify({ private: true, dependencies }, null, 2)}\n`);
-    // biome-ignore lint/performance/noAwaitInLoops: each version installs into its own dir; two at once only race on bun's cache.
     await $`bun install --silent`.cwd(root);
 
     const result = await runOptionMatrix({

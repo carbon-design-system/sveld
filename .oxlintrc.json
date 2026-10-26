@@ -1,0 +1,80 @@
+{
+  "plugins": ["typescript", "unicorn", "oxc", "import"],
+  "ignorePatterns": ["tests/fixtures/**", "tests/e2e/**/*.svelte", "tests/e2e/**/*.d.ts", "tests/e2e/cli-crash/**"],
+  "rules": {
+    "eslint/default-param-last": "error",
+    "eslint/dot-notation": "error",
+    "eslint/eqeqeq": ["error", "smart"],
+    "eslint/no-await-in-loop": "error",
+    "eslint/no-empty-pattern": "error",
+    "eslint/no-lone-blocks": "error",
+    "eslint/no-negated-condition": "error",
+    "eslint/no-param-reassign": "error",
+    "eslint/no-restricted-imports": [
+      "error",
+      {
+        "paths": [
+          {
+            "name": "bun:test",
+            "message": "bun:test imports are unnecessary."
+          }
+        ]
+      }
+    ],
+    "eslint/no-restricted-syntax": [
+      "error",
+      {
+        "selector": ":function Literal[regex]:not([regex.flags=/[gy]/])",
+        "message": "Hoist the regex to a top-level const so it's compiled once."
+      },
+      {
+        "selector": "ExportAllDeclaration",
+        "message": "Export named bindings instead of `export *`."
+      }
+    ],
+    "eslint/no-self-compare": "error",
+    "eslint/no-sequences": "error",
+    "eslint/no-template-curly-in-string": "error",
+    "eslint/no-useless-catch": "error",
+    "eslint/no-useless-constructor": "error",
+    "eslint/no-useless-rename": "error",
+    "eslint/no-var": "error",
+    "eslint/one-var": ["error", "never"],
+    "eslint/prefer-arrow-callback": "error",
+    "eslint/prefer-const": "error",
+    "eslint/prefer-exponentiation-operator": "error",
+    "eslint/prefer-template": "error",
+    "import/no-commonjs": "error",
+    "import/no-cycle": "error",
+    "import/no-namespace": "error",
+    "oxc/no-accumulating-spread": "error",
+    "typescript/no-explicit-any": "error",
+    "typescript/no-non-null-assertion": "error",
+    "typescript/no-unsafe-function-type": "error",
+    "typescript/no-useless-empty-export": "error",
+    "typescript/no-wrapper-object-types": "error",
+    "unicorn/no-array-for-each": "error",
+    "unicorn/no-instanceof-array": "error",
+    "unicorn/no-thenable": "error",
+    "unicorn/no-useless-switch-case": "error",
+    "unicorn/prefer-node-protocol": "error",
+    "unicorn/prefer-number-properties": "error"
+  },
+  "overrides": [
+    {
+      "files": ["tests/e2e/**"],
+      "rules": {
+        "eslint/no-unassigned-vars": "off",
+        "typescript/no-explicit-any": "off",
+        "unicorn/no-array-for-each": "off",
+        "eslint/no-restricted-syntax": [
+          "error",
+          {
+            "selector": ":function Literal[regex]:not([regex.flags=/[gy]/])",
+            "message": "Hoist the regex to a top-level const so it's compiled once."
+          }
+        ]
+      }
+    }
+  ]
+}

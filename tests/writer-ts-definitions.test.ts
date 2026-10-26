@@ -1231,7 +1231,7 @@ describe("typesOptions.transform", () => {
         inputDir: "src",
         preamble: "",
         exports: mockParsedExports({}),
-        // biome-ignore lint/suspicious/noExplicitAny: intentionally violating the return type to test the guard
+        // oxlint-disable-next-line typescript/no-explicit-any -- intentionally violating the return type to test the guard
         transform: () => undefined as any,
       }),
     ).rejects.toThrow('sveld: typesOptions.transform failed for "Button.svelte.d.ts"');

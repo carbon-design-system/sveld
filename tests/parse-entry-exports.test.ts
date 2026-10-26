@@ -502,8 +502,8 @@ describe("parseEntryExports", () => {
 
   test("warns and skips a re-exported module the underlying parser can't handle, instead of throwing", async () => {
     // Not written under tests/fixtures-entry-exports because the redeclaration
-    // below (valid to sveast, rejected by tsc/biome) would otherwise
-    // trip up `tsc --noEmit` and `biome lint`, which both cover tests/**/*.
+    // below (valid to sveast, rejected by tsc and the linter) would otherwise
+    // trip up `bun check` and `bun lint`, which both cover tests/**/*.
     const dir = mkdtempSync(path.join(tmpdir(), "sveld-entry-exports-parse-failure-"));
     try {
       writeFileSync(path.join(dir, "types.ts"), 'export type Theme = "light" | "dark";\n');
