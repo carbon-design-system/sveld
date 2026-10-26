@@ -792,9 +792,31 @@ describe("ComponentParser", () => {
         setContext("k", { select, label, close });
       `);
       expect(types).toEqual({
-        select: "(index: number) => any",
+        select: "(index: number) => void",
         label: "() => string",
         close: "(force?: boolean) => void",
+      });
+    });
+
+    test("reads a JSDoc-annotated function's return type off its body without @returns", () => {
+      const { types } = contextTypes(`
+        import { setContext } from "svelte";
+        /** @param {string} id */
+        function notify(id) {}
+        /** @param {string} id */
+        function has(id) {
+          return true;
+        }
+        /** @returns {boolean} */
+        function claim(id) {
+          return true;
+        }
+        setContext("k", { notify, has, claim });
+      `);
+      expect(types).toEqual({
+        notify: "(id: string) => void",
+        has: "(id: string) => boolean",
+        claim: "(id: any) => boolean",
       });
     });
 
