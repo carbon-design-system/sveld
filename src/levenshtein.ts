@@ -4,7 +4,7 @@ const MAX_SUGGESTION_DISTANCE = 3;
 function levenshteinDistance(a: string, b: string): number {
   const rows = a.length + 1;
   const columns = b.length + 1;
-  const distances: number[][] = Array.from({ length: rows }, () => new Array<number>(columns).fill(0));
+  const distances: number[][] = Array.from({ length: rows }, () => Array.from({ length: columns }, () => 0));
 
   for (let i = 0; i < rows; i++) distances[i][0] = i;
   for (let j = 0; j < columns; j++) distances[0][j] = j;
