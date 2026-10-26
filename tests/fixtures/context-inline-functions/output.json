@@ -36,5 +36,14 @@
       ]
     }
   ],
-  "diagnostics": []
+  "diagnostics": [
+    {
+      "component": "context-inline-functions/input.svelte",
+      "kind": "context-any-type",
+      "name": "open",
+      "message": "Context \"modal\" property \"open\" is inferred as \"(component: any, props: any) => void\"; annotate it to replace \"any\".",
+      "code": "sveld/context-any-type",
+      "severity": "warning"
+    }
+  ]
 }

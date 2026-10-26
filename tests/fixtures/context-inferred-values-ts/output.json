@@ -46,5 +46,14 @@
       ]
     }
   ],
-  "diagnostics": []
+  "diagnostics": [
+    {
+      "component": "context-inferred-values-ts/input.svelte",
+      "kind": "context-any-type",
+      "name": "clear",
+      "message": "Context \"Picker\" property \"clear\" is inferred as \"() => any\"; annotate it to replace \"any\".",
+      "code": "sveld/context-any-type",
+      "severity": "warning"
+    }
+  ]
 }

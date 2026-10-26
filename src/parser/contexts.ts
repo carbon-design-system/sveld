@@ -32,9 +32,10 @@ import {
 import { isBoundInNestedScope, isCalleeBoundInNestedScope } from "./scopes";
 import { sourceForExpression, sourceRangeFromNode } from "./source-position";
 import { importedMemberBinding, importPath } from "./value-imports";
-import { findTrackedVariableType, findVariableJsDoc } from "./variable-jsdoc";
+import { findTrackedVariableType, findVariableJsDoc, resolveLocalVarJSDoc } from "./variable-jsdoc";
 
-type VariableTypeInfo = NonNullable<ReturnType<typeof findTrackedVariableType>>;
+/** `inferred` when sveld read the type off the code rather than an annotation. */
+type VariableTypeInfo = NonNullable<ReturnType<typeof findTrackedVariableType>> & { inferred?: boolean };
 
 /**
  * {@link findTrackedVariableType}, else with `inferFromInitializer` typed from
@@ -49,7 +50,35 @@ function findContextVariableType(
   if (varInfo || !inferFromInitializer) return varInfo;
 
   const inferredType = inferVariableInitializerType(ctx, name, true);
-  return inferredType ? { type: inferredType, ...findVariableJsDoc(ctx, name) } : null;
+  if (!inferredType) return null;
+  // A function's `@param` tags are annotations, `any` included.
+  const inferred = !resolveLocalVarJSDoc(ctx, name)?.params?.length;
+  return { type: inferredType, ...findVariableJsDoc(ctx, name), inferred };
+}
+
+const ANY_REGEX = /\bany\b/;
+
+/**
+ * `context-any-type` for a type sveld inferred with `any` inside it, such as
+ * `Writable<any>` from `writable(undefined)` or `(id: any) => void` from an
+ * unannotated param. A bare `any` is reported where it's defaulted.
+ */
+function reportInferredAny(
+  ctx: ParserContext,
+  key: string,
+  name: string,
+  subject: string,
+  type: string,
+  node: Node,
+): void {
+  if (type === "any" || !ANY_REGEX.test(type)) return;
+  recordDiagnostic(
+    ctx,
+    "context-any-type",
+    name,
+    `Context "${key}" ${subject} is inferred as "${type}"; annotate it to replace "any".`,
+    sourceRangeFromNode(ctx, node),
+  );
 }
 
 /**
@@ -114,7 +143,7 @@ function describeContextValue(
   };
   if (isIdentifier(value)) return findContextVariableType(ctx, value.name) ?? untyped();
   if (value?.type === "ArrowFunctionExpression" || value?.type === "FunctionExpression") {
-    return { type: inferFunctionValueType(ctx, value) };
+    return { type: inferFunctionValueType(ctx, value), inferred: true };
   }
   if (isLiteral(value)) {
     return { type: literalValueType(value) ?? "null" };
@@ -132,11 +161,11 @@ function describeContextValue(
   }
   if (value === undefined) return { type: "any" };
   const storeType = value.type === "CallExpression" ? svelteStoreType(ctx, value) : undefined;
-  if (storeType) return { type: storeType };
+  if (storeType) return { type: storeType, inferred: true };
   // Anything else types the way a prop default would (`a ?? b`, `cond ? x : y`, a call's `@returns`).
   const processed = processInitializer(ctx, value);
   const type = processed.type ?? processed.resolvedType;
-  return type ? { type } : untyped();
+  return type ? { type, inferred: true } : untyped();
 }
 
 function parseContextObjectProperties(
@@ -186,8 +215,12 @@ function parseContextObjectProperties(
         ? annotationText(ctx, accessor, "returnType")
         : annotationText(ctx, accessor.params[0], "typeAnnotation")
       : (jsdoc?.type ?? jsdocSignature);
-    const described = annotated
-      ? { type: annotated, description: jsdoc?.description }
+    const described: VariableTypeInfo = annotated
+      ? {
+          type: annotated,
+          description: jsdoc?.description,
+          inferred: jsdocSignature !== undefined && !jsdoc?.params?.length,
+        }
       : describeContextValue(
           ctx,
           key,
@@ -196,6 +229,7 @@ function parseContextObjectProperties(
           prop.kind === "get" ? returnedValue(accessor) : prop.kind === "set" ? undefined : prop.value,
         );
 
+    if (described.inferred) reportInferredAny(ctx, key, propName, `property "${propName}"`, described.type, prop);
     properties.push({
       name: propName,
       type: described.type,
@@ -226,6 +260,7 @@ function parseContextValue(ctx: ParserContext, node: Node, key: string): Compone
   // A store passed as the whole value, or `null`/`undefined` to clear a parent's context.
   if (node.type === "CallExpression") {
     const storeType = svelteStoreType(ctx, node);
+    if (storeType) reportInferredAny(ctx, key, key, "value", storeType, node);
     return storeType ? typed(storeType) : null;
   }
   if (node.type === "Literal" && node.value === null && node.raw === "null") return typed("null");
@@ -246,6 +281,7 @@ function parseContextValue(ctx: ParserContext, node: Node, key: string): Compone
 
   const varInfo = annotated ?? findContextVariableType(ctx, varName);
   if (varInfo) {
+    if (varInfo.inferred) reportInferredAny(ctx, key, varName, `variable "${varName}"`, varInfo.type, node);
     const members = parseObjectTypeLiteralMembers(varInfo.type);
     return {
       key,

@@ -844,6 +844,45 @@ describe("ComponentParser", () => {
       expect(anyTyped).toEqual([]);
     });
 
+    test("flags a context type inferred with `any` inside it", () => {
+      const { types, anyTyped } = contextTypes(`
+        import { setContext } from "svelte";
+        import { writable } from "svelte/store";
+        /** @type {import("svelte/store").Writable<string | undefined>} */
+        const label = writable(undefined);
+        const title = writable(undefined);
+        function notify(id) {}
+        /** @param {any} value */
+        function log(value) {}
+        setContext("k", {
+          label,
+          title,
+          notify,
+          log,
+          /** @returns {void} */
+          select(id) {},
+          /** @type {(id: any) => void} */
+          remove: (id) => {},
+        });
+      `);
+      expect(types).toMatchObject({ title: 'import("svelte/store").Writable<any>', select: "(id: any) => void" });
+      // An annotation that says `any` is the author's call.
+      expect(anyTyped).toEqual(["title", "notify", "select"]);
+    });
+
+    test("flags a store context value inferred with `any` inside it", () => {
+      const result = new ComponentParser().parseSvelteComponent(
+        `<script>
+          import { setContext } from "svelte";
+          import { writable } from "svelte/store";
+          setContext("k", writable(undefined));
+        </script>`,
+        diagnostics,
+      );
+      expect(result.contexts?.[0].type).toBe('import("svelte/store").Writable<any>');
+      expect(result.diagnostics?.map((diagnostic) => diagnostic.kind)).toEqual(["context-any-type"]);
+    });
+
     test("prefers a script variable's initializer over a nested function by the same name", () => {
       const { types } = contextTypes(`
         import { setContext } from "svelte";
@@ -904,7 +943,7 @@ describe("ComponentParser", () => {
         byId: 'import("svelte/store").Readable<any>',
         pushed: 'import("svelte/store").Readable<any>',
       });
-      expect(anyTyped).toEqual([]);
+      expect(anyTyped).toEqual(["items", "label", "byId", "pushed"]);
     });
 
     test("types a store from its type argument", () => {
