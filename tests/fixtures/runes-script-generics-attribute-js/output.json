@@ -1,0 +1,55 @@
+{
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "items",
+      "kind": "let",
+      "type": "ReadonlyArray<Item>",
+      "typeSource": "jsdoc",
+      "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "selected",
+      "kind": "let",
+      "type": "Item",
+      "typeSource": "jsdoc",
+      "value": "undefined",
+      "defaultValue": {
+        "raw": "undefined",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ id: string }",
+      "name": "Entry",
+      "ts": "interface Entry { id: string }"
+    }
+  ],
+  "generics": [
+    "Item",
+    "Item extends Entry = Entry"
+  ],
+  "contexts": [],
+  "diagnostics": []
+}

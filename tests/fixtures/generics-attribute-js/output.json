@@ -1,0 +1,45 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "rows",
+      "kind": "let",
+      "type": "ReadonlyArray<R>",
+      "typeSource": "jsdoc",
+      "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ rows: ReadonlyArray<R> }"
+    }
+  ],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ id: string }",
+      "name": "Row",
+      "ts": "interface Row { id: string }"
+    }
+  ],
+  "generics": [
+    "R",
+    "R extends Row = Row"
+  ],
+  "contexts": [],
+  "diagnostics": []
+}
