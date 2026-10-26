@@ -863,13 +863,26 @@ Without the arguments, `ChartProps` falls back to its default type parameter, an
 
 ## `@template` / `@generics`
 
-For `lang="ts"` components, declare generics with Svelte's [`generics` attribute](https://svelte.dev/docs/svelte/typescript); sveld reads it directly:
+Declare generics with Svelte's [`generics` attribute](https://svelte.dev/docs/svelte/typescript); sveld reads it directly:
 
 ```svelte
 <script lang="ts" generics="Row extends DataTableRow = any"></script>
 ```
 
-Plain JavaScript components use the standard JSDoc [`@template`](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html#template) tag, one per type parameter:
+The attribute works on a plain JavaScript script too, as it does for svelte-check and editors:
+
+```svelte
+<script context="module">
+  /** @typedef {{ id: string | number; [key: string]: any; }} DataTableRow */
+</script>
+
+<script generics="Row extends DataTableRow = DataTableRow">
+  /** @type {ReadonlyArray<Row>} */
+  export let rows = [];
+</script>
+```
+
+JavaScript components can also use the standard JSDoc [`@template`](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html#template) tag, one per type parameter:
 
 ```svelte
 <script>
@@ -906,7 +919,7 @@ export default class Component<Row extends DataTableRow = DataTableRow> extends 
  */
 ```
 
-If a component declares generics both ways, the `generics` attribute wins and the JSDoc declaration is reported as [`sveld/syntax-skipped`](ci.md#diagnostic-codes). The attribute on a script without `lang="ts"` is also reported and ignored.
+If a component declares generics both ways, the `generics` attribute wins and the JSDoc declaration is reported as [`sveld/syntax-skipped`](ci.md#diagnostic-codes).
 
 ## `@component` comments
 
