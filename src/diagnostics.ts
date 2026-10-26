@@ -5,7 +5,7 @@ import type { ParsedComponent, SourceRange } from "./model";
  * Why sveld could not pin a type during parsing.
  *
  * - `prop-unknown-type`: prop `typeSource` is `"unknown"`.
- * - `context-any-type`: `setContext` value inferred as `any`.
+ * - `context-any-type`: `setContext` value inferred as `any`, or with `any` inside it (`Writable<any>`, `(id: any) => void`).
  * - `slot-missing-type`: `@slot`/`@snippet` tag omitted the required `{Type}` annotation.
  * - `slot-not-rendered`: a `@slot`/`@snippet` tag names a slot the component never renders, e.g. a description's first word read as the slot name.
  * - `event-no-source`: `@event` with no dispatch, forward, or callback prop.

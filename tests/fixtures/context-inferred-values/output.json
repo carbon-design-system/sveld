@@ -130,8 +130,32 @@
     {
       "component": "context-inferred-values/input.svelte",
       "kind": "context-any-type",
+      "name": "items",
+      "message": "Context \"Menu\" property \"items\" is inferred as \"import(\"svelte/store\").Writable<any[]>\"; annotate it to replace \"any\".",
+      "code": "sveld/context-any-type",
+      "severity": "warning"
+    },
+    {
+      "component": "context-inferred-values/input.svelte",
+      "kind": "context-any-type",
+      "name": "hasItems",
+      "message": "Context \"Menu\" property \"hasItems\" is inferred as \"import(\"svelte/store\").Readable<any>\"; annotate it to replace \"any\".",
+      "code": "sveld/context-any-type",
+      "severity": "warning"
+    },
+    {
+      "component": "context-inferred-values/input.svelte",
+      "kind": "context-any-type",
       "name": "fallbackName",
       "message": "Context \"Menu\" property \"fallbackName\" has no type annotation; defaulted to \"any\".",
+      "code": "sveld/context-any-type",
+      "severity": "warning"
+    },
+    {
+      "component": "context-inferred-values/input.svelte",
+      "kind": "context-any-type",
+      "name": "notifyOpen",
+      "message": "Context \"Menu\" property \"notifyOpen\" is inferred as \"(id: any) => void\"; annotate it to replace \"any\".",
       "code": "sveld/context-any-type",
       "severity": "warning"
     }
