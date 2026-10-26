@@ -463,8 +463,8 @@ function localFunctionType(ctx: ParserContext, name: string, node: FunctionNode,
   if (annotated.hasAnnotations) return annotated.signature;
   const jsdoc = resolveLocalVarJSDoc(ctx, name);
   if (jsdoc?.type) return jsdoc.type;
-  return exactArity && !jsdoc?.params?.length && !jsdoc?.returnType
-    ? inferFunctionValueType(ctx, node)
+  return exactArity
+    ? (jsdocFunctionValueType(jsdoc, node) ?? inferFunctionValueType(ctx, node))
     : buildFunctionTypeFromParts(ctx, jsdoc, node);
 }
 
@@ -654,6 +654,11 @@ export function inferFunctionValueType(ctx: ParserContext, node: FunctionNode): 
   const returnType = inferFunctionValueReturnType(node);
   const annotated = buildFunctionDeclarationSignature(ctx, node, returnType);
   if (annotated.hasAnnotations) return annotated.signature;
+  return `(${untypedParamList(node)}) => ${returnType}`;
+}
+
+/** A function value's params as `any`: optional when it has a default, `any[]` when rest. */
+function untypedParamList(node: FunctionNode): string {
   // A destructured param has no name of its own.
   const unnamed = (index: number) => (node.params.length === 1 ? "arg" : `arg${index}`);
   const params = node.params.map((param, index) => {
@@ -665,7 +670,22 @@ export function inferFunctionValueType(ctx: ParserContext, node: FunctionNode): 
     }
     return `${isIdentifier(param) ? param.name : unnamed(index)}: any`;
   });
-  return `(${params.join(", ")}) => ${returnType}`;
+  return params.join(", ");
+}
+
+/**
+ * A function value's type from its JSDoc `@param`/`@returns` tags, or
+ * `undefined` when it has neither. Without `@returns`, the return type is read
+ * off the body, as for an unannotated function; without `@param`, each param
+ * is `any`.
+ */
+function jsdocFunctionValueType(
+  jsdoc: { params?: ComponentPropParam[]; returnType?: string } | undefined,
+  node: FunctionNode,
+): string | undefined {
+  if (!jsdoc?.params?.length && !jsdoc?.returnType) return undefined;
+  const params = jsdoc.params?.length ? formatParamList(jsdoc.params) : untypedParamList(node);
+  return `(${params}) => ${jsdoc.returnType ?? inferFunctionValueReturnType(node)}`;
 }
 
 /**
