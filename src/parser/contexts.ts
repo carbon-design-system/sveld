@@ -23,6 +23,7 @@ import { parseObjectTypeLiteralMembers } from "./object-type-literal";
 import {
   inferFunctionValueType,
   inferVariableInitializerType,
+  jsdocFunctionValueType,
   literalValueType,
   processInitializer,
   resolveConstInitializer,
@@ -174,11 +175,17 @@ function parseContextObjectProperties(
     if (prop.kind === "set" && hasGetter(objExpr, propName)) continue;
     const accessor = prop.kind === "get" || prop.kind === "set" ? (prop.value as FunctionExpression) : undefined;
     const jsdoc = processNodeJSDoc(ctx, prop);
+    const fn =
+      !accessor && (prop.value.type === "ArrowFunctionExpression" || prop.value.type === "FunctionExpression")
+        ? prop.value
+        : undefined;
+    // A method's `@param`/`@returns`, as on a function declaration.
+    const jsdocSignature = !jsdoc?.type && fn ? jsdocFunctionValueType(jsdoc, fn) : undefined;
     const annotated = accessor
       ? prop.kind === "get"
         ? annotationText(ctx, accessor, "returnType")
         : annotationText(ctx, accessor.params[0], "typeAnnotation")
-      : jsdoc?.type;
+      : (jsdoc?.type ?? jsdocSignature);
     const described = annotated
       ? { type: annotated, description: jsdoc?.description }
       : describeContextValue(
