@@ -820,6 +820,30 @@ describe("ComponentParser", () => {
       });
     });
 
+    test("types a method in the context object from its JSDoc", () => {
+      const { types, anyTyped } = contextTypes(`
+        import { setContext } from "svelte";
+        setContext("k", {
+          /** @param {string} id */
+          register(id) {},
+          /**
+           * @param {string} id
+           * @param {boolean} [force]
+           * @returns {boolean}
+           */
+          remove: (id, force = false) => true,
+          /** @param {string | null} next */
+          select: function (next) {},
+        });
+      `);
+      expect(types).toEqual({
+        register: "(id: string) => void",
+        remove: "(id: string, force?: boolean) => boolean",
+        select: "(next: string | null) => void",
+      });
+      expect(anyTyped).toEqual([]);
+    });
+
     test("prefers a script variable's initializer over a nested function by the same name", () => {
       const { types } = contextTypes(`
         import { setContext } from "svelte";

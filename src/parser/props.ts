@@ -679,7 +679,7 @@ function untypedParamList(node: FunctionNode): string {
  * off the body, as for an unannotated function; without `@param`, each param
  * is `any`.
  */
-function jsdocFunctionValueType(
+export function jsdocFunctionValueType(
   jsdoc: { params?: ComponentPropParam[]; returnType?: string } | undefined,
   node: FunctionNode,
 ): string | undefined {

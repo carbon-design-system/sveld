@@ -743,7 +743,7 @@ Any other key records [`sveld/context-key-unresolved`](ci.md#diagnostic-codes), 
 
 The value must be an object literal or a variable. Any other expression (such as `setContext("store", writable(0))`) is skipped with [`sveld/context-value-unresolved`](ci.md#diagnostic-codes).
 
-- **Object literal**: each property becomes a member. A property whose value is a variable takes that variable's `@type` (or TS annotation) and description. Inline functions without annotations get loose inferred signatures, so annotate them when the shape matters.
+- **Object literal**: each property becomes a member. A property whose value is a variable takes that variable's `@type` (or TS annotation) and description. A method or inline function takes a `@type` on the property, else its `@param` and `@returns` tags, as a function declaration does. Without `@returns`, its return type is read off the body (`void` when it returns nothing). Inline functions without annotations get loose inferred signatures, so annotate them when the shape matters.
 - **Variable**: the context type is the variable's type, and its description documents the context. An object type literal (`@type {{ open: () => void }}`) contributes its members instead. An untyped variable is typed from its initializer the way a prop default is (unwrapping `$state`, `$state.raw`, and `$derived`).
 
 ```svelte
