@@ -12,7 +12,4 @@
   });
 </script>
 
-<CodeHighlighter
-  language={typescript}
-  {code}
-/>
+<CodeHighlighter language={typescript} {code} />

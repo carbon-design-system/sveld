@@ -19,8 +19,4 @@
   }
 </script>
 
-<CodeHighlighter
-  noWrap
-  language={markdownLang}
-  {code}
-/>
+<CodeHighlighter noWrap language={markdownLang} {code} />

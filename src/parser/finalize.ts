@@ -303,9 +303,8 @@ function resolveGenerics(ctx: ParserContext, props: ComponentProp[], slots: Comp
 /** Events in output form, sorted: forwarded events name their element as a string. */
 function serializeEvents(ctx: ParserContext): SerializedComponentEvent[] {
   return mapToArray(ctx.events)
-    .map(
-      (event): SerializedComponentEvent =>
-        event.type === "forwarded" ? { ...event, element: event.element.name } : event,
+    .map((event): SerializedComponentEvent =>
+      event.type === "forwarded" ? { ...event, element: event.element.name } : event,
     )
     .sort(compareSerializedEvents);
 }

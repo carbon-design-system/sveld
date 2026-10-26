@@ -732,6 +732,7 @@ Consumers import the type from the component:
 | `Symbol()` / `Symbol.for()`       | `setContext(Symbol("tabs"), …)`                                   | `TabsContext`        |
 | Imported `export const` string    | `import { KEY } from "./keys.js";`<br>`setContext(KEY, …)`        | `SimpleModalContext` |
 | Namespace-imported `export const` | `import * as keys from "./keys.js";`<br>`setContext(keys.KEY, …)` | `SimpleModalContext` |
+
 - `const` identifiers are followed up to 5 levels deep. `let`, `var`, and props are skipped because they can change at runtime.
 - A symbol takes its name from its description. `const ModalKey = Symbol()` with no description uses the binding name: `ModalKeyContext`.
 - An imported key is read from a relative `.js`/`.ts` module (following re-exports) that declares it as an `export const` string or static template literal. This needs the whole library build.
