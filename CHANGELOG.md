@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.39.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.39.0) - 2026-10-26
+
+**Features**
+
+- flag context types inferred with `any` inside them, such as `Writable<any>` (1c303ad)
+
+**Fixes**
+
+- read `@param` and `@returns` on a context object's methods (2e8a79e)
+- read a context function's return type off its body without `@returns` (85a724c)
+
 ## [0.38.12](https://github.com/carbon-design-system/sveld/releases/tag/v0.38.12) - 2026-10-26
 
 **Fixes**
