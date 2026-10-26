@@ -162,7 +162,7 @@ function findCommentBlocks(source: string): Array<{ start: number; end: number; 
   return blocks;
 }
 
-/** Drops an empty `/**` opening line or `*​/` closing line. */
+/** Drops an empty `/**` opening line or `*\/` closing line. */
 function trimBoilerplateEdges(lines: CommentLine[]): CommentLine[] {
   let result = lines;
   if (result.length > 0 && result[0].content === "") result = result.slice(1);

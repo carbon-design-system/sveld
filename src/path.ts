@@ -3,6 +3,9 @@ import type { NormalizedPath } from "./brands";
 
 export const SVELTE_EXT_REGEX = /\.svelte$/;
 
+const SLASH = 47;
+const BACKSLASH = 92;
+
 /** Probed in order for a specifier without an extension and for a directory's `index` file. */
 export const MODULE_EXTENSIONS: readonly string[] = [
   ".ts",
@@ -29,7 +32,7 @@ export function hasSvelteExtension(filePath: string): boolean {
   const dot = filePath.length - ".svelte".length;
   if (dot === 0) return false;
   const before = filePath.charCodeAt(dot - 1);
-  return before !== 47 /* / */ && (sep === "/" || before !== 92) /* \ */;
+  return before !== SLASH && (sep === "/" || before !== BACKSLASH);
 }
 
 export function normalizeSeparators(filePath: string): NormalizedPath {

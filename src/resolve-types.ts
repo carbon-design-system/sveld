@@ -19,7 +19,7 @@ interface ExampleCheckDiagnostic {
 }
 
 // Structural types for TypeScript's async API so AST-only builds skip the `typescript` package.
-// biome-ignore lint/suspicious/noExplicitAny: native-preview API is loaded lazily and typed structurally.
+// oxlint-disable-next-line typescript/no-explicit-any -- native-preview API is loaded lazily and typed structurally.
 type TS = any;
 
 const NON_FILENAME_CHAR_REGEX = /[^A-Za-z0-9_-]/g;
@@ -66,7 +66,7 @@ async function defaultImportTs(cwd: string): Promise<TypeScriptLoadResult> {
 
   for (const specifier of ASYNC_API_SPECIFIERS) {
     try {
-      // biome-ignore lint/performance/noAwaitInLoops: the first specifier that resolves wins.
+      // oxlint-disable-next-line no-await-in-loop -- the first specifier that resolves wins.
       const module = await import(specifier);
       return { installed: true, version, module };
     } catch {}

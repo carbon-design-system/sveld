@@ -143,7 +143,7 @@ function resolveDispatchedEvents(ctx: ParserContext, walk: ComponentWalkResult):
   }
 
   // An `@event` that's only forwarded with `on:` becomes a forwarded event.
-  ctx.forwardedEvents.forEach((element, eventName) => {
+  for (const [eventName, element] of ctx.forwardedEvents) {
     const event = ctx.events.get(eventName);
     if (event && event.type === "dispatched" && !actuallyDispatchedEvents.has(eventName)) {
       const event_description = ctx.eventDescriptions.get(eventName);
@@ -161,7 +161,7 @@ function resolveDispatchedEvents(ctx: ParserContext, walk: ComponentWalkResult):
       if (event.detail !== undefined && event.detail !== "undefined") forwardedEvent.detail = event.detail;
       ctx.events.set(eventName, forwardedEvent);
     }
-  });
+  }
 
   return {
     names: actuallyDispatchedEvents,
@@ -303,9 +303,8 @@ function resolveGenerics(ctx: ParserContext, props: ComponentProp[], slots: Comp
 /** Events in output form, sorted: forwarded events name their element as a string. */
 function serializeEvents(ctx: ParserContext): SerializedComponentEvent[] {
   return mapToArray(ctx.events)
-    .map(
-      (event): SerializedComponentEvent =>
-        event.type === "forwarded" ? { ...event, element: event.element.name } : event,
+    .map((event): SerializedComponentEvent =>
+      event.type === "forwarded" ? { ...event, element: event.element.name } : event,
     )
     .sort(compareSerializedEvents);
 }

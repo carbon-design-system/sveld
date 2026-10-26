@@ -69,7 +69,7 @@ describe("ComponentParser", () => {
         import { setContext } from "svelte";
 
         /** The size */
-        // biome-ignore lint/style/useConst: it's a prop
+        // oxlint-disable-next-line prefer-const -- it's a prop
         export let size = "md";
 
         /** The label */
@@ -80,7 +80,7 @@ describe("ComponentParser", () => {
          * Shared theme
          * @type {{ dark: boolean }}
          */
-        // biome-ignore lint/style/useConst: reassigned elsewhere
+        // oxlint-disable-next-line prefer-const -- reassigned elsewhere
         let theme = { dark: false };
         setContext("theme", theme);
       </script>

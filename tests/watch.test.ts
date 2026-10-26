@@ -586,7 +586,7 @@ describe("pluginSveld watch option", () => {
       /** Waits out the debounce and the serial flush queue. */
       const waitFor = async (condition: () => boolean) => {
         for (let attempt = 0; attempt < 100 && !condition(); attempt++) {
-          // biome-ignore lint/performance/noAwaitInLoops: polling; each check must see the previous wait.
+          // oxlint-disable-next-line no-await-in-loop -- polling; each check must see the previous wait.
           await Bun.sleep(20);
         }
         expect(condition()).toBe(true);

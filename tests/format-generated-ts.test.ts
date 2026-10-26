@@ -82,7 +82,7 @@ describe("formatGeneratedTypeScript", () => {
 
   test("is stable: formatting its own output again changes nothing", () => {
     const raw =
-      // biome-ignore lint/suspicious/noTemplateCurlyInString: a template-literal index signature is exactly what generated .d.ts contains
+      // oxlint-disable-next-line no-template-curly-in-string -- a template-literal index signature is exactly what generated .d.ts contains
       'import { SvelteComponentTyped } from "svelte";\n\n    type $Props = {\n      \n      /**\n* Doc {@link X}\n* @default false\n*/\n      checked?: boolean;\n\n      items?: Array<{ id: string; value: number | string; meta?: Record<string, unknown> }>;\n\n      [key: `data-${string}`]: unknown;\n    };\n\nexport default class Checkbox extends SvelteComponentTyped<\n      $Props,\n      { change: CustomEvent<{ checked: boolean }> },\n      {}\n    > {}\n';
     const once = formatGeneratedTypeScript(raw);
     expect(formatGeneratedTypeScript(once)).toBe(once);

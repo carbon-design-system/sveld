@@ -1,0 +1,18 @@
+{
+  "printWidth": 120,
+  "sortPackageJson": false,
+  "overrides": [
+    {
+      "files": ["*.md"],
+      "options": { "embeddedLanguageFormatting": "off" }
+    }
+  ],
+  "ignorePatterns": [
+    "tests/fixtures/**",
+    "tests/e2e/**/*.svelte",
+    "tests/e2e/**/*.d.ts",
+    "tests/e2e/**/*.json",
+    "tests/e2e/**/*.md",
+    "tests/e2e/cli-crash/**"
+  ]
+}

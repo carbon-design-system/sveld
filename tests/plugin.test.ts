@@ -1,7 +1,7 @@
-// biome-ignore lint/performance/noNamespaceImport: needed for jest.spyOn
+// oxlint-disable-next-line import/no-namespace -- needed for jest.spyOn
 import * as fs from "node:fs";
 import { tmpdir } from "node:os";
-// biome-ignore lint/performance/noNamespaceImport: needed for jest.spyOn
+// oxlint-disable-next-line import/no-namespace -- needed for jest.spyOn
 import * as path from "node:path";
 import type { GenerateBundleResult } from "../src/plugin";
 import pluginSveld, { generateBundle, writeOutput } from "../src/plugin";

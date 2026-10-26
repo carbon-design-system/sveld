@@ -1,3 +1,4 @@
+/* oxlint-disable no-await-in-loop -- examples share a bun link registry and on-disk state, so every step runs in order. */
 import { readdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { $ } from "bun";
@@ -54,7 +55,6 @@ async function runE2eScripts(dir: string, steps: E2eScriptStep[]): Promise<boole
   let ok = true;
 
   for (const step of steps) {
-    // biome-ignore lint/performance/noAwaitInLoops: steps mutate shared on-disk state (snapshots, cache) and must run in order.
     const result = await $`cd ${dir} && bun run ${step.script}`.nothrow();
     const expectedExitCode = step.expectExitCode ?? 0;
 
@@ -79,7 +79,6 @@ async function runE2eScripts(dir: string, steps: E2eScriptStep[]): Promise<boole
 
 for (const dir of dirs) {
   const packageJsonPath = `${dir}/package.json`;
-  // biome-ignore lint/performance/noAwaitInLoops: each example links/installs/builds into a shared bun link registry, so they must run one at a time.
   if (!(await Bun.file(packageJsonPath).exists())) continue;
 
   try {
