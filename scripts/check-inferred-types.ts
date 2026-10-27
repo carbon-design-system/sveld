@@ -1,3 +1,4 @@
+// @reads tests/fixtures/** tests/e2e/carbon/**
 /**
  * Checks that each prop type sveld infers holds for its own component: the
  * type is written back into a copy of the source as `@type` (or a TS

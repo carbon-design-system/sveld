@@ -1,3 +1,4 @@
+// @reads tests/fixtures-entry-exports/**
 // biome-ignore lint/performance/noNamespaceImport: needed for jest.spyOn
 import * as fs from "node:fs";
 import { tmpdir } from "node:os";

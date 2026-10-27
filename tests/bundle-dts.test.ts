@@ -1,3 +1,4 @@
+// @reads src/** tsconfig.json
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { bundleDts } from "../scripts/bundle-dts";

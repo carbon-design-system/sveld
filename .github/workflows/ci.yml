@@ -20,6 +20,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The test plan diffs a PR against its merge base with the base branch.
+          fetch-depth: ${{ github.event_name == 'pull_request' && '0' || '1' }}
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version-file: .bun-version
@@ -27,9 +30,20 @@ jobs:
       - name: Install dependencies
         run: bun ci
 
+      - name: Plan tests
+        # A PR runs the tests its changes can reach (bivium.config.ts); a push
+        # to main skips this step, so every suite below runs in full.
+        id: plan
+        if: github.event_name == 'pull_request'
+        run: bunx bivium plan origin/${{ github.base_ref }} --github
+
       - name: Lint and format
         if: matrix.os == 'ubuntu-latest'
         run: bunx biome ci --error-on-warnings
+
+      - name: Check the test plan can read every test's inputs
+        if: matrix.os == 'ubuntu-latest'
+        run: bunx bivium check --max-unknown 0
 
       - name: Find unused files, exports, and dependencies
         if: matrix.os == 'ubuntu-latest'
@@ -45,7 +59,8 @@ jobs:
         run: bun run build
 
       - name: Run unit tests
-        run: bun run test
+        if: steps.plan.outputs.unit-tests != 'none'
+        run: bun test --parallel ${{ steps.plan.outputs.unit-tests != 'all' && steps.plan.outputs.unit-tests || '' }}
 
       - name: Type check fixtures across typesOptions
         run: bun run test:types-matrix
@@ -55,18 +70,19 @@ jobs:
         run: bun run test:svelte-versions
 
       - name: Run e2e tests
+        if: steps.plan.outputs.e2e-tests != 'none'
         run: bun run test:e2e
 
       - name: Check generated output is committed
         # The e2e run regenerates tests/e2e outputs; a diff means a behavior
         # change nobody reviewed. The generator version header is excluded.
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' && steps.plan.outputs.e2e-tests != 'none'
         run: |
           git diff --exit-code -I '"(version|svelteVersion)": ' -- tests
 
       - name: Check inferred prop types against their components
         # Uses the svelte-check the e2e run installed for the carbon project.
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' && steps.plan.outputs.e2e-tests != 'none'
         run: bun run test:inferred-types
 
       - name: Deploy docs

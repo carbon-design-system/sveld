@@ -1,3 +1,4 @@
+// @reads tests/fixtures/**
 import path from "node:path";
 import { Glob } from "bun";
 import { asNormalizedPath } from "../src/brands";
