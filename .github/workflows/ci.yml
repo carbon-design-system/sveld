@@ -35,7 +35,7 @@ jobs:
         # to main skips this step, so every suite below runs in full.
         id: plan
         if: github.event_name == 'pull_request'
-        run: bunx bivium plan origin/${{ github.base_ref }} --github
+        run: bunx --bun bivium plan origin/${{ github.base_ref }} --github
 
       - name: Lint and format
         if: matrix.os == 'ubuntu-latest'
@@ -43,7 +43,7 @@ jobs:
 
       - name: Check the test plan can read every test's inputs
         if: matrix.os == 'ubuntu-latest'
-        run: bunx bivium check --max-unknown 0
+        run: bunx --bun bivium check --max-unknown 0
 
       - name: Find unused files, exports, and dependencies
         if: matrix.os == 'ubuntu-latest'
