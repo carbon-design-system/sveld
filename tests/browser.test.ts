@@ -1,3 +1,4 @@
+// @reads src/**
 import { readFileSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import {

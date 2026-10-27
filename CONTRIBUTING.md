@@ -38,6 +38,7 @@ bun install
 | Script                                | What it does                                                                                                                                                                                                        |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `bun test`                            | Unit and fixture snapshot tests (`bun test --parallel`).                                                                                                                                                            |
+| `bun run test:changed`                | Unit tests the working tree's changes since `main` can reach, picked by [bivium](https://github.com/metonym/bivium) from `bivium.config.ts`.                                                                        |
 | `bun run test:update`                 | Rewrite the fixture outputs (`tests/fixtures/**`) to match the current parser and writers.                                                                                                                          |
 | `bun run build`                       | Bundle `src/index.ts`, `src/cli-entry.ts`, and `src/browser.ts` to `dist/`, emit `.d.ts`, write a publish-ready `dist/package.json`. Add `-w` / `--watch` for watch mode.                                           |
 | `bun run typecheck`                   | `bun check` over `src/` and `tests/`.                                                                                                                                                                               |
@@ -50,6 +51,8 @@ bun install
 | `bun run lint:fix:changed`            | Lint, format, and organize imports for files changed vs `main` (`biome check --write --unsafe --changed`). Use this while iterating.                                                                                |
 | `bun run lint`                        | Lint, format, and import-order check across the repo, same as CI (`biome check --error-on-warnings`). No writes.                                                                                                    |
 | `bun run format` / `bun run lint:fix` | Biome format / full fix across the repo.                                                                                                                                                                            |
+
+CI runs the same selection on pull requests (`bivium plan`): unit tests a change can reach, and the e2e and inferred-types checks only when a change can reach them. bivium follows imports; a file that reads one of this repository's files from disk (a fixture, the schema) names it with `// @reads <glob>`, or the plan misses it. `src/`, `tests/*.test.ts`, and the build helpers are listed as `hermetic` in `bivium.config.ts`: their other disk reads are their caller's paths or temp directories. `bunx bivium why <test>` shows why a test was picked, and `bunx bivium check` lists anything the plan can't read.
 
 Scope test and lint runs to what you touched. The full test suite and a repo-wide `biome` pass surface unrelated noise.
 

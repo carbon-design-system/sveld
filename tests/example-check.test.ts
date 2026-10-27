@@ -1,3 +1,4 @@
+// @reads tests/fixtures/example-check/**
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";

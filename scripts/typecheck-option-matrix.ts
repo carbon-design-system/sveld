@@ -1,3 +1,4 @@
+// @reads tests/fixtures/** tsconfig.fixtures.json
 /**
  * Typechecks every fixture's generated `.d.ts` under a curated matrix of
  * `typesOptions` combinations.

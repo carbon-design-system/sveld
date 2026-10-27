@@ -1,3 +1,4 @@
+// @reads schema/component-api.schema.json tests/fixtures/** tests/fixtures-entry-exports/** tests/e2e/svelte5-vite/COMPONENT_API.json tests/e2e/carbon/COMPONENT_API.json
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import Ajv2020 from "ajv/dist/2020";

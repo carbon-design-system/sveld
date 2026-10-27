@@ -1,3 +1,4 @@
+// @reads package.json
 import { Glob } from "bun";
 import { getElementByTag } from "../src/element-tag-map";
 

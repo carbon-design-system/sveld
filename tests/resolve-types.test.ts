@@ -1,3 +1,4 @@
+// @reads tests/fixtures/runes-whole-props-imported/**
 import path from "node:path";
 import { TypeResolver } from "../src/resolve-types";
 

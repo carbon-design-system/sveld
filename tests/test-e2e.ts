@@ -1,3 +1,6 @@
+// Runs the e2e projects against the build in `dist/`.
+// @depends-on scripts/build.ts
+// @reads tests/e2e/**
 import { readdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { $ } from "bun";

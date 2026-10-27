@@ -21,6 +21,7 @@
   },
   "scripts": {
     "test": "bun test --parallel",
+    "test:changed": "bivium run --suite unit",
     "test:update": "SVELD_UPDATE_FIXTURES=1 bun test tests/fixtures.test.ts",
     "test:fixtures-types": "bun check --project tsconfig.fixtures.json",
     "test:types-matrix": "bun scripts/typecheck-option-matrix.ts",
@@ -44,6 +45,7 @@
     "@types/jest": "^30.0.0",
     "@typescript/typescript6": "^6.0.2",
     "ajv": "^8.20.0",
+    "bivium": "^0.1.2",
     "knip": "^6.43.0",
     "ostia": "^0.2.11",
     "sveast": "^0.9.6",
