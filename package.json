@@ -45,7 +45,7 @@
     "@types/jest": "^30.0.0",
     "@typescript/typescript6": "^6.0.2",
     "ajv": "^8.20.0",
-    "bivium": "^0.1.2",
+    "bivium": "^0.2.0",
     "knip": "^6.43.0",
     "ostia": "^0.2.11",
     "sveast": "^0.9.6",
