@@ -22,7 +22,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # The test plan diffs a PR against its merge base with the base branch.
+          # Without old file contents: git fetches one when bivium reads it.
           fetch-depth: ${{ github.event_name == 'pull_request' && '0' || '1' }}
+          filter: blob:none
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version-file: .bun-version
@@ -35,7 +37,7 @@ jobs:
         # to main skips this step, so every suite below runs in full.
         id: plan
         if: github.event_name == 'pull_request'
-        run: bunx bivium plan origin/${{ github.base_ref }} --github
+        run: bunx --bun bivium plan origin/${{ github.base_ref }} --github
 
       - name: Lint and format
         if: matrix.os == 'ubuntu-latest'
@@ -43,7 +45,7 @@ jobs:
 
       - name: Check the test plan can read every test's inputs
         if: matrix.os == 'ubuntu-latest'
-        run: bunx bivium check --max-unknown 0
+        run: bunx --bun bivium check --max-unknown 0
 
       - name: Find unused files, exports, and dependencies
         if: matrix.os == 'ubuntu-latest'
