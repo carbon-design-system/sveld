@@ -10,7 +10,7 @@
         "@types/jest": "^30.0.0",
         "@typescript/typescript6": "^6.0.2",
         "ajv": "^8.20.0",
-        "bivium": "^0.2.0",
+        "bivium": "^0.2.1",
         "knip": "^6.43.0",
         "ostia": "^0.2.11",
         "sveast": "^0.9.6",
@@ -234,7 +234,7 @@
 
     "axobject-query": ["axobject-query@4.1.0", "", {}, "sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ=="],
 
-    "bivium": ["bivium@0.2.0", "", { "bin": { "bivium": "cli.js" } }, "sha512-Vp1ZtnEKYkz2YrOdQprfOfyiOxX+PxdldN/l7OIbpS43MN5VlQTusPGX13HXRA7au2qDuCLNip+E/TO8JASyNA=="],
+    "bivium": ["bivium@0.2.1", "", { "bin": { "bivium": "cli.js" } }, "sha512-rRjDTRaeGzetHVANaDsPPp80meFe4A2OezutoWL2pVe9HZtst/dq15diusYRw6R2hnzM3W64IIHfVwpCdEUvTA=="],
 
     "bun-types": ["bun-types@1.4.4", "", { "dependencies": { "@types/node": "*", "undici-types": "*" } }, "sha512-yjrJh5oGX7mMPKGd19YXyIjmEuj4G4zNC30bs7PM9Az7NQ3ndF3j6hbeRdvJTRQEhJ/FYQwW0a2moweEi2hMxQ=="],
 
