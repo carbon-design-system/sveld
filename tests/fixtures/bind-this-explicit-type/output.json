@@ -1,0 +1,80 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "href",
+      "kind": "let",
+      "type": "string | undefined",
+      "typeSource": "jsdoc",
+      "value": "undefined",
+      "defaultValue": {
+        "raw": "undefined",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "ref",
+      "kind": "let",
+      "type": "null | HTMLAnchorElement | HTMLButtonElement",
+      "typeSource": "jsdoc",
+      "value": "null",
+      "defaultValue": {
+        "raw": "null",
+        "kind": "literal",
+        "value": null
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    },
+    {
+      "name": "buttonRef",
+      "kind": "let",
+      "type": "null | HTMLElement",
+      "typeSource": "jsdoc",
+      "value": "null",
+      "defaultValue": {
+        "raw": "null",
+        "kind": "literal",
+        "value": null
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    },
+    {
+      "name": "inferredRef",
+      "kind": "let",
+      "type": "null | HTMLDivElement",
+      "typeSource": "inferred",
+      "value": "null",
+      "defaultValue": {
+        "raw": "null",
+        "kind": "literal",
+        "value": null
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}

@@ -215,7 +215,9 @@ function buildProps(ctx: ParserContext): ComponentProp[] {
       const binding = ctx.bindings.get(prop.name);
       // `refs[key]` into an object map (`= {}`) isn't an array.
       const isObjectMap = binding?.target === "indexed" && prop.type !== undefined && !prop.type.endsWith("[]");
-      if (!binding || binding.target === "mixed" || isObjectMap) return { ...prop, reactive };
+      // An explicit TypeScript or JSDoc type wins over the bound element's type.
+      const isDeclared = prop.typeSource === "typescript" || prop.typeSource === "jsdoc";
+      if (!binding || binding.target === "mixed" || isObjectMap || isDeclared) return { ...prop, reactive };
       return { ...prop, type: boundPropType(binding), typeSource: "inferred" as const, reactive };
     });
 }
