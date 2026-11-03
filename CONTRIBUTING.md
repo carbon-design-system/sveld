@@ -236,11 +236,11 @@ The following applies only to maintainers.
 
 #### Versioning
 
-| Bump                 | When                                                                                       |
-| -------------------- | ------------------------------------------------------------------------------------------ |
-| **Patch** (`0.35.1`) | Bug fixes, performance, and correctness; no intentional API breaks                         |
-| **Minor** (`0.35.0`) | New features; breaking changes go in **Breaking Changes** if any                           |
-| **Major**            | Large incompatible shifts (rare; follow existing [`CHANGELOG.md`](CHANGELOG.md) precedent) |
+| Bump                 | When                                                                                                                                                                                                                                    |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Patch** (`0.35.1`) | Fixes, features, and performance. The default before 1.0                                                                                                                                                                                |
+| **Minor** (`0.35.0`) | A change that breaks a consumer's existing build or output: a new diagnostic that fails `strict`, a removed option, a changed output format. `^0.x` ranges don't cross a minor, so consumers opt in. List it under **Breaking Changes** |
+| **Major**            | Reserved for 1.0                                                                                                                                                                                                                        |
 
 #### Checklist
 
@@ -254,10 +254,9 @@ The following applies only to maintainers.
 3. Curate changelog entries (see below).
 4. Bump [`package.json`](package.json) — `"version": "X.Y.Z"`.
 5. Add a new `## [X.Y.Z](https://github.com/carbon-design-system/sveld/releases/tag/vX.Y.Z) - YYYY-MM-DD` section at the top of [`CHANGELOG.md`](CHANGELOG.md).
-6. Write [`releases/vX.Y.Z.md`](releases/v0.35.1.md) — short GitHub release body (`# sveld vX.Y.Z` plus bullet lists).
-7. Write [`release-X.Y.Z.md`](release-0.35.1.md) — same bullets, a `---` divider, then narrative `##` sections for notable themes (breaking changes, performance, new surfaces).
-8. Commit, tag, and push (see [Publish](#publish)).
-9. Create the GitHub release — paste `release-X.Y.Z.md` into the release body (use `releases/vX.Y.Z.md` for a minimal patch). NPM publishes when the tag lands.
+6. Run `bun run build && bun test` on the release commit.
+7. Commit, tag, and push (see [Publish](#publish)).
+8. Once the publish workflow passes, create the GitHub release (see [Release notes](#release-notes)).
 
 #### Changelog curation
 
@@ -265,7 +264,7 @@ The following applies only to maintainers.
 
 - `feat`, `fix`, and `perf`
 - Breaking changes (`!` in the commit subject) under **Breaking Changes**
-- Attribution: `(shortHash, #N)` when the commit references a PR; `(shortHash)` otherwise
+- Attribution: `(shortHash, #N)` when the commit came from a PR; `(shortHash)` otherwise. A rebase-merged commit doesn't carry `(#N)` in its subject, so look it up with `gh pr list --state merged --search <sha>`
 
 **Exclude** internal work:
 
@@ -297,14 +296,11 @@ The following applies only to maintainers.
 
 Combine commits only when the same PR was split across multiple commits.
 
-#### Release notes files
+#### Release notes
 
-| File                                        | Purpose                                                                                      |
-| ------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| [`releases/vX.Y.Z.md`](releases/v0.35.1.md) | Minimal body for GitHub — title plus **Breaking Changes** / **Features** / **Fixes** bullets |
-| [`release-X.Y.Z.md`](release-0.35.1.md)     | Full notes — same bullets, then themed narrative sections after `---`                        |
+Write the GitHub release body directly; there's no notes file in the repo. Start with the same bullets as the changelog entry, then a `---` divider and narrative `##` sections for notable themes (new diagnostics, breaking changes, performance, new surfaces). Leave the release title empty and mark it Latest.
 
-For `release-X.Y.Z.md`, group by theme rather than by commit (`## Performance`, `## Breaking changes`, and so on). Call out breaking changes and performance gains with concrete numbers when the commits provide them. End with **Upgrade notes** (migration steps and `npm i -D sveld@X.Y.Z`). Keep prose short; use paragraphs and bullet lists; no emoji.
+Group by theme rather than by commit. Call out breaking changes and performance gains with concrete numbers when the commits provide them. End with **Upgrade notes** (migration steps and `npm i -D sveld@X.Y.Z`). Keep prose short; use paragraphs and bullet lists; no emoji.
 
 Example skeleton:
 
@@ -332,8 +328,8 @@ Example skeleton:
 
 ```sh
 git commit -am "vX.Y.Z"
-git tag vX.Y.Z
-git push origin vX.Y.Z
+git tag -s vX.Y.Z -m vX.Y.Z
+git push origin main vX.Y.Z
 ```
 
-A successful workflow publishes the new version to NPM.
+The tag push runs the publish workflow. Confirm it passed with `gh run list --workflow=release.yml -L1`, then check `npm view sveld version`, which can take a minute to show the new version.
