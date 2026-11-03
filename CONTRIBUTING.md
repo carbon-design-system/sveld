@@ -180,18 +180,18 @@ It imports the parser and writers from `../src` directly (see [`playground/vite.
 
 ## Continuous integration
 
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every PR across Ubuntu, Windows, and macOS:
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every PR across Ubuntu, Windows, and macOS. On a PR, `bivium plan` first picks the tests the change can reach (see [Scripts](#scripts)); a push to `main` runs everything. Ubuntu also runs the repo-wide checks:
 
-1. Install dependencies
-2. `biome ci --error-on-warnings`
-3. `bun run build`
-4. `bun run test`
-5. `bun run test:fixtures-types`
-6. `bun run test:types-matrix`
-7. `bun run test:e2e`
-8. `bun run test:inferred-types`
+- Lint and format: `biome ci --error-on-warnings`
+- `bivium check`, so the test plan can read every test's inputs
+- `bun run knip` for unused files, exports, and dependencies
+- `bun run typecheck` and `bun run test:fixtures-types`
+- `bun run test:svelte-versions`
+- `bun run test:inferred-types`, when the plan includes the e2e tests
 
-Run those locally before pushing. The cross-platform matrix is why path normalization is non-negotiable — a separator bug passes on macOS and fails on Windows.
+Every OS builds, then runs the planned unit tests, `bun run test:types-matrix`, and, when the plan includes it, `bun run test:e2e`. After the e2e run, CI fails on Ubuntu if the regenerated `tests/e2e` outputs differ from what's committed, so commit them with the change that moves them.
+
+Run the matching scripts locally before pushing. The cross-platform matrix is why path normalization is non-negotiable — a separator bug passes on macOS and fails on Windows.
 
 ## Commit messages
 
