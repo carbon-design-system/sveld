@@ -98,6 +98,8 @@ Biome enforces most of this in CI (`biome ci --error-on-warnings`); the rest is 
 - **No parameter reassignment, no implicit booleans, default params last.** `noParameterAssign`, `noImplicitBoolean`, `useDefaultParameterLast`.
 - Document non-obvious parser and build logic with a short comment explaining _why_ (see the bundling notes in [`scripts/build.ts`](scripts/build.ts) and the regex docblocks in `src/parser/`). Skip comments that restate the code.
 
+Format with Biome (`bun run lint:fix:changed`). `bun fmt` isn't configured for this repo, and running it rewrites files with different defaults.
+
 Fixtures (`tests/fixtures/**`) and the downstream e2e projects (`tests/e2e/**`) run under relaxed lint rules on purpose — they intentionally contain odd or invalid component code to exercise the parser. Don't "fix" their lint warnings.
 
 ## Testing
@@ -133,6 +135,30 @@ Name cases after the behavior under test, grouping by feature prefix to match th
 ### JSON schema
 
 [`schema/component-api.schema.json`](schema/component-api.schema.json) is the published JSON Schema for `COMPONENT_API.json`, and [`component-api-schema.test.ts`](tests/component-api-schema.test.ts) asserts the schema and real output stay in lockstep. **When you add or rename a field on a prop/slot/event/typedef/context** (for example a new `typeSource` value or a prop metadata field), update the schema and that test in the same change.
+
+### Adding a diagnostic
+
+A new diagnostic kind touches several places. Change them in one commit:
+
+- [`src/diagnostics.ts`](src/diagnostics.ts): the `SveldDiagnosticKind` union, its doc comment, and its severity and summary label in `DIAGNOSTIC_KINDS`
+- The `recordDiagnostic` call that raises it, with the symbol's source range when there is one
+- `@sveld-ignore` support: a prop-keyed kind registers in `recordPropSveldIgnore` ([`src/parser/diagnostics.ts`](src/parser/diagnostics.ts))
+- The codes table in [`docs/ci.md`](docs/ci.md#diagnostic-codes), with the fix, and a mention where [`docs/jsdoc-tags.md`](docs/jsdoc-tags.md) covers the feature
+- Cases in [`diagnostics.test.ts`](tests/diagnostics.test.ts) for what it flags and what it skips
+- Fixture `output.json` files, which record diagnostics, so existing ones may move. Review them with `bun run test:update`
+
+Run it against the carbon e2e project or carbon-components-svelte, and put what it found in the commit message (how many, which components, any false positives). A warning fails consumers' `strict` builds, so see [Versioning](#versioning) before releasing it.
+
+### Checking output against a real library
+
+`bun run test:e2e` regenerates the committed outputs under `tests/e2e/`, so `git diff tests/e2e` shows what a parser or writer change does to the carbon fixture. To check a library's current source, use the base-branch recipe in [`docs/ci.md`](docs/ci.md#without-a-committed-snapshot) with the published sveld as the base:
+
+```sh
+npx sveld@<published> --glob --json --stdout > base.json
+bun <path-to-sveld>/dist/cli.js --glob --types=false --check=base.json
+```
+
+`--check` lists each changed prop, event, slot, or context type with its semver bump, without hand-diffing `.d.ts` files.
 
 ### Type checks
 
