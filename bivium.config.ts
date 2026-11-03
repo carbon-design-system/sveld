@@ -8,6 +8,9 @@ export default defineConfig({
       root: "tests",
       // Read by `bun check` or the e2e suite, never by `bun test`.
       nonInputs: ["tests/e2e/**", "tests/test-e2e.ts", "tests/svelte-shim.d.ts"],
+      // `bun test` runs the code: an `import type` or a declaration file
+      // can't change what a test does.
+      types: false,
     },
     // CI runs both or neither: the inferred-types check uses the
     // svelte-check the e2e run installs.
