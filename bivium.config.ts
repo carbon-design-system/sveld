@@ -26,6 +26,8 @@ export default defineConfig({
   // for the temp files they write, so without these a fixture edit trips the
   // orphan rule and runs every unit test.
   reads: {
+    // Each test's snapshot, which `bun test` reads beside it.
+    "tests/*.test.ts": "tests/__snapshots__/$1.test.ts.snap",
     "tests/fixtures.test.ts": "tests/fixtures/**",
     "tests/component-api-schema.test.ts": ["tests/fixtures/**", "tests/fixtures-entry-exports/**"],
     "tests/example-check.test.ts": "tests/fixtures/example-check/**",
