@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.40.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.40.0) - 2026-11-03
+
+**Features**
+
+- flag `bind:this` types wider than the bound element (49fa564, #565)
+
 ## [0.39.1](https://github.com/carbon-design-system/sveld/releases/tag/v0.39.1) - 2026-11-03
 
 **Fixes**
