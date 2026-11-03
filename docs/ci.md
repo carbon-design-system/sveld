@@ -89,6 +89,23 @@ Marking a public member [`@internal`](jsdoc-tags.md#ignore--internal) counts as 
 - Only `major` changes fail by default. `--check-level=minor` or `--check-level=patch` lowers the threshold; lower changes are always reported.
 - A snapshot with a different `schemaVersion` isn't diffed. `--check` reports a `kind: "schema"` change and exits `1`; regenerate the snapshot with `sveld --json`.
 
+### Without a committed snapshot
+
+A library that doesn't commit `COMPONENT_API.json` can diff against its base branch instead. Build the snapshot from the base branch with `--stdout`, which writes nothing else, then check the pull request against it:
+
+```yaml
+- uses: actions/checkout@v7
+  with:
+    ref: ${{ github.base_ref }}
+- run: npm ci
+- run: npx sveld --json --stdout > "$RUNNER_TEMP/base-api.json"
+- uses: actions/checkout@v7
+- run: npm ci
+- run: npx sveld --types=false --check="$RUNNER_TEMP/base-api.json"
+```
+
+Each side installs its own sveld, so a pull request that only bumps sveld reports what the new version changes in the generated API, like a `bind:this` prop's type. Pass the same flags (`--glob`, `--entry`) to both runs. If the two sveld versions write a different `schemaVersion`, the check exits `1` instead of diffing.
+
 From Node, pass `check: true` (or a path). The result is on `SveldResult.check`, and `formatCheckReport(check)` renders the text above. See [Node API](options.md#node-api).
 
 ## Diagnostics
