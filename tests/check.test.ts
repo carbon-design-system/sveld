@@ -147,6 +147,36 @@ describe("diffApiDocuments", () => {
       expect(changes[0]).toMatchObject({ bump: "major" });
     });
 
+    describe("DOM element subtypes", () => {
+      const refChange = (before: string, after: string) =>
+        diffApiDocuments(
+          document([mockComponentDocApi("Table", "Table.svelte", { props: [makeProp("ref", { type: before })] })]),
+          document([mockComponentDocApi("Table", "Table.svelte", { props: [makeProp("ref", { type: after })] })]),
+        );
+
+      test("dropping or adding a subtype next to its supertype is not reported", () => {
+        expect(refChange("null | HTMLElement | HTMLTableElement", "null | HTMLElement")).toEqual([]);
+        expect(refChange("null | HTMLElement", "null | HTMLElement | HTMLTableElement")).toEqual([]);
+        expect(refChange("null | SVGElement | SVGSVGElement", "null | SVGElement")).toEqual([]);
+        expect(refChange("null | Element | HTMLElement", "null | Element")).toEqual([]);
+      });
+
+      test("a subtype widened to its supertype is additive", () => {
+        expect(refChange("null | HTMLDivElement", "null | HTMLElement")).toMatchObject([{ bump: "minor" }]);
+        expect(refChange("null | HTMLElementTagNameMap[Tag]", "null | HTMLElement")).toMatchObject([{ bump: "minor" }]);
+      });
+
+      test("a supertype narrowed to a subtype is breaking", () => {
+        expect(refChange("null | HTMLElement", "null | HTMLDivElement")).toMatchObject([{ bump: "major" }]);
+        expect(refChange("null | HTMLElement", "null | HTMLElementTagNameMap[Tag]")).toMatchObject([{ bump: "major" }]);
+      });
+
+      test("an element swapped for an unrelated one is breaking", () => {
+        expect(refChange("null | HTMLButtonElement", "null | HTMLAnchorElement")).toMatchObject([{ bump: "major" }]);
+        expect(refChange("null | SVGSVGElement", "null | HTMLElement")).toMatchObject([{ bump: "major" }]);
+      });
+    });
+
     test("an unrelated type change is breaking", () => {
       const before = mockComponentDocApi("Button", "Button.svelte", { props: [makeProp("value", { type: "string" })] });
       const after = mockComponentDocApi("Button", "Button.svelte", { props: [makeProp("value", { type: "number" })] });

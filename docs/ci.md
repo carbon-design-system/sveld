@@ -73,6 +73,8 @@ Suggested semver bump: major.
 | `generics`, `@restProps`, `@extends`, or `@typedef` changed     | `major` (not classified further) |
 | Description-only change                                         | not reported                     |
 
+Union members are compared as text, except DOM element types: a member covered by its supertype in the other union, like `HTMLTableElement` next to `HTMLElement`, doesn't count as gained or lost. So `null | HTMLElement | HTMLTableElement` to `null | HTMLElement` isn't reported, and `HTMLDivElement` to `HTMLElement` is a widening.
+
 A context change names the context key and the property, one line per property:
 
 ```

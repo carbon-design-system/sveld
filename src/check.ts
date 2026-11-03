@@ -13,6 +13,10 @@ import {
 } from "./writer/document-model";
 
 const PARAM_NAME_SPLIT_REGEX = /[:=]/;
+/** An `HTMLElement` subtype: `HTMLDivElement`, or `HTMLElementTagNameMap[Tag]` for a generic tag. */
+const HTML_ELEMENT_SUBTYPE_REGEX = /^HTML\w+Element$|^HTMLElementTagNameMap\[[\w$]+\]$/;
+/** An `SVGElement` subtype: `SVGCircleElement`. */
+const SVG_ELEMENT_SUBTYPE_REGEX = /^SVG\w+Element$/;
 
 type Prop = ComponentDocApi["props"][number];
 type Event = ComponentDocApi["events"][number];
@@ -71,6 +75,31 @@ function splitUnionMembers(type: string): Set<string> {
   );
 }
 
+/** True when the DOM element type `narrower` extends `wider`: `HTMLTableElement` and `HTMLElement`. */
+function isDomElementSubtype(narrower: string, wider: string): boolean {
+  if (narrower === wider) return false;
+  if (wider === "HTMLElement") return HTML_ELEMENT_SUBTYPE_REGEX.test(narrower);
+  if (wider === "SVGElement") return SVG_ELEMENT_SUBTYPE_REGEX.test(narrower);
+  if (wider === "Element") {
+    return (
+      narrower === "HTMLElement" ||
+      narrower === "SVGElement" ||
+      narrower === "MathMLElement" ||
+      HTML_ELEMENT_SUBTYPE_REGEX.test(narrower) ||
+      SVG_ELEMENT_SUBTYPE_REGEX.test(narrower)
+    );
+  }
+  return false;
+}
+
+/** True when a member of `members` is a DOM element type that `member` extends, so it already admits `member`. */
+function isCoveredBy(member: string, members: Iterable<string>): boolean {
+  for (const other of members) {
+    if (isDomElementSubtype(member, other)) return true;
+  }
+  return false;
+}
+
 interface ParsedFunctionType {
   params: string[];
   returnType: string;
@@ -114,7 +143,8 @@ function classifyFunctionTypeChange(oldFn: ParsedFunctionType, newFn: ParsedFunc
 
 /**
  * Classifies a type-string change as additive (widened union), breaking
- * (narrowed union), or unchanged. Only top-level union members count.
+ * (narrowed union), or unchanged. Only top-level union members count, and a
+ * DOM element type counts as covered by its supertype in the other union.
  * Other structural changes (generics, object shape, function signature) are
  * breaking, same as cargo-semver-checks' "when in doubt, call it major".
  */
@@ -126,10 +156,12 @@ function classifyTypeChange(oldType: string | undefined, newType: string | undef
   const newFn = parseFunctionType(newType);
   if (oldFn && newFn) return classifyFunctionTypeChange(oldFn, newFn);
 
+  // A DOM element subtype next to its supertype adds nothing, so dropping
+  // `HTMLTableElement` from `HTMLElement | HTMLTableElement` isn't a narrowing.
   const oldMembers = splitUnionMembers(oldType);
   const newMembers = splitUnionMembers(newType);
-  const gainedMembers = [...newMembers].some((member) => !oldMembers.has(member));
-  const lostMembers = [...oldMembers].some((member) => !newMembers.has(member));
+  const gainedMembers = [...newMembers].some((member) => !oldMembers.has(member) && !isCoveredBy(member, oldMembers));
+  const lostMembers = [...oldMembers].some((member) => !newMembers.has(member) && !isCoveredBy(member, newMembers));
 
   if (!lostMembers) return gainedMembers ? "minor" : "none";
   return "major";
