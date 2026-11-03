@@ -39,6 +39,8 @@ When both TypeScript syntax and JSDoc are present, sveld picks a prop's type in 
 
 When inference fails, a prop falls back to `any` rather than a wrong guess, and sveld records a [`sveld/prop-unknown-type`](ci.md#diagnostic-codes) diagnostic. A prop with no annotation, no `@type`, and no initializer is typed `any` with no `@default` line, and its JSON `typeSource` is `"unknown"`.
 
+A prop bound with `bind:this` and no declared type is typed from the element: `null | HTMLDivElement` for `<div bind:this={ref} />`. A declared type wins and ships as written, so when it names an element type the prop is never bound to (`HTMLElement` on a `<div>`, or `HTMLAnchorElement` on a `<button>`), sveld raises [`sveld/bind-this-type-mismatch`](ci.md#diagnostic-codes) with the type to declare instead.
+
 For `lang="ts"` components, sveld keeps source-level type annotations: legacy `export let` props, typed `$props()` destructuring (whole-object and per-prop), local `interface`/`type`/`enum` declarations, and TypeScript signatures on exported functions. A type that an annotation depends on is re-emitted as an `import type` at the top of the generated `.d.ts` (whether the source used `import type` or a plain import used only as a type), and local declarations it depends on are copied alongside it. Everything stays textual: sveld does not run the TypeScript compiler, and `satisfies`/`as` are treated alike. So an imported type used for a whole `$props()` object is kept in the `.d.ts` but isn't expanded into per-prop JSON metadata. A `const enum` is widened to a literal union of its member values, since common bundlers don't support `const enum` under `isolatedModules`.
 
 ## `@type`

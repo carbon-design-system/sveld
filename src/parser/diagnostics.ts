@@ -57,6 +57,7 @@ export function recordSveldIgnore(
 /** A prop's `@sveld-ignore` codes, for {@link recordSveldIgnore} and diagnostics reported after parsing. */
 export function recordPropSveldIgnore(ctx: ParserContext, propName: string, codes: string[] | undefined) {
   recordSveldIgnore(ctx, "prop-unknown-type", propName, codes);
+  recordSveldIgnore(ctx, "bind-this-type-mismatch", propName, codes);
   if (codes && codes.length > 0) ctx.propIgnoreCodes.set(propName, codes);
 }
 

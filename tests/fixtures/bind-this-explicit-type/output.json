@@ -76,5 +76,14 @@
   "typedefs": [],
   "generics": null,
   "contexts": [],
-  "diagnostics": []
+  "diagnostics": [
+    {
+      "component": "bind-this-explicit-type/input.svelte",
+      "kind": "bind-this-type-mismatch",
+      "name": "buttonRef",
+      "message": "Prop \"buttonRef\" is declared as \"null | HTMLElement\", but `bind:this` only binds it to <button>. Declare \"null | HTMLButtonElement\" instead.",
+      "code": "sveld/bind-this-type-mismatch",
+      "severity": "warning"
+    }
+  ]
 }
