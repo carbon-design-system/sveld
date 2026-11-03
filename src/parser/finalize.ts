@@ -185,15 +185,20 @@ function componentInstanceType(name: string): string {
  */
 function boundPropType(binding: ComponentPropBindings, tagTypes?: Map<string, string>): string {
   const boundTypes = [
-    ...binding.elements
-      .sort((a, b) => (a.tag < b.tag ? -1 : a.tag > b.tag ? 1 : 0))
-      .map(({ tag, namespace, tagLocal }) => {
-        const tagType = tagLocal && tagTypes?.get(tagLocal);
-        return tagType ? `HTMLElementTagNameMap[${tagType}]` : getElementByTag(tag, namespace);
-      }),
+    ...boundElementTypes(binding, tagTypes),
     ...binding.components.sort().map(componentInstanceType),
   ].join(" | ");
   return binding.target === "indexed" ? `(null | ${boundTypes})[]` : `null | ${boundTypes}`;
+}
+
+/** Each bound element's DOM type, sorted by tag. */
+function boundElementTypes(binding: ComponentPropBindings, tagTypes?: Map<string, string>): string[] {
+  return binding.elements
+    .sort((a, b) => (a.tag < b.tag ? -1 : a.tag > b.tag ? 1 : 0))
+    .map(({ tag, namespace, tagLocal }) => {
+      const tagType = tagLocal && tagTypes?.get(tagLocal);
+      return tagType ? `HTMLElementTagNameMap[${tagType}]` : getElementByTag(tag, namespace);
+    });
 }
 
 /** Props in output form: `bind:this` element types applied, and snippet props left to their slots. */
@@ -589,8 +594,7 @@ function tagTypeParameters(ctx: ParserContext, props: ComponentProp[]): Map<stri
  * type parameter: rest props spread on it, so `tag="a"` allows `href`, and a
  * `bind:this` ref. An unconstrained one might not be a tag name, so it's left alone.
  */
-function typeFromTagTypeParameters(ctx: ParserContext, props: ComponentProp[]) {
-  const tagTypes = tagTypeParameters(ctx, props);
+function typeFromTagTypeParameters(ctx: ParserContext, props: ComponentProp[], tagTypes: Map<string, string>) {
   if (tagTypes.size === 0) return;
 
   const restProps = ctx.rest_props;
@@ -611,6 +615,57 @@ function typeFromTagTypeParameters(ctx: ParserContext, props: ComponentProp[]) {
   }
 }
 
+/** A DOM element type: `HTMLElement`, `SVGCircleElement`, `HTMLElementTagNameMap[Tag]`. */
+const DOM_ELEMENT_TYPE_REGEX = /^(?:(?:HTML|SVG|MathML)\w*)?Element$|^HTMLElementTagNameMap\[[\w$]+\]$/;
+
+/**
+ * A declared `bind:this` type that names an element type the prop is never
+ * bound to: wider than the element (`HTMLElement` on a `<div>`), or another
+ * element (`HTMLAnchorElement` on a `<button>`). The declared type wins in the
+ * output, so it ships as written. Checks only refs bound directly, to elements
+ * whose type sveld knows, and declared as a union of DOM element types.
+ */
+function recordBindThisTypeMismatches(ctx: ParserContext, props: ComponentProp[], tagTypes: Map<string, string>) {
+  for (const prop of props) {
+    if (prop.typeSource !== "typescript" && prop.typeSource !== "jsdoc") continue;
+    const binding = ctx.bindings.get(prop.name);
+    if (binding?.target !== "direct" || binding.components.length > 0 || prop.type === undefined) continue;
+    // `<svelte:element this={href ? "a" : "button"}>` could be any element, so `HTMLElement` is only an upper bound.
+    const isOpenTag = ({ tag, tagLocal }: ComponentPropBindings["elements"][number]) =>
+      tag === "svelte:element" && !(tagLocal && tagTypes.has(tagLocal));
+    if (binding.elements.some(isOpenTag)) continue;
+
+    const isNullish = (member: string) => member === "null" || member === "undefined";
+    const declared = splitTopLevel(prop.type, "|")
+      .map((member) => member.trim())
+      .filter(Boolean);
+    const nullish = declared.filter(isNullish);
+    const elementTypes = declared.filter((member) => !isNullish(member));
+    if (!elementTypes.every((member) => DOM_ELEMENT_TYPE_REGEX.test(member))) continue;
+
+    const bound = [...new Set(boundElementTypes(binding, tagTypes))];
+    if (elementTypes.every((member) => bound.includes(member))) continue;
+
+    const elements = binding.elements.map(({ tag, tagLocal }) =>
+      tag === "svelte:element" ? `<svelte:element this={${tagLocal}}>` : `<${tag}>`,
+    );
+    // Keep `null`/`undefined` where the declaration put them.
+    const suggested = (isNullish(declared[0] ?? "") ? [...nullish, ...bound] : [...bound, ...nullish]).join(" | ");
+    recordDiagnostic(
+      ctx,
+      "bind-this-type-mismatch",
+      prop.name,
+      `Prop "${prop.name}" is declared as "${prop.type}", but \`bind:this\` only binds it to ${formatList(elements)}. Declare "${suggested}" instead.`,
+      prop.source,
+    );
+  }
+}
+
+/** `a`, `a and b`, `a, b and c`. */
+function formatList(items: string[]): string {
+  return items.length < 2 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
+}
+
 /** Builds the parse result from `ctx` and what {@link walkComponent} collected. */
 export function finalizeComponent(ctx: ParserContext, walk: ComponentWalkResult): ComponentParseResult {
   const dispatchedEvents = resolveDispatchedEvents(ctx, walk);
@@ -624,7 +679,8 @@ export function finalizeComponent(ctx: ParserContext, walk: ComponentWalkResult)
   const slots = buildSlots(ctx);
 
   resolveGenerics(ctx, props, slots);
-  typeFromTagTypeParameters(ctx, props);
+  const tagTypes = tagTypeParameters(ctx, props);
+  typeFromTagTypeParameters(ctx, props, tagTypes);
 
   const moduleExports = mapToArray(ctx.moduleExports);
   const events = serializeEvents(ctx);
@@ -632,6 +688,7 @@ export function finalizeComponent(ctx: ParserContext, walk: ComponentWalkResult)
   const contexts = mapToArray(ctx.contexts);
 
   recordUnknownPropTypes(ctx, props);
+  recordBindThisTypeMismatches(ctx, props, tagTypes);
   replaceInvalidTypes(ctx, props, events, slots, typedefs);
 
   const unfollowableEscapes = queueDispatcherEscapes(ctx, walk);

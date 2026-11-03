@@ -6,6 +6,7 @@ import type { ParsedComponent, SourceRange } from "./model";
  *
  * - `prop-unknown-type`: prop `typeSource` is `"unknown"`.
  * - `context-any-type`: `setContext` value inferred as `any`, or with `any` inside it (`Writable<any>`, `(id: any) => void`).
+ * - `bind-this-type-mismatch`: a `bind:this` prop's declared type names an element type it's never bound to, e.g. `HTMLElement` on a `<div>`; the declared type ships as written.
  * - `slot-missing-type`: `@slot`/`@snippet` tag omitted the required `{Type}` annotation.
  * - `slot-not-rendered`: a `@slot`/`@snippet` tag names a slot the component never renders, e.g. a description's first word read as the slot name.
  * - `event-no-source`: `@event` with no dispatch, forward, or callback prop.
@@ -37,6 +38,7 @@ import type { ParsedComponent, SourceRange } from "./model";
 export type SveldDiagnosticKind =
   | "prop-unknown-type"
   | "context-any-type"
+  | "bind-this-type-mismatch"
   | "slot-missing-type"
   | "slot-not-rendered"
   | "event-no-source"
@@ -76,6 +78,10 @@ export type SveldDiagnosticSeverity = "error" | "warning";
 const DIAGNOSTIC_KINDS: Record<SveldDiagnosticKind, { severity: SveldDiagnosticSeverity; label: string }> = {
   "prop-unknown-type": { severity: "warning", label: "Props without inferred types" },
   "context-any-type": { severity: "warning", label: "Context values typed as `any`" },
+  "bind-this-type-mismatch": {
+    severity: "warning",
+    label: "bind:this props declared with an element type they're never bound to",
+  },
   "slot-missing-type": { severity: "warning", label: "@slot/@snippet tags missing a {Type} annotation" },
   "slot-not-rendered": { severity: "warning", label: "@slot/@snippet tags for slots the component doesn't render" },
   "event-no-source": { severity: "warning", label: "@event tags with no dispatch or callback" },

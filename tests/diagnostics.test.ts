@@ -285,6 +285,122 @@ describe("ComponentParser diagnostics", () => {
     });
   });
 
+  describe("bind-this-type-mismatch", () => {
+    const bindThisMismatches = (source: string) =>
+      new ComponentParser()
+        .parseSvelteComponent(source, parseContext)
+        .diagnostics?.filter((d) => d.kind === "bind-this-type-mismatch");
+
+    test("flags a declared type wider than the bound element", () => {
+      const diagnostics = bindThisMismatches(`
+        <script>
+          /** @type {null | HTMLElement} */
+          export let ref = null;
+        </script>
+        <div bind:this={ref} />
+      `);
+
+      expect(diagnostics).toEqual([
+        expect.objectContaining({
+          code: "sveld/bind-this-type-mismatch",
+          severity: "warning",
+          name: "ref",
+          message:
+            'Prop "ref" is declared as "null | HTMLElement", but `bind:this` only binds it to <div>. Declare "null | HTMLDivElement" instead.',
+          source: { start: { line: 4, column: 10 }, end: { line: 4, column: 32 } },
+        }),
+      ]);
+    });
+
+    test("flags a declared element the prop is never bound to", () => {
+      const diagnostics = bindThisMismatches(`
+        <script>
+          /** @type {null | HTMLButtonElement | HTMLAnchorElement} */
+          export let ref = null;
+        </script>
+        <button bind:this={ref} />
+      `);
+
+      expect(diagnostics?.map((d) => d.message)).toEqual([
+        'Prop "ref" is declared as "null | HTMLButtonElement | HTMLAnchorElement", but `bind:this` only binds it to <button>. Declare "null | HTMLButtonElement" instead.',
+      ]);
+    });
+
+    test("suggests every bound element, and keeps `null` or `undefined` where it was declared", () => {
+      const diagnostics = bindThisMismatches(`
+        <script lang="ts">
+          export let ref: HTMLElement | undefined = undefined;
+          export let href = "";
+        </script>
+        {#if href}<a {href} bind:this={ref}>Link</a>{:else}<button bind:this={ref}>Button</button>{/if}
+      `);
+
+      expect(diagnostics?.map((d) => d.message)).toEqual([
+        'Prop "ref" is declared as "HTMLElement | undefined", but `bind:this` only binds it to <a> and <button>. Declare "HTMLAnchorElement | HTMLButtonElement | undefined" instead.',
+      ]);
+    });
+
+    test("suggests the tag's element type for a `svelte:element` whose tag is a type parameter", () => {
+      const diagnostics = bindThisMismatches(`
+        <script>
+          /**
+           * @template {keyof HTMLElementTagNameMap} [Tag="div"]
+           */
+          /** @type {Tag} */
+          export let tag = "div";
+          /** @type {null | HTMLElement} */
+          export let ref = null;
+        </script>
+        <svelte:element this={tag} bind:this={ref} />
+      `);
+
+      expect(diagnostics?.map((d) => d.message)).toEqual([
+        'Prop "ref" is declared as "null | HTMLElement", but `bind:this` only binds it to <svelte:element this={tag}>. Declare "null | HTMLElementTagNameMap[Tag]" instead.',
+      ]);
+    });
+
+    test("skips a declared type that matches, an open `svelte:element`, a non-DOM type, and a component", () => {
+      const diagnostics = bindThisMismatches(`
+        <script>
+          import Child from "./Child.svelte";
+          /** @typedef {HTMLElement} Ref */
+          /** @type {null | HTMLDivElement} */
+          export let exact = null;
+          /** @type {null | HTMLAnchorElement | HTMLButtonElement} */
+          export let open = null;
+          /** @type {null | Ref} */
+          export let alias = null;
+          /** @type {null | HTMLElement} */
+          export let child = null;
+          export let inferred = null;
+          export let href = "";
+        </script>
+        <div bind:this={exact} />
+        <svelte:element this={href ? "a" : "button"} bind:this={open} />
+        <div bind:this={alias} />
+        <Child bind:this={child} />
+        <div bind:this={inferred} />
+      `);
+
+      expect(diagnostics).toEqual([]);
+    });
+
+    test("@sveld-ignore on the prop suppresses it", () => {
+      const diagnostics = bindThisMismatches(`
+        <script>
+          /**
+           * @type {null | HTMLElement}
+           * @sveld-ignore sveld/bind-this-type-mismatch
+           */
+          export let ref = null;
+        </script>
+        <div bind:this={ref} />
+      `);
+
+      expect(diagnostics).toEqual([expect.objectContaining({ ignored: true })]);
+    });
+  });
+
   test("flags @event tags with no matching dispatch or callback prop", () => {
     const parser = new ComponentParser();
     const source = `
