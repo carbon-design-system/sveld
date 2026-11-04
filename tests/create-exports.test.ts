@@ -117,6 +117,17 @@ export { normalizeTree } from "./utils/normalizeTree";`);
 export { helperA, helperB, helperC } from "./utils/helpers";`);
   });
 
+  test("an aliased named export keeps its source name", () => {
+    const source = mockParsedExports({
+      Widget: mockParsedExport("./Widget.svelte", { default: true }),
+      addTab: mockParsedExport("./model.js", { imported: "add" }),
+      removeTab: mockParsedExport("./model.js"),
+    });
+
+    expect(createExports(source)).toEqual(`export { default as Widget } from "./Widget.svelte";
+export { add as addTab, removeTab } from "./model.js";`);
+  });
+
   test("default and named export from same Svelte file (module context)", () => {
     const source = mockParsedExports({
       Theme: mockParsedExport("./Theme/Theme.svelte", { default: true }),

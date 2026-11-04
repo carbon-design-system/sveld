@@ -6,12 +6,16 @@ function mockRelativeSourcePath(source: string): RelativeSourcePath {
   return asRelativeSourcePath(source);
 }
 
-export function mockParsedExport(source: string, options?: { default?: boolean; mixed?: boolean; star?: boolean }) {
+export function mockParsedExport(
+  source: string,
+  options?: { default?: boolean; mixed?: boolean; star?: boolean; imported?: string },
+) {
   return {
     source: mockRelativeSourcePath(source),
     default: options?.default ?? false,
     ...(options?.mixed ? { mixed: true } : {}),
     ...(options?.star ? { star: true as const } : {}),
+    ...(options?.imported === undefined ? {} : { imported: options.imported }),
   } satisfies ParsedExports[string];
 }
 

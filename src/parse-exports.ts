@@ -13,6 +13,11 @@ export type ParsedExports = Record<
     default: boolean;
     mixed?: boolean;
     /**
+     * The export's name in `source` when it differs from its key, as in
+     * `export { add as addTab } from "./model.js"`. Absent for a default export.
+     */
+    imported?: string;
+    /**
      * An `export * from` the barrel keeps as written: its target brought no
      * exports sveld reads, so it is a types-only module, a `.d.ts` next to an
      * empty `.js`, that TypeScript resolves on its own. Keyed `*:<source>`.
@@ -169,6 +174,7 @@ function readExports(
           ? asRelativeSourcePath(normalizeSeparators(`./${relative(dir, resolve(chain.dir, chained.source))}`))
           : asRelativeSourcePath(graph.aliases.relative(sourceValue ?? "", dir));
         const isDefault = chained ? chained.default : local_name === "default";
+        const imported = chained ? (chained.imported ?? local_name) : local_name;
 
         if (id in exports_by_identifier) {
           exports_by_identifier[id].mixed = true;
@@ -177,7 +183,11 @@ function readExports(
             exports_by_identifier[id].source = source;
           }
         } else {
-          exports_by_identifier[id] = { source, default: isDefault };
+          exports_by_identifier[id] = {
+            source,
+            default: isDefault,
+            ...(!isDefault && sourceValue !== undefined && imported !== id ? { imported } : {}),
+          };
         }
       }
     } else if (node.type === "ImportDeclaration") {
@@ -186,11 +196,12 @@ function readExports(
       if (!first) continue;
       const id = first.local.name;
       const source = asRelativeSourcePath(graph.aliases.relative(node.source.value, dir));
+      const imported = first.type === "ImportSpecifier" ? moduleExportName(first.imported) : id;
 
       if (id in exports_by_identifier) {
         if (!exports_by_identifier[id].source) exports_by_identifier[id].source = source;
       } else {
-        exports_by_identifier[id] = { source, default: id === "default" };
+        exports_by_identifier[id] = { source, default: id === "default", ...(imported === id ? {} : { imported }) };
       }
     }
   }
