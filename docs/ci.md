@@ -62,6 +62,8 @@ Suggested semver bump: major.
 | Event/slot added                                                | `minor`                          |
 | Event/slot removed                                              | `major`                          |
 | Event detail / slot props type widened                          | `minor`                          |
+| Event detail / slot props object gained a field                 | `minor`                          |
+| Event detail / slot props object lost a field                   | `major`                          |
 | Event detail / slot props type narrowed or otherwise changed    | `major`                          |
 | Context added                                                   | `minor`                          |
 | Context removed                                                 | `major`                          |
