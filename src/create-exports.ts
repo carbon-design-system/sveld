@@ -46,7 +46,7 @@ export function createExports(parsed_exports: ParsedExports): string {
       } else if (isSvelteFile && !hasMixedExports) {
         defaultAsExports.push(`default as ${id}`);
       } else {
-        namedExports.push(id);
+        namedExports.push(exportee.imported === undefined ? id : `${exportee.imported} as ${id}`);
       }
     }
 

@@ -305,6 +305,50 @@ describe("parseExports", () => {
     });
   });
 
+  test("an aliased re-export keeps the name it has in its source module", () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "sveld-parse-exports-alias-"));
+
+    try {
+      writeFileSync(path.join(dir, "model.js"), "export function add() {}\n");
+
+      const source = `export { add as addTab } from "./model.js";`;
+
+      expect(parseExports(source, dir)).toEqual({
+        addTab: { source: "./model.js", default: false, imported: "add" },
+      });
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("an aliased import that's re-exported keeps the name it has in its source module", () => {
+    const source = `import { add as addTab } from "./model.js";\nexport { addTab };`;
+
+    expect(parseExports(source, "")).toEqual({
+      addTab: { source: "./model.js", default: false, imported: "add", mixed: true },
+    });
+  });
+
+  test("an alias through a named chain resolves to the name in the final module", () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "sveld-parse-exports-chain-alias-"));
+
+    try {
+      const libDir = path.join(dir, "lib");
+      mkdirSync(libDir);
+      writeFileSync(path.join(dir, "model.js"), "export function add() {}\n");
+      writeFileSync(path.join(libDir, "index.js"), `export { add as plus } from "../model.js";\n`);
+
+      const source = `export { plus as sum, plus } from "./lib";`;
+
+      expect(parseExports(source, dir)).toEqual({
+        sum: { source: "./model.js", default: false, imported: "add" },
+        plus: { source: "./model.js", default: false, imported: "add" },
+      });
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   test("`export *` to a missing relative path throws a structured error instead of crashing raw", () => {
     const source = `export * from "./sveld-test-does-not-exist";`;
 
