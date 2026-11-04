@@ -185,6 +185,18 @@ describe("diffApiDocuments", () => {
       expect(changes[0]).toMatchObject({ bump: "major" });
     });
 
+    test("an object-typed prop gaining a field is breaking, since callers pass it", () => {
+      const before = mockComponentDocApi("Tabs", "Tabs.svelte", {
+        props: [makeProp("tab", { type: "{ id: string }" })],
+      });
+      const after = mockComponentDocApi("Tabs", "Tabs.svelte", {
+        props: [makeProp("tab", { type: "{ id: string; label: string }" })],
+      });
+
+      const changes = diffApiDocuments(document([before]), document([after]));
+      expect(changes[0]).toMatchObject({ bump: "major" });
+    });
+
     test("a description-only change is not reported", () => {
       const before = mockComponentDocApi("Button", "Button.svelte", {
         props: [makeProp("value", { type: "string", description: "old" })],
@@ -448,6 +460,46 @@ describe("diffApiDocuments", () => {
       const changes = diffApiDocuments(document([before]), document([after]));
       expect(changes[0]).toMatchObject({ kind: "event", name: "change", bump: "major" });
     });
+
+    function detailChange(oldDetail: string, newDetail: string) {
+      const before = mockComponentDocApi("Tabs", "Tabs.svelte", {
+        events: [{ type: "dispatched", name: "dismiss", detail: oldDetail }],
+      });
+      const after = mockComponentDocApi("Tabs", "Tabs.svelte", {
+        events: [{ type: "dispatched", name: "dismiss", detail: newDetail }],
+      });
+      return diffApiDocuments(document([before]), document([after]));
+    }
+
+    test("a detail object gaining a field is additive", () => {
+      expect(detailChange("{ id: string }", "{ id: string; modified: boolean }")).toEqual([
+        {
+          component: "Tabs",
+          kind: "event",
+          name: "dismiss",
+          bump: "minor",
+          message: 'event "dismiss" detail changed from `{ id: string }` to `{ id: string; modified: boolean }`',
+        },
+      ]);
+    });
+
+    test("a detail object losing a field, or a field becoming optional, is breaking", () => {
+      expect(detailChange("{ id: string; modified: boolean }", "{ id: string }")[0]?.bump).toBe("major");
+      expect(detailChange("{ id: string }", "{ id?: string }")[0]?.bump).toBe("major");
+      expect(detailChange("{ id: string }", "{ id: number }")[0]?.bump).toBe("major");
+    });
+
+    test("detail object fields are compared like the detail itself", () => {
+      expect(detailChange("{ id?: string }", "{ id: string }")[0]?.bump).toBe("minor");
+      expect(detailChange("{ id: string }", "{ id: string | number }")[0]?.bump).toBe("minor");
+      expect(detailChange("{ tab: { id: string } }", "{ tab: { id: string; label: string } }")[0]?.bump).toBe("minor");
+      expect(detailChange("{ tab: { id: string; label: string } }", "{ tab: { id: string } }")[0]?.bump).toBe("major");
+    });
+
+    test("a detail that isn't a plain object literal falls back to breaking", () => {
+      expect(detailChange("{ id: string }", "{ id: string; [key: string]: unknown }")[0]?.bump).toBe("major");
+      expect(detailChange('{ "aria-id": string }', '{ "aria-id": string; open: boolean }')[0]?.bump).toBe("major");
+    });
   });
 
   describe("slots", () => {
@@ -482,6 +534,18 @@ describe("diffApiDocuments", () => {
 
       const changes = diffApiDocuments(document([before]), document([after]));
       expect(changes[0]).toMatchObject({ kind: "slot", name: "default", bump: "major" });
+    });
+
+    test("a slot_props object gaining a prop is additive", () => {
+      const before = mockComponentDocApi("Card", "Card.svelte", {
+        slots: [{ name: null, default: true, slot_props: "{ title: string }" }],
+      });
+      const after = mockComponentDocApi("Card", "Card.svelte", {
+        slots: [{ name: null, default: true, slot_props: "{ title: string; subtitle: string }" }],
+      });
+
+      const changes = diffApiDocuments(document([before]), document([after]));
+      expect(changes).toEqual([expect.objectContaining({ kind: "slot", name: "default", bump: "minor" })]);
     });
   });
 

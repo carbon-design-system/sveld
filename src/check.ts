@@ -4,6 +4,7 @@ import { isObject } from "./ast-guards";
 import type { ComponentDocApi, ComponentDocs } from "./bundle";
 import type { SveldRuntimeOptions } from "./load-config";
 import type { EntryExports } from "./parse-entry-exports";
+import { parseObjectTypeLiteralMembers } from "./parser/object-type-literal";
 import { formatJsonOutput } from "./path";
 import { indexOfTopLevelArrow, splitTopLevel } from "./type-text";
 import {
@@ -142,19 +143,52 @@ function classifyFunctionTypeChange(oldFn: ParsedFunctionType, newFn: ParsedFunc
 }
 
 /**
+ * Compares two object-type literals that the consumer only reads. A new
+ * member is additive: code reading the old ones still type-checks. A removed
+ * member, or one that became optional, is breaking. `undefined` when either
+ * side isn't an object-type literal sveld can split into members.
+ */
+function classifyReadOnlyObjectChange(oldType: string, newType: string): SemverBump | undefined {
+  const oldMembers = parseObjectTypeLiteralMembers(oldType);
+  const newMembers = parseObjectTypeLiteralMembers(newType);
+  if (!oldMembers || !newMembers) return undefined;
+
+  const { added, removed, common } = matchByKey(oldMembers, newMembers, (member) => member.name);
+  if (removed.length > 0) return "major";
+
+  let bump: SemverBump = added.length > 0 ? "minor" : "none";
+  for (const [, oldMember, newMember] of common) {
+    if (oldMember.optional !== newMember.optional) {
+      bump = maxBump(bump, newMember.optional ? "major" : "minor");
+    }
+    bump = maxBump(bump, classifyTypeChange(oldMember.type, newMember.type, { readOnly: true }));
+  }
+  return bump;
+}
+
+/**
  * Classifies a type-string change as additive (widened union), breaking
  * (narrowed union), or unchanged. Only top-level union members count, and a
  * DOM element type counts as covered by its supertype in the other union.
+ * With `readOnly`, for a type the consumer only reads (an event's `detail`,
+ * a slot's props), an object type gaining a member is additive too.
  * Other structural changes (generics, object shape, function signature) are
  * breaking, same as cargo-semver-checks' "when in doubt, call it major".
  */
-function classifyTypeChange(oldType: string | undefined, newType: string | undefined): SemverBump {
+function classifyTypeChange(
+  oldType: string | undefined,
+  newType: string | undefined,
+  { readOnly = false } = {},
+): SemverBump {
   if (oldType === newType) return "none";
   if (oldType === undefined || newType === undefined) return "major";
 
   const oldFn = parseFunctionType(oldType);
   const newFn = parseFunctionType(newType);
   if (oldFn && newFn) return classifyFunctionTypeChange(oldFn, newFn);
+
+  const objectBump = readOnly ? classifyReadOnlyObjectChange(oldType, newType) : undefined;
+  if (objectBump !== undefined) return objectBump;
 
   // A DOM element subtype next to its supertype adds nothing, so dropping
   // `HTMLTableElement` from `HTMLElement | HTMLTableElement` isn't a narrowing.
@@ -264,7 +298,7 @@ function diffEvents(component: string, oldEvents: Event[], newEvents: Event[]): 
 
     const oldDetail = oldEvent.type === "dispatched" ? oldEvent.detail : undefined;
     const newDetail = newEvent.type === "dispatched" ? newEvent.detail : undefined;
-    const detailBump = classifyTypeChange(oldDetail, newDetail);
+    const detailBump = classifyTypeChange(oldDetail, newDetail, { readOnly: true });
     if (detailBump !== "none") {
       push(name, detailBump, `detail changed from \`${oldDetail ?? "unknown"}\` to \`${newDetail ?? "unknown"}\``);
     }
@@ -282,7 +316,7 @@ function diffSlots(component: string, oldSlots: Slot[], newSlots: Slot[]): ApiCh
   for (const name of removed) push(name, "major", "removed");
 
   for (const [name, oldSlot, newSlot] of common) {
-    const bump = classifyTypeChange(oldSlot.slot_props, newSlot.slot_props);
+    const bump = classifyTypeChange(oldSlot.slot_props, newSlot.slot_props, { readOnly: true });
     if (bump !== "none") {
       push(name, bump, `props changed from \`${oldSlot.slot_props ?? "none"}\` to \`${newSlot.slot_props ?? "none"}\``);
     }
