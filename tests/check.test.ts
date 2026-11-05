@@ -861,6 +861,158 @@ describe("diffApiDocuments", () => {
     });
   });
 
+  describe("typedefs", () => {
+    type TypeDefDoc = ComponentDocApi["typedefs"][number];
+
+    function typedef(name: string, type: string): TypeDefDoc {
+      return { name, type, description: undefined, ts: `type ${name} = ${type}` } as TypeDefDoc;
+    }
+
+    function tableWith(typedefs: TypeDefDoc[], overrides?: Partial<ComponentDocApi>) {
+      return mockComponentDocApi("Table", "Table.svelte", { typedefs, ...overrides });
+    }
+
+    const headersProp = { props: [makeProp("headers", { type: "ReadonlyArray<Header>" })] };
+    const headerSlot = { slots: [{ name: "cell", default: false, slot_props: "{ header: Header }" }] };
+
+    test("a new typedef is additive and a removed one is breaking", () => {
+      const before = tableWith([typedef("Header", "{ key: string }")]);
+      const after = tableWith([typedef("Header", "{ key: string }"), typedef("Row", "{ id: string }")]);
+
+      expect(diffApiDocuments(document([before]), document([after]))).toEqual([
+        { component: "Table", kind: "typedef", name: "Row", bump: "minor", message: 'typedef "Row" added' },
+      ]);
+      expect(diffApiDocuments(document([after]), document([before]))).toEqual([
+        { component: "Table", kind: "typedef", name: "Row", bump: "major", message: 'typedef "Row" removed' },
+      ]);
+    });
+
+    test("a change to doc comments or layout only is not a change", () => {
+      const before = tableWith([typedef("Header", "{\n  /** The key */\n  key: string;\n}")]);
+      const after = tableWith([typedef("Header", "{ key: string; // the row key\n}")]);
+
+      expect(diffApiDocuments(document([before]), document([after]))).toEqual([]);
+    });
+
+    test("in a prop, a member that becomes optional is additive and a new required one is breaking", () => {
+      const before = tableWith([typedef("Header", "{ key: string; display: () => string }")], headersProp);
+      const optional = tableWith([typedef("Header", "{ key: string; display?: () => string }")], headersProp);
+      const required = tableWith(
+        [typedef("Header", "{ key: string; display: () => string; sort: boolean }")],
+        headersProp,
+      );
+
+      expect(diffApiDocuments(document([before]), document([optional]))).toEqual([
+        expect.objectContaining({ kind: "typedef", name: "Header", bump: "minor" }),
+      ]);
+      expect(diffApiDocuments(document([before]), document([required]))).toEqual([
+        expect.objectContaining({ kind: "typedef", name: "Header", bump: "major" }),
+      ]);
+    });
+
+    test("in a slot, a new member is additive and a member that becomes optional is breaking", () => {
+      const before = tableWith([typedef("Header", "{ key: string; display: () => string }")], headerSlot);
+      const gained = tableWith(
+        [typedef("Header", "{ key: string; display: () => string; sort: boolean }")],
+        headerSlot,
+      );
+      const optional = tableWith([typedef("Header", "{ key: string; display?: () => string }")], headerSlot);
+
+      expect(diffApiDocuments(document([before]), document([gained]))).toEqual([
+        expect.objectContaining({ kind: "typedef", name: "Header", bump: "minor" }),
+      ]);
+      expect(diffApiDocuments(document([before]), document([optional]))).toEqual([
+        expect.objectContaining({ kind: "typedef", name: "Header", bump: "major" }),
+      ]);
+    });
+
+    test("a typedef reached through another typedef in a prop and a slot takes the stricter rule", () => {
+      const header = (computed: string) => [
+        typedef("ComputedHeader", computed),
+        typedef("AnyHeader", "{ key: string } | ComputedHeader"),
+      ];
+      const uses = {
+        props: [makeProp("headers", { type: "ReadonlyArray<AnyHeader>" })],
+        slots: [{ name: "cell", default: false, slot_props: "{ header: AnyHeader }" }],
+      };
+      const before = tableWith(header("{ key: string; display: () => string; sort: false }"), uses);
+      const after = tableWith(header("{ key: string; display?: () => string; sort: false }"), uses);
+
+      expect(diffApiDocuments(document([before]), document([after]))).toEqual([
+        expect.objectContaining({ kind: "typedef", name: "ComputedHeader", bump: "major" }),
+      ]);
+    });
+
+    test("a typedef nothing references counts as read and written", () => {
+      const before = tableWith([typedef("Header", "{ key: string }")]);
+      const gained = tableWith([typedef("Header", "{ key: string; width?: string }")]);
+      const optional = tableWith([typedef("Header", "{ key?: string }")]);
+
+      expect(diffApiDocuments(document([before]), document([gained]))).toEqual([
+        expect.objectContaining({ name: "Header", bump: "minor" }),
+      ]);
+      expect(diffApiDocuments(document([before]), document([optional]))).toEqual([
+        expect.objectContaining({ name: "Header", bump: "major" }),
+      ]);
+    });
+
+    test("changed type parameters are breaking", () => {
+      const before = tableWith([typedef("Header<Row>", "{ key: keyof Row }")]);
+      const after = tableWith([typedef("Header<Row, Key>", "{ key: keyof Row }")]);
+
+      expect(diffApiDocuments(document([before]), document([after]))).toEqual([
+        expect.objectContaining({ kind: "typedef", name: "Header", bump: "major" }),
+      ]);
+    });
+
+    test("in a slot, a union that gains a member is breaking", () => {
+      const before = tableWith([typedef("Header", '{ key: string } | { key: "expand" }')], headerSlot);
+      const after = tableWith(
+        [typedef("Header", '{ key: string } | { key: "expand" } | { key: string; computed: true }')],
+        headerSlot,
+      );
+
+      expect(diffApiDocuments(document([before]), document([after]))).toEqual([
+        expect.objectContaining({ kind: "typedef", name: "Header", bump: "major" }),
+      ]);
+    });
+
+    test("a typedef the consumer passes to a callback in a slot is written", () => {
+      const sortSlot = { slots: [{ name: "cell", default: false, slot_props: "{ sort: (header: Header) => void }" }] };
+      const before = tableWith([typedef("Header", "{ key: string }")], sortSlot);
+      const after = tableWith([typedef("Header", "{ key: string; sort: boolean }")], sortSlot);
+
+      expect(diffApiDocuments(document([before]), document([after]))).toEqual([
+        expect.objectContaining({ kind: "typedef", name: "Header", bump: "major" }),
+      ]);
+    });
+
+    test("a typedef in a context's whole type is read and written", () => {
+      const uses = {
+        props: [makeProp("header", { type: "Header" })],
+        contexts: [{ key: "table", typeName: "TableContext", type: "Writable<Header>", properties: [] }],
+      };
+      const before = tableWith([typedef("Header", '"a" | "b"')], uses);
+      const after = tableWith([typedef("Header", '"a" | "b" | "c"')], uses);
+
+      expect(diffApiDocuments(document([before]), document([after]))).toEqual([
+        expect.objectContaining({ kind: "typedef", name: "Header", bump: "major" }),
+      ]);
+    });
+
+    test("a typedef another component reads is read", () => {
+      const toolbar = mockComponentDocApi("Toolbar", "Toolbar.svelte", {
+        slots: [{ name: "default", default: true, slot_props: '{ header: import("./Table.svelte").Header }' }],
+      });
+      const before = tableWith([typedef("Header", '"a" | "b"')], headersProp);
+      const after = tableWith([typedef("Header", '"a" | "b" | "c"')], headersProp);
+
+      expect(diffApiDocuments(document([before, toolbar]), document([after, toolbar]))).toEqual([
+        expect.objectContaining({ component: "Table", kind: "typedef", name: "Header", bump: "major" }),
+      ]);
+    });
+  });
+
   describe("contexts", () => {
     type ContextDoc = NonNullable<ComponentDocApi["contexts"]>[number];
     type ContextProp = ContextDoc["properties"][number];

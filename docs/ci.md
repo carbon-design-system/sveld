@@ -87,7 +87,10 @@ Suggested semver bump: major.
 | Context property became required                                | `minor`                          |
 | Context property type or whole-context type changed             | as for an event detail           |
 | `@restProps` added to a component that had none                 | `minor`                          |
-| `generics`, `@restProps`, `@extends`, or `@typedef` changed     | `major` (not classified further) |
+| `@typedef` added                                                | `minor`                          |
+| `@typedef` removed, or its type parameters changed              | `major`                          |
+| `@typedef` type changed                                         | by where it's used (below)       |
+| `generics`, `@restProps`, or `@extends` changed                 | `major` (not classified further) |
 | Description-only change                                         | not reported                     |
 
 A consumer writes a `let` prop and reads everything else: an export, a `const` or `function` accessor, an event detail, slot props, and a context. Widening a type is safe where the consumer writes it, and breaking where the consumer reads it, since code that handles every old member breaks on a new one. Narrowing is the reverse.
@@ -99,6 +102,8 @@ A function's params run the other way from the function. A callback prop is writ
 `T[]` and `Array<T>` are the same type, as are `readonly T[]` and `ReadonlyArray<T>`. Arrays and tuples are compared element by element. A `readonly` array accepts a mutable one, so gaining `readonly` widens the type.
 
 Other union members are compared as text, except DOM element types: a member covered by its supertype in the other union, like `HTMLTableElement` next to `HTMLElement`, doesn't count as gained or lost. So `null | HTMLElement | HTMLTableElement` to `null | HTMLElement` isn't reported, and `HTMLDivElement` to `HTMLElement` is a widening (`minor` for a prop, `major` for an event detail).
+
+A changed `@typedef` is judged by where the consumer meets it, in any component, including through `import("./A.svelte").Name`. In a `let` prop, the consumer writes it, and the prop rules apply. In an event detail or slot props, the consumer reads it, and the event detail rules apply. Some uses count both ways: a bindable prop, a module export, a context, any type that holds a callback, and a typedef nothing uses. These take the stricter result. A typedef inherits the uses of every typedef that mentions it. Doc comments and layout inside the type don't count as a change.
 
 A context change names the context key and the property, one line per property:
 
