@@ -829,12 +829,22 @@ function genComponentShell(def: {
   genericProps: string;
   moduleName: string;
   slots: string;
+  /** Declare the constructor with the props as they are, for a tag typed by a type parameter. */
+  ownConstructor?: boolean;
 }) {
   const name = def.moduleName === "default" ? "" : def.moduleName;
   const header = `export default class ${name}${def.generic} extends SvelteComponentTyped<`;
   const typeArgs = [def.genericProps, def.events, def.slots];
+  // Svelte's constructor wraps the props in `Properties<Props, Slots>`,
+  // whose conditional on a default slot keeps TypeScript from inferring the
+  // tag through the props' own conditional: `tag="a"` would leave `Tag` as
+  // every element, and every element's attributes allowed.
+  const constructorDecl = def.ownConstructor
+    ? `constructor(options: ComponentConstructorOptions<${def.genericProps}>);`
+    : "";
+  const body = [constructorDecl, def.accessors.trim()].filter(Boolean).join("\n");
 
-  if (def.accessors.trim() === "" && typeArgs.every((arg) => !arg.includes("\n"))) {
+  if (body === "" && typeArgs.every((arg) => !arg.includes("\n"))) {
     const oneLiner = `${header}${typeArgs.join(", ")}> {}`;
     if (oneLiner.length <= COMPONENT_SHELL_INLINE_WIDTH) return oneLiner;
   }
@@ -844,7 +854,7 @@ function genComponentShell(def: {
       ${def.events},
       ${def.slots}
     > {
-      ${def.accessors}
+      ${body}
     }`;
 }
 
@@ -942,6 +952,8 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
     : { exports_ref: "", exports_def: "" };
   const bindings = useComponentFormat ? genBindingsUnion({ props }) : "";
 
+  // A tag typed by a type parameter (`<svelte:element this={tag}>`, `tag: Tag`).
+  const ownConstructor = rest_props?.type === "Element" && rest_props.thisType !== undefined;
   const snippetImportNeeded =
     !PRESERVED_SNIPPET_IMPORT_REGEX.test(preservedTypeImports) &&
     [prop_def, moduleExportsDef, typeDefs, contextDefs, preservedLocalTypeDeclarations, exports_def].some((section) =>
@@ -952,7 +964,7 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
     ? useComponentInterface
       ? `import type { SvelteComponent, ComponentConstructorOptions, ComponentInternals${snippetImportNeeded ? ", Snippet" : ""} } from "svelte";`
       : `import type { Component${snippetImportNeeded ? ", Snippet" : ""} } from "svelte";`
-    : `import { SvelteComponentTyped${snippetImportNeeded ? ", type Snippet" : ""} } from "svelte";`;
+    : `import { SvelteComponentTyped${ownConstructor ? ", type ComponentConstructorOptions" : ""}${snippetImportNeeded ? ", type Snippet" : ""} } from "svelte";`;
 
   const importSection = [
     componentTypeImport,
@@ -981,6 +993,7 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
         events: genEventDef({ events }),
         slots: genSlotDef({ slots }),
         accessors: genAccessors({ props }),
+        ownConstructor,
       });
 
   const bodySection = [
