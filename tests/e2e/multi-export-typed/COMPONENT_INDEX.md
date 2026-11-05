@@ -60,6 +60,7 @@ None.
 | Prop name | Required | Kind | Reactive | Binding | Type | Default value | Description |
 | :- | :- | :- | :- | :- | :- | :- | :- |
 | tag | No | <code>let</code> | No | -- | <code>Tag</code> | <code>"div"</code> | Specify the element to render. |
+| width | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Span the container. Named as an attribute of some elements (`img`),<br />which it replaces there. |
 
 ### Slots
 

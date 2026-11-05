@@ -1,0 +1,63 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "tag",
+      "kind": "let",
+      "description": "Specify the element to render.",
+      "type": "Tag",
+      "typeSource": "jsdoc",
+      "value": "\"div\"",
+      "defaultValue": {
+        "raw": "\"div\"",
+        "kind": "literal",
+        "value": "div"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "width",
+      "kind": "let",
+      "description": "Named as an attribute of some elements, which it replaces there.",
+      "type": "\"full\" | \"auto\"",
+      "typeSource": "jsdoc",
+      "value": "\"auto\"",
+      "defaultValue": {
+        "raw": "\"auto\"",
+        "kind": "literal",
+        "value": "auto"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": [
+    "Tag",
+    "Tag extends \"div\" | \"img\" | \"section\" = \"div\""
+  ],
+  "rest_props": {
+    "type": "Element",
+    "name": "svelte:element",
+    "thisType": "Tag"
+  },
+  "contexts": [],
+  "diagnostics": []
+}

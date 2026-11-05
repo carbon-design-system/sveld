@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "generator": {
     "name": "sveld",
-    "version": "0.38.6",
-    "svelteVersion": "5.57.1"
+    "version": "0.40.2",
+    "svelteVersion": "5.57.2"
   },
   "total": 5,
   "components": [
@@ -191,7 +191,7 @@
           "column": 0
         },
         "end": {
-          "line": 17,
+          "line": 24,
           "column": 0
         }
       },
@@ -225,6 +225,34 @@
               "column": 25
             }
           }
+        },
+        {
+          "name": "width",
+          "kind": "let",
+          "description": "Span the container. Named as an attribute of some elements (`img`),\nwhich it replaces there.",
+          "type": "boolean",
+          "typeSource": "default",
+          "value": "false",
+          "defaultValue": {
+            "raw": "false",
+            "kind": "literal",
+            "value": false
+          },
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": false,
+          "constant": false,
+          "reactive": false,
+          "source": {
+            "start": {
+              "line": 14,
+              "column": 2
+            },
+            "end": {
+              "line": 14,
+              "column": 27
+            }
+          }
         }
       ],
       "moduleExports": [],
@@ -235,11 +263,11 @@
           "slot_props": "Record<string, never>",
           "source": {
             "start": {
-              "line": 15,
+              "line": 22,
               "column": 2
             },
             "end": {
-              "line": 15,
+              "line": 22,
               "column": 10
             }
           }

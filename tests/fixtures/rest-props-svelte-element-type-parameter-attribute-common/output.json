@@ -1,0 +1,73 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "tag",
+      "kind": "let",
+      "description": "Specify the element to render.",
+      "type": "Tag",
+      "typeSource": "jsdoc",
+      "value": "\"div\"",
+      "defaultValue": {
+        "raw": "\"div\"",
+        "kind": "literal",
+        "value": "div"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "title",
+      "kind": "let",
+      "type": "any",
+      "typeSource": "jsdoc",
+      "value": "{ text: \"\" }",
+      "defaultValue": {
+        "raw": "{ text: \"\" }",
+        "kind": "object",
+        "value": {
+          "text": ""
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": [
+    "Tag",
+    "Tag extends keyof HTMLElementTagNameMap = \"div\""
+  ],
+  "rest_props": {
+    "type": "Element",
+    "name": "svelte:element",
+    "thisType": "Tag"
+  },
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "rest-props-svelte-element-type-parameter-attribute-common/input.svelte",
+      "kind": "type-syntax-error",
+      "name": "title",
+      "message": "Type `{{ text: string }}` of \"title\" is not valid TypeScript; falling back to \"any\".",
+      "code": "sveld/type-syntax-error",
+      "severity": "error"
+    }
+  ]
+}

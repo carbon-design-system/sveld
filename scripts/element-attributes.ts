@@ -1,0 +1,138 @@
+/**
+ * Writes `src/element-attributes.ts`: each HTML element's attributes in
+ * `svelte/elements`, as TypeScript resolves `SvelteHTMLElements[tag]` for
+ * every tag in `HTMLElementTagNameMap`, named as a prop can be. Svelte 3,
+ * 4 and 5 together, as a consumer's own Svelte types the attributes.
+ * Attributes every tag has are listed once. Run after a Svelte or
+ * TypeScript bump; `tests/element-attributes.test.ts` fails until the
+ * file covers the installed Svelte.
+ *
+ * Usage:
+ *   bun scripts/element-attributes.ts
+ */
+import { mkdtempSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import ts from "@typescript/typescript6";
+import { $ } from "bun";
+
+const root = path.join(import.meta.dirname, "..");
+export const OUTPUT_PATH = path.join(root, "src/element-attributes.ts");
+
+/**
+ * Only what a prop can be named: \`on:click\`, \`bind:value\`, \`aria-label\` and
+ * \`data-sveltekit-reload\` can't be an \`export let\`.
+ */
+const IDENTIFIER_REGEX = /^[A-Za-z_$][\w$]*$/;
+
+export interface ElementAttributes {
+  /** Attributes every HTML element has. */
+  common: string[];
+  /** Each tag's other attributes. */
+  byTag: Record<string, string[]>;
+}
+
+/** From `dir`, whose `svelte` it reads. */
+export function readElementAttributes(dir = root): ElementAttributes {
+  // A file of our own there, so `svelte/elements` resolves from it.
+  const probe = path.join(dir, "__element-attributes__.ts");
+  const source = `import type { SvelteHTMLElements } from "svelte/elements";
+export type Attributes = { [T in keyof HTMLElementTagNameMap]: SvelteHTMLElements[T] };
+`;
+  const options: ts.CompilerOptions = {
+    strict: true,
+    module: ts.ModuleKind.ESNext,
+    moduleResolution: ts.ModuleResolutionKind.Bundler,
+    target: ts.ScriptTarget.ESNext,
+    lib: ["lib.esnext.d.ts", "lib.dom.d.ts"],
+    types: [],
+  };
+  const host = ts.createCompilerHost(options);
+  const getSourceFile = host.getSourceFile;
+  host.getSourceFile = (fileName, languageVersion, ...rest) =>
+    fileName === probe
+      ? ts.createSourceFile(fileName, source, languageVersion)
+      : getSourceFile.call(host, fileName, languageVersion, ...rest);
+  const program = ts.createProgram([probe], options, host);
+  const checker = program.getTypeChecker();
+  const sourceFile = program.getSourceFile(probe);
+  const alias = sourceFile?.statements.find(ts.isTypeAliasDeclaration);
+  if (!alias) throw new Error("no Attributes type");
+  const attributes = checker.getTypeAtLocation(alias.name);
+  const byTag: Record<string, string[]> = {};
+  for (const tag of checker.getPropertiesOfType(attributes)) {
+    const element = checker.getTypeOfSymbolAtLocation(tag, alias);
+    byTag[tag.name] = checker
+      .getPropertiesOfType(element)
+      .map((attribute) => attribute.name)
+      .filter((name) => IDENTIFIER_REGEX.test(name))
+      .sort();
+  }
+  const tags = Object.keys(byTag).sort();
+  if (tags.length < 100) throw new Error(`only ${tags.length} tags: is svelte installed?`);
+  const common = (byTag[tags[0] as string] ?? []).filter((name) => tags.every((tag) => byTag[tag]?.includes(name)));
+  const commonSet = new Set(common);
+  return {
+    common,
+    byTag: Object.fromEntries(tags.map((tag) => [tag, (byTag[tag] ?? []).filter((name) => !commonSet.has(name))])),
+  };
+}
+
+/** Attributes in any of `versions`: a tag's in any, common when every tag has it. */
+export function mergeElementAttributes(versions: ElementAttributes[]): ElementAttributes {
+  const byTag = new Map<string, Set<string>>();
+  for (const version of versions) {
+    for (const [tag, names] of Object.entries(version.byTag)) {
+      const all = byTag.get(tag) ?? new Set<string>();
+      for (const name of [...version.common, ...names]) all.add(name);
+      byTag.set(tag, all);
+    }
+  }
+  const tags = [...byTag.keys()].sort();
+  const common = [...(byTag.get(tags[0] as string) ?? [])]
+    .filter((name) => tags.every((tag) => byTag.get(tag)?.has(name)))
+    .sort();
+  const commonSet = new Set(common);
+  return {
+    common,
+    byTag: Object.fromEntries(
+      tags.map((tag) => [tag, [...(byTag.get(tag) ?? [])].filter((n) => !commonSet.has(n)).sort()]),
+    ),
+  };
+}
+
+/** `readElementAttributes` with `svelte@version` installed in a temp folder. */
+async function readFromSvelte(version: string): Promise<ElementAttributes> {
+  // Real path: on macOS tmpdir() is a symlink.
+  const dir = realpathSync(mkdtempSync(path.join(tmpdir(), `sveld-elements-svelte${version}-`)));
+  try {
+    writeFileSync(path.join(dir, "package.json"), JSON.stringify({ private: true, dependencies: { svelte: version } }));
+    await $`bun install --silent`.cwd(dir);
+    return readElementAttributes(dir);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+export function renderModule({ common, byTag }: ElementAttributes): string {
+  return `// Generated by scripts/element-attributes.ts from svelte/elements; don't edit.
+
+/** Attributes every HTML element has in \`svelte/elements\` (Svelte 3, 4 or 5), events and ARIA included. */
+export const COMMON_ATTRIBUTES: ReadonlySet<string> = new Set(${JSON.stringify(common)});
+
+/** Each HTML element's other attributes, by tag. */
+export const TAG_ATTRIBUTES: Readonly<Record<string, readonly string[]>> = ${JSON.stringify(byTag)};
+`;
+}
+
+if (import.meta.main) {
+  const attributes = mergeElementAttributes([
+    readElementAttributes(),
+    await readFromSvelte("3"),
+    await readFromSvelte("4"),
+  ]);
+  writeFileSync(OUTPUT_PATH, renderModule(attributes));
+  console.log(
+    `wrote ${attributes.common.length} common attributes and ${Object.keys(attributes.byTag).length} tags to ${path.relative(process.cwd(), OUTPUT_PATH)}`,
+  );
+}

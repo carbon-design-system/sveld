@@ -1,3 +1,4 @@
+import { COMMON_ATTRIBUTES, TAG_ATTRIBUTES } from "../element-attributes";
 import type { ComponentClassMember, ComponentProp, DeprecatedValue } from "../model";
 import { getParsedComponentTypeScriptMetadata } from "../parsed-component-metadata";
 import { escapeCommentText, escapeRegExp, formatParamList } from "../parser/utils";
@@ -287,9 +288,12 @@ function genPropDef(
       ${formatKey(prop.name)}${prop.isRequired ? "" : "?"}: ${prop_value};`;
   });
 
+  /** Names a prop or a named slot's snippet takes in `$Props`. */
+  const ownNames = ownProps.map((prop) => prop.name);
   for (const slot of def.slots) {
     if (!slot.default && slot.name != null && !existingPropNames.has(slot.name)) {
       members.push(genSnippetProp(formatKey(slot.name), slot));
+      ownNames.push(slot.name);
     }
   }
   const defaultSlot = def.slots.find((slot) => slot.default || slot.name === null);
@@ -360,9 +364,15 @@ function genPropDef(
       ? `keyof $Props${genericsNameRef}`
       : `keyof ($Props${genericsNameRef} & ${def.extends.interface})`;
   const omittedRestProps = `Omit<$RestProps${restPropsGenerics.ref}, ${omittedKeys}>`;
-  // Omitting from a union of element types (`tag: "div" | "section"`) is too
-  // complex for TypeScript, so omit from each element type in turn.
-  const restPropsSide = thisType ? `(${thisType} extends any ? ${omittedRestProps} : never)` : omittedRestProps;
+  const restPropsSide = thisType
+    ? polymorphicRestProps({
+        thisType,
+        generics: def.generics?.[1],
+        ownNames: def.extends === undefined && !def.canonicalPropsType ? ownNames : undefined,
+        restProps: `$RestProps${restPropsGenerics.ref}`,
+        omittedRestProps,
+      })
+    : omittedRestProps;
 
   return {
     props_name,
@@ -373,6 +383,51 @@ function genPropDef(
     ].join("\n\n"),
     elementsImport: restPropsType.startsWith("HTMLAttributes") ? "HTMLAttributes" : "SvelteHTMLElements",
   };
+}
+
+/**
+ * The rest props of a component whose tag follows a type parameter. An own
+ * prop named as an element attribute replaces it, by an `Omit` from each
+ * element type in turn (from their union is too complex for TypeScript).
+ * TypeScript builds that `Omit` for every tag the parameter allows, ~110,
+ * most of the cost of checking the component, so it's only for the tags
+ * that have such an attribute; the rest intersect. `ownNames` is
+ * `undefined` when they aren't all known (`@extends`, a TypeScript props
+ * type), as is a constraint other than `keyof HTMLElementTagNameMap` or
+ * tags: then every tag omits.
+ */
+function polymorphicRestProps(def: {
+  thisType: string;
+  generics: string | undefined;
+  ownNames: string[] | undefined;
+  restProps: string;
+  omittedRestProps: string;
+}): string {
+  const omitEach = `(${def.thisType} extends any ? ${def.omittedRestProps} : never)`;
+  const tags = def.ownNames && tagsAllowed(def.thisType, def.generics);
+  if (!(tags && def.ownNames)) return omitEach;
+  const names = def.ownNames;
+  if (names.some((name) => COMMON_ATTRIBUTES.has(name))) return omitEach;
+  const colliding = tags.filter((tag) => names.some((name) => TAG_ATTRIBUTES[tag]?.includes(name)));
+  if (colliding.length === 0) return def.restProps;
+  if (colliding.length === tags.length) return omitEach;
+  const union = colliding.map((tag) => JSON.stringify(tag)).join(" | ");
+  return `(${def.thisType} extends ${union} ? ${def.omittedRestProps} : ${def.restProps})`;
+}
+
+const TAG_UNION_REGEX = /^"[a-z][a-z0-9]*"(?:\s*\|\s*"[a-z][a-z0-9]*")*$/;
+
+/** The tags a type parameter's constraint allows, or `undefined` when it isn't a set of known tags. */
+function tagsAllowed(thisType: string, generics: string | undefined): string[] | undefined {
+  const declaration = splitTopLevelCommasMemo(generics ?? "")
+    .map((param) => param.trim())
+    .find((param) => param.startsWith(`${thisType} extends `));
+  if (!declaration) return;
+  const constraint = splitTopLevel(declaration.slice(`${thisType} extends `.length), "=")[0]?.trim() ?? "";
+  if (constraint === "keyof HTMLElementTagNameMap") return Object.keys(TAG_ATTRIBUTES);
+  if (!TAG_UNION_REGEX.test(constraint)) return;
+  const tags = constraint.split("|").map((tag) => JSON.parse(tag.trim()) as string);
+  return tags.every((tag) => tag in TAG_ATTRIBUTES) ? tags : undefined;
 }
 
 function snippetArgs(slot_props: string) {
