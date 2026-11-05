@@ -12,13 +12,14 @@ const POLYMORPHIC = readFileSync(
   "utf8",
 );
 
-/** Type-checks `source` beside two copies of the component, `Box` and `Stack`. */
+/** Type-checks `source` beside the component as `Box`, and as `Stack` with one more prop. */
 function check(source: string) {
   // In the repo, so `svelte` resolves.
   const dir = mkdtempSync(join(ROOT, ".tmp-sveld-polymorphic-"));
   try {
     writeFileSync(join(dir, "Box.d.ts"), POLYMORPHIC);
-    writeFileSync(join(dir, "Stack.d.ts"), POLYMORPHIC);
+    // A prop of its own, so the union's members differ, as two components' do.
+    writeFileSync(join(dir, "Stack.d.ts"), POLYMORPHIC.replace("  tag?: Tag;", "  tag?: Tag;\n  gap?: number;"));
     writeFileSync(join(dir, "test.ts"), `import Box from "./Box";\nimport Stack from "./Stack";\n${source}`);
     const program = ts.createProgram([join(dir, "test.ts")], {
       strict: true,
