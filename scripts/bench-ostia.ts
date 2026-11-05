@@ -25,11 +25,13 @@
  *     ParseCache.get over every carbon component (hit vs. miss)
  *   - pipeline: generateBundle end-to-end, no cache, in both entry-barrel
  *     mode and `--glob` directory-walk mode
+ *   - check: diffApiDocuments over the carbon document against a copy with
+ *     every prop type or every typedef changed — a changed typedef makes
+ *     check scan every component for its uses, so this is its worst case
  *
  * Deliberately out of scope: Writer's actual disk I/O (fs write cost isn't
  * sveld logic) and the on-disk cache file read/write (`ParseCache.save`,
  * `readCacheFile`) — both are one-shot per run, not per-file hot paths.
- * `sveld check` (`diffApiDocuments`) is likewise one-shot and cheap.
  *
  * Usage:
  *   bun run bench:ostia
@@ -48,6 +50,7 @@ import { dirname, join } from "node:path";
 import { group, task } from "ostia";
 import { asNormalizedPath } from "../src/brands";
 import { generateBundle } from "../src/bundle";
+import { diffApiDocuments } from "../src/check";
 import { collectComponents } from "../src/collect-components";
 import { setQuiet } from "../src/logger";
 import { ModuleGraph } from "../src/module-graph";
@@ -355,4 +358,21 @@ group("pipeline: full carbon fixture", () => {
   task(`generateBundle (${document.components.length} components, glob dir, no cache)`, () =>
     generateBundle(FIXTURE_DIR, true, { cache: false }),
   );
+});
+
+// `{ __bench: 1 }` widens every type it's added to, so each one is a real
+// change for check to classify.
+const withPropsChanged = structuredClone(document);
+for (const component of withPropsChanged.components) {
+  for (const prop of component.props) prop.type = `${prop.type ?? "any"} | { __bench: 1 }`;
+}
+const withTypedefsChanged = structuredClone(document);
+for (const component of withTypedefsChanged.components) {
+  for (const typedef of component.typedefs) typedef.type = `${typedef.type} | { __bench: 1 }`;
+}
+
+group("check: diffApiDocuments (full carbon fixture)", () => {
+  task(`unchanged (${document.components.length} components)`, () => diffApiDocuments(document, document));
+  task("every prop type changed", () => diffApiDocuments(document, withPropsChanged));
+  task("every typedef changed", () => diffApiDocuments(document, withTypedefsChanged));
 });

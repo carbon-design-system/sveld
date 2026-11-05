@@ -27,6 +27,8 @@ const PARAM_NAME_SPLIT_REGEX = /[:=]/;
 const HTML_ELEMENT_SUBTYPE_REGEX = /^HTML\w+Element$|^HTMLElementTagNameMap\[[\w$]+\]$/;
 /** An `SVGElement` subtype: `SVGCircleElement`. */
 const SVG_ELEMENT_SUBTYPE_REGEX = /^SVG\w+Element$/;
+/** Runs of word characters: the same boundary a typedef name needs in a type. */
+const IDENTIFIER_REGEX = /[\w$]+/g;
 
 const CUSTOM_EVENT_DETAIL_REGEX = /^CustomEvent<([\s\S]*)>$/;
 /** `Array<` or `ReadonlyArray<` at the start of an array type. */
@@ -46,8 +48,8 @@ export type CheckLevel = "major" | "minor" | "patch";
 export interface ApiChange {
   /** Component `moduleName` this change belongs to, or `"*"` for document-wide notices. */
   component: string;
-  kind: "component" | "prop" | "moduleExport" | "event" | "slot" | "context" | "shape" | "schema";
-  /** Prop, event, slot, context key, or shape-field name, when applicable. */
+  kind: "component" | "prop" | "moduleExport" | "event" | "slot" | "context" | "typedef" | "shape" | "schema";
+  /** Prop, event, slot, context key, typedef, or shape-field name, when applicable. */
   name?: string;
   /** For `kind: "context"`, the context property the change is about. Absent when it's the context as a whole. */
   property?: string;
@@ -609,10 +611,10 @@ function stripNonSemanticFields(value: unknown): unknown {
 }
 
 /**
- * Fields not covered by `diffPropList`/`diffEvents`/`diffSlots`/`diffContexts`.
+ * Fields not covered by `diffPropList`/`diffEvents`/`diffSlots`/`diffContexts`/`diffTypedefs`.
  * Any change is breaking, except new `rest_props` on a component that had none.
  */
-const SHAPE_FIELDS = ["generics", "rest_props", "extends", "typedefs"] as const;
+const SHAPE_FIELDS = ["generics", "rest_props", "extends"] as const;
 
 function diffShape(component: string, oldComponent: ComponentDocApi, newComponent: ComponentDocApi): ApiChange[] {
   const changes: ApiChange[] = [];
@@ -632,7 +634,140 @@ function diffShape(component: string, oldComponent: ComponentDocApi, newComponen
   return changes;
 }
 
-function diffComponent(oldComponent: ComponentDocApi, newComponent: ComponentDocApi): ApiChange[] {
+type TypeDef = ComponentDocApi["typedefs"][number];
+
+/** Where a consumer meets a typedef: in values they pass in, values they read, or both. */
+interface TypedefUse {
+  write: boolean;
+  read: boolean;
+}
+
+/** `Foo<T>` gives `Foo`. */
+function typedefBaseName(typedef: TypeDef): string {
+  return typedef.name.split("<", 1)[0].trim();
+}
+
+/** Each identifier in `type`, once. */
+function identifiers(type: string | undefined): Set<string> {
+  return new Set(type?.match(IDENTIFIER_REGEX));
+}
+
+/**
+ * Finds how each typedef reaches the consumer, across every component given:
+ * another component can reference it through `import("./A.svelte").Name`. A
+ * prop is written, or both when it's bindable. Events and slots are read.
+ * Contexts, module exports, and typedefs nothing references count as both.
+ * A type that holds a callback counts as both wherever it sits, since the
+ * consumer reads what it writes and the reverse. A typedef inherits the uses
+ * of every typedef that mentions it.
+ */
+function typedefUses(components: ComponentDocApi[], names: string[]): Map<string, TypedefUse> {
+  const uses = new Map(names.map((name) => [name, { write: false, read: false }]));
+  const mark = (type: string | undefined, use: TypedefUse) => {
+    for (const name of identifiers(type)) {
+      const current = uses.get(name);
+      if (!current) continue;
+      current.write ||= use.write;
+      current.read ||= use.read;
+    }
+  };
+  const both = { write: true, read: true };
+  const write = { write: true, read: false };
+  const read = { write: false, read: true };
+  const markAt = (type: string | undefined, use: TypedefUse) => mark(type, type?.includes("=>") ? both : use);
+
+  for (const component of components) {
+    for (const prop of component.props) markAt(prop.type, isWritableBinding(prop) ? both : write);
+    for (const prop of component.moduleExports) mark(prop.type, both);
+    for (const event of component.events) markAt("detail" in event ? event.detail : undefined, read);
+    for (const slot of component.slots) markAt(slot.slot_props, read);
+    for (const context of component.contexts ?? []) {
+      mark(context.type, both);
+      for (const property of context.properties) mark(property.type, both);
+    }
+  }
+
+  const typedefs = components.flatMap((component) =>
+    component.typedefs.map((typedef) => ({
+      name: typedefBaseName(typedef),
+      callback: typedef.type.includes("=>"),
+      mentioned: [...identifiers(typedef.type)].filter((name) => uses.has(name)),
+    })),
+  );
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const { name: outerName, callback, mentioned } of typedefs) {
+      const outer = uses.get(outerName);
+      if (!outer) continue;
+      for (const name of mentioned) {
+        const inner = uses.get(name);
+        if (!inner || name === outerName) continue;
+        const write = inner.write || outer.write || (callback && outer.read);
+        const read = inner.read || outer.read || (callback && outer.write);
+        if (write !== inner.write || read !== inner.read) {
+          inner.write = write;
+          inner.read = read;
+          changed = true;
+        }
+      }
+    }
+  }
+
+  for (const use of uses.values()) {
+    if (!use.write && !use.read) Object.assign(use, both);
+  }
+  return uses;
+}
+
+/**
+ * Diffs typedefs by name. A new typedef is additive and a removed one is
+ * breaking. A changed one is judged by where the consumer meets it (see
+ * {@link typedefUses}), taking the stricter result when it's met both ways.
+ * Doc comments and layout inside the type don't count as a change.
+ */
+function diffTypedefs(
+  component: string,
+  oldComponent: ComponentDocApi,
+  newComponent: ComponentDocApi,
+  uses: () => Map<string, TypedefUse>,
+): ApiChange[] {
+  const changes: ApiChange[] = [];
+  const push = changeRecorder(changes, component, "typedef", "typedef");
+  const { added, removed, common } = matchByKey(oldComponent.typedefs, newComponent.typedefs, typedefBaseName);
+
+  for (const [name] of added) push(name, "minor", "added");
+  for (const name of removed) push(name, "major", "removed");
+
+  const changed = common.filter(
+    ([, oldTypedef, newTypedef]) =>
+      oldTypedef.name !== newTypedef.name || normalizeTypeText(oldTypedef.type) !== normalizeTypeText(newTypedef.type),
+  );
+  if (changed.length === 0) return changes;
+
+  for (const [name, oldTypedef, newTypedef] of changed) {
+    if (oldTypedef.name !== newTypedef.name) {
+      push(name, "major", `type parameters changed from \`${oldTypedef.name}\` to \`${newTypedef.name}\``);
+      continue;
+    }
+    const oldType = normalizeTypeText(oldTypedef.type);
+    const newType = normalizeTypeText(newTypedef.type);
+    const use = uses().get(name) ?? { write: true, read: true };
+    let bump: SemverBump = "none";
+    if (use.write) bump = maxBump(bump, classifyTypeChange(oldType, newType));
+    if (use.read) bump = maxBump(bump, classifyTypeChange(oldType, newType, { readOnly: true }));
+    if (bump === "none") continue;
+    push(name, bump, `type changed from \`${oldType}\` to \`${newType}\``);
+  }
+
+  return changes;
+}
+
+function diffComponent(
+  oldComponent: ComponentDocApi,
+  newComponent: ComponentDocApi,
+  typedefUsesOnce: () => Map<string, TypedefUse>,
+): ApiChange[] {
   const name = newComponent.moduleName;
   return [
     ...diffPropList(name, "prop", oldComponent.props, newComponent.props),
@@ -640,6 +775,7 @@ function diffComponent(oldComponent: ComponentDocApi, newComponent: ComponentDoc
     ...diffEvents(name, oldComponent.events, newComponent.events),
     ...diffSlots(name, oldComponent.slots, newComponent.slots),
     ...diffContexts(name, oldComponent.contexts, newComponent.contexts),
+    ...diffTypedefs(name, oldComponent, newComponent, typedefUsesOnce),
     ...diffShape(name, oldComponent, newComponent),
   ];
 }
@@ -661,8 +797,15 @@ export function diffApiDocuments(previous: ComponentApiDocument, next: Component
     changes.push({ component: name, kind: "component", bump: "major", message: `component "${name}" removed` });
   }
 
+  // Built on first use: only a changed typedef needs it.
+  const everyComponent = [...previous.components, ...next.components];
+  let uses: Map<string, TypedefUse> | undefined;
+  const typedefUsesOnce = () => {
+    uses ??= typedefUses(everyComponent, [...new Set(everyComponent.flatMap((c) => c.typedefs.map(typedefBaseName)))]);
+    return uses;
+  };
   for (const [, oldComponent, newComponent] of common) {
-    changes.push(...diffComponent(oldComponent, newComponent));
+    changes.push(...diffComponent(oldComponent, newComponent, typedefUsesOnce));
   }
 
   return changes;
