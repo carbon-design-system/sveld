@@ -72,6 +72,7 @@ Suggested semver bump: major.
 | Context property became optional                                | `major`                          |
 | Context property became required                                | `minor`                          |
 | Context property type or whole-context type changed             | as for a prop's type             |
+| `@restProps` added to a component that had none                 | `minor`                          |
 | `generics`, `@restProps`, `@extends`, or `@typedef` changed     | `major` (not classified further) |
 | Description-only change                                         | not reported                     |
 

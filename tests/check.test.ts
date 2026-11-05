@@ -550,6 +550,27 @@ describe("diffApiDocuments", () => {
   });
 
   describe("shape fields", () => {
+    test("rest props on a component that had none are additive", () => {
+      const before = mockComponentDocApi("Toast", "Toast.svelte");
+      const after = mockComponentDocApi("Toast", "Toast.svelte", { rest_props: { type: "Element", name: "div" } });
+
+      const changes = diffApiDocuments(document([before]), document([after]));
+      expect(changes).toEqual([
+        { component: "Toast", kind: "shape", name: "rest_props", bump: "minor", message: '"rest_props" added' },
+      ]);
+    });
+
+    test("removed or changed rest props are breaking", () => {
+      const div = mockComponentDocApi("Toast", "Toast.svelte", { rest_props: { type: "Element", name: "div" } });
+      const span = mockComponentDocApi("Toast", "Toast.svelte", { rest_props: { type: "Element", name: "span" } });
+      const none = mockComponentDocApi("Toast", "Toast.svelte");
+
+      for (const after of [span, none]) {
+        const changes = diffApiDocuments(document([div]), document([after]));
+        expect(changes).toEqual([expect.objectContaining({ name: "rest_props", bump: "major" })]);
+      }
+    });
+
     test("a generics change is breaking", () => {
       const before = mockComponentDocApi("List", "List.svelte", { generics: ["T", "string"] });
       const after = mockComponentDocApi("List", "List.svelte", { generics: ["T", "number"] });

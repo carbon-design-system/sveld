@@ -413,7 +413,10 @@ function stripNonSemanticFields(value: unknown): unknown {
   return value;
 }
 
-/** Fields not covered by `diffPropList`/`diffEvents`/`diffSlots`/`diffContexts`. Any change is breaking. */
+/**
+ * Fields not covered by `diffPropList`/`diffEvents`/`diffSlots`/`diffContexts`.
+ * Any change is breaking, except new `rest_props` on a component that had none.
+ */
 const SHAPE_FIELDS = ["generics", "rest_props", "extends", "typedefs"] as const;
 
 function diffShape(component: string, oldComponent: ComponentDocApi, newComponent: ComponentDocApi): ApiChange[] {
@@ -422,9 +425,13 @@ function diffShape(component: string, oldComponent: ComponentDocApi, newComponen
   for (const field of SHAPE_FIELDS) {
     const oldJson = JSON.stringify(stripNonSemanticFields(oldComponent[field]));
     const newJson = JSON.stringify(stripNonSemanticFields(newComponent[field]));
-    if (oldJson !== newJson) {
-      changes.push({ component, kind: "shape", name: field, bump: "major", message: `"${field}" changed (breaking)` });
+    if (oldJson === newJson) continue;
+    // Rest props only add attributes a caller may pass; own props keep their types.
+    if (field === "rest_props" && oldComponent.rest_props === undefined) {
+      changes.push({ component, kind: "shape", name: field, bump: "minor", message: `"${field}" added` });
+      continue;
     }
+    changes.push({ component, kind: "shape", name: field, bump: "major", message: `"${field}" changed (breaking)` });
   }
 
   return changes;
