@@ -1,4 +1,4 @@
-import { SvelteComponentTyped } from "svelte";
+import { SvelteComponentTyped, type ComponentConstructorOptions } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
 type $RestProps<Tag extends keyof HTMLElementTagNameMap = "div"> = NoInfer<SvelteHTMLElements[Tag]>;
@@ -26,4 +26,6 @@ export default class RestPropsSvelteElementTypeParameter<Tag extends keyof HTMLE
   RestPropsSvelteElementTypeParameterProps<Tag>,
   Record<string, any>,
   { default: Record<string, never> }
-> {}
+> {
+  constructor(options: ComponentConstructorOptions<RestPropsSvelteElementTypeParameterProps<Tag>>);
+}
