@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.40.3](https://github.com/carbon-design-system/sveld/releases/tag/v0.40.3) - 2026-11-05
+
+**Features**
+
+- build a polymorphic component's element types only for the tags a use needs (ddeafe7, #576)
+
+**Fixes**
+
+- infer a polymorphic component's tag from its `tag` prop (95e9302, #576)
+
 ## [0.40.2](https://github.com/carbon-design-system/sveld/releases/tag/v0.40.2) - 2026-11-04
 
 **Fixes**
