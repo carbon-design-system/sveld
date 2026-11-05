@@ -3,6 +3,8 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type $RestProps<Tag extends keyof HTMLElementTagNameMap = "div"> = NoInfer<SvelteHTMLElements[Tag]>;
 
+type $Elements = { [$Tag in keyof HTMLElementTagNameMap]: Omit<$RestProps<$Tag>, keyof $Props<$Tag>> };
+
 type $Props<Tag extends keyof HTMLElementTagNameMap = "div"> = {
   /**
    * Specify the element to render.
@@ -15,7 +17,7 @@ type $Props<Tag extends keyof HTMLElementTagNameMap = "div"> = {
   [key: `data-${string}`]: unknown;
 };
 
-export type PolymorphicProps<Tag extends keyof HTMLElementTagNameMap = "div"> = (Tag extends any ? Omit<$RestProps<Tag>, keyof $Props<Tag>> : never) & $Props<Tag>;
+export type PolymorphicProps<Tag extends keyof HTMLElementTagNameMap = "div"> = $Elements[Tag] & $Props<Tag>;
 
 export default class Polymorphic<Tag extends keyof HTMLElementTagNameMap = "div"> extends SvelteComponentTyped<
   PolymorphicProps<Tag>,

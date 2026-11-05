@@ -360,18 +360,58 @@ function genPropDef(
       ? `keyof $Props${genericsNameRef}`
       : `keyof ($Props${genericsNameRef} & ${def.extends.interface})`;
   const omittedRestProps = `Omit<$RestProps${restPropsGenerics.ref}, ${omittedKeys}>`;
-  // Omitting from a union of element types (`tag: "div" | "section"`) is too
-  // complex for TypeScript, so omit from each element type in turn.
-  const restPropsSide = thisType ? `(${thisType} extends any ? ${omittedRestProps} : never)` : omittedRestProps;
+  const elements = thisType ? elementsByTag(thisType, def.generics, def.extends?.interface) : undefined;
+  const restPropsSide = elements ? elements.ref : omittedRestProps;
 
   return {
     props_name,
     prop_def: [
       `${restPropsComment}type $RestProps${restPropsGenerics.name} = ${restPropsType};`,
+      ...(elements ? [elements.declaration] : []),
       `type $Props${genericsName} = ${canonicalPrefix}{${props}\n\n${dataAttributes}\n};`,
       exportProps(`${restPropsSide} & ${propsRef}`),
     ].join("\n\n"),
     elementsImport: restPropsType.startsWith("HTMLAttributes") ? "HTMLAttributes" : "SvelteHTMLElements",
+  };
+}
+
+/**
+ * The attributes a component whose tag follows a type parameter takes for
+ * each tag, without the names its own props replace: `$Elements[Tag]`.
+ * Omitting from a union of element types (`tag: "div" | "section"`) is too
+ * complex for TypeScript, so each element type omits on its own. As a
+ * property of a mapped type rather than a conditional on `Tag`, it's built
+ * only for the tags a use needs: a conditional builds every tag's each time
+ * TypeScript compares the component's props, as for a union of two such
+ * components, many times over once `tag` infers `Tag`. `undefined` when
+ * the type parameter's constraint isn't found.
+ */
+function elementsByTag(
+  thisType: string,
+  generics: [string, string] | null | undefined,
+  extendsInterface: string | undefined,
+): { declaration: string; ref: string } | undefined {
+  if (!generics) return;
+  const names = splitTopLevelCommasMemo(generics[0]).map((name) => name.trim());
+  const declarations = splitTopLevelCommasMemo(generics[1]).map((declaration) =>
+    stripConstModifierForTypeAlias(declaration.trim()),
+  );
+  const index = names.indexOf(thisType);
+  const declaration = declarations[index];
+  if (index === -1 || !declaration?.startsWith(`${thisType} extends `)) return;
+  const constraint = splitTopLevel(declaration.slice(`${thisType} extends `.length), "=")[0]?.trim();
+  if (!constraint) return;
+  // The component's other type parameters, which the props can use too.
+  const otherNames = names.filter((_, i) => i !== index);
+  const otherDeclarations = declarations.filter((_, i) => i !== index);
+  const params = otherDeclarations.length > 0 ? `<${otherDeclarations.join(", ")}>` : "";
+  const paramsRef = otherNames.length > 0 ? `<${otherNames.join(", ")}>` : "";
+  const each = `<${names.map((name) => (name === thisType ? "$Tag" : name)).join(", ")}>`;
+  const omitted =
+    extendsInterface === undefined ? `keyof $Props${each}` : `keyof ($Props${each} & ${extendsInterface})`;
+  return {
+    declaration: `type $Elements${params} = { [$Tag in ${constraint}]: Omit<$RestProps${each}, ${omitted}> };`,
+    ref: `$Elements${paramsRef}[${thisType}]`,
   };
 }
 
