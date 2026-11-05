@@ -48,8 +48,10 @@ Suggested semver bump: major.
 | Prop/export removed                                             | `major`                          |
 | Prop/export became required                                     | `major`                          |
 | Prop/export became optional                                     | `minor`                          |
-| Prop/export type widened (union gained a member)                | `minor`                          |
-| Prop/export type narrowed (union lost a member)                 | `major`                          |
+| Prop type widened (union gained a member)                       | `minor`                          |
+| Prop type narrowed (union lost a member)                        | `major`                          |
+| Export or `const`/`function` prop type widened                  | `major`                          |
+| Export or `const`/`function` prop type narrowed                 | `minor`                          |
 | Prop/export type changed (anything else)                        | `major`                          |
 | Function-typed prop/export gained a trailing optional param     | `minor`                          |
 | Function-typed prop/export lost a param, or return type changed | `major`                          |
@@ -61,22 +63,25 @@ Suggested semver bump: major.
 | `constant`/`reactive` flag flipped                              | `minor`                          |
 | Event/slot added                                                | `minor`                          |
 | Event/slot removed                                              | `major`                          |
-| Event detail / slot props type widened                          | `minor`                          |
+| Event detail / slot props type widened (union gained a member)  | `major`                          |
 | Event detail / slot props object gained a field                 | `minor`                          |
 | Event detail / slot props object lost a field                   | `major`                          |
-| Event detail / slot props type narrowed or otherwise changed    | `major`                          |
+| Event detail / slot props type narrowed (union lost a member)   | `minor`                          |
+| Event detail / slot props type otherwise changed                | `major`                          |
 | Context added                                                   | `minor`                          |
 | Context removed                                                 | `major`                          |
 | Context property added                                          | `minor`                          |
 | Context property removed                                        | `major`                          |
 | Context property became optional                                | `major`                          |
 | Context property became required                                | `minor`                          |
-| Context property type or whole-context type changed             | as for a prop's type             |
+| Context property type or whole-context type changed             | as for an event detail           |
 | `@restProps` added to a component that had none                 | `minor`                          |
 | `generics`, `@restProps`, `@extends`, or `@typedef` changed     | `major` (not classified further) |
 | Description-only change                                         | not reported                     |
 
-Union members are compared as text, except DOM element types: a member covered by its supertype in the other union, like `HTMLTableElement` next to `HTMLElement`, doesn't count as gained or lost. So `null | HTMLElement | HTMLTableElement` to `null | HTMLElement` isn't reported, and `HTMLDivElement` to `HTMLElement` is a widening.
+A consumer writes a `let` prop and reads everything else: an export, a `const` or `function` accessor, an event detail, slot props, and a context. Widening a type is safe where the consumer writes it, and breaking where the consumer reads it, since code that handles every old member breaks on a new one. Narrowing is the reverse.
+
+Union members are compared as text, except DOM element types: a member covered by its supertype in the other union, like `HTMLTableElement` next to `HTMLElement`, doesn't count as gained or lost. So `null | HTMLElement | HTMLTableElement` to `null | HTMLElement` isn't reported, and `HTMLDivElement` to `HTMLElement` is a widening (`minor` for a prop, `major` for an event detail).
 
 A context change names the context key and the property, one line per property:
 

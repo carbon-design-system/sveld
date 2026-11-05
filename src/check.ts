@@ -167,11 +167,14 @@ function classifyReadOnlyObjectChange(oldType: string, newType: string): SemverB
 }
 
 /**
- * Classifies a type-string change as additive (widened union), breaking
- * (narrowed union), or unchanged. Only top-level union members count, and a
- * DOM element type counts as covered by its supertype in the other union.
- * With `readOnly`, for a type the consumer only reads (an event's `detail`,
- * a slot's props), an object type gaining a member is additive too.
+ * Classifies a type-string change as additive, breaking, or unchanged. Only
+ * top-level union members count, and a DOM element type counts as covered by
+ * its supertype in the other union. For a type the consumer writes (a prop),
+ * a union that gains a member is additive and one that loses a member is
+ * breaking. With `readOnly`, for a type the consumer only reads (an event's
+ * `detail`, a slot's props), the rule flips: code that handles every old
+ * member breaks on a new one. An object type gaining a member is additive
+ * there too.
  * Other structural changes (generics, object shape, function signature) are
  * breaking, same as cargo-semver-checks' "when in doubt, call it major".
  */
@@ -197,8 +200,14 @@ function classifyTypeChange(
   const gainedMembers = [...newMembers].some((member) => !oldMembers.has(member) && !isCoveredBy(member, oldMembers));
   const lostMembers = [...oldMembers].some((member) => !newMembers.has(member) && !isCoveredBy(member, newMembers));
 
-  if (!lostMembers) return gainedMembers ? "minor" : "none";
-  return "major";
+  const [narrowed, widened] = readOnly ? [gainedMembers, lostMembers] : [lostMembers, gainedMembers];
+  if (narrowed) return "major";
+  return widened ? "minor" : "none";
+}
+
+/** True for a prop or export the consumer can only read: a module export, or a `const` or `function` prop accessor. */
+function isReadOnlyMember(kind: "prop" | "moduleExport", prop: Prop): boolean {
+  return kind === "moduleExport" || prop.kind === "const" || prop.kind === "function";
 }
 
 /** True when `bind:<name>` works: declared with runes `$bindable()` or legacy `@bindable writable`. */
@@ -247,7 +256,8 @@ function diffPropList(
       push(name, newProp.isRequired ? "major" : "minor", `became ${newProp.isRequired ? "required" : "optional"}`);
     }
 
-    const typeBump = classifyTypeChange(oldProp.type, newProp.type);
+    const readOnly = isReadOnlyMember(kind, oldProp) && isReadOnlyMember(kind, newProp);
+    const typeBump = classifyTypeChange(oldProp.type, newProp.type, { readOnly });
     if (typeBump !== "none") {
       push(name, typeBump, `type changed from \`${oldProp.type ?? "unknown"}\` to \`${newProp.type ?? "unknown"}\``);
     }
@@ -333,7 +343,7 @@ function describeContextType(context: Context): string {
 /**
  * A context is read by `getContext`, so removing a property or changing its
  * type is breaking and adding one is not. A type change is classified the
- * same way as an event's `detail`.
+ * same way as an event's `detail`: a union that gains a member is breaking.
  */
 function diffContexts(component: string, oldContexts: Context[] = [], newContexts: Context[] = []): ApiChange[] {
   const changes: ApiChange[] = [];
@@ -370,7 +380,7 @@ function diffContexts(component: string, oldContexts: Context[] = [], newContext
       if (oldContext.type !== newContext.type) {
         const bump =
           oldContext.type !== undefined && newContext.type !== undefined
-            ? classifyTypeChange(oldContext.type, newContext.type)
+            ? classifyTypeChange(oldContext.type, newContext.type, { readOnly: true })
             : "major";
         push(bump, `type changed from ${describeContextType(oldContext)} to ${describeContextType(newContext)}`);
       }
@@ -387,7 +397,7 @@ function diffContexts(component: string, oldContexts: Context[] = [], newContext
         push(newProp.optional ? "major" : "minor", `became ${newProp.optional ? "optional" : "required"}`, name);
       }
 
-      const typeBump = classifyTypeChange(oldProp.type, newProp.type);
+      const typeBump = classifyTypeChange(oldProp.type, newProp.type, { readOnly: true });
       if (typeBump !== "none") {
         push(typeBump, `type changed from \`${oldProp.type}\` to \`${newProp.type}\``, name);
       }
