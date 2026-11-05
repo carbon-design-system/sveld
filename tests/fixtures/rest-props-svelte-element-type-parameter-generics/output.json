@@ -1,0 +1,62 @@
+{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "tag",
+      "kind": "let",
+      "description": "Specify the element to render.",
+      "type": "Tag",
+      "typeSource": "jsdoc",
+      "value": "\"ul\"",
+      "defaultValue": {
+        "raw": "\"ul\"",
+        "kind": "literal",
+        "value": "ul"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "items",
+      "kind": "let",
+      "type": "Item[]",
+      "typeSource": "jsdoc",
+      "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ item: any }"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": [
+    "Item, Tag",
+    "Item, Tag extends keyof HTMLElementTagNameMap = \"ul\""
+  ],
+  "rest_props": {
+    "type": "Element",
+    "name": "svelte:element",
+    "thisType": "Tag"
+  },
+  "contexts": [],
+  "diagnostics": []
+}

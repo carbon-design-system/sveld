@@ -3,6 +3,8 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type $RestProps<Tag extends keyof HTMLElementTagNameMap = 'div'> = NoInfer<SvelteHTMLElements[Tag]>;
 
+type $Elements = { [$Tag in keyof HTMLElementTagNameMap]: Omit<$RestProps<$Tag>, keyof $Props<$Tag>> };
+
 type $Props<Tag extends keyof HTMLElementTagNameMap = 'div'> = ({
     tag?: Tag;
     [key: string]: unknown
@@ -10,7 +12,7 @@ type $Props<Tag extends keyof HTMLElementTagNameMap = 'div'> = ({
   [key: `data-${string}`]: unknown;
 };
 
-export type RunesRestPropsSvelteElementTypeParameterProps<Tag extends keyof HTMLElementTagNameMap = 'div'> = (Tag extends any ? Omit<$RestProps<Tag>, keyof $Props<Tag>> : never) & $Props<Tag>;
+export type RunesRestPropsSvelteElementTypeParameterProps<Tag extends keyof HTMLElementTagNameMap = 'div'> = $Elements[Tag] & $Props<Tag>;
 
 export default class RunesRestPropsSvelteElementTypeParameter<Tag extends keyof HTMLElementTagNameMap = 'div'> extends SvelteComponentTyped<
   RunesRestPropsSvelteElementTypeParameterProps<Tag>,
