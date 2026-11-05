@@ -449,7 +449,7 @@ describe("diffApiDocuments", () => {
       });
     });
 
-    test("a narrowed dispatched detail type is breaking", () => {
+    test("a narrowed dispatched detail type is additive", () => {
       const before = mockComponentDocApi("Button", "Button.svelte", {
         events: [{ type: "dispatched", name: "change", detail: "string | number" }],
       });
@@ -458,7 +458,7 @@ describe("diffApiDocuments", () => {
       });
 
       const changes = diffApiDocuments(document([before]), document([after]));
-      expect(changes[0]).toMatchObject({ kind: "event", name: "change", bump: "major" });
+      expect(changes[0]).toMatchObject({ kind: "event", name: "change", bump: "minor" });
     });
 
     function detailChange(oldDetail: string, newDetail: string) {
@@ -491,9 +491,18 @@ describe("diffApiDocuments", () => {
 
     test("detail object fields are compared like the detail itself", () => {
       expect(detailChange("{ id?: string }", "{ id: string }")[0]?.bump).toBe("minor");
-      expect(detailChange("{ id: string }", "{ id: string | number }")[0]?.bump).toBe("minor");
+      expect(detailChange("{ id: string }", "{ id: string | number }")[0]?.bump).toBe("major");
+      expect(detailChange("{ id: string | number }", "{ id: string }")[0]?.bump).toBe("minor");
       expect(detailChange("{ tab: { id: string } }", "{ tab: { id: string; label: string } }")[0]?.bump).toBe("minor");
       expect(detailChange("{ tab: { id: string; label: string } }", "{ tab: { id: string } }")[0]?.bump).toBe("major");
+    });
+
+    test("a detail union that gains a member is breaking, since the listener reads it", () => {
+      expect(detailChange('"a" | "b"', '"a" | "b" | "c"')[0]?.bump).toBe("major");
+      expect(detailChange("{ id: string }", "{ id: string } | null")[0]?.bump).toBe("major");
+      expect(detailChange("HTMLDivElement", "HTMLElement")[0]?.bump).toBe("major");
+      expect(detailChange("HTMLElement", "HTMLDivElement")[0]?.bump).toBe("minor");
+      expect(detailChange('"a" | "b"', '"b" | "a"')).toEqual([]);
     });
 
     test("a detail that isn't a plain object literal falls back to breaking", () => {
@@ -546,6 +555,40 @@ describe("diffApiDocuments", () => {
 
       const changes = diffApiDocuments(document([before]), document([after]));
       expect(changes).toEqual([expect.objectContaining({ kind: "slot", name: "default", bump: "minor" })]);
+    });
+
+    test("a slot_props field whose union gains a member is breaking", () => {
+      const before = mockComponentDocApi("Card", "Card.svelte", {
+        slots: [{ name: null, default: true, slot_props: "{ value: string }" }],
+      });
+      const after = mockComponentDocApi("Card", "Card.svelte", {
+        slots: [{ name: null, default: true, slot_props: "{ value: string | number }" }],
+      });
+
+      const changes = diffApiDocuments(document([before]), document([after]));
+      expect(changes).toEqual([expect.objectContaining({ kind: "slot", name: "default", bump: "major" })]);
+    });
+  });
+
+  describe("read-only props and exports", () => {
+    function typeChange(prop: ComponentDocApi["props"][number], oldType: string, newType: string, field = "props") {
+      const before = mockComponentDocApi("Select", "Select.svelte", { [field]: [{ ...prop, type: oldType }] });
+      const after = mockComponentDocApi("Select", "Select.svelte", { [field]: [{ ...prop, type: newType }] });
+      return diffApiDocuments(document([before]), document([after]))[0]?.bump;
+    }
+
+    test("a module export or prop accessor that gains a union member is breaking", () => {
+      expect(
+        typeChange(makeProp("sizes", { kind: "const" }), '"sm" | "md"', '"sm" | "md" | "lg"', "moduleExports"),
+      ).toBe("major");
+      expect(typeChange(makeProp("size", { kind: "const", constant: true }), '"sm"', '"sm" | "lg"')).toBe("major");
+      expect(typeChange(makeProp("focus", { kind: "function" }), '"sm"', '"sm" | "lg"')).toBe("major");
+      expect(typeChange(makeProp("size", { kind: "const", constant: true }), '"sm" | "lg"', '"sm"')).toBe("minor");
+    });
+
+    test("a let prop, bindable or not, still widens as additive", () => {
+      expect(typeChange(makeProp("size"), '"sm"', '"sm" | "lg"')).toBe("minor");
+      expect(typeChange(makeProp("value", { bindable: true }), "string", "string | number")).toBe("minor");
     });
   });
 
@@ -640,7 +683,7 @@ describe("diffApiDocuments", () => {
       ]);
     });
 
-    test("a changed property type shows both types and is classified like a prop's", () => {
+    test("a changed property type shows both types and is classified like an event detail", () => {
       const narrowed = diffContexts(
         [contextDoc([contextProp("size", '"sm" | "lg"')])],
         [contextDoc([contextProp("size", '"sm"')])],
@@ -648,7 +691,7 @@ describe("diffApiDocuments", () => {
       expect(narrowed).toMatchObject([
         {
           property: "size",
-          bump: "major",
+          bump: "minor",
           message: 'context "carbon:Modal" property "size" type changed from `"sm" | "lg"` to `"sm"`',
         },
       ]);
@@ -657,7 +700,7 @@ describe("diffApiDocuments", () => {
         [contextDoc([contextProp("size", '"sm"')])],
         [contextDoc([contextProp("size", '"sm" | "lg"')])],
       );
-      expect(widened).toMatchObject([{ property: "size", bump: "minor" }]);
+      expect(widened).toMatchObject([{ property: "size", bump: "major" }]);
     });
 
     test("a property turning optional is breaking and turning required is additive", () => {
