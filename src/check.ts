@@ -6,7 +6,7 @@ import type { SveldRuntimeOptions } from "./load-config";
 import type { EntryExports } from "./parse-entry-exports";
 import { parseObjectTypeLiteralMembers } from "./parser/object-type-literal";
 import { formatJsonOutput } from "./path";
-import { indexOfTopLevelArrow, splitTopLevel } from "./type-text";
+import { indexOfTopLevelArrow, normalizeTypeText, splitTopLevel, unwrapParens } from "./type-text";
 import {
   buildComponentApiDocument,
   COMPONENT_API_SCHEMA_VERSION,
@@ -73,10 +73,18 @@ export function bumpMeetsLevel(bump: SemverBump, level: CheckLevel): boolean {
 
 function splitUnionMembers(type: string): Set<string> {
   return new Set(
-    splitTopLevel(type, "|")
-      .map((member) => member.trim())
+    splitTopLevel(normalizeTypeText(type), "|")
+      .map((member) => unwrapParens(member))
       .filter((member) => member.length > 0),
   );
+}
+
+/** Compares two function types or two object-type literals; `undefined` for any other pair. */
+function classifyCoreChange(oldCore: string, newCore: string, readOnly: boolean): SemverBump | undefined {
+  const oldFn = parseFunctionType(oldCore);
+  const newFn = parseFunctionType(newCore);
+  if (oldFn && newFn) return classifyFunctionTypeChange(oldFn, newFn);
+  return classifyObjectChange(oldCore, newCore, readOnly);
 }
 
 /** True when the DOM element type `narrower` extends `wider`: `HTMLTableElement` and `HTMLElement`. */
@@ -146,32 +154,37 @@ function classifyFunctionTypeChange(oldFn: ParsedFunctionType, newFn: ParsedFunc
 }
 
 /**
- * Compares two object-type literals that the consumer only reads. A new
- * member is additive: code reading the old ones still type-checks. A removed
- * member, or one that became optional, is breaking. `undefined` when either
+ * Compares two object-type literals. A removed member is breaking either way.
+ * Where the consumer writes the type (a prop), a new optional member or one
+ * that became optional is additive, and a new required member is breaking.
+ * With `readOnly`, where the consumer only reads it, any new member is
+ * additive and one that became optional is breaking. `undefined` when either
  * side isn't an object-type literal sveld can split into members.
  */
-function classifyReadOnlyObjectChange(oldType: string, newType: string): SemverBump | undefined {
+function classifyObjectChange(oldType: string, newType: string, readOnly: boolean): SemverBump | undefined {
   const oldMembers = parseObjectTypeLiteralMembers(oldType);
   const newMembers = parseObjectTypeLiteralMembers(newType);
   if (!oldMembers || !newMembers) return undefined;
 
   const { added, removed, common } = matchByKey(oldMembers, newMembers, (member) => member.name);
   if (removed.length > 0) return "major";
+  if (!readOnly && added.some(([, member]) => !member.optional)) return "major";
 
   let bump: SemverBump = added.length > 0 ? "minor" : "none";
   for (const [, oldMember, newMember] of common) {
     if (oldMember.optional !== newMember.optional) {
-      bump = maxBump(bump, newMember.optional ? "major" : "minor");
+      bump = maxBump(bump, newMember.optional === readOnly ? "major" : "minor");
     }
-    bump = maxBump(bump, classifyTypeChange(oldMember.type, newMember.type, { readOnly: true }));
+    bump = maxBump(bump, classifyTypeChange(oldMember.type, newMember.type, { readOnly }));
   }
   return bump;
 }
 
 /**
- * Classifies a type-string change as additive, breaking, or unchanged. Only
- * top-level union members count, and a DOM element type counts as covered by
+ * Classifies a type-string change as additive, breaking, or unchanged.
+ * Layout and comments don't count. A function type or object-type literal is
+ * compared by its parts, also when it's the one member that changed in a
+ * union. Otherwise only top-level union members count, and a DOM element type counts as covered by
  * its supertype in the other union. For a type the consumer writes (a prop),
  * a union that gains a member is additive and one that loses a member is
  * breaking. With `readOnly`, for a type the consumer only reads (an event's
@@ -189,19 +202,32 @@ function classifyTypeChange(
   if (oldType === newType) return "none";
   if (oldType === undefined || newType === undefined) return "major";
 
-  const oldFn = parseFunctionType(oldType);
-  const newFn = parseFunctionType(newType);
-  if (oldFn && newFn) return classifyFunctionTypeChange(oldFn, newFn);
+  if (normalizeTypeText(oldType) === normalizeTypeText(newType)) return "none";
 
-  const objectBump = readOnly ? classifyReadOnlyObjectChange(oldType, newType) : undefined;
-  if (objectBump !== undefined) return objectBump;
+  const wholeBump = classifyCoreChange(unwrapParens(oldType), unwrapParens(newType), readOnly);
+  if (wholeBump !== undefined) return wholeBump;
 
   // A DOM element subtype next to its supertype adds nothing, so dropping
   // `HTMLTableElement` from `HTMLElement | HTMLTableElement` isn't a narrowing.
-  const oldMembers = splitUnionMembers(oldType);
-  const newMembers = splitUnionMembers(newType);
-  const gainedMembers = [...newMembers].some((member) => !oldMembers.has(member) && !isCoveredBy(member, oldMembers));
-  const lostMembers = [...oldMembers].some((member) => !newMembers.has(member) && !isCoveredBy(member, newMembers));
+  return classifyMemberSetChange(splitUnionMembers(oldType), splitUnionMembers(newType), readOnly);
+}
+
+/**
+ * A union that gains a member is additive where the consumer writes the type,
+ * and breaking where the consumer reads it. A lost member is the reverse.
+ */
+function classifyMemberSetChange(oldMembers: Set<string>, newMembers: Set<string>, readOnly: boolean): SemverBump {
+  const gained = [...newMembers].filter((member) => !oldMembers.has(member) && !isCoveredBy(member, oldMembers));
+  const lost = [...oldMembers].filter((member) => !newMembers.has(member) && !isCoveredBy(member, newMembers));
+
+  // One member changed in place, such as the object in `boolean | { a?: number }`.
+  if (gained.length === 1 && lost.length === 1) {
+    const pairBump = classifyCoreChange(lost[0], gained[0], readOnly);
+    if (pairBump !== undefined) return pairBump;
+  }
+
+  const gainedMembers = gained.length > 0;
+  const lostMembers = lost.length > 0;
 
   const [narrowed, widened] = readOnly ? [gainedMembers, lostMembers] : [lostMembers, gainedMembers];
   if (narrowed) return "major";
@@ -335,9 +361,8 @@ function diffEvents(component: string, oldEvents: Event[], newEvents: Event[]): 
     if (oldEvent.type === "forwarded" && newEvent.type === "forwarded") {
       const oldType = computeEventTypeString(oldEvent);
       const newType = computeEventTypeString(newEvent);
-      if (oldType !== newType) {
-        push(name, classifyEventTypeChange(oldType, newType), `type changed from \`${oldType}\` to \`${newType}\``);
-      }
+      const typeBump = oldType === newType ? "none" : classifyEventTypeChange(oldType, newType);
+      if (typeBump !== "none") push(name, typeBump, `type changed from \`${oldType}\` to \`${newType}\``);
       continue;
     }
 
@@ -417,7 +442,9 @@ function diffContexts(component: string, oldContexts: Context[] = [], newContext
           oldContext.type !== undefined && newContext.type !== undefined
             ? classifyTypeChange(oldContext.type, newContext.type, { readOnly: true })
             : "major";
-        push(bump, `type changed from ${describeContextType(oldContext)} to ${describeContextType(newContext)}`);
+        if (bump !== "none") {
+          push(bump, `type changed from ${describeContextType(oldContext)} to ${describeContextType(newContext)}`);
+        }
       }
       continue;
     }

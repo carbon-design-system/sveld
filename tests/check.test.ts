@@ -631,6 +631,83 @@ describe("diffApiDocuments", () => {
     });
   });
 
+  describe("type text", () => {
+    const propChange = (oldType: string, newType: string) =>
+      diffApiDocuments(
+        document([mockComponentDocApi("X", "X.svelte", { props: [makeProp("p", { type: oldType })] })]),
+        document([mockComponentDocApi("X", "X.svelte", { props: [makeProp("p", { type: newType })] })]),
+      );
+    const slotChange = (oldProps: string, newProps: string) =>
+      diffApiDocuments(
+        document([
+          mockComponentDocApi("X", "X.svelte", { slots: [{ name: "default", default: true, slot_props: oldProps }] }),
+        ]),
+        document([
+          mockComponentDocApi("X", "X.svelte", { slots: [{ name: "default", default: true, slot_props: newProps }] }),
+        ]),
+      );
+
+    test("layout, comments and member separators don't count", () => {
+      expect(propChange("{ a: string }", "{a: string}")).toEqual([]);
+      expect(propChange("{ a: string; b: number }", "{\n  /** The a. */\n  a: string;\n  b: number;\n}")).toEqual([]);
+      expect(propChange("{ a: string, b: number }", "{ a: string; b: number }")).toEqual([]);
+      expect(slotChange("{ a: string }", "{\n  // The a.\n  a: string\n}")).toEqual([]);
+      expect(propChange('"a  b" | "c"', '"a b" | "c"')).toMatchObject([{ bump: "major" }]);
+    });
+
+    test("a callback prop that becomes optional is additive, and the reverse is breaking", () => {
+      expect(propChange("() => void", "(() => void) | undefined")).toMatchObject([{ bump: "minor" }]);
+      expect(propChange("(id: string) => string", "((id: string) => string) | null")).toMatchObject([
+        { bump: "minor" },
+      ]);
+      expect(propChange("(() => void) | undefined", "() => void")).toMatchObject([{ bump: "major" }]);
+      expect(propChange("(() => void) | undefined", "((id: string) => void) | undefined")).toMatchObject([
+        { bump: "major" },
+      ]);
+    });
+
+    test("a callback that becomes optional where the consumer reads it is breaking", () => {
+      expect(slotChange("{ close: () => void }", "{ close: (() => void) | undefined }")).toMatchObject([
+        { bump: "major" },
+      ]);
+    });
+
+    test("an object prop is compared member by member", () => {
+      expect(propChange("{ a: string }", "{ a: string; b?: number }")).toMatchObject([{ bump: "minor" }]);
+      expect(propChange("{ a: string }", "{ a?: string }")).toMatchObject([{ bump: "minor" }]);
+      expect(propChange("{ a: string }", "{ a: string | number }")).toMatchObject([{ bump: "minor" }]);
+      expect(propChange("{ a: string } | undefined", "{ a: string; b?: number } | undefined")).toMatchObject([
+        { bump: "minor" },
+      ]);
+      expect(propChange("{ a: string }", "{ a: string; b: number }")).toMatchObject([{ bump: "major" }]);
+      expect(propChange("{ a: string; b: number }", "{ a: string }")).toMatchObject([{ bump: "major" }]);
+      expect(propChange("{ a?: string }", "{ a: string }")).toMatchObject([{ bump: "major" }]);
+      expect(propChange("{ a: string | number }", "{ a: string }")).toMatchObject([{ bump: "major" }]);
+    });
+
+    test("an object member of a wider union is compared member by member", () => {
+      expect(
+        propChange("undefined | boolean | { a?: number }", "undefined | boolean | { a?: number, b?: boolean }"),
+      ).toMatchObject([{ bump: "minor" }]);
+      expect(propChange("boolean | { a?: number }", "boolean | { a: number }")).toMatchObject([{ bump: "major" }]);
+      expect(propChange("boolean | { a?: number }", "string | { a?: number; b?: number }")).toMatchObject([
+        { bump: "major" },
+      ]);
+      expect(slotChange("{ v: boolean | { a: number } }", "{ v: boolean | { a: number; b: number } }")).toMatchObject([
+        { bump: "minor" },
+      ]);
+    });
+
+    test("a function type keeps its union return type", () => {
+      expect(propChange("() => string", "() => string | number")).toMatchObject([{ bump: "major" }]);
+    });
+
+    test("an object prop that gains a nullish member is additive", () => {
+      expect(propChange("{ a: string }", "{ a: string } | null")).toMatchObject([{ bump: "minor" }]);
+      expect(propChange("{ a: string } | null", "{ a: string }")).toMatchObject([{ bump: "major" }]);
+    });
+  });
+
   describe("read-only props and exports", () => {
     function typeChange(prop: ComponentDocApi["props"][number], oldType: string, newType: string, field = "props") {
       const before = mockComponentDocApi("Select", "Select.svelte", { [field]: [{ ...prop, type: oldType }] });
