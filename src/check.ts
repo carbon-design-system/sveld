@@ -12,12 +12,15 @@ import {
   COMPONENT_API_SCHEMA_VERSION,
   type ComponentApiDocument,
 } from "./writer/document-model";
+import { computeEventTypeString, isAccessorProp } from "./writer/writer-ts-definitions-core";
 
 const PARAM_NAME_SPLIT_REGEX = /[:=]/;
 /** An `HTMLElement` subtype: `HTMLDivElement`, or `HTMLElementTagNameMap[Tag]` for a generic tag. */
 const HTML_ELEMENT_SUBTYPE_REGEX = /^HTML\w+Element$|^HTMLElementTagNameMap\[[\w$]+\]$/;
 /** An `SVGElement` subtype: `SVGCircleElement`. */
 const SVG_ELEMENT_SUBTYPE_REGEX = /^SVG\w+Element$/;
+
+const CUSTOM_EVENT_DETAIL_REGEX = /^CustomEvent<([\s\S]*)>$/;
 
 type Prop = ComponentDocApi["props"][number];
 type Event = ComponentDocApi["events"][number];
@@ -205,9 +208,9 @@ function classifyTypeChange(
   return widened ? "minor" : "none";
 }
 
-/** True for a prop or export the consumer can only read: a module export, or a `const` or `function` prop accessor. */
+/** True for a prop or export the consumer can only read: a module export, or an `export const`/`export function` accessor. */
 function isReadOnlyMember(kind: "prop" | "moduleExport", prop: Prop): boolean {
-  return kind === "moduleExport" || prop.kind === "const" || prop.kind === "function";
+  return kind === "moduleExport" || isAccessorProp(prop);
 }
 
 /** True when `bind:<name>` works: declared with runes `$bindable()` or legacy `@bindable writable`. */
@@ -252,6 +255,14 @@ function diffPropList(
   for (const name of removed) push(name, "major", "removed");
 
   for (const [name, oldProp, newProp] of common) {
+    // An accessor is a class member, not a key of the props type, so moving
+    // between the two breaks both `<X name={...} />` and `instance.name`.
+    const newAccessor = isAccessorProp(newProp);
+    if (kind === "prop" && isAccessorProp(oldProp) !== newAccessor) {
+      push(name, "major", newAccessor ? "became a read-only accessor" : "stopped being a read-only accessor");
+      continue;
+    }
+
     if (oldProp.isRequired !== newProp.isRequired) {
       push(name, newProp.isRequired ? "major" : "minor", `became ${newProp.isRequired ? "required" : "optional"}`);
     }
@@ -280,7 +291,8 @@ function diffPropList(
       push(name, newDeprecated ? "minor" : "patch", newDeprecated ? "marked as deprecated" : "no longer deprecated");
     }
 
-    if (oldProp.constant !== newProp.constant) {
+    // On a prop, `constant` is `kind === "const"`, so the accessor check above covers a flip.
+    if (kind === "moduleExport" && oldProp.constant !== newProp.constant) {
       push(name, "minor", newProp.constant ? "became constant" : "became mutable");
     }
 
@@ -290,6 +302,20 @@ function diffPropList(
   }
 
   return changes;
+}
+
+/** `T` from `CustomEvent<T>`; `undefined` for any other type, a union of events included. */
+function customEventDetail(type: string): string | undefined {
+  if (splitTopLevel(type, "|").length > 1) return undefined;
+  return CUSTOM_EVENT_DETAIL_REGEX.exec(type)?.[1];
+}
+
+/** Compares two listener event types: the details when both are `CustomEvent<…>`, else any change is breaking. */
+function classifyEventTypeChange(oldType: string, newType: string): SemverBump {
+  const oldDetail = customEventDetail(oldType);
+  const newDetail = customEventDetail(newType);
+  if (oldDetail === undefined || newDetail === undefined) return "major";
+  return classifyTypeChange(oldDetail, newDetail, { readOnly: true });
 }
 
 function diffEvents(component: string, oldEvents: Event[], newEvents: Event[]): ApiChange[] {
@@ -303,6 +329,15 @@ function diffEvents(component: string, oldEvents: Event[], newEvents: Event[]): 
   for (const [name, oldEvent, newEvent] of common) {
     if (oldEvent.type !== newEvent.type) {
       push(name, "major", `changed from ${oldEvent.type} to ${newEvent.type}`);
+      continue;
+    }
+
+    if (oldEvent.type === "forwarded" && newEvent.type === "forwarded") {
+      const oldType = computeEventTypeString(oldEvent);
+      const newType = computeEventTypeString(newEvent);
+      if (oldType !== newType) {
+        push(name, classifyEventTypeChange(oldType, newType), `type changed from \`${oldType}\` to \`${newType}\``);
+      }
       continue;
     }
 

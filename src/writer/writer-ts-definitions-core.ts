@@ -532,7 +532,8 @@ function createDispatchedEventType(detail: string = ANY_TYPE) {
   return `CustomEvent<${detail}>`;
 }
 
-function computeEventTypeString(event: ComponentDocApi["events"][number]): string {
+/** The event type a consumer's listener receives, as written to the `.d.ts`. */
+export function computeEventTypeString(event: ComponentDocApi["events"][number]): string {
   switch (event.type) {
     case "dispatched":
       return createDispatchedEventType(event.detail);
