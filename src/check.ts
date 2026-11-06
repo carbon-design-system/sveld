@@ -6,7 +6,15 @@ import type { SveldRuntimeOptions } from "./load-config";
 import type { EntryExports } from "./parse-entry-exports";
 import { parseObjectTypeLiteralMembers } from "./parser/object-type-literal";
 import { formatJsonOutput } from "./path";
-import { indexOfTopLevelArrow, normalizeTypeText, splitTopLevel, unwrapParens } from "./type-text";
+import {
+  indexOfClosingBracket,
+  indexOfTopLevel,
+  indexOfTopLevelArrow,
+  isTupleType,
+  normalizeTypeText,
+  splitTopLevel,
+  unwrapParens,
+} from "./type-text";
 import {
   buildComponentApiDocument,
   COMPONENT_API_SCHEMA_VERSION,
@@ -21,6 +29,8 @@ const HTML_ELEMENT_SUBTYPE_REGEX = /^HTML\w+Element$|^HTMLElementTagNameMap\[[\w
 const SVG_ELEMENT_SUBTYPE_REGEX = /^SVG\w+Element$/;
 
 const CUSTOM_EVENT_DETAIL_REGEX = /^CustomEvent<([\s\S]*)>$/;
+/** `Array<` or `ReadonlyArray<` at the start of an array type. */
+const GENERIC_ARRAY_REGEX = /^(Readonly)?Array</;
 
 type Prop = ComponentDocApi["props"][number];
 type Event = ComponentDocApi["events"][number];
@@ -72,8 +82,11 @@ export function bumpMeetsLevel(bump: SemverBump, level: CheckLevel): boolean {
 }
 
 function splitUnionMembers(type: string): Set<string> {
+  const text = unwrapParens(normalizeTypeText(type));
+  // In `() => A | B`, the `|` belongs to the return type.
+  if (indexOfTopLevelArrow(text) !== -1) return new Set([text]);
   return new Set(
-    splitTopLevel(normalizeTypeText(type), "|")
+    splitTopLevel(text, "|")
       .map((member) => unwrapParens(member))
       .filter((member) => member.length > 0),
   );
@@ -83,7 +96,9 @@ function splitUnionMembers(type: string): Set<string> {
 function classifyCoreChange(oldCore: string, newCore: string, readOnly: boolean): SemverBump | undefined {
   const oldFn = parseFunctionType(oldCore);
   const newFn = parseFunctionType(newCore);
-  if (oldFn && newFn) return classifyFunctionTypeChange(oldFn, newFn);
+  if (oldFn && newFn) return classifyFunctionTypeChange(oldFn, newFn, readOnly);
+  const arrayBump = classifyArrayChange(parseArrayType(oldCore), parseArrayType(newCore), readOnly);
+  if (arrayBump !== undefined) return arrayBump;
   return classifyObjectChange(oldCore, newCore, readOnly);
 }
 
@@ -138,19 +153,121 @@ function isOptionalParam(param: string): boolean {
   return name.trimEnd().endsWith("?");
 }
 
-/** A changed return type or removed/reordered param is breaking; new trailing optional params are additive. */
-function classifyFunctionTypeChange(oldFn: ParsedFunctionType, newFn: ParsedFunctionType): SemverBump {
-  if (oldFn.returnType !== newFn.returnType) return "major";
+/**
+ * A param's type, with `| undefined` when it's optional, so a param that
+ * becomes optional compares like a union that gains `undefined`. `undefined`
+ * for a rest param or one without a type.
+ */
+function paramType(param: string): string | undefined {
+  if (param.startsWith("...")) return undefined;
+  const colonIndex = indexOfTopLevel(param, ":");
+  if (colonIndex === -1) return undefined;
+  const type = param.slice(colonIndex + 1).trim();
+  return isOptionalParam(param) ? `(${type}) | undefined` : type;
+}
+
+/**
+ * Compares two function types. Param names don't count. `readOnly` means the
+ * consumer calls the function (an export, or a slot or event value): it
+ * writes the params and reads the return. Otherwise the consumer writes the
+ * function (a callback prop): it reads the params and writes the return.
+ * Removing a param is breaking either way. A new param is additive for a
+ * callback, which can ignore it, and for a call only when it's optional.
+ */
+function classifyFunctionTypeChange(
+  oldFn: ParsedFunctionType,
+  newFn: ParsedFunctionType,
+  readOnly: boolean,
+): SemverBump {
   if (newFn.params.length < oldFn.params.length) return "major";
 
+  // A callback typed to return `void` may return anything.
+  let bump =
+    !readOnly && newFn.returnType === "void"
+      ? "none"
+      : classifyTypeChange(oldFn.returnType, newFn.returnType, { readOnly });
+
   for (let i = 0; i < oldFn.params.length; i++) {
-    if (oldFn.params[i] !== newFn.params[i]) return "major";
+    const oldParam = paramType(oldFn.params[i]);
+    const newParam = paramType(newFn.params[i]);
+    if (oldParam === undefined || newParam === undefined) {
+      if (normalizeTypeText(oldFn.params[i]) !== normalizeTypeText(newFn.params[i])) return "major";
+      continue;
+    }
+    bump = maxBump(bump, classifyTypeChange(oldParam, newParam, { readOnly: !readOnly }));
   }
 
-  if (newFn.params.length === oldFn.params.length) return "none";
-
   const addedParams = newFn.params.slice(oldFn.params.length);
-  return addedParams.every(isOptionalParam) ? "minor" : "major";
+  if (addedParams.length > 0) {
+    bump = maxBump(bump, !readOnly || addedParams.every(isOptionalParam) ? "minor" : "major");
+  }
+  return bump;
+}
+
+interface ParsedArrayType {
+  readonly: boolean;
+  /** The element type of `T[]`, or each element of a tuple. */
+  elements: string[];
+  tuple: boolean;
+}
+
+/**
+ * Reads `T[]`, `Array<T>`, `readonly T[]`, `ReadonlyArray<T>`, and plain
+ * tuples (`[A, B]`, `readonly [A, B]`); `undefined` for any other type,
+ * including a tuple with named, optional or rest elements.
+ */
+function parseArrayType(type: string): ParsedArrayType | undefined {
+  let text = normalizeTypeText(type);
+  let isReadonly = false;
+  if (text.startsWith("readonly ")) {
+    isReadonly = true;
+    text = text.slice("readonly ".length);
+  }
+
+  const generic = GENERIC_ARRAY_REGEX.exec(text);
+  if (generic) {
+    const openIndex = generic[0].length - 1;
+    if (isReadonly || indexOfClosingBracket(text, openIndex) !== text.length - 1) return undefined;
+    return { readonly: generic[1] !== undefined, elements: [text.slice(openIndex + 1, -1)], tuple: false };
+  }
+
+  if (isTupleType(text)) {
+    const inner = text.slice(1, -1).trim();
+    const elements = inner === "" ? [] : splitTopLevel(inner, ",").map((element) => element.trim());
+    if (elements.some((element) => element.startsWith("...") || indexOfTopLevel(element, ":?") !== -1)) {
+      return undefined;
+    }
+    return { readonly: isReadonly, elements, tuple: true };
+  }
+
+  // `A | B[]` is `A | (B[])`, so the element can't have a top-level space or operator.
+  if (!text.endsWith("[]")) return undefined;
+  const element = text.slice(0, -2);
+  if (element === "" || indexOfTopLevel(element, " |&") !== -1) return undefined;
+  return { readonly: isReadonly, elements: [element], tuple: false };
+}
+
+/**
+ * Compares two array or tuple types element by element. A readonly array
+ * accepts a mutable one, so gaining `readonly` widens the type: additive
+ * where the consumer writes it, breaking where it reads it. A tuple that
+ * changes length is breaking. `undefined` unless both sides are arrays, or
+ * both are tuples.
+ */
+function classifyArrayChange(
+  oldArray: ParsedArrayType | undefined,
+  newArray: ParsedArrayType | undefined,
+  readOnly: boolean,
+): SemverBump | undefined {
+  if (!oldArray || !newArray || oldArray.tuple !== newArray.tuple) return undefined;
+  if (oldArray.elements.length !== newArray.elements.length) return "major";
+
+  let bump: SemverBump = "none";
+  if (oldArray.readonly !== newArray.readonly) bump = newArray.readonly === readOnly ? "major" : "minor";
+  for (let i = 0; i < oldArray.elements.length; i++) {
+    bump = maxBump(bump, classifyTypeChange(oldArray.elements[i], newArray.elements[i], { readOnly }));
+  }
+  return bump;
 }
 
 /**
@@ -158,12 +275,13 @@ function classifyFunctionTypeChange(oldFn: ParsedFunctionType, newFn: ParsedFunc
  * Where the consumer writes the type (a prop), a new optional member or one
  * that became optional is additive, and a new required member is breaking.
  * With `readOnly`, where the consumer only reads it, any new member is
- * additive and one that became optional is breaking. `undefined` when either
- * side isn't an object-type literal sveld can split into members.
+ * additive, and one that became optional or `readonly` is breaking.
+ * `undefined` when either side isn't an object-type literal sveld can split
+ * into members.
  */
 function classifyObjectChange(oldType: string, newType: string, readOnly: boolean): SemverBump | undefined {
-  const oldMembers = parseObjectTypeLiteralMembers(oldType);
-  const newMembers = parseObjectTypeLiteralMembers(newType);
+  const oldMembers = parseObjectTypeLiteralMembers(oldType, { withReadonly: true });
+  const newMembers = parseObjectTypeLiteralMembers(newType, { withReadonly: true });
   if (!oldMembers || !newMembers) return undefined;
 
   const { added, removed, common } = matchByKey(oldMembers, newMembers, (member) => member.name);
@@ -174,6 +292,11 @@ function classifyObjectChange(oldType: string, newType: string, readOnly: boolea
   for (const [, oldMember, newMember] of common) {
     if (oldMember.optional !== newMember.optional) {
       bump = maxBump(bump, newMember.optional === readOnly ? "major" : "minor");
+    }
+    // Code that assigns to a member it read breaks when the member becomes
+    // readonly. Assignability ignores `readonly`, so a written type doesn't care.
+    if (readOnly && oldMember.readonly !== newMember.readonly) {
+      bump = maxBump(bump, newMember.readonly ? "major" : "minor");
     }
     bump = maxBump(bump, classifyTypeChange(oldMember.type, newMember.type, { readOnly }));
   }

@@ -220,7 +220,7 @@ describe("diffApiDocuments", () => {
       expect(changes[0]).toMatchObject({ bump: "minor" });
     });
 
-    test("a function type gaining a trailing required param is breaking", () => {
+    test("a callback prop gaining a trailing required param is additive", () => {
       const before = mockComponentDocApi("Button", "Button.svelte", {
         props: [makeProp("onClick", { type: "(event: MouseEvent) => void" })],
       });
@@ -228,8 +228,9 @@ describe("diffApiDocuments", () => {
         props: [makeProp("onClick", { type: "(event: MouseEvent, index: number) => void" })],
       });
 
+      // A callback written for one param ignores the second.
       const changes = diffApiDocuments(document([before]), document([after]));
-      expect(changes[0]).toMatchObject({ bump: "major" });
+      expect(changes[0]).toMatchObject({ bump: "minor" });
     });
 
     test("a function type losing a param is breaking", () => {
@@ -662,6 +663,9 @@ describe("diffApiDocuments", () => {
       ]);
       expect(propChange("(() => void) | undefined", "() => void")).toMatchObject([{ bump: "major" }]);
       expect(propChange("(() => void) | undefined", "((id: string) => void) | undefined")).toMatchObject([
+        { bump: "minor" },
+      ]);
+      expect(propChange("((id: string) => void) | undefined", "(() => void) | undefined")).toMatchObject([
         { bump: "major" },
       ]);
     });
@@ -699,7 +703,65 @@ describe("diffApiDocuments", () => {
     });
 
     test("a function type keeps its union return type", () => {
-      expect(propChange("() => string", "() => string | number")).toMatchObject([{ bump: "major" }]);
+      expect(propChange("() => string | number", "() => number | string")).toEqual([]);
+      expect(propChange("() => string | number", "() => string")).toMatchObject([{ bump: "major" }]);
+      expect(propChange("() => string | undefined", "(() => string) | undefined")).toMatchObject([{ bump: "major" }]);
+    });
+
+    test("callback param names don't count", () => {
+      expect(propChange("(e: string) => void", "(event: string) => void")).toEqual([]);
+      expect(slotChange("{ f: (e: string) => void }", "{ f: (event: string) => void }")).toEqual([]);
+    });
+
+    test("a callback prop reads its params and writes its return", () => {
+      // The component calls the callback, so the consumer's callback reads each param.
+      expect(propChange("(v: string) => void", "(v: string | number) => void")).toMatchObject([{ bump: "major" }]);
+      expect(propChange("(v: string | number) => void", "(v: string) => void")).toMatchObject([{ bump: "minor" }]);
+      expect(propChange("(v: string) => void", "(v?: string) => void")).toMatchObject([{ bump: "major" }]);
+      expect(propChange("() => string", "() => string | number")).toMatchObject([{ bump: "minor" }]);
+      expect(propChange("() => string", "() => void")).toEqual([]);
+      expect(propChange("() => void", "() => void | Promise<void>")).toMatchObject([{ bump: "minor" }]);
+    });
+
+    test("a function the consumer calls writes its params and reads its return", () => {
+      expect(slotChange("{ f: (v: string) => void }", "{ f: (v: string | number) => void }")).toMatchObject([
+        { bump: "minor" },
+      ]);
+      expect(slotChange("{ f: (v: string | number) => void }", "{ f: (v: string) => void }")).toMatchObject([
+        { bump: "major" },
+      ]);
+      expect(slotChange("{ f: () => string }", "{ f: () => string | number }")).toMatchObject([{ bump: "major" }]);
+      expect(slotChange("{ f: () => void }", "{ f: (v: string) => void }")).toMatchObject([{ bump: "major" }]);
+      expect(slotChange("{ f: () => void }", "{ f: (v?: string) => void }")).toMatchObject([{ bump: "minor" }]);
+    });
+
+    test("array forms are compared by element", () => {
+      expect(propChange("string[]", "Array<string>")).toEqual([]);
+      expect(propChange("ReadonlyArray<string>", "readonly string[]")).toEqual([]);
+      expect(propChange('Array<"a" | "b">', 'Array<"b" | "a">')).toEqual([]);
+      expect(propChange('("a" | "b")[]', '("a" | "b" | "c")[]')).toMatchObject([{ bump: "minor" }]);
+      expect(slotChange('{ v: ("a" | "b")[] }', '{ v: ("a" | "b" | "c")[] }')).toMatchObject([{ bump: "major" }]);
+      expect(propChange("HTMLDivElement[]", "HTMLElement[]")).toMatchObject([{ bump: "minor" }]);
+      expect(propChange("string | number[]", "string | Array<number>")).toEqual([]);
+    });
+
+    test("a readonly array widens where the consumer writes it and narrows where it reads it", () => {
+      expect(propChange("string[]", "readonly string[]")).toMatchObject([{ bump: "minor" }]);
+      expect(propChange("readonly string[]", "string[]")).toMatchObject([{ bump: "major" }]);
+      expect(propChange("[string, number]", "readonly [string, number]")).toMatchObject([{ bump: "minor" }]);
+      expect(slotChange("{ v: string[] }", "{ v: readonly string[] }")).toMatchObject([{ bump: "major" }]);
+      expect(slotChange("{ v: readonly string[] }", "{ v: string[] }")).toMatchObject([{ bump: "minor" }]);
+    });
+
+    test("a tuple that changes length is breaking", () => {
+      expect(propChange("[string, number]", "[string]")).toMatchObject([{ bump: "major" }]);
+      expect(propChange("[string]", "[string, number]")).toMatchObject([{ bump: "major" }]);
+    });
+
+    test("a member that becomes readonly where the consumer reads it is breaking", () => {
+      expect(slotChange("{ a: string }", "{ readonly a: string }")).toMatchObject([{ bump: "major" }]);
+      expect(slotChange("{ readonly a: string }", "{ a: string }")).toMatchObject([{ bump: "minor" }]);
+      expect(propChange("{ a: string }", "{ readonly a: string }")).toEqual([]);
     });
 
     test("an object prop that gains a nullish member is additive", () => {
