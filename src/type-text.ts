@@ -21,6 +21,8 @@ const CH_BACKTICK = 96;
 const CH_OPEN_BRACE = 123;
 const CH_CLOSE_BRACE = 125;
 
+const WHITESPACE_REGEX = /\s/;
+
 /** Return `true` to stop the scan at `index`. */
 type TypeTextVisitor = (index: number, depth: number) => boolean | undefined;
 
@@ -144,9 +146,55 @@ export function isFunctionType(type: string | undefined): boolean {
     .map((member) => member.trim())
     .filter((member) => member && !NULLISH_TYPES.has(member));
   if (members.length !== 1) return false;
-  let [member] = members;
-  while (member.startsWith("(") && indexOfClosingBracket(member, 0) === member.length - 1) {
-    member = member.slice(1, -1).trim();
-  }
+  const member = unwrapParens(members[0]);
   return (member.startsWith("(") || member.startsWith("<")) && indexOfTopLevelArrow(member) !== -1;
+}
+
+/**
+ * `text` with comments dropped and every whitespace run outside a string
+ * literal collapsed to one space, so a change in layout or doc comments
+ * compares equal.
+ */
+export function normalizeTypeText(text: string): string {
+  let result = "";
+  // A comment or whitespace run becomes one space, written before the next token.
+  let pendingSpace = false;
+  const emit = (token: string) => {
+    if (pendingSpace && result !== "") result += " ";
+    pendingSpace = false;
+    result += token;
+  };
+  let i = 0;
+  while (i < text.length) {
+    const c = text.charCodeAt(i);
+    if (c === CH_DOUBLE_QUOTE || c === CH_SINGLE_QUOTE || c === CH_BACKTICK) {
+      const close = skipStringLiteral(text, i, text.length);
+      emit(text.slice(i, close + 1));
+      i = close + 1;
+    } else if (text.startsWith("/*", i)) {
+      const close = text.indexOf("*/", i + 2);
+      i = close === -1 ? text.length : close + 2;
+      pendingSpace = true;
+    } else if (text.startsWith("//", i)) {
+      const close = text.indexOf("\n", i + 2);
+      i = close === -1 ? text.length : close + 1;
+      pendingSpace = true;
+    } else if (WHITESPACE_REGEX.test(text[i])) {
+      pendingSpace = true;
+      i++;
+    } else {
+      emit(text[i]);
+      i++;
+    }
+  }
+  return result;
+}
+
+/** `text` without the parentheses that wrap all of it: `((() => void))` gives `() => void`. */
+export function unwrapParens(text: string): string {
+  let result = text.trim();
+  while (result.startsWith("(") && indexOfClosingBracket(result, 0) === result.length - 1) {
+    result = result.slice(1, -1).trim();
+  }
+  return result;
 }
