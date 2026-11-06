@@ -391,7 +391,7 @@ describe("diffApiDocuments", () => {
       });
     });
 
-    test("constant/reactive flips are additive", () => {
+    test("a reactive flip is additive, and a let prop turning const is breaking", () => {
       const before = mockComponentDocApi("Counter", "Counter.svelte", {
         props: [
           makeProp("count", { type: "number", constant: false, reactive: false }),
@@ -400,7 +400,7 @@ describe("diffApiDocuments", () => {
       });
       const after = mockComponentDocApi("Counter", "Counter.svelte", {
         props: [
-          makeProp("count", { type: "number", constant: true, reactive: false }),
+          makeProp("count", { type: "number", kind: "const", constant: true, reactive: false }),
           makeProp("label", { type: "string", constant: false, reactive: true }),
         ],
       });
@@ -410,8 +410,8 @@ describe("diffApiDocuments", () => {
         component: "Counter",
         kind: "prop",
         name: "count",
-        bump: "minor",
-        message: 'prop "count" became constant',
+        bump: "major",
+        message: 'prop "count" became a read-only accessor',
       });
       expect(changes).toContainEqual({
         component: "Counter",
@@ -421,6 +421,18 @@ describe("diffApiDocuments", () => {
         message: 'prop "label" became reactive',
       });
     });
+  });
+
+  test("a module export's constant flip is additive", () => {
+    const exported = (kind: "let" | "const") =>
+      makeProp("sizes", { type: "string[]", kind, constant: kind === "const" });
+    const changes = diffApiDocuments(
+      document([mockComponentDocApi("Select", "Select.svelte", { moduleExports: [exported("let")] })]),
+      document([mockComponentDocApi("Select", "Select.svelte", { moduleExports: [exported("const")] })]),
+    );
+    expect(changes).toMatchObject([
+      { kind: "moduleExport", bump: "minor", message: expect.stringContaining("became constant") },
+    ]);
   });
 
   describe("events", () => {
@@ -505,6 +517,55 @@ describe("diffApiDocuments", () => {
       expect(detailChange('"a" | "b"', '"b" | "a"')).toEqual([]);
     });
 
+    function forwardedChange(oldEvent: Record<string, string>, newEvent: Record<string, string>) {
+      const event = (fields: Record<string, string>) => ({
+        type: "forwarded" as const,
+        name: "close",
+        element: "Inner",
+        ...fields,
+      });
+      return diffApiDocuments(
+        document([mockComponentDocApi("ComboButton", "ComboButton.svelte", { events: [event(oldEvent)] })]),
+        document([mockComponentDocApi("ComboButton", "ComboButton.svelte", { events: [event(newEvent)] })]),
+      );
+    }
+
+    test("a forwarded event's detail is compared like a dispatched one", () => {
+      expect(forwardedChange({ detail: "{ id: string }" }, { detail: "number" })).toEqual([
+        {
+          component: "ComboButton",
+          kind: "event",
+          name: "close",
+          bump: "major",
+          message: 'event "close" type changed from `CustomEvent<{ id: string }>` to `CustomEvent<number>`',
+        },
+      ]);
+      expect(forwardedChange({ detail: "{ id: string }" }, { detail: "{ id: string; open: boolean }" })).toMatchObject([
+        { bump: "minor" },
+      ]);
+      expect(forwardedChange({ detail: '"a"' }, { detail: '"a" | "b"' })).toMatchObject([{ bump: "major" }]);
+      expect(forwardedChange({ detail: "{ id: string }" }, {})).toMatchObject([
+        {
+          bump: "major",
+          message: 'event "close" type changed from `CustomEvent<{ id: string }>` to `CustomEvent<any>`',
+        },
+      ]);
+    });
+
+    test("a forwarded event whose element changes is compared by the event type the listener gets", () => {
+      expect(forwardedChange({ element: "button" }, { element: "a" })).toEqual([]);
+      expect(forwardedChange({ name: "click", element: "button" }, { name: "click", element: "Inner" })).toEqual([]);
+      const toComponent = diffApiDocuments(
+        document([
+          mockComponentDocApi("X", "X.svelte", { events: [{ type: "forwarded", name: "close", element: "dialog" }] }),
+        ]),
+        document([
+          mockComponentDocApi("X", "X.svelte", { events: [{ type: "forwarded", name: "close", element: "Inner" }] }),
+        ]),
+      );
+      expect(toComponent).toMatchObject([{ bump: "major" }]);
+    });
+
     test("a detail that isn't a plain object literal falls back to breaking", () => {
       expect(detailChange("{ id: string }", "{ id: string; [key: string]: unknown }")[0]?.bump).toBe("major");
       expect(detailChange('{ "aria-id": string }', '{ "aria-id": string; open: boolean }')[0]?.bump).toBe("major");
@@ -582,8 +643,38 @@ describe("diffApiDocuments", () => {
         typeChange(makeProp("sizes", { kind: "const" }), '"sm" | "md"', '"sm" | "md" | "lg"', "moduleExports"),
       ).toBe("major");
       expect(typeChange(makeProp("size", { kind: "const", constant: true }), '"sm"', '"sm" | "lg"')).toBe("major");
-      expect(typeChange(makeProp("focus", { kind: "function" }), '"sm"', '"sm" | "lg"')).toBe("major");
+      expect(
+        typeChange(makeProp("focus", { kind: "function", isFunctionDeclaration: true }), '"sm"', '"sm" | "lg"'),
+      ).toBe("major");
       expect(typeChange(makeProp("size", { kind: "const", constant: true }), '"sm" | "lg"', '"sm"')).toBe("minor");
+    });
+
+    test("a prop that moves to or from an accessor is breaking", () => {
+      const change = (oldProp: ComponentDocApi["props"][number], newProp: ComponentDocApi["props"][number]) =>
+        diffApiDocuments(
+          document([mockComponentDocApi("Select", "Select.svelte", { props: [oldProp] })]),
+          document([mockComponentDocApi("Select", "Select.svelte", { props: [newProp] })]),
+        );
+      const letProp = makeProp("size", { type: "string" });
+      const constProp = makeProp("size", { type: "string", kind: "const", constant: true });
+      const fnProp = makeProp("size", { type: "() => void", kind: "function", isFunctionDeclaration: true });
+
+      expect(change(letProp, constProp)).toEqual([
+        {
+          component: "Select",
+          kind: "prop",
+          name: "size",
+          bump: "major",
+          message: 'prop "size" became a read-only accessor',
+        },
+      ]);
+      expect(change(constProp, letProp)).toMatchObject([
+        { bump: "major", message: 'prop "size" stopped being a read-only accessor' },
+      ]);
+      expect(change(letProp, fnProp)).toMatchObject([{ bump: "major" }]);
+      expect(change(constProp, fnProp)).toMatchObject([
+        { bump: "major", message: expect.stringContaining("type changed") },
+      ]);
     });
 
     test("a let prop, bindable or not, still widens as additive", () => {

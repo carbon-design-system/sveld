@@ -60,10 +60,12 @@ Suggested semver bump: major.
 | Prop/export default value changed (type unchanged)              | `patch`                          |
 | `@deprecated` added                                             | `minor`                          |
 | `@deprecated` removed                                           | `patch`                          |
-| `constant`/`reactive` flag flipped                              | `minor`                          |
+| Prop moved to or from an `export const`/`export function`       | `major`                          |
+| Export `constant` or prop `reactive` flag flipped               | `minor`                          |
 | Event/slot added                                                | `minor`                          |
 | Event/slot removed                                              | `major`                          |
 | Event detail / slot props type widened (union gained a member)  | `major`                          |
+| Forwarded event type changed (compared as the listener sees it) | as for an event detail           |
 | Event detail / slot props object gained a field                 | `minor`                          |
 | Event detail / slot props object lost a field                   | `major`                          |
 | Event detail / slot props type narrowed (union lost a member)   | `minor`                          |
