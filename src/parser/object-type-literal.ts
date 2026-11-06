@@ -11,6 +11,8 @@ export interface ObjectTypeLiteralMember {
   name: string;
   type: string;
   optional: boolean;
+  /** Set only with `withReadonly`: whether the member has the `readonly` modifier. */
+  readonly?: boolean;
 }
 
 /**
@@ -19,11 +21,12 @@ export interface ObjectTypeLiteralMember {
  * or when a member can't be split into `name: type` (index signatures, mapped types,
  * computed names) so the caller can fall back to treating the type as unresolved.
  * With `skipIndexSignatures`, an index signature (`[key: string]: any`) is left out
- * instead, for a caller that only reads the named members.
+ * instead, for a caller that only reads the named members. With `withReadonly`, each
+ * member records its `readonly` modifier, which is otherwise dropped.
  */
 export function parseObjectTypeLiteralMembers(
   typeText: string,
-  { skipIndexSignatures = false } = {},
+  { skipIndexSignatures = false, withReadonly = false } = {},
 ): ObjectTypeLiteralMember[] | null {
   const trimmed = typeText.trim();
   const match = OBJECT_TYPE_LITERAL_REGEX.exec(trimmed);
@@ -41,7 +44,8 @@ export function parseObjectTypeLiteralMembers(
     const colonIndex = indexOfTopLevel(member, ":");
     if (colonIndex === -1) return null;
 
-    let name = member.slice(0, colonIndex).trim().replace(READONLY_MODIFIER_REGEX, "");
+    const rawName = member.slice(0, colonIndex).trim();
+    let name = rawName.replace(READONLY_MODIFIER_REGEX, "");
     const type = member.slice(colonIndex + 1).trim();
     if (!type) return null;
     if (skipIndexSignatures && INDEX_SIGNATURE_REGEX.test(name)) continue;
@@ -54,7 +58,7 @@ export function parseObjectTypeLiteralMembers(
 
     if (!MEMBER_NAME_REGEX.test(name)) return null;
 
-    members.push({ name, type, optional });
+    members.push(withReadonly ? { name, type, optional, readonly: rawName !== name } : { name, type, optional });
   }
 
   return members;

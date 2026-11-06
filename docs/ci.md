@@ -57,8 +57,12 @@ Suggested semver bump: major.
 | Prop object gained a required field, or lost a field            | `major`                          |
 | Prop object field became required                               | `major`                          |
 | Prop/export type changed (anything else)                        | `major`                          |
-| Function-typed prop/export gained a trailing optional param     | `minor`                          |
-| Function-typed prop/export lost a param, or return type changed | `major`                          |
+| Callback prop gained a trailing param                           | `minor`                          |
+| Callback prop param widened, or became optional                 | `major`                          |
+| Callback prop param narrowed, or return type widened            | `minor`                          |
+| Function type lost a param                                      | `major`                          |
+| Prop array became `readonly`                                    | `minor`                          |
+| Tuple changed length                                            | `major`                          |
 | Prop gained a writable binding (`bind:`-able)                   | `minor`                          |
 | Prop lost a writable binding                                    | `major`                          |
 | Prop/export default value changed (type unchanged)              | `patch`                          |
@@ -72,6 +76,7 @@ Suggested semver bump: major.
 | Forwarded event type changed (compared as the listener sees it) | as for an event detail           |
 | Event detail / slot props object gained a field                 | `minor`                          |
 | Event detail / slot props object lost a field                   | `major`                          |
+| Event detail / slot props field or array became `readonly`      | `major`                          |
 | Event detail / slot props type narrowed (union lost a member)   | `minor`                          |
 | Event detail / slot props type otherwise changed                | `major`                          |
 | Context added                                                   | `minor`                          |
@@ -88,6 +93,10 @@ Suggested semver bump: major.
 A consumer writes a `let` prop and reads everything else: an export, a `const` or `function` accessor, an event detail, slot props, and a context. Widening a type is safe where the consumer writes it, and breaking where the consumer reads it, since code that handles every old member breaks on a new one. Narrowing is the reverse.
 
 Types are compared after comments are dropped and whitespace is collapsed, so a change in layout or doc comments isn't reported. A function type or object-type literal is compared by its parts, also when it's one member of a union. So `() => void` to `(() => void) | undefined` on a prop is `minor`: the union gained `undefined`, and the function itself is the same.
+
+A function's params run the other way from the function. A callback prop is written by the consumer and called by the component, so the consumer's callback reads each param and writes the return value. A function in slot props or an export is called by the consumer, so the consumer writes each param and reads the return. Param names don't count, and a callback typed to return `void` may return anything.
+
+`T[]` and `Array<T>` are the same type, as are `readonly T[]` and `ReadonlyArray<T>`. Arrays and tuples are compared element by element. A `readonly` array accepts a mutable one, so gaining `readonly` widens the type.
 
 Other union members are compared as text, except DOM element types: a member covered by its supertype in the other union, like `HTMLTableElement` next to `HTMLElement`, doesn't count as gained or lost. So `null | HTMLElement | HTMLTableElement` to `null | HTMLElement` isn't reported, and `HTMLDivElement` to `HTMLElement` is a widening (`minor` for a prop, `major` for an event detail).
 
