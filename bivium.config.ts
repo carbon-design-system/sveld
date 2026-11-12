@@ -37,7 +37,7 @@ export default defineConfig({
     "tests/plugin.test.ts": "tests/fixtures-entry-exports/entry.js",
   },
   // Tools CI runs on its own: a bump that only reaches them selects nothing.
-  inert: ["knip", "ostia", "@types/*"],
+  inert: ["knip", "ostia", "svelte-lint", "@types/*"],
   // sveld reads and imports its user's files: the paths a test passes it, or
   // temp directories a test writes. A file here that reads one of this
   // repository's files still names it with `// @reads <glob>`.

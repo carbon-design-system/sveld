@@ -30,7 +30,7 @@
   let selectedId = data[0].moduleName;
   let selectedTab = 0;
   let tabComponents: Array<Component<TabProps> | undefined> = [];
-  let tabLoading: boolean[] = [];
+  const tabLoading: boolean[] = [];
 
   async function loadTabModule(index: number) {
     switch (index) {
