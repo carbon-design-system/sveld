@@ -117,7 +117,7 @@ export class ModuleGraph {
     try {
       ast = parseJavaScript(source);
     } catch (error) {
-      throw new Error(formatParseError(error));
+      throw new Error(formatParseError(error), { cause: error });
     }
     this.programs.set(filePath, { source, ast });
     return ast;

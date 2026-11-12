@@ -34,15 +34,9 @@
   });
 </script>
 
-<div
-  class="code-highlighter"
-  class:noWrap
->
+<div class="code-highlighter" class:noWrap>
   <div><CopyButton text={code} /></div>
-  <Highlight
-    {language}
-    {code}
-  />
+  <Highlight {language} {code} />
 </div>
 
 <style>

@@ -4,5 +4,6 @@
   "project": ["src/**/*.ts", "scripts/**/*.{ts,js}", "tests/*.ts"],
   "ignoreUnresolved": ["./cli-entry.js"],
   "ignore": ["tests/fixtures/**"],
-  "svelte": false
+  "svelte": false,
+  "ignoreBinaries": ["lint"]
 }

@@ -7,17 +7,8 @@
   export let code = "";
 </script>
 
-<HighlightStyle
-  light={github}
-  dark={zenburn}
-  mode={'[theme="g100"]'}
->
-  <HighlightEditable
-    language={svelte}
-    --outline-width="0px"
-    bind:code
-    class="code-editor"
-  />
+<HighlightStyle light={github} dark={zenburn} mode={'[theme="g100"]'}>
+  <HighlightEditable language={svelte} --outline-width="0px" bind:code class="code-editor" />
 </HighlightStyle>
 
 <style>

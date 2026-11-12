@@ -51,8 +51,7 @@ function collectIndexTypeExports(
 
 /** The context `typesOptions.transform` receives alongside the generated text. */
 export type TransformContext =
-  | { kind: "component"; component: ComponentDocApi; filePath: string }
-  | { kind: "index"; filePath: string };
+  { kind: "component"; component: ComponentDocApi; filePath: string } | { kind: "index"; filePath: string };
 
 /** Runs after the generated-text cache lookup, so a changed transform never serves stale output. */
 async function applyTransform(

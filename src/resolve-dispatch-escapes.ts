@@ -16,11 +16,7 @@ import type { DetailTypeSource } from "./parser/events";
 import { getParserStack } from "./parser-stack";
 
 type DispatchEscapeFailureReason =
-  | "module-not-found"
-  | "not-a-function"
-  | "parameter-not-found"
-  | "dynamic-event-name"
-  | "passed-on";
+  "module-not-found" | "not-a-function" | "parameter-not-found" | "dynamic-event-name" | "passed-on";
 
 interface HelperDispatchedEvent {
   name: string;

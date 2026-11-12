@@ -20,8 +20,8 @@ export default defineConfig({
     },
   },
   roots: ["src", "tests", "scripts", "schema", "package.json", "tsconfig.json", "tsconfig.fixtures.json"],
-  // Lint config: no suite runs Biome or knip.
-  ignore: ["**/*.md", "docs/**", "playground/**", "LICENSE", "biome.json", "knip.json"],
+  // Lint config: no suite runs `bun lint`, `bun fmt` or knip.
+  ignore: ["**/*.md", "docs/**", "playground/**", "LICENSE", "bunfig.toml", "knip.json"],
   // Tests that read fixtures from disk. They're hermetic, which vouches only
   // for the temp files they write, so without these a fixture edit trips the
   // orphan rule and runs every unit test.
@@ -37,7 +37,7 @@ export default defineConfig({
     "tests/plugin.test.ts": "tests/fixtures-entry-exports/entry.js",
   },
   // Tools CI runs on its own: a bump that only reaches them selects nothing.
-  inert: ["@biomejs/biome", "knip", "ostia", "@types/*"],
+  inert: ["knip", "ostia", "@types/*"],
   // sveld reads and imports its user's files: the paths a test passes it, or
   // temp directories a test writes. A file here that reads one of this
   // repository's files still names it with `// @reads <glob>`.

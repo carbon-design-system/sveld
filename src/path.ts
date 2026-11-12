@@ -29,7 +29,7 @@ export function hasSvelteExtension(filePath: string): boolean {
   const dot = filePath.length - ".svelte".length;
   if (dot === 0) return false;
   const before = filePath.charCodeAt(dot - 1);
-  return before !== 47 /* / */ && (sep === "/" || before !== 92) /* \ */;
+  return before !== 47 /* / */ && (sep === "/" || before !== 92); /* \ */
 }
 
 export function normalizeSeparators(filePath: string): NormalizedPath {

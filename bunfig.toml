@@ -1,0 +1,79 @@
+# `bun lint` and `bun fmt` (Bun canary).
+
+[lint]
+maxWarnings = 0
+ignorePatterns = ["tests/e2e/cli-crash/**"]
+
+# ESLint and typescript-eslint recommended are on by default; these add the
+# stricter checks the project enforces on top.
+[lint.rules]
+"@typescript-eslint/ban-ts-comment" = ["error", { "ts-expect-error" = false }]
+"@typescript-eslint/consistent-type-exports" = "error"
+"@typescript-eslint/consistent-type-imports" = ["error", { disallowTypeAnnotations = false }]
+"@typescript-eslint/default-param-last" = "error"
+"@typescript-eslint/no-explicit-any" = "error"
+"@typescript-eslint/no-unnecessary-type-constraint" = "error"
+"@typescript-eslint/no-useless-empty-export" = "error"
+"dot-notation" = "error"
+"import/no-cycle" = "error"
+"jest/no-disabled-tests" = "error"
+"jest/no-focused-tests" = "error"
+"no-await-in-loop" = "error"
+"no-empty" = ["error", { allowEmptyCatch = true }]
+"no-extra-label" = "error"
+"no-lone-blocks" = "error"
+"no-param-reassign" = "error"
+"no-restricted-globals" = ["error", "event", "error"]
+"no-restricted-imports" = ["error", { paths = [{ name = "bun:test", message = "bun:test imports are unnecessary." }] }]
+"no-restricted-syntax" = [
+  "error",
+  { selector = "UnaryExpression[operator='delete'] > MemberExpression[computed=false]:not([object.object.name='process'][object.property.name='env'])", message = "Avoid the delete operator; assign undefined or rebuild the object." },
+  { selector = "CallExpression[callee.name='require']", message = "Use ESM imports in place of require()." },
+  { selector = "MemberExpression[object.name='module'][property.name='exports']", message = "Use ESM exports in place of module.exports." },
+  { selector = "ExportAllDeclaration", message = "Export names explicitly instead of re-exporting everything." },
+  { selector = "ImportDeclaration[importKind!='type'] > ImportNamespaceSpecifier", message = "Import names explicitly instead of a namespace." },
+  { selector = ":function Literal[regex]:not([regex.flags=/[gy]/])", message = "Hoist the regular expression to the top level so it compiles once." },
+]
+"no-sequences" = "error"
+"no-useless-constructor" = "error"
+"no-useless-rename" = "error"
+"one-var" = ["error", "never"]
+"oxc/no-accumulating-spread" = "error"
+"prefer-arrow-callback" = "error"
+"prefer-const" = "error"
+"prefer-exponentiation-operator" = "error"
+"unicorn/no-array-for-each" = "error"
+"unicorn/no-negated-condition" = "error"
+"unicorn/no-useless-switch-case" = "error"
+"unicorn/prefer-node-protocol" = "error"
+"unicorn/prefer-number-properties" = "error"
+
+# The published bin shim is CommonJS.
+[[lint.overrides]]
+files = ["cli.js"]
+rules = { "no-restricted-syntax" = "off" }
+
+# Scripts and the e2e runner run their steps one at a time, so each
+# build's output and errors stay readable.
+[[lint.overrides]]
+files = ["scripts/**", "tests/test-e2e.ts"]
+rules = { "no-await-in-loop" = "off" }
+
+# Fixtures hold odd or invalid component code on purpose, to exercise the
+# parser. The e2e projects stand in for real downstream libraries.
+[[lint.overrides]]
+files = ["tests/fixtures/**"]
+rules = { "@typescript-eslint/no-explicit-any" = "off", "@typescript-eslint/no-unused-expressions" = "off", "@typescript-eslint/no-unused-vars" = "off", "no-restricted-syntax" = "off", "no-unused-vars" = "off" }
+
+[[lint.overrides]]
+files = ["tests/e2e/**"]
+rules = { "@typescript-eslint/no-explicit-any" = "off", "no-restricted-syntax" = "off", "no-unassigned-vars" = "off", "unicorn/no-array-for-each" = "off" }
+
+[fmt]
+printWidth = 120
+# Markdown and YAML stay hand-formatted. Fixtures and the e2e projects are
+# inputs: their outputs record the source text and line numbers.
+ignorePatterns = ["**/*.md", "**/*.yml", "**/*.yaml", "tests/fixtures/**", "tests/e2e/**"]
+
+[fmt.svelte]
+sortOrder = "none"
