@@ -46,7 +46,9 @@ jobs:
 
       - name: Lint
         if: matrix.os == 'ubuntu-latest'
-        run: bun lint
+        run: |
+          bun lint
+          bun run lint:svelte
 
       - name: Check the test plan can read every test's inputs
         if: matrix.os == 'ubuntu-latest'

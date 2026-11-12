@@ -28,8 +28,9 @@
     "test:svelte-versions": "bun scripts/typecheck-svelte-versions.ts",
     "test:e2e": "bun tests/test-e2e.ts",
     "test:inferred-types": "bun scripts/check-inferred-types.ts",
-    "lint:all": "bun fmt && bun lint --fix",
-    "lint:changed": "bun fmt --changed && bun lint --changed --fix",
+    "lint:all": "bun fmt && bun lint --fix && svelte-lint --fix",
+    "lint:changed": "bun fmt --changed && bun lint --changed --fix && svelte-lint --changed --fix",
+    "lint:svelte": "svelte-lint",
     "knip": "knip-bun",
     "build": "bun scripts/build.ts",
     "bench": "bun scripts/bench.ts",
@@ -47,6 +48,7 @@
     "ostia": "^0.2.11",
     "sveast": "^0.9.6",
     "svelte": "^5.57.2",
+    "svelte-lint": "^0.1.1",
     "typescript": "^7.0.2"
   },
   "bin": {

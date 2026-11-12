@@ -69,6 +69,13 @@ rules = { "@typescript-eslint/no-explicit-any" = "off", "@typescript-eslint/no-u
 files = ["tests/e2e/**"]
 rules = { "@typescript-eslint/no-explicit-any" = "off", "no-restricted-syntax" = "off", "no-unassigned-vars" = "off", "unicorn/no-array-for-each" = "off" }
 
+# Rules for the markup of `.svelte` files, which `bun lint` can't read:
+# svelte-lint (`bun run lint:svelte`) lints their scripts and markup
+# expressions with the rules above, and their markup with these.
+[svelte-lint]
+rules = { "svelte/compiler" = "error" }
+ignorePatterns = ["tests/fixtures/**", "tests/e2e/**"]
+
 [fmt]
 printWidth = 120
 # Markdown and YAML stay hand-formatted. Fixtures and the e2e projects are
