@@ -25,9 +25,10 @@ jobs:
           # Without old file contents: git fetches one when bivium reads it.
           fetch-depth: ${{ github.event_name == 'pull_request' && '0' || '1' }}
           filter: blob:none
+      # `bun lint` is only in canary builds.
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          bun-version-file: .bun-version
+          bun-version: canary
 
       - name: Install dependencies
         run: bun ci
@@ -39,9 +40,13 @@ jobs:
         if: github.event_name == 'pull_request'
         run: bunx --bun bivium plan origin/${{ github.base_ref }} --github
 
-      - name: Lint and format
+      - name: Format
         if: matrix.os == 'ubuntu-latest'
-        run: bunx biome ci --error-on-warnings
+        run: bun fmt --check
+
+      - name: Lint
+        if: matrix.os == 'ubuntu-latest'
+        run: bun lint
 
       - name: Check the test plan can read every test's inputs
         if: matrix.os == 'ubuntu-latest'

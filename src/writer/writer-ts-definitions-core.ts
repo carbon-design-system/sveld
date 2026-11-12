@@ -348,7 +348,7 @@ function genPropDef(
 
   // Preserves `data-*` attrs for Svelte 3 HTML-extending components.
   // See https://github.com/sveltejs/language-tools/issues/1825
-  // biome-ignore lint/suspicious/noTemplateCurlyInString: a TypeScript template literal type
+  // eslint-disable-next-line no-template-curly-in-string -- a TypeScript template literal type
   const dataAttributes = "[key: `data-${string}`]: unknown;";
 
   const restPropsComment = description ? `${formatComment(description)}\n` : "";

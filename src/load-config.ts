@@ -103,7 +103,7 @@ export async function loadConfigFrom(configPath: string): Promise<SveldConfig> {
     mod = await import(href);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    throw new Error(`sveld: failed to load config file "${configPath}".\n${message}`);
+    throw new Error(`sveld: failed to load config file "${configPath}".\n${message}`, { cause: error });
   }
 
   const config = mod.default;

@@ -26,19 +26,13 @@ const NEWLINE_REGEX = /\r?\n/;
 const JSDOC_LINE_PREFIX_REGEX = /^\s*\*+/;
 
 export type ExportedFunction =
-  | FunctionDeclaration
-  | MaybeNamedFunctionDeclaration
-  | FunctionExpression
-  | ArrowFunctionExpression;
+  FunctionDeclaration | MaybeNamedFunctionDeclaration | FunctionExpression | ArrowFunctionExpression;
 
 type FunctionLike = ExportedFunction | TSDeclareFunction;
 
 /** A top-level statement, or the declaration an `export` statement wraps. */
 type DeclarationLike =
-  | Program["body"][number]
-  | Declaration
-  | MaybeNamedClassDeclaration
-  | MaybeNamedFunctionDeclaration;
+  Program["body"][number] | Declaration | MaybeNamedClassDeclaration | MaybeNamedFunctionDeclaration;
 
 /** `parseEntryExports` strips the fields public `EntryExport` doesn't have. */
 export interface InternalExport extends Omit<EntryExport, "source"> {

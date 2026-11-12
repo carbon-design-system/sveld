@@ -88,16 +88,9 @@
 </script>
 
 <Header>
-  <Grid
-    noGutter
-    padding
-  >
+  <Grid noGutter padding>
     <Row>
-      <Column
-        xlg={7}
-        lg={6}
-        sm={8}
-      >
+      <Column xlg={7} lg={6} sm={8}>
         <Dropdown
           size="xl"
           labelText="Svelte code"
@@ -112,45 +105,20 @@
         />
         <CodeEditor bind:code={value} />
       </Column>
-      <Column
-        xlg={9}
-        lg={10}
-        sm={8}
-      >
+      <Column xlg={9} lg={10} sm={8}>
         <FormLabel id="output">Sveld output</FormLabel>
-        <Tabs
-          type="container"
-          id="output"
-          bind:selected={selectedTab}
-          on:change={handleTabChange}
-        >
-          <Tab
-            label="TypeScript"
-            icon={Code}
-          />
-          <Tab
-            label="JSON"
-            icon={Json}
-          />
-          <Tab
-            label="Markdown"
-            icon={TextCreation}
-          />
-          <div
-            class="tab-content-slot"
-            slot="content"
-          >
+        <Tabs type="container" id="output" bind:selected={selectedTab} on:change={handleTabChange}>
+          <Tab label="TypeScript" icon={Code} />
+          <Tab label="JSON" icon={Json} />
+          <Tab label="Markdown" icon={TextCreation} />
+          <div class="tab-content-slot" slot="content">
             {#if parse_error}
-              <TabContentOverlay title="Parse error"> {parse_error} </TabContentOverlay>
+              <TabContentOverlay title="Parse error">{parse_error}</TabContentOverlay>
             {/if}
             <TabContent>
               {#if selectedTab === 0}
                 {#if tabComponents[0]}
-                  <svelte:component
-                    this={tabComponents[0]}
-                    {parsed_component}
-                    {moduleName}
-                  />
+                  <svelte:component this={tabComponents[0]} {parsed_component} {moduleName} />
                 {:else}
                   <InlineLoading style="margin: var(--cds-spacing-05)" />
                 {/if}
@@ -159,11 +127,7 @@
             <TabContent>
               {#if selectedTab === 1}
                 {#if tabComponents[1]}
-                  <svelte:component
-                    this={tabComponents[1]}
-                    {parsed_component}
-                    {moduleName}
-                  />
+                  <svelte:component this={tabComponents[1]} {parsed_component} {moduleName} />
                 {:else}
                   <InlineLoading style="margin: var(--cds-spacing-05)" />
                 {/if}
@@ -172,11 +136,7 @@
             <TabContent>
               {#if selectedTab === 2}
                 {#if tabComponents[2]}
-                  <svelte:component
-                    this={tabComponents[2]}
-                    {parsed_component}
-                    {moduleName}
-                  />
+                  <svelte:component this={tabComponents[2]} {parsed_component} {moduleName} />
                 {:else}
                   <InlineLoading style="margin: var(--cds-spacing-05)" />
                 {/if}
