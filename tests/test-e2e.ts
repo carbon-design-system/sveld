@@ -6,13 +6,16 @@ import { join } from "node:path";
 import { $ } from "bun";
 import { name } from "../package.json";
 
-// `bun link` registers the package in one global directory, so two checkouts
-// running e2e at once (e.g. parallel worktrees) would link each other's
-// build. Keep this checkout's link registry inside it.
+// `bun link` registers the package in one global directory, and links its
+// bin into the global bin directory, so two checkouts running e2e (e.g.
+// parallel worktrees) would link each other's build, and the second would
+// fail on the bin with EEXIST. Keep both inside this checkout. The e2e
+// projects run sveld from their own node_modules/.bin, never the global one.
+const linkDir = join(import.meta.dir, "..", "node_modules", ".cache", "e2e-link");
 $.env({
   ...process.env,
-  BUN_INSTALL_GLOBAL_DIR:
-    process.env.BUN_INSTALL_GLOBAL_DIR ?? join(import.meta.dir, "..", "node_modules", ".cache", "e2e-link"),
+  BUN_INSTALL_GLOBAL_DIR: process.env.BUN_INSTALL_GLOBAL_DIR ?? linkDir,
+  BUN_INSTALL_BIN: process.env.BUN_INSTALL_BIN ?? join(linkDir, "bin"),
 });
 
 // Link the built `dist/`, the same tree that gets published.
