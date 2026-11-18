@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.40.4](https://github.com/carbon-design-system/sveld/releases/tag/v0.40.4) - 2026-11-18
+
+**Features**
+
+- type snippets exported from `<script module>` (ad6d636, #586)
+
+**Fixes**
+
+- treat rest props on a component that had none as additive in `--check` (8134c16, #578)
+- flip the union rule where the consumer reads the type in `--check` (e93ff90, #580)
+- catch accessor moves and forwarded event detail changes in `--check` (d8b2ebd, #581)
+- stop flagging layout and optional callbacks as breaking in `--check` (f2502ef, #582)
+- compare callback params by type and arrays by element in `--check` (b51a0b8, #583)
+- diff typedefs one at a time, by where they're used, in `--check` (0c1b674, #579)
+- parse an arrow function type in a snippet's type parameters, and an optional property in a template type annotation (e6dd59a, #585)
+
 ## [0.40.3](https://github.com/carbon-design-system/sveld/releases/tag/v0.40.3) - 2026-11-05
 
 **Features**
