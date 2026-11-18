@@ -5,9 +5,9 @@
     "": {
       "devDependencies": {
         "@sveltejs/vite-plugin-svelte": "^7.3.1",
-        "carbon-components-svelte": "^0.113.1",
+        "carbon-components-svelte": "^0.114.2",
         "carbon-icons-svelte": "^13.17.0",
-        "carbon-preprocess-svelte": "^0.11.57",
+        "carbon-preprocess-svelte": "^0.11.61",
         "svelte": "^5.58.0",
         "svelte-highlight": "^7.23.1",
         "typescript": "^7.0.2",
@@ -114,11 +114,11 @@
 
     "axobject-query": ["axobject-query@4.1.0", "", {}, "sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ=="],
 
-    "carbon-components-svelte": ["carbon-components-svelte@0.113.1", "", { "dependencies": { "@ibm/telemetry-js": "^1.10.2", "flatpickr": "4.6.13" }, "hasInstallScript": true }, "sha512-RAQhRAZkDkH/aEo49WHI/wUg6boHg13eypjKaykeqQULyZ4DLqkiLKrs1uHxhmDtMIugXoCBSAm10vHBjY70tQ=="],
+    "carbon-components-svelte": ["carbon-components-svelte@0.114.2", "", { "dependencies": { "@ibm/telemetry-js": "^1.10.2" }, "hasInstallScript": true }, "sha512-dQTC9K0zuod616d9w7x5lC3clxESZ8xtyxSUGPws8Df++sAsJVvX3yesayOybVCV5mrftfb1wAUX9GQhGIm8sg=="],
 
     "carbon-icons-svelte": ["carbon-icons-svelte@13.17.0", "", {}, "sha512-lFpkXDgkOupXQ/SVw3ZORH4vY5+abNYrm5s/9PB1cni45wnpIE3eXdcqgdM5znj+tWdkurwHcY6IUBMmosP5nw=="],
 
-    "carbon-preprocess-svelte": ["carbon-preprocess-svelte@0.11.57", "", { "bin": { "carbon-preprocess-svelte": "cli.js" } }, "sha512-wKu5k6vOPigQhGz/s09KvxH00WW8emZqugH6uoD1wlYFaSlC9wXw1kCnAtOyrIouBuZLjo0fFfQEhbn0/GnrdA=="],
+    "carbon-preprocess-svelte": ["carbon-preprocess-svelte@0.11.61", "", { "bin": { "carbon-preprocess-svelte": "cli.js" } }, "sha512-BeAMaMjGmqrZf3XiLhzo/S19Uf9l+HM8LGfVvNoKcN7mj7ohg8ogFVwM7iLizmtNd9OKs/pILySlrkmTF1S2jw=="],
 
     "clsx": ["clsx@2.1.1", "", {}, "sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA=="],
 
@@ -133,8 +133,6 @@
     "esrap": ["esrap@2.4.2", "", { "dependencies": { "@jridgewell/sourcemap-codec": "^1.4.15" }, "peerDependencies": { "@typescript-eslint/types": "^8.2.0" }, "optionalPeers": ["@typescript-eslint/types"] }, "sha512-WpVZsWnSheHBy+fGrO/0duwnbe6ODZH1QyBbjupreSCJGojaBWRncrq+HVeIJ8eHQjEwSJg9hC4yPJyNVOrpqg=="],
 
     "fdir": ["fdir@6.5.0", "", { "peerDependencies": { "picomatch": "^3 || ^4" }, "optionalPeers": ["picomatch"] }, "sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg=="],
-
-    "flatpickr": ["flatpickr@4.6.13", "", {}, "sha512-97PMG/aywoYpB4IvbvUJi0RQi8vearvU0oov1WW3k0WZPBMrTQVqekSX5CjSG/M4Q3i6A/0FKXC7RyAoAUUSPw=="],
 
     "fsevents": ["fsevents@2.3.3", "", { "os": "darwin" }, "sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw=="],
 
