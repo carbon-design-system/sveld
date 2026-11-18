@@ -1,0 +1,71 @@
+{
+  "syntaxMode": "runes",
+  "scriptLanguage": "ts",
+  "props": [
+    {
+      "name": "status",
+      "kind": "let",
+      "type": "Status",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [
+    {
+      "name": "badge",
+      "kind": "const",
+      "type": "Snippet<[status: Status, label?: string]>",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false
+    },
+    {
+      "name": "empty",
+      "kind": "const",
+      "type": "Snippet",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false
+    },
+    {
+      "name": "action",
+      "kind": "const",
+      "type": "<T extends () => void>(handler: T) => ReturnType<Snippet>",
+      "typeSource": "typescript",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false
+    },
+    {
+      "name": "itemRow",
+      "localName": "row",
+      "kind": "const",
+      "description": "One row for any item with an id.",
+      "type": "<T extends Identified>(item: T, index?: number) => ReturnType<Snippet>",
+      "typeSource": "inferred",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}

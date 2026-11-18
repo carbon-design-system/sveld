@@ -1,0 +1,24 @@
+{
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [
+    {
+      "name": "row",
+      "kind": "const",
+      "type": "Snippet<[item: any, index?: number]>",
+      "typeSource": "inferred",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
