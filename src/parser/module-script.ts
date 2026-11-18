@@ -3,7 +3,7 @@
  * module's exports and the imports, functions, and variables the instance
  * script can see.
  */
-import type { ClassDeclaration, ExportNamedDeclaration, Node } from "sveast";
+import { type AST, type ClassDeclaration, type ExportNamedDeclaration, type Node, parseModule } from "sveast";
 import { walk } from "sveast/walk";
 import type { ComponentProp, ComponentPropReExport } from "../model";
 import { readClassDeclaration } from "./classes";
@@ -19,7 +19,9 @@ import {
   resolveExportSpecifier,
 } from "./exports";
 import { processNodeJSDoc } from "./jsdoc";
+import { literalType } from "./props";
 import { sourceRangeFromNode } from "./source-position";
+import { readFunctionDeclarationParts, trackAdditionalTypeDependencyNode } from "./type-resolution";
 import { collectReExportableImports, collectValueImportBindings } from "./value-imports";
 
 /** The bare base-class name in an `extends` clause: `Base` in `Base<T>`; none for `mixin(Base)` or `ns.Base`. */
@@ -150,6 +152,81 @@ function addModuleDeclarationExports(
   }
 }
 
+/** The top-level `{#snippet name(...)}`, the only kind a module script can export. */
+function findTopLevelSnippet(ctx: ParserContext, name: string): AST.SnippetBlock | undefined {
+  return ctx.parsed?.fragment.nodes.find(
+    (node): node is AST.SnippetBlock => node.type === "SnippetBlock" && node.expression.name === name,
+  );
+}
+
+/**
+ * Records the types a snippet's type parameters name, so the `.d.ts` keeps
+ * them. The parser gives the list as text, so it's parsed on its own; only
+ * the names matter here, not the offsets.
+ */
+function trackSnippetTypeParameters(ctx: ParserContext, typeParams: string) {
+  let program: ReturnType<typeof parseModule>;
+  try {
+    program = parseModule(`function f<${typeParams}>() {}`, { typescript: true });
+  } catch {
+    return;
+  }
+  const declaration = program.body[0];
+  if (declaration?.type !== "FunctionDeclaration") return;
+  for (const typeParameter of declaration.typeParameters?.params ?? []) {
+    trackAdditionalTypeDependencyNode(ctx, typeParameter.constraint);
+    trackAdditionalTypeDependencyNode(ctx, typeParameter.default);
+  }
+}
+
+/**
+ * `export { row }` of a top-level `{#snippet row(item: Item)}`, typed as
+ * `Snippet<[item: Item]>`. `Snippet` can't take type parameters, so a
+ * generic snippet is typed as the function it compiles to instead, as
+ * svelte2tsx does: `<T>(item: T) => ReturnType<Snippet>`.
+ */
+function addModuleSnippetExport(
+  ctx: ParserContext,
+  node: ExportNamedDeclaration,
+  snippet: AST.SnippetBlock,
+  specifier: ResolvedExportSpecifier,
+) {
+  const annotated = readFunctionDeclarationParts(ctx, { params: snippet.parameters }).params;
+  const params = annotated.map((param, index) => {
+    // An unannotated `index = 0` is typed by its default, widened as TypeScript would.
+    const pattern = snippet.parameters[index];
+    if (param.type || pattern?.type !== "AssignmentPattern") return param;
+    return { ...param, type: literalType(pattern.right, "widen") };
+  });
+  const list = params.map((param) => `${param.name}${param.optional ? "?" : ""}: ${param.type ?? "any"}`).join(", ");
+  if (snippet.typeParams) trackSnippetTypeParameters(ctx, snippet.typeParams);
+  const type = snippet.typeParams
+    ? `<${snippet.typeParams}>(${list}) => ReturnType<Snippet>`
+    : list
+      ? `Snippet<[${list}]>`
+      : "Snippet";
+  const jsdocInfo = exportJSDoc(ctx, node, specifier);
+  const name = specifier.exportedName;
+
+  addModuleExport(ctx, name, {
+    name,
+    ...(specifier.localName === name ? {} : { localName: specifier.localName }),
+    kind: "const",
+    description: jsdocInfo?.description,
+    deprecated: jsdocInfo?.deprecated,
+    tags: jsdocInfo?.tags,
+    ...(jsdocInfo?.internal ? { internal: true as const } : {}),
+    type,
+    typeSource: ctx.scriptLanguage === "ts" && annotated.every((param) => param.type) ? "typescript" : "inferred",
+    isFunction: snippet.typeParams !== undefined,
+    isFunctionDeclaration: false,
+    isRequired: false,
+    constant: true,
+    reactive: false,
+    source: sourceRangeFromNode(ctx, node),
+  });
+}
+
 /**
  * The `.d.ts` can only say `extends Base` when `Base` is in scope there:
  * imported, or another exported class. A class extending anything else
@@ -217,8 +294,11 @@ export function walkModuleScript(ctx: ParserContext): void {
             typeof from === "string"
               ? { from, imported: resolved.localName }
               : reExportableImports.get(resolved.localName);
+          const snippet = resolved.declaration || reExport ? undefined : findTopLevelSnippet(ctx, resolved.localName);
           if (resolved.declaration) {
             addModuleDeclarationExports(ctx, node, resolved.declaration, resolved);
+          } else if (snippet) {
+            addModuleSnippetExport(ctx, node, snippet, resolved);
           } else if (reExport) {
             addModuleReExport(ctx, node, resolved.exportedName, reExport);
           } else if (!ctx.localTypeDeclarationsByName.get(resolved.localName)?.exported) {

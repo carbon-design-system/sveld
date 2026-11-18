@@ -168,6 +168,20 @@ Private (`#x`, `private`), `protected`, computed-key, and `@internal` members ar
 
 Other module-script exports (`const`, `function`, type declarations, re-exports) are written to the `.d.ts` as well.
 
+### Module-script snippets
+
+A top-level snippet the module script exports (`export { row }`) is typed by its parameters. A parameter without an annotation is typed by its default, or `any`. `Snippet` can't take type parameters, so a generic snippet is declared as the function it compiles to, as svelte2tsx does:
+
+```ts
+// {#snippet badge(status: Status, label?: string)}
+export declare const badge: Snippet<[status: Status, label?: string]>;
+
+// {#snippet row<T extends Identified>(item: T, index = 0)}
+export declare function row<T extends Identified>(item: T, index?: number): ReturnType<Snippet>;
+```
+
+Both can be passed wherever a `Snippet` of matching parameters is expected.
+
 ### Publishing to npm
 
 Point consumers at the generated types with an `exports` map and include the folder in `files`:
