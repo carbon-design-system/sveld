@@ -93,6 +93,7 @@
       <Column xlg={7} lg={6} sm={8}>
         <Dropdown
           size="xl"
+          virtualize={false}
           labelText="Svelte code"
           {selectedId}
           items={data.map((datum) => ({
