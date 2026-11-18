@@ -5,7 +5,7 @@
     "": {
       "devDependencies": {
         "@sveltejs/vite-plugin-svelte": "^7.3.1",
-        "carbon-components-svelte": "^0.114.2",
+        "carbon-components-svelte": "^0.114.3",
         "carbon-icons-svelte": "^13.17.0",
         "carbon-preprocess-svelte": "^0.11.61",
         "svelte": "^5.58.0",
@@ -114,7 +114,7 @@
 
     "axobject-query": ["axobject-query@4.1.0", "", {}, "sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ=="],
 
-    "carbon-components-svelte": ["carbon-components-svelte@0.114.2", "", { "dependencies": { "@ibm/telemetry-js": "^1.10.2" }, "hasInstallScript": true }, "sha512-dQTC9K0zuod616d9w7x5lC3clxESZ8xtyxSUGPws8Df++sAsJVvX3yesayOybVCV5mrftfb1wAUX9GQhGIm8sg=="],
+    "carbon-components-svelte": ["carbon-components-svelte@0.114.3", "", { "dependencies": { "@ibm/telemetry-js": "^1.10.2" }, "hasInstallScript": true }, "sha512-eScECYzee48+gLvCrAEQSk7Dt7CV5qiExeHOyj+z/NTwFOnHj49NTjf+Gg09Vq3lCwEmKl8SZ06qeKqYKHny9A=="],
 
     "carbon-icons-svelte": ["carbon-icons-svelte@13.17.0", "", {}, "sha512-lFpkXDgkOupXQ/SVw3ZORH4vY5+abNYrm5s/9PB1cni45wnpIE3eXdcqgdM5znj+tWdkurwHcY6IUBMmosP5nw=="],
 
