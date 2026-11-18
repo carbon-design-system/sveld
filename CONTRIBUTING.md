@@ -65,11 +65,11 @@ The pipeline, end to end:
 2. **Parse exports.** [`parse-exports.ts`](src/parse-exports.ts) reads the barrel (for example `src/index.js`) to learn which components are public and under what names; [`create-exports.ts`](src/create-exports.ts) builds the export map. With `glob: true`, every `.svelte` file under the entry directory is discovered instead.
 3. **Parse each component.** [`ComponentParser.ts`](src/ComponentParser.ts) is the entry point; a parse runs four phases over one `ParserContext` ([`parser/context.ts`](src/parser/context.ts)):
    - [`prepare.ts`](src/parser/prepare.ts) parses the component via [`svelte-template-parse.ts`](src/svelte-template-parse.ts), a thin wrapper over sveast's `parse()`, reads type annotations and hoisted bindings, and reads component-level JSDoc tags (`@event`, `@slot`, `@typedef`, ...) in [`component-tags.ts`](src/parser/component-tags.ts) with sveld's own [`comment-parser.ts`](src/parser/comment-parser.ts).
-   - [`module-script.ts`](src/parser/module-script.ts) walks `<script context="module">` for module exports.
+   - [`module-script.ts`](src/parser/module-script.ts) walks `<script context="module">` for module exports, including the top-level snippets it exports by name.
    - [`component-walk.ts`](src/parser/component-walk.ts) walks the instance script and the template in one pass for props, slots, events, contexts, bindings, and rest props.
    - [`finalize.ts`](src/parser/finalize.ts) settles events, slot props, and generics, records whole-component diagnostics, and builds the `ParsedComponent`. Its types live in [`model.ts`](src/model.ts).
 4. **Write output.** The `writer/` modules turn `ParsedComponent` into artifacts:
-   - [`writer-ts-definitions.ts`](src/writer/writer-ts-definitions.ts) + [`writer-ts-definitions-core.ts`](src/writer/writer-ts-definitions-core.ts) → `.d.ts` extending `SvelteComponentTyped`.
+   - [`writer-ts-definitions.ts`](src/writer/writer-ts-definitions.ts) + [`writer-ts-definitions-core.ts`](src/writer/writer-ts-definitions-core.ts) → `.d.ts`: a class extending `SvelteComponentTyped` (`format: "class"`, the default) or a `Component` declaration (`format: "component"`).
    - [`writer-json.ts`](src/writer/writer-json.ts) → `COMPONENT_API.json` (carries a `schemaVersion`).
    - [`writer-markdown.ts`](src/writer/writer-markdown.ts) and the `markdown-document` / `markdown-*-utils` modules → Markdown.
    - [`Writer.ts`](src/writer/Writer.ts) handles file I/O for emitted output; [`format-generated-ts.ts`](src/writer/format-generated-ts.ts) reindents generated `.d.ts` source (no external formatter dependency).
@@ -166,12 +166,12 @@ bun <path-to-sveld>/dist/cli.js --glob --types=false --check=base.json
 - `bun run typecheck` — `bun check` over `src/` and `tests/`.
 - `bun run test:fixtures-types` — type-checks the generated fixture outputs through [`tsconfig.fixtures.json`](tsconfig.fixtures.json), so a `.d.ts` that compiles in isolation but is wrong as a type is caught.
 - `bun run test:types-matrix` — the same check for non-default options. [`scripts/typecheck-option-matrix.ts`](scripts/typecheck-option-matrix.ts) regenerates every fixture's `.d.ts` under each set in `OPTION_MATRIX` (currently one per `format`) and runs one `bun check` per set. A writer path that only one option reaches, such as `format: "component"`, is covered here and nowhere else. **When you add an emit option to `WriteTsDefinitionOptions`,** add a set for it.
-- `bun run test:svelte-versions` — the `class` format promises Svelte 3, 4, and 5 support; [`scripts/typecheck-svelte-versions.ts`](scripts/typecheck-svelte-versions.ts) checks every legacy fixture's output against Svelte 3 and 4 as well.
+- `bun run test:svelte-versions` — the `class` format promises Svelte 3, 4, and 5 support; [`scripts/typecheck-svelte-versions.ts`](scripts/typecheck-svelte-versions.ts) checks every legacy fixture's output against Svelte 3 and 4 as well. It skips runes fixtures only, so a fixture whose output needs Svelte 5 (`{#snippet}`, a `Snippet` type) must be in runes mode: use `$props()`, or add `<svelte:options runes />` to a component that has no props.
 - `bun run test:inferred-types` — checks that an inferred prop type holds for its own component. [`scripts/check-inferred-types.ts`](scripts/check-inferred-types.ts) writes each type sveld inferred from a default or a `bind:this` back into a copy of the fixture (and of the carbon e2e project) as `@type`, runs svelte-check, and reports any default, `bind:this`, or assignment the type rejects. A `.d.ts` can compile and still be wrong this way: `<svg bind:this>` typed `HTMLElement`, or `["a"]` typed as the tuple `["a"]`.
 
 ### End-to-end tests
 
-[`tests/test-e2e.ts`](tests/test-e2e.ts) (`bun run test:e2e`) links the locally built sveld (`bun link`) into each project under `tests/e2e/`, installs, and runs that project's `sveld` script (CLI fixtures) or `build` (Vite-based fixtures). When a project defines `typecheck`, the harness also runs `tsc` against generated `types/`, and when it defines `svelte-check`, it checks the consumer components under `test/` against them. These are real downstream consumers — `single-export`, `multi-export`, `multi-export-typed`, `glob`, `path-aliases`, `sveltekit`, `svelte5-vite`, and a large `carbon` fixture mirroring carbon-components-svelte. A failure means generated types don't compile in a real project. Build sveld first (`bun run build`) so the link resolves the current code. The link registry lives in this checkout (`node_modules/.cache/e2e-link`, or `BUN_INSTALL_GLOBAL_DIR` if set), so parallel checkouts don't link each other's build. CI runs the e2e suite (`bun run test:e2e`) on all three OSes; run it locally too when changing output shape or export resolution.
+[`tests/test-e2e.ts`](tests/test-e2e.ts) (`bun run test:e2e`) links the locally built sveld (`bun link`) into each project under `tests/e2e/`, installs, and runs that project's `sveld` script (CLI fixtures) or `build` (Vite-based fixtures). When a project defines `typecheck`, the harness also runs `tsc` against generated `types/`, and when it defines `svelte-check`, it checks the consumer components under `test/` against them. These are real downstream consumers — `single-export`, `multi-export`, `multi-export-typed`, `glob`, `path-aliases`, `sveltekit`, `svelte5-vite`, and a large `carbon` fixture mirroring carbon-components-svelte. A failure means generated types don't compile in a real project. Build sveld first (`bun run build`) so the link resolves the current code. The link registry and the linked bin live in this checkout (`node_modules/.cache/e2e-link`, unless `BUN_INSTALL_GLOBAL_DIR` or `BUN_INSTALL_BIN` is set), so parallel checkouts don't link each other's build or collide on the global `sveld` bin. CI runs the e2e suite (`bun run test:e2e`) on all three OSes; run it locally too when changing output shape or export resolution.
 
 ### Svelte version coverage
 
@@ -179,13 +179,14 @@ A change to props, events, slots, or context handling should be exercised across
 
 ## Auditing upstream Svelte changes
 
-Parser parity with svelte is sveast's job: its tests compare its output with svelte/compiler's, and its canary runs against `svelte@latest`. sveld's analysis can still miss new syntax (a new tag or block it doesn't walk). Do this pass whenever a new Svelte version lands, ad hoc:
+Parser parity with svelte is sveast's job: its tests compare its output with svelte/compiler's, and its weekly canary runs them, plus svelte's own parser tests, against `svelte@latest`. sveld's analysis can still miss new syntax (a new tag or block it doesn't walk). Do this pass whenever a new Svelte version lands, ad hoc:
 
 1. **Get the changelog.** [`sveltejs/svelte`'s `CHANGELOG.md`](https://github.com/sveltejs/svelte/blob/main/packages/svelte/CHANGELOG.md) on GitHub, or pasted release notes, covering every version since sveld's `svelte` peer/dev dependency was last bumped.
 2. **Filter to what a static parser cares about.** Keep entries about template syntax, tag/expression parsing, or AST shape (for example: new tag types, declaration/`{@const}` parsing edge cases, element special-casing like `svelte:window`). Drop runtime/compiler-output concerns sveld never touches: SSR/hydration, transitions, effects/batches/signals, reactivity internals, and CSS (sveld parses with `css: false`).
-3. **Check current coverage per candidate.** Parsing gaps belong in sveast. For sveld, `grep -rn "<keyword>" src/parser/` for the node type, and confirm the walk (`component-walk.ts`) and the prop/event/slot readers handle it.
+3. **Check current coverage per candidate.** For a parser fix, parse the `input.svelte` its PR adds under `packages/svelte/tests/parser-modern/samples/` (or `parser-legacy`) with `new ComponentParser().parseSvelteComponent(source, { moduleName, filePath })`. If it throws, the fix belongs in sveast first: port it there, release, then bump `sveast` here. For sveld's analysis, `grep -rn "<keyword>" src/parser/` for the node type, and confirm the walk (`component-walk.ts`) and the prop/event/slot readers handle it.
 4. **Note gaps, don't guess fixes blind.** For anything not covered, name the specific module that should change and add a `tests/fixtures/<case-name>/input.svelte` reproducing the new syntax first (see [Fixture snapshot tests](#fixture-snapshot-tests)) before touching analysis code.
 5. **Report findings before implementing**, since some upstream changes affect Svelte's compiler output only and have no parser-visible surface at all. Confirm with the user which gaps, if any, are worth a fix.
+6. **Bump `svelte`** in `package.json` and [`playground/package.json`](playground/package.json) together, with a fixture for each new syntax sveld now reads.
 
 ## Build
 
@@ -216,7 +217,7 @@ It imports the parser and writers from `../src` directly (see [`playground/vite.
 - `bun run test:svelte-versions`
 - `bun run test:inferred-types`, when the plan includes the e2e tests
 
-Every OS builds, then runs the planned unit tests, `bun run test:types-matrix`, and, when the plan includes it, `bun run test:e2e`. After the e2e run, CI fails on Ubuntu if the regenerated `tests/e2e` outputs differ from what's committed, so commit them with the change that moves them.
+Every OS builds, then runs the planned unit tests, `bun run test:types-matrix`, and, when the plan includes it, `bun run test:e2e`. After the e2e run, CI fails on Ubuntu if the regenerated `tests/e2e` outputs differ from what's committed, so commit them with the change that moves them. The diff ignores the generator's `version` and `svelteVersion` lines, so leave those out of a commit when they're the only change.
 
 Run the matching scripts locally before pushing. The cross-platform matrix is why path normalization is non-negotiable — a separator bug passes on macOS and fails on Windows.
 
@@ -325,7 +326,7 @@ Combine commits only when the same PR was split across multiple commits.
 
 #### Release notes
 
-Write the GitHub release body directly; there's no notes file in the repo. Start with the same bullets as the changelog entry, then a `---` divider and narrative `##` sections for notable themes (new diagnostics, breaking changes, performance, new surfaces). Leave the release title empty and mark it Latest.
+Write the GitHub release body directly; there's no notes file in the repo. Start with the same bullets as the changelog entry, then a `---` divider and narrative `##` sections for notable themes (new diagnostics, breaking changes, performance, new surfaces). Leave the release title empty and mark it Latest: `gh release create vX.Y.Z --notes-file <file> --latest`, with no `--title`.
 
 Group by theme rather than by commit. Call out breaking changes and performance gains with concrete numbers when the commits provide them. End with **Upgrade notes** (migration steps and `npm i -D sveld@X.Y.Z`). Keep prose short; use paragraphs and bullet lists; no emoji.
 
