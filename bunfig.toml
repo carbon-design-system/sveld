@@ -53,8 +53,9 @@ ignorePatterns = ["tests/e2e/cli-crash/**"]
 files = ["cli.js"]
 rules = { "no-restricted-syntax" = "off" }
 
-# Scripts and the e2e runner run their steps one at a time, so each
-# build's output and errors stay readable.
+# Scripts run their steps one at a time, so each build's output and
+# errors stay readable. The e2e runner links and installs one project at
+# a time, through one shared bun link registry.
 [[lint.overrides]]
 files = ["scripts/**", "tests/test-e2e.ts"]
 rules = { "no-await-in-loop" = "off" }
