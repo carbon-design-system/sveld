@@ -40,7 +40,7 @@ describe("parseExports", () => {
       const source = 'export * from "./types.js";\nexport * from "./Button/index.js";\n';
 
       const result = parseExports(source, dir);
-      expect(result["*:./types.js"]).toEqual({ source: "./types.js", default: false, star: true });
+      expect<unknown>(result["*:./types.js"]).toEqual({ source: "./types.js", default: false, star: true });
       // A barrel that brings components is flattened, not kept as a star.
       expect(Object.keys(result).sort()).toEqual(["*:./types.js", "Button"]);
     } finally {
@@ -51,7 +51,7 @@ describe("parseExports", () => {
   test("single default export", () => {
     const source = `export { default } from "./Component.svelte";`;
 
-    expect(parseExports(source, "")).toEqual({
+    expect<unknown>(parseExports(source, "")).toEqual({
       default: {
         source: "./Component.svelte",
         default: true,
@@ -64,7 +64,7 @@ describe("parseExports", () => {
     import Component from "./Component.svelte";
     export default Component;`;
 
-    expect(parseExports(source, "")).toEqual({
+    expect<unknown>(parseExports(source, "")).toEqual({
       Component: {
         source: "./Component.svelte",
         default: true,
@@ -75,7 +75,7 @@ describe("parseExports", () => {
   test("single named export", () => {
     const source = `export { default as Component } from "./Component.svelte";`;
 
-    expect(parseExports(source, "")).toEqual({
+    expect<unknown>(parseExports(source, "")).toEqual({
       Component: {
         source: "./Component.svelte",
         default: true,
@@ -88,7 +88,7 @@ describe("parseExports", () => {
     export { default as Component } from "./Component.svelte";
     export { default as Component2 } from "./Component2.svelte";`;
 
-    expect(parseExports(source, "")).toEqual({
+    expect<unknown>(parseExports(source, "")).toEqual({
       Component: { source: "./Component.svelte", default: true },
       Component2: { source: "./Component2.svelte", default: true },
     });
@@ -100,7 +100,7 @@ describe("parseExports", () => {
     export { default as Component2 } from "./Component2.svelte";
     export { default } from "./Component2.svelte";`;
 
-    expect(parseExports(source, "")).toEqual({
+    expect<unknown>(parseExports(source, "")).toEqual({
       Component: { source: "./Component.svelte", default: true },
       Component2: { source: "./Component2.svelte", default: true },
       default: { source: "./Component2.svelte", default: true },
@@ -115,7 +115,7 @@ describe("parseExports", () => {
     import Component3 from "./Component3.svelte";
     export default Component3;`;
 
-    expect(parseExports(source, "")).toEqual({
+    expect<unknown>(parseExports(source, "")).toEqual({
       Component: { source: "./Component.svelte", default: true },
       Component2: { source: "./Component2.svelte", default: true },
       Component3: { source: "./Component3.svelte", default: true },
@@ -129,7 +129,7 @@ describe("parseExports", () => {
     export { Component };
     export default Component;`;
 
-    expect(parseExports(source, "")).toEqual({
+    expect<unknown>(parseExports(source, "")).toEqual({
       Component: {
         source: "./Component.svelte",
         default: true,
@@ -146,7 +146,7 @@ describe("parseExports", () => {
 
       const source = `export { Component, Component2 } from "./component";`;
 
-      expect(parseExports(source, dir)).toEqual({
+      expect<unknown>(parseExports(source, dir)).toEqual({
         Component: { source: "./component", default: false },
         Component2: { source: "./component", default: false },
       });
@@ -163,7 +163,7 @@ describe("parseExports", () => {
 
       const source = `export { MAX_RETRIES } from "./constants";`;
 
-      expect(parseExports(source, dir)).toEqual({
+      expect<unknown>(parseExports(source, dir)).toEqual({
         MAX_RETRIES: { source: "./constants", default: false },
       });
     } finally {
@@ -181,7 +181,7 @@ describe("parseExports", () => {
 
       const source = `export { A } from "./cat";`;
 
-      expect(parseExports(source, dir)).toEqual({
+      expect<unknown>(parseExports(source, dir)).toEqual({
         A: { source: "./cat/A.svelte", default: true },
       });
     } finally {
@@ -199,7 +199,7 @@ describe("parseExports", () => {
 
       const source = `export { A as B } from "./cat";`;
 
-      expect(parseExports(source, dir)).toEqual({
+      expect<unknown>(parseExports(source, dir)).toEqual({
         B: { source: "./cat/A.svelte", default: true },
       });
     } finally {
@@ -217,7 +217,7 @@ describe("parseExports", () => {
 
       const source = `export { A } from "./cat/index.js";`;
 
-      expect(parseExports(source, dir)).toEqual({
+      expect<unknown>(parseExports(source, dir)).toEqual({
         A: { source: "./cat/A.svelte", default: true },
       });
     } finally {
@@ -234,7 +234,7 @@ describe("parseExports", () => {
       writeFileSync(path.join(tipDir, "index.js"), `export { default as Tip } from "./Tip.svelte";\n`);
 
       for (const specifier of ["./tip", "./tip/index", "./tip/index.js"]) {
-        expect(parseExports(`export * from "${specifier}";`, dir)).toEqual({
+        expect<unknown>(parseExports(`export * from "${specifier}";`, dir)).toEqual({
           Tip: { source: "./tip/Tip.svelte", default: true },
         });
       }
@@ -256,7 +256,7 @@ describe("parseExports", () => {
 
       const source = `export { A } from "./cat";`;
 
-      expect(parseExports(source, dir)).toEqual({
+      expect<unknown>(parseExports(source, dir)).toEqual({
         A: { source: "./cat/dog/A.svelte", default: true },
       });
     } finally {
@@ -289,7 +289,7 @@ describe("parseExports", () => {
     try {
       const source = `export { A } from "./does-not-exist";`;
 
-      expect(parseExports(source, "")).toEqual({});
+      expect<unknown>(parseExports(source, "")).toEqual({});
       expect(warn).toHaveBeenCalled();
     } finally {
       warn.mockRestore();
@@ -299,7 +299,7 @@ describe("parseExports", () => {
   test("mixed default and named export from same source", () => {
     const source = `export { default as Theme, themes } from "./Theme/Theme.svelte";`;
 
-    expect(parseExports(source, "")).toEqual({
+    expect<unknown>(parseExports(source, "")).toEqual({
       Theme: { source: "./Theme/Theme.svelte", default: true },
       themes: { source: "./Theme/Theme.svelte", default: false },
     });
@@ -313,7 +313,7 @@ describe("parseExports", () => {
 
       const source = `export { add as addTab } from "./model.js";`;
 
-      expect(parseExports(source, dir)).toEqual({
+      expect<unknown>(parseExports(source, dir)).toEqual({
         addTab: { source: "./model.js", default: false, imported: "add" },
       });
     } finally {
@@ -324,7 +324,7 @@ describe("parseExports", () => {
   test("an aliased import that's re-exported keeps the name it has in its source module", () => {
     const source = `import { add as addTab } from "./model.js";\nexport { addTab };`;
 
-    expect(parseExports(source, "")).toEqual({
+    expect<unknown>(parseExports(source, "")).toEqual({
       addTab: { source: "./model.js", default: false, imported: "add", mixed: true },
     });
   });
@@ -340,7 +340,7 @@ describe("parseExports", () => {
 
       const source = `export { plus as sum, plus } from "./lib";`;
 
-      expect(parseExports(source, dir)).toEqual({
+      expect<unknown>(parseExports(source, dir)).toEqual({
         sum: { source: "./model.js", default: false, imported: "add" },
         plus: { source: "./model.js", default: false, imported: "add" },
       });
@@ -361,7 +361,7 @@ describe("parseExports", () => {
   test("a side-effect import binds nothing and doesn't throw", () => {
     const source = `import "./styles.css";\nexport { default as Button } from "./Button.svelte";`;
 
-    expect(parseExports(source, "")).toEqual({
+    expect<unknown>(parseExports(source, "")).toEqual({
       Button: { source: "./Button.svelte", default: true },
     });
   });
@@ -369,7 +369,7 @@ describe("parseExports", () => {
   test("an anonymous default export isn't recorded as a component", () => {
     const source = `export { default as Button } from "./Button.svelte";\nexport default { version: 1 };`;
 
-    expect(parseExports(source, "")).toEqual({
+    expect<unknown>(parseExports(source, "")).toEqual({
       Button: { source: "./Button.svelte", default: true },
     });
   });

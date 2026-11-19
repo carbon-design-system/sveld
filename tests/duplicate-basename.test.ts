@@ -60,10 +60,10 @@ describe("duplicate basenames discovered via glob", () => {
   test("the barrel export's source still points at the real component, not the icon", async () => {
     const result = await generateBundle(join(dir, "index.js"), true);
 
-    expect(result.exports.Menu.source).toBe("./Menu/Menu.svelte");
+    expect<string>(result.exports.Menu.source).toBe("./Menu/Menu.svelte");
 
     const exportedMenu = result.components.get("Menu");
-    expect(exportedMenu?.filePath).toBe("./Menu/Menu.svelte");
+    expect<string | undefined>(exportedMenu?.filePath).toBe("./Menu/Menu.svelte");
     expect(exportedMenu?.props.map((p) => p.name)).toEqual(["anchor"]);
   });
 
@@ -123,7 +123,7 @@ describe("directory-style barrel re-exports still resolve via glob", () => {
   test("resolves the directory export to the concrete file found by glob", async () => {
     const result = await generateBundle(join(dir, "index.js"), true);
 
-    expect(result.exports.Button.source).toBe("./button/Button.svelte");
+    expect<string>(result.exports.Button.source).toBe("./button/Button.svelte");
     expect(result.components.get("Button")?.props.map((p) => p.name)).toEqual(["label"]);
   });
 });

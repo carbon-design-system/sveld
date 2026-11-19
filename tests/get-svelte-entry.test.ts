@@ -30,7 +30,7 @@ describe("getSvelteEntry", () => {
 
     const result = getSvelteEntry("src/Component.svelte");
 
-    expect(result).toBe("src/Component.svelte");
+    expect<string | null>(result).toBe("src/Component.svelte");
     expect(fs.existsSync).toHaveBeenCalledWith(`${mockCwd}/src/Component.svelte`);
   });
 
@@ -50,7 +50,7 @@ describe("getSvelteEntry", () => {
 
     const result = getSvelteEntry();
 
-    expect(result).toBe("src/index.js");
+    expect<string | null>(result).toBe("src/index.js");
     expect(fs.readFileSync).toHaveBeenCalledWith(`${mockCwd}/package.json`, "utf-8");
   });
 
