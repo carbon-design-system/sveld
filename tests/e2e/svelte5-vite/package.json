@@ -7,7 +7,7 @@
   "types": "./types/index.d.ts",
   "scripts": {
     "svelte-check": "svelte-check --workspace test",
-    "build": "vite build --config vite.class.config.js && vite build && svelte-check --workspace test"
+    "build": "vite build && svelte-check --workspace test"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.2.0",
