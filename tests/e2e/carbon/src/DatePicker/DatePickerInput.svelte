@@ -44,7 +44,7 @@
   /** Obtain a reference to the input HTML element */
   export let ref = null;
 
-  import Calendar16 from "carbon-icons-svelte/lib/Calendar16";
+  import Calendar16 from "carbon-icons-svelte/lib/Icon.svelte";
   import { getContext, onMount } from "svelte";
 
   const { range, add, hasCalendar, declareRef, updateValue, blurInput, openCalendar, focusCalendar, inputValue } =

@@ -20,7 +20,7 @@
   /** Specify a name attribute for the input */
   export let name = "";
 
-  import CheckmarkFilled16 from "carbon-icons-svelte/lib/CheckmarkFilled16";
+  import CheckmarkFilled16 from "carbon-icons-svelte/lib/Icon.svelte";
   import { getContext } from "svelte";
 
   const { add, update, selectedValue } = getContext("TileGroup");

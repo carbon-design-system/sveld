@@ -32,7 +32,7 @@
   /** Obtain a reference to the select HTML element */
   export let ref = null;
 
-  import ChevronDownGlyph from "carbon-icons-svelte/lib/ChevronDownGlyph";
+  import ChevronDownGlyph from "carbon-icons-svelte/lib/Icon.svelte";
   import { setContext } from "svelte";
   import { writable } from "svelte/store";
 

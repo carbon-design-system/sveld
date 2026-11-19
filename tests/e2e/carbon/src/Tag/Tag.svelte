@@ -28,7 +28,7 @@
   /** Set an id for the filterable tag */
   export let id = `ccs-${Math.random().toString(36)}`;
 
-  import Close16 from "carbon-icons-svelte/lib/Close16/Close16.svelte";
+  import Close16 from "carbon-icons-svelte/lib/Icon.svelte";
   import { createEventDispatcher } from "svelte";
   import TagSkeleton from "./TagSkeleton.svelte";
 

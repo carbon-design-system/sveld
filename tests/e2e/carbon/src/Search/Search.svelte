@@ -69,9 +69,9 @@
   /** Obtain a reference to the input HTML element */
   export let ref = null;
 
-  import Close16 from "carbon-icons-svelte/lib/Close16/Close16.svelte";
-  import Close20 from "carbon-icons-svelte/lib/Close20/Close20.svelte";
-  import Search16 from "carbon-icons-svelte/lib/Search16/Search16.svelte";
+  import Close16 from "carbon-icons-svelte/lib/Icon.svelte";
+  import Close20 from "carbon-icons-svelte/lib/Icon.svelte";
+  import Search16 from "carbon-icons-svelte/lib/Icon.svelte";
   import { createEventDispatcher } from "svelte";
   import SearchSkeleton from "./SearchSkeleton.svelte";
 

@@ -97,10 +97,10 @@
   /** Obtain a reference to the input HTML element */
   export let ref = null;
 
-  import CaretDownGlyph from "carbon-icons-svelte/lib/CaretDownGlyph/CaretDownGlyph.svelte";
-  import CaretUpGlyph from "carbon-icons-svelte/lib/CaretUpGlyph/CaretUpGlyph.svelte";
-  import WarningAltFilled16 from "carbon-icons-svelte/lib/WarningAltFilled16/WarningAltFilled16.svelte";
-  import WarningFilled16 from "carbon-icons-svelte/lib/WarningFilled16/WarningFilled16.svelte";
+  import CaretDownGlyph from "carbon-icons-svelte/lib/Icon.svelte";
+  import CaretUpGlyph from "carbon-icons-svelte/lib/Icon.svelte";
+  import WarningAltFilled16 from "carbon-icons-svelte/lib/Icon.svelte";
+  import WarningFilled16 from "carbon-icons-svelte/lib/Icon.svelte";
   import { afterUpdate, createEventDispatcher } from "svelte";
 
   const defaultTranslations = {

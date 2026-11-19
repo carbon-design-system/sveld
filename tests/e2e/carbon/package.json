@@ -11,7 +11,7 @@
     "typecheck": "tsc --project tsconfig.types.json"
   },
   "dependencies": {
-    "carbon-icons-svelte": "^10.45.0",
+    "carbon-icons-svelte": "file:./vendor/carbon-icons-svelte",
     "flatpickr": "4.6.9"
   },
   "devDependencies": {

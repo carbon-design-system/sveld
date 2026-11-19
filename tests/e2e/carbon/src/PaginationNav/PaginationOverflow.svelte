@@ -9,7 +9,7 @@
   /** Specify the pivot end index */
   export let count = 0;
 
-  import OverflowMenuHorizontal16 from "carbon-icons-svelte/lib/OverflowMenuHorizontal16/OverflowMenuHorizontal16.svelte";
+  import OverflowMenuHorizontal16 from "carbon-icons-svelte/lib/Icon.svelte";
   import { createEventDispatcher } from "svelte";
   import PaginationItem from "./PaginationItem.svelte";
 

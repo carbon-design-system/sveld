@@ -27,7 +27,7 @@
   /** Obtain a reference to the top-level HTML element */
   export let ref = null;
 
-  import Close16 from "carbon-icons-svelte/lib/Close16";
+  import Close16 from "carbon-icons-svelte/lib/Icon.svelte";
   import { createEventDispatcher, getContext } from "svelte";
 
   const defaultTranslations = {

@@ -66,8 +66,8 @@
   /** Set an id for the top-level element */
   export let id = `ccs-${Math.random().toString(36)}`;
 
-  import CaretLeft16 from "carbon-icons-svelte/lib/CaretLeft16/CaretLeft16.svelte";
-  import CaretRight16 from "carbon-icons-svelte/lib/CaretRight16/CaretRight16.svelte";
+  import CaretLeft16 from "carbon-icons-svelte/lib/Icon.svelte";
+  import CaretRight16 from "carbon-icons-svelte/lib/Icon.svelte";
   import { createEventDispatcher } from "svelte";
   import Button from "../Button/Button.svelte";
   import Select from "../Select/Select.svelte";

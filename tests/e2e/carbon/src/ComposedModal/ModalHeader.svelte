@@ -20,7 +20,7 @@
   /** Specify the ARIA label for the close icon */
   export let iconDescription = "Close";
 
-  import Close20 from "carbon-icons-svelte/lib/Close20/Close20.svelte";
+  import Close20 from "carbon-icons-svelte/lib/Icon.svelte";
   import { getContext } from "svelte";
 
   const { closeModal } = getContext("ComposedModal");

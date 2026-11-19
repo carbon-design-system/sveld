@@ -88,8 +88,8 @@
   /** Obtain a reference to the button HTML element */
   export let ref = null;
 
-  import WarningAltFilled16 from "carbon-icons-svelte/lib/WarningAltFilled16/WarningAltFilled16.svelte";
-  import WarningFilled16 from "carbon-icons-svelte/lib/WarningFilled16/WarningFilled16.svelte";
+  import WarningAltFilled16 from "carbon-icons-svelte/lib/Icon.svelte";
+  import WarningFilled16 from "carbon-icons-svelte/lib/Icon.svelte";
   import { createEventDispatcher } from "svelte";
   import { ListBox, ListBoxMenu, ListBoxMenuIcon, ListBoxMenuItem } from "../ListBox";
 

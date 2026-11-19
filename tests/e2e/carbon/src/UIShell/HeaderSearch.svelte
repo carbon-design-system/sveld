@@ -26,8 +26,8 @@
   /** Specify the selected result index */
   export let selectedResultIndex = 0;
 
-  import Close20 from "carbon-icons-svelte/lib/Close20/Close20.svelte";
-  import Search20 from "carbon-icons-svelte/lib/Search20/Search20.svelte";
+  import Close20 from "carbon-icons-svelte/lib/Icon.svelte";
+  import Search20 from "carbon-icons-svelte/lib/Icon.svelte";
   import { createEventDispatcher, tick } from "svelte";
 
   const dispatch = createEventDispatcher();

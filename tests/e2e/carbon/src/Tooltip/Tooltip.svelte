@@ -63,7 +63,7 @@
   /** Obtain a reference to the icon HTML element */
   export let refIcon = null;
 
-  import Information16 from "carbon-icons-svelte/lib/Information16/Information16.svelte";
+  import Information16 from "carbon-icons-svelte/lib/Icon.svelte";
   import { afterUpdate, createEventDispatcher } from "svelte";
 
   const dispatch = createEventDispatcher();

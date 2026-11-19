@@ -11,9 +11,9 @@
   /** Set to `true` to indicate an invalid state */
   export let invalid = false;
 
-  import CheckmarkFilled16 from "carbon-icons-svelte/lib/CheckmarkFilled16";
-  import Close16 from "carbon-icons-svelte/lib/Close16";
-  import WarningFilled16 from "carbon-icons-svelte/lib/WarningFilled16";
+  import CheckmarkFilled16 from "carbon-icons-svelte/lib/Icon.svelte";
+  import Close16 from "carbon-icons-svelte/lib/Icon.svelte";
+  import WarningFilled16 from "carbon-icons-svelte/lib/Icon.svelte";
   import { Loading } from "../Loading";
 </script>
 

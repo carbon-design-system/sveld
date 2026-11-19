@@ -14,7 +14,7 @@
   /** Specify the ARIA label for the accordion item chevron icon */
   export let iconDescription = "Expand/Collapse";
 
-  import ChevronRight16 from "carbon-icons-svelte/lib/ChevronRight16/ChevronRight16.svelte";
+  import ChevronRight16 from "carbon-icons-svelte/lib/Icon.svelte";
   import { getContext, onMount } from "svelte";
 
   let initialDisabled = disabled;

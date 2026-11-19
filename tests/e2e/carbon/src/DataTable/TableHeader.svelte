@@ -11,8 +11,8 @@
   /** Set an id for the top-level element */
   export let id = `ccs-${Math.random().toString(36)}`;
 
-  import ArrowsVertical20 from "carbon-icons-svelte/lib/ArrowsVertical20";
-  import ArrowUp20 from "carbon-icons-svelte/lib/ArrowUp20";
+  import ArrowsVertical20 from "carbon-icons-svelte/lib/Icon.svelte";
+  import ArrowUp20 from "carbon-icons-svelte/lib/Icon.svelte";
   import { getContext } from "svelte";
 
   const { sortHeader, tableSortable, add } = getContext("DataTable");

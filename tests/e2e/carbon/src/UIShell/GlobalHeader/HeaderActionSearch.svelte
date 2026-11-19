@@ -12,8 +12,8 @@
   /** Set to `true` to focus the search */
   export let searchIsActive = false;
 
-  import Close20 from "carbon-icons-svelte/lib/Close20";
-  import Search20 from "carbon-icons-svelte/lib/Search20";
+  import Close20 from "carbon-icons-svelte/lib/Icon.svelte";
+  import Search20 from "carbon-icons-svelte/lib/Icon.svelte";
   import { createEventDispatcher } from "svelte";
   import { Icon } from "../../Icon";
   import searchStore from "../searchStore";

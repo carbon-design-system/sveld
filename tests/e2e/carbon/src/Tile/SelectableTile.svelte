@@ -29,7 +29,7 @@
   /** Obtain a reference to the input HTML element */
   export let ref = null;
 
-  import CheckmarkFilled16 from "carbon-icons-svelte/lib/CheckmarkFilled16";
+  import CheckmarkFilled16 from "carbon-icons-svelte/lib/Icon.svelte";
   import { createEventDispatcher } from "svelte";
 
   const dispatch = createEventDispatcher();
