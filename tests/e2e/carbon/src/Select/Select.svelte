@@ -54,8 +54,8 @@
   /** Obtain a reference to the select HTML element */
   export let ref = null;
 
-  import ChevronDown16 from "carbon-icons-svelte/lib/ChevronDown16/ChevronDown16.svelte";
-  import WarningFilled16 from "carbon-icons-svelte/lib/WarningFilled16/WarningFilled16.svelte";
+  import ChevronDown16 from "carbon-icons-svelte/lib/Icon.svelte";
+  import WarningFilled16 from "carbon-icons-svelte/lib/Icon.svelte";
   import { afterUpdate, createEventDispatcher, setContext } from "svelte";
   import { writable } from "svelte/store";
 

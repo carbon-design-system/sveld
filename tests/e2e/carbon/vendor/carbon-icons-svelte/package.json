@@ -1,0 +1,8 @@
+{
+  "name": "carbon-icons-svelte",
+  "version": "10.45.1",
+  "private": true,
+  "description": "Stand-in for carbon-icons-svelte@10: one icon for every import, and the CarbonIcon type. The real package is 31,000 files.",
+  "types": "./lib/index.d.ts",
+  "type": "module"
+}

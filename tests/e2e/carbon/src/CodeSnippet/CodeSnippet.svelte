@@ -75,7 +75,7 @@
   /** Obtain a reference to the pre HTML element */
   export let ref = null;
 
-  import ChevronDown16 from "carbon-icons-svelte/lib/ChevronDown16/ChevronDown16.svelte";
+  import ChevronDown16 from "carbon-icons-svelte/lib/Icon.svelte";
   import { tick } from "svelte";
   import Button from "../Button/Button.svelte";
   import Copy from "../Copy/Copy.svelte";

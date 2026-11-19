@@ -23,8 +23,8 @@
   /** Specify the backward button text */
   export let backwardText = "Previous page";
 
-  import CaretLeft16 from "carbon-icons-svelte/lib/CaretLeft16/CaretLeft16.svelte";
-  import CaretRight16 from "carbon-icons-svelte/lib/CaretRight16/CaretRight16.svelte";
+  import CaretLeft16 from "carbon-icons-svelte/lib/Icon.svelte";
+  import CaretRight16 from "carbon-icons-svelte/lib/Icon.svelte";
   import { afterUpdate, createEventDispatcher } from "svelte";
   import Button from "../Button/Button.svelte";
   import PaginationItem from "./PaginationItem.svelte";

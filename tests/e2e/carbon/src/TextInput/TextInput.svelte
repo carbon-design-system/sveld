@@ -62,8 +62,8 @@
   /** Set to `true` to use inline version */
   export let inline = false;
 
-  import WarningAltFilled16 from "carbon-icons-svelte/lib/WarningAltFilled16/WarningAltFilled16.svelte";
-  import WarningFilled16 from "carbon-icons-svelte/lib/WarningFilled16/WarningFilled16.svelte";
+  import WarningAltFilled16 from "carbon-icons-svelte/lib/Icon.svelte";
+  import WarningFilled16 from "carbon-icons-svelte/lib/Icon.svelte";
   import { getContext } from "svelte";
 
   const ctx = getContext("Form");

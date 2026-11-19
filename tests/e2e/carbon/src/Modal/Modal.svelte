@@ -68,7 +68,7 @@
   /** Obtain a reference to the top-level HTML element */
   export let ref = null;
 
-  import Close20 from "carbon-icons-svelte/lib/Close20/Close20.svelte";
+  import Close20 from "carbon-icons-svelte/lib/Icon.svelte";
   import { afterUpdate, createEventDispatcher, onMount } from "svelte";
   import Button from "../Button/Button.svelte";
 

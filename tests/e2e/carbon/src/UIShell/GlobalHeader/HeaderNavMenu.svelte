@@ -17,7 +17,7 @@
   /** Specify the ARIA label for the chevron icon */
   export let iconDescription = "Expand/Collapse";
 
-  import ChevronDown16 from "carbon-icons-svelte/lib/ChevronDown16";
+  import ChevronDown16 from "carbon-icons-svelte/lib/Icon.svelte";
 </script>
 
 <svelte:window

@@ -127,7 +127,7 @@ export let pageSize = 0;
 /** Set to `number` to set current page */
 export let page = 0;
 
-import ChevronRight16 from "carbon-icons-svelte/lib/ChevronRight16";
+import ChevronRight16 from "carbon-icons-svelte/lib/Icon.svelte";
 import { createEventDispatcher, setContext } from "svelte";
 import { writable } from "svelte/store";
 import InlineCheckbox from "../Checkbox/InlineCheckbox.svelte";

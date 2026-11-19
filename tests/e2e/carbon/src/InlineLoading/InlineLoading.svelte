@@ -20,8 +20,8 @@
   /** Specify the timeout delay (ms) after `status` is set to "success" */
   export let successDelay = 1500;
 
-  import CheckmarkFilled16 from "carbon-icons-svelte/lib/CheckmarkFilled16/CheckmarkFilled16.svelte";
-  import Error20 from "carbon-icons-svelte/lib/Error20/Error20.svelte";
+  import CheckmarkFilled16 from "carbon-icons-svelte/lib/Icon.svelte";
+  import Error20 from "carbon-icons-svelte/lib/Icon.svelte";
   import { afterUpdate, createEventDispatcher, onMount } from "svelte";
   import Loading from "../Loading/Loading.svelte";
 

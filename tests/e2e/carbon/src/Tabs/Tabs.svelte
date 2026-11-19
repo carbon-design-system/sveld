@@ -17,7 +17,7 @@
   /** Specify the tab trigger href attribute */
   export let triggerHref = "#";
 
-  import ChevronDownGlyph from "carbon-icons-svelte/lib/ChevronDownGlyph";
+  import ChevronDownGlyph from "carbon-icons-svelte/lib/Icon.svelte";
   import { afterUpdate, createEventDispatcher, setContext } from "svelte";
   import { derived, writable } from "svelte/store";
 

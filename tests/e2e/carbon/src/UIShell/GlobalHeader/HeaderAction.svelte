@@ -29,8 +29,8 @@
    */
   export let transition = { duration: 200 };
 
-  import AppSwitcher20 from "carbon-icons-svelte/lib/AppSwitcher20/AppSwitcher20.svelte";
-  import Close20 from "carbon-icons-svelte/lib/Close20/Close20.svelte";
+  import AppSwitcher20 from "carbon-icons-svelte/lib/Icon.svelte";
+  import Close20 from "carbon-icons-svelte/lib/Icon.svelte";
   import { createEventDispatcher } from "svelte";
   import { slide } from "svelte/transition";
   import Icon from "../../Icon/Icon.svelte";

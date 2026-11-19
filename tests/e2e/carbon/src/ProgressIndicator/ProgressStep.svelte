@@ -23,8 +23,8 @@
   /** Set an id for the top-level element */
   export let id = `ccs-${Math.random().toString(36)}`;
 
-  import CheckmarkOutline16 from "carbon-icons-svelte/lib/CheckmarkOutline16/CheckmarkOutline16.svelte";
-  import Warning16 from "carbon-icons-svelte/lib/Warning16/Warning16.svelte";
+  import CheckmarkOutline16 from "carbon-icons-svelte/lib/Icon.svelte";
+  import Warning16 from "carbon-icons-svelte/lib/Icon.svelte";
   import { getContext, onMount } from "svelte";
 
   let step = {};

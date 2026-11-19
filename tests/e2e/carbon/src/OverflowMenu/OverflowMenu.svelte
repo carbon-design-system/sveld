@@ -54,7 +54,7 @@
   /** Obtain a reference to the overflow menu element */
   export let menuRef = null;
 
-  import OverflowMenuVertical16 from "carbon-icons-svelte/lib/OverflowMenuVertical16/OverflowMenuVertical16.svelte";
+  import OverflowMenuVertical16 from "carbon-icons-svelte/lib/Icon.svelte";
   import { afterUpdate, createEventDispatcher, setContext } from "svelte";
   import { writable } from "svelte/store";
   import { formatStyle } from "./formatStyle";

@@ -71,9 +71,9 @@
   /** Obtain a reference to the input HTML element */
   export let ref = null;
 
-  import View16 from "carbon-icons-svelte/lib/View16/View16.svelte";
-  import ViewOff16 from "carbon-icons-svelte/lib/ViewOff16/ViewOff16.svelte";
-  import WarningFilled16 from "carbon-icons-svelte/lib/WarningFilled16/WarningFilled16.svelte";
+  import View16 from "carbon-icons-svelte/lib/Icon.svelte";
+  import ViewOff16 from "carbon-icons-svelte/lib/Icon.svelte";
+  import WarningFilled16 from "carbon-icons-svelte/lib/Icon.svelte";
   import { getContext } from "svelte";
 
   const ctx = getContext("Form");

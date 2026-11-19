@@ -82,7 +82,7 @@
    */
   export let listRef = null;
 
-  import WarningFilled16 from "carbon-icons-svelte/lib/WarningFilled16/WarningFilled16.svelte";
+  import WarningFilled16 from "carbon-icons-svelte/lib/Icon.svelte";
   import { afterUpdate, createEventDispatcher, tick } from "svelte";
   import ListBox from "../ListBox/ListBox.svelte";
   import ListBoxField from "../ListBox/ListBoxField.svelte";

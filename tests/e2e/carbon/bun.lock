@@ -5,7 +5,7 @@
     "": {
       "name": "carbon",
       "dependencies": {
-        "carbon-icons-svelte": "^10.45.0",
+        "carbon-icons-svelte": "file:./vendor/carbon-icons-svelte",
         "flatpickr": "4.6.9",
       },
       "devDependencies": {
@@ -40,7 +40,7 @@
 
     "axobject-query": ["axobject-query@4.1.0", "", {}, "sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ=="],
 
-    "carbon-icons-svelte": ["carbon-icons-svelte@10.45.1", "", {}, "sha512-Uz3byPkSBzjpvLmjt/ZWYJkQG1omfqKh1vzF1FeFYOYqbGOCwc4sHbyF8oet2CseT2cECn1BbEyY4yWvlWYd/w=="],
+    "carbon-icons-svelte": ["carbon-icons-svelte@file:vendor/carbon-icons-svelte", {}],
 
     "chokidar": ["chokidar@4.0.3", "", { "dependencies": { "readdirp": "^4.0.1" } }, "sha512-Qgzu8kfBvo+cA4962jnP1KkS6Dop5NS6g7R5LFYJr4b8Ub94PPQXUksCw9PvXoeXPRRddRNC5C1JQUR2SMGtnA=="],
 

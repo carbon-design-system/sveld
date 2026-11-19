@@ -20,7 +20,7 @@
   /** Specify the ARIA label for the icon */
   export let iconDescription = "Close icon";
 
-  import Close20 from "carbon-icons-svelte/lib/Close20/Close20.svelte";
+  import Close20 from "carbon-icons-svelte/lib/Icon.svelte";
 </script>
 
 <button

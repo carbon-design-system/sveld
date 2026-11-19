@@ -32,7 +32,7 @@
   /** Obtain a reference to the top-level element */
   export let ref = null;
 
-  import ChevronDown16 from "carbon-icons-svelte/lib/ChevronDown16/ChevronDown16.svelte";
+  import ChevronDown16 from "carbon-icons-svelte/lib/Icon.svelte";
   import { afterUpdate } from "svelte";
 
   let refContent = null;
