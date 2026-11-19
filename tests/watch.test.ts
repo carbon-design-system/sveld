@@ -295,7 +295,7 @@ describe("watch mode (createSveldBundle)", () => {
     writeFileSync(entryPath, 'export { default as Button } from "./Standalone.svelte";\n');
     const { result, reparsed } = await bundle.update([resolve(entryPath)]);
 
-    expect(result.components.get("Button")?.filePath).toBe("./Standalone.svelte");
+    expect<string | undefined>(result.components.get("Button")?.filePath).toBe("./Standalone.svelte");
     expect(result.components.get("Button")?.props.map((prop) => prop.name)).toEqual(["label"]);
     expect(reparsed).toContain(resolve(dir, "Standalone.svelte"));
   });
@@ -675,7 +675,7 @@ describe("createSerialQueue", () => {
   test("a rejected run does not break the queue for the next call", async () => {
     const order: string[] = [];
     const run = jest
-      .fn<Promise<void>, []>()
+      .fn<() => Promise<void>>()
       .mockImplementationOnce(async () => {
         order.push("first");
         throw new Error("boom");

@@ -272,7 +272,7 @@ describe("parseCliOptions", () => {
   });
 
   test("--config takes its path as --config=<path> or --config <path>", () => {
-    const expected = { kind: "options", options: { config: "configs/sveld.config.js" } };
+    const expected = { kind: "options", options: { config: "configs/sveld.config.js" } } as const;
     expect(parseCliOptions(["--config=configs/sveld.config.js"])).toEqual(expected);
     expect(parseCliOptions(["--config", "configs/sveld.config.js"])).toEqual(expected);
   });

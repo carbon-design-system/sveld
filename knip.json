@@ -2,7 +2,7 @@
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "entry": ["src/index.ts", "src/browser.ts", "src/cli-entry.ts", "scripts/*.{ts,js}", "bivium.config.ts"],
   "project": ["src/**/*.ts", "scripts/**/*.{ts,js}", "tests/*.ts"],
-  "ignoreUnresolved": ["./cli-entry.js"],
+  "ignoreUnresolved": ["./cli-entry.js", "bun-types/test-globals"],
   "ignore": ["tests/fixtures/**"],
   "svelte": false,
   "ignoreBinaries": ["lint"]

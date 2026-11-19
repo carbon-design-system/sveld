@@ -7,7 +7,7 @@
     "skipLibCheck": true,
     "strict": true,
     "esModuleInterop": true,
-    "types": ["bun", "jest"]
+    "types": ["bun", "bun-types/test-globals"]
   },
   "include": ["src/**/*", "tests/**/*", "scripts/**/*"],
   "exclude": ["tests/e2e", "tests/fixtures-entry-exports", "tests/fixtures/ts-value-import-as-type"]
