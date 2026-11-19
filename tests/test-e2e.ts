@@ -130,11 +130,54 @@ async function checkProject(log: ProjectLog) {
   }
 }
 
-const projects: string[] = [];
+// Slowest first, so they start before the rest: carbon is the largest, and
+// the Vite projects run full builds.
+const SLOW_FIRST = ["carbon", "sveltekit", "svelte5-vite"];
+const rank = (dir: string) => {
+  const index = SLOW_FIRST.indexOf(basename(dir));
+  return index === -1 ? SLOW_FIRST.length : index;
+};
+const inCI = process.env.GITHUB_ACTIONS === "true";
+
+/** Checks one project and prints its log as one block. */
+async function checkAndReport(dir: string) {
+  const log: ProjectLog = { dir, output: [], errors: [] };
+  const start = performance.now();
+  await checkProject(log).catch((error) => log.errors.push(String(error)));
+  const seconds = ((performance.now() - start) / 1000).toFixed(1);
+  const failed = log.errors.length > 0;
+
+  // A passing project's log folds away in CI; a failing one stays open.
+  const header = `${dir} ${failed ? "failed" : "passed"} in ${seconds}s`;
+  console.log(inCI && !failed ? `::group::${header}` : `--- ${header}`);
+  console.log(log.output.join("\n"));
+  if (inCI && !failed) console.log("::endgroup::");
+  for (const error of log.errors) console.error(`${dir}: ${error}`);
+  if (failed) hasError = true;
+}
+
+const limit = availableParallelism();
+let running = 0;
+const waiting: (() => void)[] = [];
+
+/** Runs `task` once fewer than one check per core is running. */
+async function whenFree(task: () => Promise<void>) {
+  while (running >= limit) await new Promise<void>((resolve) => waiting.push(resolve));
+  running++;
+  try {
+    await task();
+  } finally {
+    running--;
+    waiting.shift()?.();
+  }
+}
+
+const checks: Promise<void>[] = [];
 
 // Linking and installing go through one bun link registry, so they run one
-// project at a time. They take under a second each once the cache is warm.
-for (const dir of dirs) {
+// project at a time. A project's checks only touch that project, so each
+// starts as soon as its install is done, alongside the next installs.
+for (const dir of dirs.toSorted((a, b) => rank(a) - rank(b))) {
   if (!(await Bun.file(`${dir}/package.json`).exists())) continue;
 
   rmSync(join(dir, "types"), { recursive: true, force: true });
@@ -145,38 +188,10 @@ for (const dir of dirs) {
   }
   await $`cd ${dir} && bun link ${name}`;
   await $`cd ${dir} && bun install`;
-  projects.push(dir);
+  checks.push(whenFree(() => checkAndReport(dir)));
 }
 
-// The checks only touch their own project, so they run side by side, the
-// slowest first: carbon is the largest, and the Vite projects run full builds.
-const SLOW_FIRST = ["carbon", "sveltekit", "svelte5-vite"];
-const rank = (dir: string) => {
-  const index = SLOW_FIRST.indexOf(basename(dir));
-  return index === -1 ? SLOW_FIRST.length : index;
-};
-const queue = projects.toSorted((a, b) => rank(a) - rank(b));
-const inCI = process.env.GITHUB_ACTIONS === "true";
-
-async function worker() {
-  for (let dir = queue.shift(); dir !== undefined; dir = queue.shift()) {
-    const log: ProjectLog = { dir, output: [], errors: [] };
-    const start = performance.now();
-    await checkProject(log).catch((error) => log.errors.push(String(error)));
-    const seconds = ((performance.now() - start) / 1000).toFixed(1);
-    const failed = log.errors.length > 0;
-
-    // A passing project's log folds away in CI; a failing one stays open.
-    const header = `${dir} ${failed ? "failed" : "passed"} in ${seconds}s`;
-    console.log(inCI && !failed ? `::group::${header}` : `--- ${header}`);
-    console.log(log.output.join("\n"));
-    if (inCI && !failed) console.log("::endgroup::");
-    for (const error of log.errors) console.error(`${dir}: ${error}`);
-    if (failed) hasError = true;
-  }
-}
-
-await Promise.all(Array.from({ length: Math.min(availableParallelism(), queue.length) }, worker));
+await Promise.all(checks);
 
 // Smoke-test the published bin shim: a config file that throws while
 // loading must exit non-zero (see the launcher's rejection handler), otherwise
