@@ -2,7 +2,8 @@
 // @depends-on scripts/build.ts
 // @reads tests/e2e/**
 import { readdirSync, rmSync } from "node:fs";
-import { join } from "node:path";
+import { availableParallelism } from "node:os";
+import { basename, join } from "node:path";
 import { $ } from "bun";
 import { name } from "../package.json";
 
@@ -51,22 +52,40 @@ interface E2eScriptStep {
 }
 
 /**
+ * A project's output and failures, kept until the project finishes so
+ * projects running at the same time don't interleave their logs.
+ */
+interface ProjectLog {
+  dir: string;
+  output: string[];
+  errors: string[];
+}
+
+/** Runs `bun run <script>` in the project, recording its output. Never throws. */
+async function runScript(log: ProjectLog, script: string) {
+  log.output.push(`$ bun run ${script}`);
+  const result = await $`cd ${log.dir} && bun run ${script}`.quiet().nothrow();
+  for (const stream of [result.stdout, result.stderr]) {
+    const text = stream.toString().trimEnd();
+    if (text) log.output.push(text);
+  }
+  return result;
+}
+
+/**
  * Runs a project's `package.json#e2e.scripts` in order, each against its own
  * expected exit code and (optionally) stdout shape, instead of the single
  * always-exit-0 script the rest of this file assumes. Opt-in via an `e2e`
  * field so existing single-script projects are unaffected.
  */
-async function runE2eScripts(dir: string, steps: E2eScriptStep[]): Promise<boolean> {
-  let ok = true;
-
+async function runE2eScripts(log: ProjectLog, steps: E2eScriptStep[]) {
   for (const step of steps) {
     // Steps mutate shared on-disk state (snapshots, cache) and must run in order.
-    const result = await $`cd ${dir} && bun run ${step.script}`.nothrow();
+    const result = await runScript(log, step.script);
     const expectedExitCode = step.expectExitCode ?? 0;
 
     if (result.exitCode !== expectedExitCode) {
-      console.error(`${dir}: "${step.script}" exited ${result.exitCode}, expected ${expectedExitCode}`);
-      ok = false;
+      log.errors.push(`"${step.script}" exited ${result.exitCode}, expected ${expectedExitCode}`);
       continue;
     }
 
@@ -74,74 +93,90 @@ async function runE2eScripts(dir: string, steps: E2eScriptStep[]): Promise<boole
       try {
         JSON.parse(result.stdout.toString());
       } catch {
-        console.error(`${dir}: "${step.script}" stdout is not valid JSON`);
-        ok = false;
+        log.errors.push(`"${step.script}" stdout is not valid JSON`);
       }
     }
   }
-
-  return ok;
 }
 
+/** Generates the project's docs and types, then checks them. */
+async function checkProject(log: ProjectLog) {
+  const pkg = await Bun.file(`${log.dir}/package.json`).json();
+
+  if (pkg.e2e?.scripts) {
+    await runE2eScripts(log, pkg.e2e.scripts);
+    return;
+  }
+
+  const script = pkg.scripts?.sveld ? "sveld" : "build";
+  if (!pkg.scripts?.[script]) {
+    log.errors.push(`missing "${script}" script`);
+    return;
+  }
+
+  if ((await runScript(log, script)).exitCode !== 0) {
+    log.errors.push(`${script} failed`);
+    return;
+  }
+
+  if (pkg.scripts.typecheck && (await runScript(log, "typecheck")).exitCode !== 0) {
+    log.errors.push("typecheck failed");
+  }
+
+  // Consumer components under `test/` checked against the generated types,
+  // unless the project's own script already ran svelte-check.
+  if (pkg.scripts["svelte-check"] && !pkg.scripts[script].includes("svelte-check")) {
+    if ((await runScript(log, "svelte-check")).exitCode !== 0) log.errors.push("svelte-check failed");
+  }
+}
+
+const projects: string[] = [];
+
+// Linking and installing go through one bun link registry, so they run one
+// project at a time. They take under a second each once the cache is warm.
 for (const dir of dirs) {
-  const packageJsonPath = `${dir}/package.json`;
-  // each example links/installs/builds into a shared bun link registry, so they must run one at a time.
-  if (!(await Bun.file(packageJsonPath).exists())) continue;
+  if (!(await Bun.file(`${dir}/package.json`).exists())) continue;
 
-  try {
-    rmSync(join(dir, "types"), { recursive: true, force: true });
-    for (const entry of readdirSync(dir)) {
-      if (entry.startsWith("types-")) {
-        rmSync(join(dir, entry), { recursive: true, force: true });
-      }
+  rmSync(join(dir, "types"), { recursive: true, force: true });
+  for (const entry of readdirSync(dir)) {
+    if (entry.startsWith("types-")) {
+      rmSync(join(dir, entry), { recursive: true, force: true });
     }
-    await $`cd ${dir} && bun link ${name}`;
-    await $`cd ${dir} && bun install`;
+  }
+  await $`cd ${dir} && bun link ${name}`;
+  await $`cd ${dir} && bun install`;
+  projects.push(dir);
+}
 
-    const pkg = await Bun.file(packageJsonPath).json();
+// The checks only touch their own project, so they run side by side, the
+// slowest first: carbon is the largest, and the Vite projects run full builds.
+const SLOW_FIRST = ["carbon", "sveltekit", "svelte5-vite"];
+const rank = (dir: string) => {
+  const index = SLOW_FIRST.indexOf(basename(dir));
+  return index === -1 ? SLOW_FIRST.length : index;
+};
+const queue = projects.toSorted((a, b) => rank(a) - rank(b));
+const inCI = process.env.GITHUB_ACTIONS === "true";
 
-    if (pkg.e2e?.scripts) {
-      if (!(await runE2eScripts(dir, pkg.e2e.scripts))) hasError = true;
-      continue;
-    }
+async function worker() {
+  for (let dir = queue.shift(); dir !== undefined; dir = queue.shift()) {
+    const log: ProjectLog = { dir, output: [], errors: [] };
+    const start = performance.now();
+    await checkProject(log).catch((error) => log.errors.push(String(error)));
+    const seconds = ((performance.now() - start) / 1000).toFixed(1);
+    const failed = log.errors.length > 0;
 
-    const script = pkg.scripts?.sveld ? "sveld" : "build";
-    if (!pkg.scripts?.[script]) {
-      console.error(`Missing "${script}" script in ${dir}`);
-      hasError = true;
-      continue;
-    }
-
-    const result = await $`cd ${dir} && bun run ${script}`;
-
-    if (result.exitCode !== 0) {
-      console.error(`${script} failed in ${dir}`);
-      hasError = true;
-      continue;
-    }
-
-    if (pkg.scripts?.typecheck) {
-      const typecheck = await $`cd ${dir} && bun run typecheck`;
-      if (typecheck.exitCode !== 0) {
-        console.error(`typecheck failed in ${dir}`);
-        hasError = true;
-      }
-    }
-
-    // Consumer components under `test/` checked against the generated types,
-    // unless the project's own script already ran svelte-check.
-    if (pkg.scripts?.["svelte-check"] && !pkg.scripts[script].includes("svelte-check")) {
-      const svelteCheck = await $`cd ${dir} && bun run svelte-check`.nothrow();
-      if (svelteCheck.exitCode !== 0) {
-        console.error(`svelte-check failed in ${dir}`);
-        hasError = true;
-      }
-    }
-  } catch (error) {
-    console.error(`Error in ${dir}:`, error);
-    hasError = true;
+    // A passing project's log folds away in CI; a failing one stays open.
+    const header = `${dir} ${failed ? "failed" : "passed"} in ${seconds}s`;
+    console.log(inCI && !failed ? `::group::${header}` : `--- ${header}`);
+    console.log(log.output.join("\n"));
+    if (inCI && !failed) console.log("::endgroup::");
+    for (const error of log.errors) console.error(`${dir}: ${error}`);
+    if (failed) hasError = true;
   }
 }
+
+await Promise.all(Array.from({ length: Math.min(availableParallelism(), queue.length) }, worker));
 
 // Smoke-test the published bin shim: a config file that throws while
 // loading must exit non-zero (see the launcher's rejection handler), otherwise
