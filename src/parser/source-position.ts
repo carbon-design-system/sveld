@@ -1,5 +1,5 @@
-import type { AST } from "sveast";
-import { createLocator, walk } from "sveast/walk";
+import type { AST } from "svelte-ast";
+import { createLocator, walk } from "svelte-ast/walk";
 import { isObject } from "../ast-guards";
 import type { SourcePosition, SourceRange } from "../model";
 import type { ParserContext } from "./context";

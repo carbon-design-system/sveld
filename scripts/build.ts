@@ -74,7 +74,7 @@ async function buildEntry(entrypoints: string[], target: "node" | "browser") {
     target,
     minify: true,
     sourcemap: false,
-    // Default Bun treats `node_modules` as external. Bundle them so sveast
+    // Default Bun treats `node_modules` as external. Bundle them so svelte-ast
     // ships inside `dist`.
     packages: "bundle",
     // Not bundled: TypeScript's API locates its native binary from its own

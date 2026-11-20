@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
-import type { Identifier, StringLiteral } from "sveast";
+import type { Identifier, StringLiteral } from "svelte-ast";
 import { asRelativeSourcePath, type RelativeSourcePath } from "./brands";
 import { ModuleGraph } from "./module-graph";
 import { normalizeSeparators, SVELTE_EXT_REGEX } from "./path";

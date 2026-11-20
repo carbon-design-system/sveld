@@ -13,7 +13,7 @@ import type {
   Program,
   TSDeclareFunction,
   TSEnumDeclaration,
-} from "sveast";
+} from "svelte-ast";
 import { resolveStaticStringLiteral, unwrapTypeCastExpression } from "./ast-guards";
 import type { ModuleGraph, ModuleSource } from "./module-graph";
 import type { EntryExport } from "./parse-entry-exports";

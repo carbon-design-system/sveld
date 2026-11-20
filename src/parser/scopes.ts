@@ -11,8 +11,8 @@ import type {
   Program,
   VariableDeclaration,
   VariableDeclarator,
-} from "sveast";
-import { extractIdentifiers } from "sveast/walk";
+} from "svelte-ast";
+import { extractIdentifiers } from "svelte-ast/walk";
 import { getPropertyName, isCallExpressionNamed, isIdentifier, isMemberExpression } from "../ast-guards";
 import type { LexicalScope, ScopeBinding, ScopeBindingKind } from "../model";
 import type { ParserContext } from "./context";

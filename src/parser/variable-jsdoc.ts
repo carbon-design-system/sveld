@@ -1,4 +1,4 @@
-import type { AST, Program } from "sveast";
+import type { AST, Program } from "svelte-ast";
 import { getPropByLocalOrPublic, type ParserContext } from "./context";
 import { recordSveldIgnore } from "./diagnostics";
 import { aliasType, getCommentTags, isJsDocGap, parseCommentText, processNodeJSDoc, typeTagDescription } from "./jsdoc";
@@ -17,7 +17,7 @@ interface TopLevelDeclaration {
   start: number;
 }
 
-/** Every `/* *\/` comment sveast collected inside `[programStart, programEnd)`. */
+/** Every `/* *\/` comment svelte-ast collected inside `[programStart, programEnd)`. */
 function collectBlockComments(
   comments: AST.JSComment[],
   source: string,

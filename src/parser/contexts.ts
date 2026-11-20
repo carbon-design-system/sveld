@@ -5,7 +5,7 @@ import type {
   Node,
   ObjectExpression,
   SimpleCallExpression,
-} from "sveast";
+} from "svelte-ast";
 import {
   getPropertyName,
   isIdentifier,

@@ -8,7 +8,7 @@ import type {
   TSTypeReference,
   TypeElement,
   VariableDeclaration,
-} from "sveast";
+} from "svelte-ast";
 import { getPropertyName, getTypeCastAnnotation, isCallExpressionNamed, unwrapTypeCastExpression } from "../ast-guards";
 import type {
   CustomElementPropConfig,

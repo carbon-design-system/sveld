@@ -6,7 +6,7 @@ import type {
   PropertyDefinition,
   Statement,
   TSTypeParameterInstantiation,
-} from "sveast";
+} from "svelte-ast";
 import type { ComponentClassMember, ComponentPropParam } from "../model";
 import type { ParserContext } from "./context";
 import { processNodeJSDoc } from "./jsdoc";

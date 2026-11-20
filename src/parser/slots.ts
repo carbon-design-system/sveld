@@ -1,4 +1,4 @@
-import type { AST, ObjectExpression, Property, SimpleCallExpression } from "sveast";
+import type { AST, ObjectExpression, Property, SimpleCallExpression } from "svelte-ast";
 import { getPropertyName, isIdentifier, isObjectExpression } from "../ast-guards";
 import type { DeprecatedValue, JsDocPassthroughTag, SlotProps, SlotPropValue, SourceRange } from "../model";
 import { resolveMemberExpressionType } from "./bindings";

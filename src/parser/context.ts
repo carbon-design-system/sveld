@@ -1,4 +1,4 @@
-import type { AST, FunctionDeclaration, TSNode, VariableDeclaration } from "sveast";
+import type { AST, FunctionDeclaration, TSNode, VariableDeclaration } from "svelte-ast";
 import type { SveldDiagnostic } from "../diagnostics";
 import type {
   ComponentContext,

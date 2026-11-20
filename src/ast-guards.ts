@@ -8,7 +8,7 @@ import type {
   ObjectExpression,
   Property,
   TypeNode,
-} from "sveast";
+} from "svelte-ast";
 
 export function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;

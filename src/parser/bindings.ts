@@ -1,4 +1,4 @@
-import type { MemberExpression } from "sveast";
+import type { MemberExpression } from "svelte-ast";
 import { splitTopLevel } from "../type-text";
 import type { ParserContext } from "./context";
 import { getPropTypeByLocalOrPublic } from "./context";

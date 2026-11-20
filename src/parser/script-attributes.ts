@@ -1,4 +1,4 @@
-import type { AST } from "sveast";
+import type { AST } from "svelte-ast";
 import type { ScriptLanguage, SourceRange } from "../model";
 import type { ParserContext } from "./context";
 import { sourceRangeFromNode } from "./source-position";

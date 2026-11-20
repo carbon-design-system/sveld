@@ -1,4 +1,4 @@
-import { ParseError } from "sveast";
+import { ParseError } from "svelte-ast";
 
 /**
  * A parse error as one line: the reason without svelte's link to its docs,

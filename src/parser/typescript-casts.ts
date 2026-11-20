@@ -1,5 +1,5 @@
-import type { AST, TSNode } from "sveast";
-import { walk } from "sveast/walk";
+import type { AST, TSNode } from "svelte-ast";
+import { walk } from "svelte-ast/walk";
 
 /**
  * Value-level TS wrappers that change a node's `.type` but not its runtime

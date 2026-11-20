@@ -1,4 +1,4 @@
-import type { AST, ImportDeclaration, ImportSpecifier } from "sveast";
+import type { AST, ImportDeclaration, ImportSpecifier } from "svelte-ast";
 import { isIdentifier, isMemberExpression } from "../ast-guards";
 import type { ComponentPropReExport } from "../model";
 import type { ParserContext } from "./context";
