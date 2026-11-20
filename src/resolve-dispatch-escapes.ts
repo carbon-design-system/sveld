@@ -1,5 +1,5 @@
-import type { Expression, Node, Pattern, SpreadElement, TSParameterProperty } from "sveast";
-import { isReference, STOP, walk } from "sveast/walk";
+import type { Expression, Node, Pattern, SpreadElement, TSParameterProperty } from "svelte-ast";
+import { isReference, STOP, walk } from "svelte-ast/walk";
 import { resolveStaticStringLiteral } from "./ast-guards";
 import type { ComponentDocApi } from "./bundle";
 import type { CrossFilePass } from "./cross-file-pass";

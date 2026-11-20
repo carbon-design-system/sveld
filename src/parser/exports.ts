@@ -15,7 +15,7 @@ import type {
   Program,
   VariableDeclaration,
   VariableDeclarator,
-} from "sveast";
+} from "svelte-ast";
 import type { ComponentPropDefaultValue, ProcessedInitializer } from "../model";
 import type { ParserContext } from "./context";
 import { recordDiagnostic, recordPropSveldIgnore } from "./diagnostics";

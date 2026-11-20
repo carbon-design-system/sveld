@@ -1,5 +1,5 @@
-import type { AST, Program } from "sveast";
-import { isReference, SKIP, STOP, walk } from "sveast/walk";
+import type { AST, Program } from "svelte-ast";
+import { isReference, SKIP, STOP, walk } from "svelte-ast/walk";
 import type { SyntaxMode } from "../model";
 import type { ParserContext } from "./context";
 import { collectPatternIdentifiers, isScopeOwner } from "./scopes";

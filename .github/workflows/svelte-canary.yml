@@ -3,8 +3,8 @@ name: svelte canary
 # Early warning for sveld's analysis: svelte ships new template syntax in
 # minor releases (<svelte:boundary> in 5.3, {@attach} in 5.29), so this runs
 # the unit tests against the newest svelte@latest, ahead of the lockfile
-# pin. Parser parity with svelte is checked in sveast's own canary. The npm
-# `next` dist-tag is stale (pre-5.0), so `latest` is the real frontier.
+# pin. Parser parity with svelte is checked in svelte-ast's own canary. The
+# npm `next` dist-tag is stale (pre-5.0), so `latest` is the real frontier.
 # Scheduled and manual only; never blocks PRs.
 
 on:

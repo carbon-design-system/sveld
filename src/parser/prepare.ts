@@ -3,7 +3,7 @@
  * front (script language, type annotations, hoisted bindings, and the
  * component-level JSDoc tags).
  */
-import { lexComponent } from "sveast";
+import { lexComponent } from "svelte-ast";
 import { parse as parseModernAst } from "../svelte-template-parse";
 import { parseCustomTypes } from "./component-tags";
 import type { ParserContext } from "./context";

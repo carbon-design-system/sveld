@@ -4,8 +4,8 @@
  * props, and collects the calls that phase 4 ({@link finalizeComponent})
  * turns into dispatched events once the dispatcher's name is known.
  */
-import type { AST, CallExpression, Expression, SimpleCallExpression, TSNode } from "sveast";
-import { SKIP, type Visitor, walk as walkTree } from "sveast/walk";
+import type { AST, CallExpression, Expression, SimpleCallExpression, TSNode } from "svelte-ast";
+import { SKIP, type Visitor, walk as walkTree } from "svelte-ast/walk";
 import {
   isCallExpressionNamed,
   isComponentLikeType,

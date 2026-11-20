@@ -1,4 +1,4 @@
-import { type AST, parse as parseComponent, parseSections } from "sveast";
+import { type AST, parse as parseComponent, parseSections } from "svelte-ast";
 
 /** `<style>` isn't parsed: sveld only reads its bounds. */
 export function parse(source: string): AST.Root {

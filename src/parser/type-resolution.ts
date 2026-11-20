@@ -6,8 +6,8 @@ import type {
   TSNode,
   TypeElement,
   TypeNode,
-} from "sveast";
-import { SKIP, walk } from "sveast/walk";
+} from "svelte-ast";
+import { SKIP, walk } from "svelte-ast/walk";
 import type {
   LocalTypeDeclaration,
   ParsedComponentTypeScriptMetadata,

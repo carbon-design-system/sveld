@@ -80,7 +80,7 @@ export interface GenerateBundleOptions {
    * Check `@example` blocks on props, module exports, slots, and events.
    * `true` runs plain TS/JS examples through the TypeScript program
    * (`example-compile-error` diagnostics; requires `typescript`) and
-   * Svelte/HTML examples through sveld's template parser (sveast)
+   * Svelte/HTML examples through sveld's template parser (svelte-ast)
    * (`example-syntax-error` diagnostics; no `typescript` needed). Pass
    * `"syntax"` to run only the markup path, so `typescript` is never loaded
    * even when TS/JS examples exist. Off by default.

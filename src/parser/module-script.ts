@@ -3,8 +3,8 @@
  * module's exports and the imports, functions, and variables the instance
  * script can see.
  */
-import { type AST, type ClassDeclaration, type ExportNamedDeclaration, type Node, parseModule } from "sveast";
-import { walk } from "sveast/walk";
+import { type AST, type ClassDeclaration, type ExportNamedDeclaration, type Node, parseModule } from "svelte-ast";
+import { walk } from "svelte-ast/walk";
 import type { ComponentProp, ComponentPropReExport } from "../model";
 import { readClassDeclaration } from "./classes";
 import type { ParserContext } from "./context";

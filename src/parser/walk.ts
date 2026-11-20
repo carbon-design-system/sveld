@@ -1,5 +1,5 @@
-import type { BlockStatement, Expression } from "sveast";
-import { SKIP, walk } from "sveast/walk";
+import type { BlockStatement, Expression } from "svelte-ast";
+import { SKIP, walk } from "svelte-ast/walk";
 
 /**
  * TS nodes whose entire subtree is type-level: annotations, type aliases,

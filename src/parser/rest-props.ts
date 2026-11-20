@@ -1,4 +1,4 @@
-import type { AST, Expression } from "sveast";
+import type { AST, Expression } from "svelte-ast";
 import {
   isCallExpressionNamed,
   isComponentLikeType,

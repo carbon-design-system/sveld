@@ -1,6 +1,6 @@
 import { type Dirent, readFileSync, type Stats, statSync } from "node:fs";
 import { basename, dirname, isAbsolute, join, resolve } from "node:path";
-import { type Program, parseModule as parseJavaScript } from "sveast";
+import { type Program, parseModule as parseJavaScript } from "svelte-ast";
 import { DirectoryListings } from "./fs-listing";
 import { warn } from "./logger";
 import { formatParseError } from "./parse-error";

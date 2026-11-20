@@ -1,7 +1,7 @@
 /**
  * Lazily loads the parser stack (`./parser-stack-modules`), so a fully cached
- * run never evaluates sveast. Callers about to parse await `loadParserStack()`
- * once, then read it back with `getParserStack()`.
+ * run never evaluates svelte-ast. Callers about to parse await
+ * `loadParserStack()` once, then read it back with `getParserStack()`.
  */
 type ParserStack = typeof import("./parser-stack-modules");
 

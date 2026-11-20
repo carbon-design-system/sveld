@@ -45,8 +45,8 @@
     "bivium": "^0.4.0",
     "knip": "^6.43.0",
     "ostia": "^0.2.11",
-    "sveast": "^0.11.1",
     "svelte": "^5.58.0",
+    "svelte-ast": "^0.12.0",
     "svelte-lint": "^0.1.1",
     "typescript": "^7.0.2"
   },

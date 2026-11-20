@@ -1,4 +1,4 @@
-import type { ArrayExpression, CallExpression, ObjectExpression, Property } from "sveast";
+import type { ArrayExpression, CallExpression, ObjectExpression, Property } from "svelte-ast";
 import { getPropertyName, isIdentifier, isLiteral, isNewExpressionNamed, isObjectExpression } from "../ast-guards";
 import type { DispatchedEvent } from "../model";
 import type { ParserContext } from "./context";

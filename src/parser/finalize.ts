@@ -9,7 +9,7 @@ import {
   isValidType as isOneType,
   type Literal,
   type TemplateLiteral,
-} from "sveast";
+} from "svelte-ast";
 import { getElementByTag } from "../element-tag-map";
 import type {
   ComponentContext,

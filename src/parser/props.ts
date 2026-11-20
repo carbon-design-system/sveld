@@ -6,7 +6,7 @@ import type {
   FunctionExpression,
   Literal,
   MemberExpression,
-} from "sveast";
+} from "svelte-ast";
 import { getPropertyName, isIdentifier } from "../ast-guards";
 import type {
   ComponentProp,

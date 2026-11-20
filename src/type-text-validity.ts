@@ -1,4 +1,4 @@
-import { isValidType } from "sveast";
+import { isValidType } from "svelte-ast";
 
 const typeTextValidity = new Map<string, boolean>();
 

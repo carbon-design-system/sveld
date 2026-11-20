@@ -2,7 +2,7 @@
  * The parsed-component model: what `ComponentParser` produces, and what the
  * cross-file pass, the writers, and the parse cache read.
  */
-import type { TSNode } from "sveast";
+import type { TSNode } from "svelte-ast";
 import type { SveldDiagnostic } from "./diagnostics";
 import type { ElementNamespace } from "./element-tag-map";
 import type { PARSED_COMPONENT_PROP_IGNORES, PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "./parsed-component-metadata";
