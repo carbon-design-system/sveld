@@ -24,8 +24,9 @@
   import TabContentOverlay from "./TabContentOverlay.svelte";
   import TabTypeScript from "./TabTypeScript.svelte";
 
-  // The build inlines the default example's parse, so the parser only
-  // loads once the code changes.
+  // The build inlines the default example's parse, so the parser loads
+  // once the code changes, or when the pointer or focus moves into the
+  // code column, a few hundred ms before an edit or a new example.
   let sveld: typeof import("./parser") | undefined;
   let parser: import("./parser").ComponentParser | undefined;
   let parserRequested = false;
@@ -113,20 +114,23 @@
     <Grid noGutter padding>
       <Row>
         <Column xlg={7} lg={6} sm={8}>
-          <Dropdown
-            size="xl"
-            virtualize={false}
-            labelText="Svelte code"
-            {selectedId}
-            items={data.map((datum) => ({
-              id: datum.moduleName,
-              text: datum.name,
-            }))}
-            on:select={(e) => {
-              selectedId = e.detail.selectedId;
-            }}
-          />
-          <CodeEditor bind:code={value} />
+          <!-- svelte-ignore a11y_no_static_element_interactions -->
+          <div class="code-column" on:pointerenter={loadParser} on:focusin={loadParser}>
+            <Dropdown
+              size="xl"
+              virtualize={false}
+              labelText="Svelte code"
+              {selectedId}
+              items={data.map((datum) => ({
+                id: datum.moduleName,
+                text: datum.name,
+              }))}
+              on:select={(e) => {
+                selectedId = e.detail.selectedId;
+              }}
+            />
+            <CodeEditor bind:code={value} />
+          </div>
         </Column>
         <Column xlg={9} lg={10} sm={8}>
           <FormLabel id="output">Sveld output</FormLabel>
@@ -176,6 +180,10 @@
 <style>
   :global(.bx--inline-loading) {
     justify-content: center;
+  }
+
+  .code-column {
+    display: contents;
   }
 
   :global(.tab-content-slot) {
