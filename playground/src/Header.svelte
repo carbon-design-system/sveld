@@ -9,18 +9,18 @@
   } from "carbon-components-svelte";
   import Asleep from "carbon-icons-svelte/lib/Asleep.svelte";
   import Light from "carbon-icons-svelte/lib/Light.svelte";
-  import pkg from "../../package.json";
+  import { homepage, name, version } from "../../package.json";
   import LogoGithub20 from "./LogoGithub20.svelte";
   import { theme, toggleTheme } from "./theme";
 </script>
 
-<svelte:head><title>{pkg.name}</title></svelte:head>
+<svelte:head><title>{name}</title></svelte:head>
 
 <Header aria-label="Navigation" href="/">
   <SkipToContent slot="skipToContent" />
   <span slot="platform">
-    {pkg.name}
-    <code title="Version {pkg.version}">v{pkg.version}</code>
+    {name}
+    <code title="Version {version}">v{version}</code>
   </span>
   <HeaderUtilities>
     <HeaderGlobalAction
@@ -28,7 +28,7 @@
       iconDescription="Toggle theme"
       on:click={toggleTheme}
     />
-    <HeaderActionLink icon={LogoGithub20} href={pkg.homepage} target="_blank" />
+    <HeaderActionLink icon={LogoGithub20} href={homepage} target="_blank" />
   </HeaderUtilities>
 </Header>
 
