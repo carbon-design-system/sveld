@@ -1,15 +1,11 @@
 <script lang="ts">
-  import { HighlightEditable, HighlightStyle } from "svelte-highlight";
+  import { HighlightEditable } from "svelte-highlight";
   import svelte from "svelte-highlight/languages/svelte";
-  import github from "svelte-highlight/styles/github";
-  import zenburn from "svelte-highlight/styles/zenburn";
 
   export let code = "";
 </script>
 
-<HighlightStyle light={github} dark={zenburn} mode={'[theme="g100"]'}>
-  <HighlightEditable language={svelte} --outline-width="0px" bind:code class="code-editor" />
-</HighlightStyle>
+<HighlightEditable language={svelte} --outline-width="0px" bind:code class="code-editor" />
 
 <style>
   :global(.code-editor) {

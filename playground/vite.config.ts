@@ -1,8 +1,11 @@
 import { execFileSync } from "node:child_process";
-import { fileURLToPath } from "node:url";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 import { optimizeComponents, optimizeCss, optimizeImports } from "carbon-preprocess-svelte";
-import { defineConfig, type Plugin } from "vite";
+import { build, defineConfig, type Plugin, type ResolvedConfig } from "vite";
 
 const DEFAULT_PARSED = "virtual:default-parsed";
 
@@ -83,6 +86,37 @@ function fontDisplaySwap(): Plugin {
   };
 }
 
+/** Render the page into index.html after the client build; index.ts hydrates it. */
+function prerender(): Plugin {
+  let config: ResolvedConfig;
+  return {
+    name: "prerender",
+    apply: (_config, env) => env.command === "build" && !env.isSsrBuild,
+    configResolved(resolved) {
+      config = resolved;
+    },
+    async closeBundle() {
+      const outDir = await mkdtemp(join(tmpdir(), "sveld-playground-ssr-"));
+      try {
+        await build({
+          configFile: config.configFile,
+          mode: config.mode,
+          logLevel: "warn",
+          ssr: { noExternal: true },
+          build: { ssr: "src/ssr.ts", outDir, emptyOutDir: true },
+        });
+        const { default: renderPage } = await import(pathToFileURL(join(outDir, "ssr.js")).href);
+        const { head, body } = renderPage();
+        const htmlPath = join(config.build.outDir, "index.html");
+        const html = await readFile(htmlPath, "utf8");
+        await writeFile(htmlPath, html.replace("</head>", `${head}</head>`).replace("<body>", `<body>${body}`));
+      } finally {
+        await rm(outDir, { recursive: true, force: true });
+      }
+    },
+  };
+}
+
 export default defineConfig({
   plugins: [
     optimizeComponents(),
@@ -91,6 +125,7 @@ export default defineConfig({
     defaultParsed(),
     prefetchLater(),
     fontDisplaySwap(),
+    prerender(),
   ],
   optimizeDeps: {
     exclude: ["carbon-components-svelte", "carbon-icons-svelte"],
