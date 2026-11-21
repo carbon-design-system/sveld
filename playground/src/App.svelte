@@ -14,6 +14,9 @@
   import Json from "carbon-icons-svelte/lib/Json.svelte";
   import TextCreation from "carbon-icons-svelte/lib/TextCreation.svelte";
   import type { Component } from "svelte";
+  import { HighlightStyle } from "svelte-highlight";
+  import github from "svelte-highlight/styles/github";
+  import zenburn from "svelte-highlight/styles/zenburn";
   import defaultParsed from "virtual:default-parsed";
   import CodeEditor from "./CodeEditor.svelte";
   import data from "./data";
@@ -106,66 +109,68 @@
 </script>
 
 <Header>
-  <Grid noGutter padding>
-    <Row>
-      <Column xlg={7} lg={6} sm={8}>
-        <Dropdown
-          size="xl"
-          virtualize={false}
-          labelText="Svelte code"
-          {selectedId}
-          items={data.map((datum) => ({
-            id: datum.moduleName,
-            text: datum.name,
-          }))}
-          on:select={(e) => {
-            selectedId = e.detail.selectedId;
-          }}
-        />
-        <CodeEditor bind:code={value} />
-      </Column>
-      <Column xlg={9} lg={10} sm={8}>
-        <FormLabel id="output">Sveld output</FormLabel>
-        <Tabs type="container" id="output" bind:selected={selectedTab} on:change={handleTabChange}>
-          <Tab label="TypeScript" icon={Code} />
-          <Tab label="JSON" icon={Json} />
-          <Tab label="Markdown" icon={TextCreation} />
-          <div class="tab-content-slot" slot="content">
-            {#if parse_error}
-              <TabContentOverlay title="Parse error">{parse_error}</TabContentOverlay>
-            {/if}
-            <TabContent>
-              {#if selectedTab === 0}
-                {#if ready && tabComponents[0]}
-                  <svelte:component this={tabComponents[0]} {parsed_component} {moduleName} />
-                {:else}
-                  <InlineLoading style="margin: var(--cds-spacing-05)" />
-                {/if}
+  <HighlightStyle light={github} dark={zenburn} mode={'[theme="g100"]'}>
+    <Grid noGutter padding>
+      <Row>
+        <Column xlg={7} lg={6} sm={8}>
+          <Dropdown
+            size="xl"
+            virtualize={false}
+            labelText="Svelte code"
+            {selectedId}
+            items={data.map((datum) => ({
+              id: datum.moduleName,
+              text: datum.name,
+            }))}
+            on:select={(e) => {
+              selectedId = e.detail.selectedId;
+            }}
+          />
+          <CodeEditor bind:code={value} />
+        </Column>
+        <Column xlg={9} lg={10} sm={8}>
+          <FormLabel id="output">Sveld output</FormLabel>
+          <Tabs type="container" id="output" bind:selected={selectedTab} on:change={handleTabChange}>
+            <Tab label="TypeScript" icon={Code} />
+            <Tab label="JSON" icon={Json} />
+            <Tab label="Markdown" icon={TextCreation} />
+            <div class="tab-content-slot" slot="content">
+              {#if parse_error}
+                <TabContentOverlay title="Parse error">{parse_error}</TabContentOverlay>
               {/if}
-            </TabContent>
-            <TabContent>
-              {#if selectedTab === 1}
-                {#if ready && tabComponents[1]}
-                  <svelte:component this={tabComponents[1]} {parsed_component} {moduleName} />
-                {:else}
-                  <InlineLoading style="margin: var(--cds-spacing-05)" />
+              <TabContent>
+                {#if selectedTab === 0}
+                  {#if ready && tabComponents[0]}
+                    <svelte:component this={tabComponents[0]} {parsed_component} {moduleName} />
+                  {:else}
+                    <InlineLoading style="margin: var(--cds-spacing-05)" />
+                  {/if}
                 {/if}
-              {/if}
-            </TabContent>
-            <TabContent>
-              {#if selectedTab === 2}
-                {#if ready && tabComponents[2]}
-                  <svelte:component this={tabComponents[2]} {parsed_component} {moduleName} />
-                {:else}
-                  <InlineLoading style="margin: var(--cds-spacing-05)" />
+              </TabContent>
+              <TabContent>
+                {#if selectedTab === 1}
+                  {#if ready && tabComponents[1]}
+                    <svelte:component this={tabComponents[1]} {parsed_component} {moduleName} />
+                  {:else}
+                    <InlineLoading style="margin: var(--cds-spacing-05)" />
+                  {/if}
                 {/if}
-              {/if}
-            </TabContent>
-          </div>
-        </Tabs>
-      </Column>
-    </Row>
-  </Grid>
+              </TabContent>
+              <TabContent>
+                {#if selectedTab === 2}
+                  {#if ready && tabComponents[2]}
+                    <svelte:component this={tabComponents[2]} {parsed_component} {moduleName} />
+                  {:else}
+                    <InlineLoading style="margin: var(--cds-spacing-05)" />
+                  {/if}
+                {/if}
+              </TabContent>
+            </div>
+          </Tabs>
+        </Column>
+      </Row>
+    </Grid>
+  </HighlightStyle>
 </Header>
 
 <style>

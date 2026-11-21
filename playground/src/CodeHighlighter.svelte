@@ -4,34 +4,7 @@
   export let noWrap = false;
 
   import { CopyButton } from "carbon-components-svelte";
-  import { onMount } from "svelte";
   import Highlight from "svelte-highlight";
-  import githubStyles from "svelte-highlight/styles/github.css?url";
-  import zenburnStyles from "svelte-highlight/styles/zenburn.css?url";
-  import { type Theme, theme } from "./theme";
-
-  const HIGHLIGHT_STYLES: Record<Theme, string> = {
-    g100: zenburnStyles,
-    white: githubStyles,
-  };
-
-  let highlightStylesheet: HTMLLinkElement | undefined;
-
-  function setHighlightTheme(value: Theme) {
-    if (!highlightStylesheet) {
-      highlightStylesheet = document.createElement("link");
-      highlightStylesheet.rel = "stylesheet";
-      document.head.appendChild(highlightStylesheet);
-    }
-
-    highlightStylesheet.href = HIGHLIGHT_STYLES[value];
-  }
-
-  onMount(() => {
-    setHighlightTheme($theme);
-
-    return theme.subscribe(setHighlightTheme);
-  });
 </script>
 
 <div class="code-highlighter" class:noWrap>
@@ -53,7 +26,9 @@
     right: 1.5rem;
   }
 
-  :global(code.hljs) {
+  :global(code.hljs),
+  :global(.code-highlighter code.hljs),
+  :global([theme="g100"] .code-highlighter code.hljs) {
     background: var(--cds-layer);
     font-family: var(--cds-code-02-font-family);
     font-size: var(--cds-code-02-font-size);
@@ -65,6 +40,11 @@
 
   :global(.code-highlighter:not(.noWrap) code.hljs) {
     white-space: pre-wrap;
+  }
+
+  /* metonym/svelte-highlight#634: dark mode keeps github's bold headings. */
+  :global([theme="g100"] .code-highlighter .hljs-section) {
+    font-weight: normal;
   }
 
   :global(pre code.hljs) {
