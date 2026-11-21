@@ -231,6 +231,7 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 
 - Common types: `fix`, `feat`, `docs`, `chore`, `test`, `refactor`.
 - Scope is the area touched: `writer`, `parser`, `playground`, `deps-dev`, or a feature like `template`.
+- Use `chore(playground)` for playground changes, even bug fixes. The playground doesn't ship in the package, and `fix` and `feat` commits go in the [changelog](#changelog-curation).
 - Append `!` after the scope for breaking changes.
 - Imperative mood, one concise line; move detail to the body, referencing issues with `Fixes #N`.
 
