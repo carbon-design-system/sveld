@@ -70,6 +70,19 @@ function prefetchLater(): Plugin {
   };
 }
 
+/** Carbon's `font-display: auto` hides text until IBM Plex loads from IBM's CDN. */
+function fontDisplaySwap(): Plugin {
+  return {
+    name: "font-display-swap",
+    enforce: "pre",
+    // Before the CSS is hashed, so the file name changes with it.
+    transform(code, id) {
+      if (!id.endsWith("/carbon-components-svelte/css/all.css")) return;
+      return code.replaceAll("font-display:auto", "font-display:swap");
+    },
+  };
+}
+
 export default defineConfig({
   plugins: [
     optimizeComponents(),
@@ -77,6 +90,7 @@ export default defineConfig({
     optimizeCss({ propAware: true }),
     defaultParsed(),
     prefetchLater(),
+    fontDisplaySwap(),
   ],
   optimizeDeps: {
     exclude: ["carbon-components-svelte", "carbon-icons-svelte"],
