@@ -25,40 +25,15 @@ function getStoredTheme(): Theme | null {
   return null;
 }
 
-function getInitialTheme(): Theme {
-  return getStoredTheme() ?? getSystemTheme();
-}
+const storedTheme = getStoredTheme();
 
-export function applyTheme(value: Theme) {
-  if (typeof document === "undefined") {
-    return;
-  }
+export const theme = writable<Theme>(storedTheme ?? getSystemTheme());
 
-  document.documentElement.setAttribute("theme", value);
-  document.documentElement.style.colorScheme = value === "white" ? "light" : "dark";
-}
-
-export const theme = writable<Theme>(getInitialTheme());
-
-theme.subscribe((value) => {
-  applyTheme(value);
-});
-
-export function initTheme() {
-  applyTheme(getInitialTheme());
-
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (event) => {
-    if (!getStoredTheme()) {
-      theme.set(event.matches ? "g100" : "white");
-    }
-  });
-}
+/** Follow the system color scheme until the user picks a theme. */
+export const followSystem = writable(storedTheme === null);
 
 export function toggleTheme() {
+  followSystem.set(false);
   theme.update((value) => {
     const next = value === "g100" ? "white" : "g100";
     localStorage.setItem(STORAGE_KEY, next);
