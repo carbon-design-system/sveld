@@ -13,19 +13,28 @@
   import Code from "carbon-icons-svelte/lib/Code.svelte";
   import Json from "carbon-icons-svelte/lib/Json.svelte";
   import TextCreation from "carbon-icons-svelte/lib/TextCreation.svelte";
-  import { type Component, onMount } from "svelte";
+  import type { Component } from "svelte";
+  import defaultParsed from "virtual:default-parsed";
   import CodeEditor from "./CodeEditor.svelte";
   import data from "./data";
   import Header from "./Header.svelte";
   import TabContentOverlay from "./TabContentOverlay.svelte";
+  import TabTypeScript from "./TabTypeScript.svelte";
 
-  // The parser is the biggest chunk, so load it while the page renders.
+  // The build inlines the default example's parse, so the parser only
+  // loads once the code changes.
   let sveld: typeof import("./parser") | undefined;
   let parser: import("./parser").ComponentParser | undefined;
-  import("./parser").then((module) => {
-    parser = new module.ComponentParser();
-    sveld = module;
-  });
+  let parserRequested = false;
+
+  function loadParser() {
+    if (parserRequested) return;
+    parserRequested = true;
+    import("./parser").then((module) => {
+      parser = new module.ComponentParser();
+      sveld = module;
+    });
+  }
 
   type TabProps = {
     parsed_component?: Record<string, unknown>;
@@ -34,13 +43,11 @@
 
   let selectedId = data[0].moduleName;
   let selectedTab = 0;
-  let tabComponents: Array<Component<TabProps> | undefined> = [];
+  let tabComponents: Array<Component<TabProps> | undefined> = [TabTypeScript];
   const tabLoading: boolean[] = [];
 
   async function loadTabModule(index: number) {
     switch (index) {
-      case 0:
-        return import("./TabTypeScript.svelte");
       case 1:
         return import("./TabJson.svelte");
       case 2:
@@ -64,23 +71,27 @@
     ensureTabLoaded(event.detail);
   }
 
-  onMount(() => {
-    ensureTabLoaded(0);
-  });
-
   $: selected = data.find((datum) => datum.moduleName === selectedId);
   $: value = selected?.code;
   $: moduleName = selected?.moduleName ?? "Component";
 
   let parsed_component = {};
   let parse_error: string | null = null;
+  let parsedCode: string | undefined;
+
+  $: isDefault = defaultParsed !== null && value === data[0].code && moduleName === data[0].moduleName;
+  $: if (!isDefault) loadParser();
 
   $: {
     try {
       parse_error = null;
 
-      if (sveld && parser && value) {
+      if (isDefault && defaultParsed) {
+        parsed_component = defaultParsed;
+        parsedCode = value;
+      } else if (sveld && parser && value) {
         const diagnostics = { moduleName, filePath: "VIRTUAL" };
+        parsedCode = value;
         parsed_component = sveld.finalizeWithoutCrossFileResolution(
           parser.parseSvelteComponent(value, diagnostics),
           diagnostics,
@@ -90,6 +101,8 @@
       parse_error = error as string;
     }
   }
+
+  $: ready = parsedCode === value;
 </script>
 
 <Header>
@@ -123,7 +136,7 @@
             {/if}
             <TabContent>
               {#if selectedTab === 0}
-                {#if sveld && tabComponents[0]}
+                {#if ready && tabComponents[0]}
                   <svelte:component this={tabComponents[0]} {parsed_component} {moduleName} />
                 {:else}
                   <InlineLoading style="margin: var(--cds-spacing-05)" />
@@ -132,7 +145,7 @@
             </TabContent>
             <TabContent>
               {#if selectedTab === 1}
-                {#if sveld && tabComponents[1]}
+                {#if ready && tabComponents[1]}
                   <svelte:component this={tabComponents[1]} {parsed_component} {moduleName} />
                 {:else}
                   <InlineLoading style="margin: var(--cds-spacing-05)" />
@@ -141,7 +154,7 @@
             </TabContent>
             <TabContent>
               {#if selectedTab === 2}
-                {#if sveld && tabComponents[2]}
+                {#if ready && tabComponents[2]}
                   <svelte:component this={tabComponents[2]} {parsed_component} {moduleName} />
                 {:else}
                   <InlineLoading style="margin: var(--cds-spacing-05)" />
