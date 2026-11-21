@@ -42,11 +42,6 @@
     white-space: pre-wrap;
   }
 
-  /* metonym/svelte-highlight#634: dark mode keeps github's bold headings. */
-  :global([theme="g100"] .code-highlighter .hljs-section) {
-    font-weight: normal;
-  }
-
   :global(pre code.hljs) {
     padding: 1rem;
   }
