@@ -3,7 +3,7 @@
   export let moduleName = "";
 
   import typescript from "svelte-highlight/languages/typescript";
-  import { writeTsDefinition } from "../../src/browser";
+  import { writeTsDefinition } from "../../src/writer/writer-ts-definitions-core";
   import CodeHighlighter from "./CodeHighlighter.svelte";
 
   $: code = writeTsDefinition({
