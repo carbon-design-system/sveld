@@ -19,7 +19,7 @@
     width: 100%;
     height: 100%;
     padding: 1rem;
-    background: var(--cds-overlay-01);
+    background: var(--cds-overlay);
     outline-offset: -2px;
   }
 
