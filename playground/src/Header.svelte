@@ -6,18 +6,15 @@
     HeaderGlobalAction,
     HeaderUtilities,
     SkipToContent,
-    Theme,
   } from "carbon-components-svelte";
   import Asleep from "carbon-icons-svelte/lib/Asleep.svelte";
   import Light from "carbon-icons-svelte/lib/Light.svelte";
   import pkg from "../../package.json";
   import LogoGithub20 from "./LogoGithub20.svelte";
-  import { followSystem, theme, toggleTheme } from "./theme";
+  import { theme, toggleTheme } from "./theme";
 </script>
 
 <svelte:head><title>{pkg.name}</title></svelte:head>
-
-<Theme bind:theme={$theme} system={$followSystem} />
 
 <Header aria-label="Navigation" href="/">
   <SkipToContent slot="skipToContent" />

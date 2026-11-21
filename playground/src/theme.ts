@@ -25,15 +25,52 @@ function getStoredTheme(): Theme | null {
   return null;
 }
 
-const storedTheme = getStoredTheme();
+function getInitialTheme(): Theme {
+  return getStoredTheme() ?? getSystemTheme();
+}
 
-export const theme = writable<Theme>(storedTheme ?? getSystemTheme());
+export function applyTheme(value: Theme) {
+  if (typeof document === "undefined") {
+    return;
+  }
 
-/** Follow the system color scheme until the user picks a theme. */
-export const followSystem = writable(storedTheme === null);
+  // Components that fade a color on hover would also fade it to the new
+  // theme. Note the transitions running now, so only the ones the swap
+  // starts are canceled below.
+  const running = new Set(document.getAnimations());
+
+  document.documentElement.setAttribute("theme", value);
+  document.documentElement.style.colorScheme = value === "white" ? "light" : "dark";
+
+  // `getAnimations` flushes styles, which starts the new transitions.
+  for (const animation of document.getAnimations()) {
+    if (animation instanceof CSSTransition && !running.has(animation)) {
+      animation.cancel();
+    }
+  }
+}
+
+export const theme = writable<Theme>(getInitialTheme());
+
+theme.subscribe((value) => {
+  applyTheme(value);
+});
+
+export function initTheme() {
+  applyTheme(getInitialTheme());
+
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (event) => {
+    if (!getStoredTheme()) {
+      theme.set(event.matches ? "g100" : "white");
+    }
+  });
+}
 
 export function toggleTheme() {
-  followSystem.set(false);
   theme.update((value) => {
     const next = value === "g100" ? "white" : "g100";
     localStorage.setItem(STORAGE_KEY, next);
