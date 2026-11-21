@@ -14,13 +14,18 @@
   import Json from "carbon-icons-svelte/lib/Json.svelte";
   import TextCreation from "carbon-icons-svelte/lib/TextCreation.svelte";
   import { type Component, onMount } from "svelte";
-  import { ComponentParser, finalizeWithoutCrossFileResolution } from "../../src/browser";
   import CodeEditor from "./CodeEditor.svelte";
   import data from "./data";
   import Header from "./Header.svelte";
   import TabContentOverlay from "./TabContentOverlay.svelte";
 
-  const parser = new ComponentParser();
+  // The parser is the biggest chunk, so load it while the page renders.
+  let sveld: typeof import("./parser") | undefined;
+  let parser: import("./parser").ComponentParser | undefined;
+  import("./parser").then((module) => {
+    parser = new module.ComponentParser();
+    sveld = module;
+  });
 
   type TabProps = {
     parsed_component?: Record<string, unknown>;
@@ -74,9 +79,9 @@
     try {
       parse_error = null;
 
-      if (value) {
+      if (sveld && parser && value) {
         const diagnostics = { moduleName, filePath: "VIRTUAL" };
-        parsed_component = finalizeWithoutCrossFileResolution(
+        parsed_component = sveld.finalizeWithoutCrossFileResolution(
           parser.parseSvelteComponent(value, diagnostics),
           diagnostics,
         );
@@ -118,7 +123,7 @@
             {/if}
             <TabContent>
               {#if selectedTab === 0}
-                {#if tabComponents[0]}
+                {#if sveld && tabComponents[0]}
                   <svelte:component this={tabComponents[0]} {parsed_component} {moduleName} />
                 {:else}
                   <InlineLoading style="margin: var(--cds-spacing-05)" />
@@ -127,7 +132,7 @@
             </TabContent>
             <TabContent>
               {#if selectedTab === 1}
-                {#if tabComponents[1]}
+                {#if sveld && tabComponents[1]}
                   <svelte:component this={tabComponents[1]} {parsed_component} {moduleName} />
                 {:else}
                   <InlineLoading style="margin: var(--cds-spacing-05)" />
@@ -136,7 +141,7 @@
             </TabContent>
             <TabContent>
               {#if selectedTab === 2}
-                {#if tabComponents[2]}
+                {#if sveld && tabComponents[2]}
                   <svelte:component this={tabComponents[2]} {parsed_component} {moduleName} />
                 {:else}
                   <InlineLoading style="margin: var(--cds-spacing-05)" />
