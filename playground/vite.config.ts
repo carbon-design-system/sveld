@@ -121,7 +121,7 @@ export default defineConfig({
   plugins: [
     optimizeComponents(),
     svelte({ preprocess: [optimizeImports()] }),
-    optimizeCss({ propAware: true }),
+    optimizeCss(),
     defaultParsed(),
     prefetchLater(),
     fontDisplaySwap(),
