@@ -10,7 +10,7 @@
     TabContent,
     Tabs,
   } from "carbon-components-svelte";
-  import { type Component, onMount } from "svelte";
+  import { type Component, onDestroy, onMount } from "svelte";
   import { HighlightStyle } from "svelte-highlight";
   import github from "svelte-highlight/styles/github";
   import zenburn from "svelte-highlight/styles/zenburn";
@@ -96,23 +96,43 @@
 
   let parsed_component = {};
   let parse_error: string | null = null;
-  let parsedCode: string | undefined;
+  /** The example the output was last parsed for. */
+  let parsedId: string | undefined;
 
   $: isDefault = defaultParsed !== null && value === data[0].code && moduleName === data[0].moduleName;
   $: if (!isDefault) loadParser();
+
+  // What the output shows. A new example parses at once; an edit waits for
+  // a pause in typing, so a long component isn't re-parsed on every key.
+  const PARSE_DELAY = 150;
+  let source: string | undefined;
+  let sourceId: string | undefined;
+  let parseTimer: ReturnType<typeof setTimeout> | undefined;
+  $: if (value !== source) {
+    clearTimeout(parseTimer);
+    if (selectedId === sourceId) {
+      parseTimer = setTimeout(() => (source = value), PARSE_DELAY);
+    } else {
+      source = value;
+      sourceId = selectedId;
+    }
+  }
+  onDestroy(() => clearTimeout(parseTimer));
+
+  $: sourceIsDefault = defaultParsed !== null && source === data[0].code && moduleName === data[0].moduleName;
 
   $: {
     try {
       parse_error = null;
 
-      if (isDefault && defaultParsed) {
+      if (sourceIsDefault && defaultParsed) {
         parsed_component = defaultParsed;
-        parsedCode = value;
-      } else if (sveld && parser && value) {
+        parsedId = sourceId;
+      } else if (sveld && parser && source) {
         const diagnostics = { moduleName, filePath: "VIRTUAL" };
-        parsedCode = value;
+        parsedId = sourceId;
         parsed_component = sveld.finalizeWithoutCrossFileResolution(
-          parser.parseSvelteComponent(value, diagnostics),
+          parser.parseSvelteComponent(source, diagnostics),
           diagnostics,
         );
       }
@@ -121,7 +141,8 @@
     }
   }
 
-  $: ready = parsedCode === value;
+  // While an edit waits to parse, the last output for this example stays.
+  $: ready = parsedId === selectedId;
 </script>
 
 <Header>
