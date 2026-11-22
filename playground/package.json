@@ -12,7 +12,8 @@
     "perf:compare": "bun scripts/perf/compare.ts",
     "perf:bundle": "bun scripts/perf/bundle-size.ts",
     "perf:profile": "bun scripts/perf/profile.ts",
-    "perf:hydration": "bun scripts/perf/hydration-check.ts"
+    "perf:hydration": "bun scripts/perf/hydration-check.ts",
+    "perf:cache": "bun scripts/perf/cache-headers.ts"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.3.1",

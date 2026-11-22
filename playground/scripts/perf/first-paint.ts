@@ -19,7 +19,7 @@ const observe = `
 
 const results: { fcp: number; colored: number }[] = [];
 for (let i = 0; i < runs; i++) {
-  await using view = await openView(throttle, observe);
+  await using view = await openView(throttle, { initScript: observe });
   await view.navigate(url);
   await waitFor(view, "window.__m.fcp !== undefined && window.__m.colored !== undefined");
   results.push(await view.evaluate("window.__m"));

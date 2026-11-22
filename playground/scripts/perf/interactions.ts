@@ -32,7 +32,7 @@ const steps: { label: string; run: (view: Bun.WebView) => Promise<unknown> }[] =
 const perStep: Record<string, number[]> = {};
 const inps: number[] = [];
 for (let i = 0; i < runs; i++) {
-  await using view = await openView(throttle, observe);
+  await using view = await openView(throttle, { initScript: observe });
   await view.navigate(url);
   // Interactive once the page marks hydration (or after load, if it doesn't).
   await waitFor(view, `performance.getEntriesByName("hydrated").length > 0 || document.readyState === "complete"`);

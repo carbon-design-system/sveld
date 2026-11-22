@@ -1,33 +1,39 @@
 // A/B cold-load comparison of two builds or URLs. Loads alternate (A B, B A,
 // A B, ...) so drift in the machine or network hits both sides equally.
 // Usage: bun run perf:compare -- <distA|urlA> <distB|urlB> [--runs 7] [--throttle mobile]
+//   [--repeat] [--immutable]
 // A dist directory is served on a fresh port, so a stale server left on a
-// fixed port can never answer for it.
+// fixed port can never answer for it. `--repeat` compares second visits with
+// a warm cache. `--immutable` serves B's `/assets/*` with a year-long
+// immutable cache, so `dist dist --repeat --immutable` measures that header.
 import { mad, median, ms, parseArgs } from "./_shared";
-import { METRICS, measureLoad, type Vitals } from "./_vitals";
+import { METRICS, measureLoad, type Requests, type Vitals } from "./_vitals";
 import { serveDist } from "./serve";
 
-const { positional, runs, throttle } = parseArgs(undefined, { runs: 7 });
+const { positional, runs, throttle, flags } = parseArgs(undefined, { runs: 7 });
+const repeat = flags.has("repeat");
 if (positional.length !== 2) throw new Error("usage: bun compare.ts <distA|urlA> <distB|urlB> [--runs 7]");
 
 const HTTP = /^https?:/;
 const servers: ReturnType<typeof serveDist>[] = [];
-const sides = positional.map((target) => {
+const sides = positional.map((target, index) => {
   if (HTTP.test(target)) return { target, url: target };
-  const server = serveDist(target, 0);
+  const immutable = index === 1 && flags.has("immutable");
+  const server = serveDist(target, 0, { immutable });
   servers.push(server);
-  return { target, url: server.url.href };
+  return { target: immutable ? `${target} (/assets/* immutable)` : target, url: server.url.href };
 });
 
 // One unrecorded load of each side first, so neither pays for a cold Chrome.
-for (const side of sides) await measureLoad(side.url, throttle);
+for (const side of sides) await measureLoad(side.url, throttle, { repeat });
 
-const results = sides.map(() => ({ vitals: [] as Vitals[], bytes: [] as number[] }));
+const results = sides.map(() => ({ vitals: [] as Vitals[], bytes: [] as number[], requests: [] as Requests[] }));
 for (let i = 0; i < runs; i++) {
   // A B, B A, A B, ...: going second can be systematically faster or slower.
   for (const s of i % 2 ? [1, 0] : [0, 1]) {
-    const { vitals, bytes } = await measureLoad((sides[s] as (typeof sides)[0]).url, throttle);
+    const { vitals, bytes, requests } = await measureLoad((sides[s] as (typeof sides)[0]).url, throttle, { repeat });
     results[s]?.vitals.push(vitals);
+    results[s]?.requests.push(requests);
     results[s]?.bytes.push(Object.values(bytes).reduce((a, b) => a + b, 0));
   }
 }
@@ -38,7 +44,7 @@ const cell = (value: number, cls: boolean) => (cls ? value.toFixed(3) : ms(value
 const signed = (value: number, cls: boolean) => (value > 0 ? "+" : "") + (cls ? value.toFixed(3) : ms(value));
 
 console.log(`A  ${sides[0]?.target}\nB  ${sides[1]?.target}`);
-console.log(`${throttle} throttling, median of ${runs} alternating cold loads each\n`);
+console.log(`${throttle} throttling, median of ${runs} alternating ${repeat ? "repeat visits" : "cold loads"} each\n`);
 console.log(`  ${"".padEnd(14)}${"A".padStart(9)}${"B".padStart(9)}  ${"B − A".padEnd(18)}noise`);
 for (const [key, label] of Object.entries(METRICS)) {
   const cls = key === "cls";
@@ -57,4 +63,9 @@ for (const [key, label] of Object.entries(METRICS)) {
 }
 const kb = (n: number) => `${(n / 1000).toFixed(1)} kB`;
 console.log(`  ${"Transferred".padEnd(14)}${kb(median(a.bytes)).padStart(9)}${kb(median(b.bytes)).padStart(9)}`);
+const asked = (side: typeof a) => {
+  const count = (key: keyof Requests) => median(side.requests.map((r) => r[key]));
+  return `${count("network")}/${count("revalidated")}/${count("cache")}`;
+};
+console.log(`  ${"Requests".padEnd(14)}${asked(a).padStart(9)}${asked(b).padStart(9)}  downloaded/304/cached`);
 console.log("\n~ under 2% or within twice the run-to-run noise (median absolute deviation)");

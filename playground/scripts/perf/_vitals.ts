@@ -60,26 +60,57 @@ export const METRICS = {
 
 export type Vitals = Partial<Record<keyof typeof METRICS, number>>;
 
-/** Loads `url` once in a fresh, cold tab and returns its vitals and bytes by type. */
-export async function measureLoad(url: string, throttle: Throttle) {
-  await using view = await openView(throttle, observe);
+/** How a repeat visit's requests were answered. */
+export type Requests = { cache: number; revalidated: number; network: number };
+
+type Response = {
+  requestId: string;
+  type: string;
+  response: { url: string; status: number; fromDiskCache?: boolean };
+};
+
+/**
+ * Loads `url` in a fresh tab and returns its vitals, bytes by type and how
+ * its requests were answered. Cold by default; with `repeat`, the tab loads
+ * the page once with the cache on, then measures a second visit.
+ */
+export async function measureLoad(url: string, throttle: Throttle, { repeat = false } = {}) {
+  await using view = await openView(throttle, { initScript: observe, cache: repeat });
+  let measuring = !repeat;
   const types = new Map<string, string>();
   const bytes: Record<string, number> = {};
+  const requests: Requests = { cache: 0, revalidated: 0, network: 0 };
+  const servedFromCache = new Set<string>();
+  view.addEventListener("Network.requestServedFromCache", (event) => {
+    servedFromCache.add(cdpData<{ requestId: string }>(event).requestId);
+  });
   view.addEventListener("Network.responseReceived", (event) => {
-    const data = cdpData<{ requestId: string; type: string; response: { url: string } }>(event);
+    if (!measuring) return;
+    const data = cdpData<Response>(event);
+    if (data.response.url.startsWith("data:")) return;
     // A `<link rel="prefetch">` (idle-time loading) is typed "Other".
     const prefetched = data.type === "Other" && SCRIPT_URL.test(data.response.url);
     types.set(data.requestId, prefetched ? "Script (prefetched)" : data.type);
+    if (servedFromCache.has(data.requestId) || data.response.fromDiskCache) requests.cache++;
+    else if (data.response.status === 304) requests.revalidated++;
+    else requests.network++;
   });
   view.addEventListener("Network.loadingFinished", (event) => {
     const data = cdpData<{ requestId: string; encodedDataLength: number }>(event);
-    const type = types.get(data.requestId) ?? "Other";
-    bytes[type] = (bytes[type] ?? 0) + data.encodedDataLength;
+    const type = types.get(data.requestId);
+    if (type) bytes[type] = (bytes[type] ?? 0) + data.encodedDataLength;
   });
+  if (repeat) {
+    await view.navigate(url);
+    await waitFor(view, `document.readyState === "complete"`);
+    // Idle-time prefetches fill the cache too.
+    await Bun.sleep(3000);
+    measuring = true;
+  }
   await view.navigate(url);
   await waitFor(view, "window.__vitals?.fcp !== undefined");
   // Let late work (hydration, idle-time imports) finish before reading.
   await Bun.sleep(3000);
   const vitals: Vitals = await view.evaluate(summarize);
-  return { vitals, bytes };
+  return { vitals, bytes, requests };
 }

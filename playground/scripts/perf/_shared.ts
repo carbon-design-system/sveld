@@ -35,16 +35,25 @@ export function parseArgs(argv = process.argv.slice(2), defaults: Partial<Args> 
   return args;
 }
 
+export type ViewOptions = {
+  /** Injected before any of the page's own scripts. */
+  initScript?: string;
+  /** Receives the page's `console.*` calls. */
+  console?: Bun.WebView.ConsoleCapture;
+  /** Keep the HTTP cache on, to measure a repeat visit. */
+  cache?: boolean;
+};
+
 /**
  * A fresh tab in a headless Chrome Bun spawns (`url: false`: never attach to
- * the user's own browser), cache off, throttled, with `initScript` injected
- * before any of the page's scripts. Navigate it yourself.
+ * the user's own browser), cache off unless `cache` is set, throttled.
+ * Navigate it yourself.
  */
-export async function openView(throttle: Throttle, initScript = "", console?: Bun.WebView.ConsoleCapture) {
+export async function openView(throttle: Throttle, { initScript, console, cache = false }: ViewOptions = {}) {
   const view = new Bun.WebView({ width: 1400, height: 900, backend: { type: "chrome", url: false }, console });
   await view.navigate("about:blank"); // cdp() needs a first navigation
   await view.cdp("Network.enable");
-  await view.cdp("Network.setCacheDisabled", { cacheDisabled: true });
+  await view.cdp("Network.setCacheDisabled", { cacheDisabled: !cache });
   const preset = THROTTLE[throttle];
   if (preset) {
     await view.cdp("Network.emulateNetworkConditions", {

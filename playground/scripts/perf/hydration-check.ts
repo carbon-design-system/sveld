@@ -78,8 +78,11 @@ const observe = `(() => {
 const logs: string[] = [];
 const describe = (arg: unknown) =>
   typeof arg === "object" && arg !== null && "description" in arg ? String(arg.description) : String(arg);
-await using view = await openView(throttle, observe, (type, ...args) => {
-  if (type === "warn" || type === "error") logs.push(`${type}: ${args.map(describe).join(" ")}`);
+await using view = await openView(throttle, {
+  initScript: observe,
+  console: (type, ...args) => {
+    if (type === "warn" || type === "error") logs.push(`${type}: ${args.map(describe).join(" ")}`);
+  },
 });
 await view.navigate(url);
 try {
