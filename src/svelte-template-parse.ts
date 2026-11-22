@@ -6,10 +6,13 @@ import { typescript } from "svelte-ast/typescript";
 // `&amp;`, `&lt;`, `&gt;`, `&quot;` and `&apos;` (such as `&copy;`) stay as
 // written in text. sveld only reads text in `<slot name>` and `<script>`
 // attributes, and the table is about 9 kB gzip of browser bundles.
-const { parse: parseComponent } = createParser({ typescript });
+// Created on first use, so a bundle that never parses a template (the
+// writers alone) can drop the template parser.
+let parseComponent: ReturnType<typeof createParser>["parse"] | undefined;
 
 /** `<style>` isn't parsed: sveld only reads its bounds. */
 export function parse(source: string): AST.Root {
+  parseComponent ??= createParser({ typescript }).parse;
   return parseComponent(source, { css: false });
 }
 
