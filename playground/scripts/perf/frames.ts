@@ -2,13 +2,14 @@
 // after it, with its time, and the CSS animations and transitions that ran.
 // An instant change paints one new frame and runs no animation; a fade or a
 // loading flash shows up as several frames.
-// Usage: bun run perf:frames -- [url] [--action theme|tab|example] [--out dir]
+// Actions come from perf.config.ts (`actions`); the first is the default.
+// Usage: bun run perf:frames -- [url] [--action name] [--out dir]
 //   [--throttle none|desktop|mobile] [--early]
 // --out writes each distinct frame as a JPEG, to look at what changed.
-// --early acts right at the `hydrated` mark, before idle-time loading finishes,
+// --early acts right at the ready mark, before idle-time loading finishes,
 // the worst case for anything loaded lazily.
 import { mkdirSync } from "node:fs";
-import { HYDRATED, THEME_TOGGLE } from "./_playground";
+import { config, need, READY } from "./_config";
 import { openView, parseArgs, waitFor } from "./_shared";
 import { cdpData } from "./_vitals";
 
@@ -17,26 +18,15 @@ const option = (name: string) => {
   const at = argv.indexOf(`--${name}`);
   return at === -1 ? undefined : argv.splice(at, 2)[1];
 };
-const actionName = option("action") ?? "theme";
+const actionName = option("action") ?? Object.keys(config.actions ?? {})[0] ?? "";
 const out = option("out");
 const { url, throttle, flags } = parseArgs(argv, { throttle: "none" });
 const early = flags.has("early");
 const WATCH = 1500;
 
-/** What to do before (setup) and the action itself. */
-const ACTIONS: Record<
-  string,
-  { setup?: (v: Bun.WebView) => Promise<unknown>; run: (v: Bun.WebView) => Promise<unknown> }
-> = {
-  theme: { run: (v) => v.click(THEME_TOGGLE) },
-  tab: { run: (v) => v.click(".bx--tabs__nav-item:nth-of-type(2) a") },
-  example: {
-    setup: (v) => v.click(".bx--dropdown"),
-    run: (v) => v.click(".bx--list-box__menu-item:nth-of-type(5)"),
-  },
-};
-const action = ACTIONS[actionName];
-if (!action) throw new Error(`--action must be one of ${Object.keys(ACTIONS).join(", ")}`);
+const actions = need(config.actions, "actions", "perf:frames");
+const action = actions[actionName];
+if (!action) throw new Error(`--action must be one of ${Object.keys(actions).join(", ")}`);
 
 // Records every animation that starts in the watch window, with its target.
 const watch = `(() => {
@@ -67,7 +57,7 @@ type Frame = { data: string; metadata: { timestamp: number }; sessionId: number 
 
 await using view = await openView(throttle);
 await view.navigate(url);
-await waitFor(view, HYDRATED);
+await waitFor(view, READY);
 if (!early) await Bun.sleep(2000);
 if (action.setup) {
   await action.setup(view);
@@ -104,7 +94,7 @@ const after = distinct.filter((f) => f.time >= start);
 if (out) mkdirSync(out, { recursive: true });
 
 console.log(
-  `${url} — ${actionName}${early ? " at hydration" : ""}, ${throttle} throttling, ${WATCH} ms after the action\n`,
+  `${url} — ${actionName}${early ? " at the ready mark" : ""}, ${throttle} throttling, ${WATCH} ms after the action\n`,
 );
 console.log(`  frames       ${after.length} distinct after the action (${frames.length} received)`);
 for (const [i, f] of after.entries()) {

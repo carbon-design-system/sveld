@@ -1,6 +1,6 @@
 // How much of each script and stylesheet the page runs: bytes used by the
-// `hydrated` mark, after the page idles, and (with --interact) after the
-// playground's scripted interactions. Lists the largest functions that never
+// ready mark, after the page idles, and (with --interact) after the
+// scripted interactions in perf.config.ts (`steps`). Lists the largest functions that never
 // ran, the candidates to split out or drop.
 // Usage: bun run perf:coverage -- [url] [--interact] [--throttle none|desktop|mobile]
 // Function names are only readable in an unminified build (see profile.ts).
@@ -9,7 +9,7 @@
 // unused too. Before cutting, check what optimizeComponents({ report: true })
 // and optimizeCss already prune, and what the app can render.
 import { cdpData } from "./_vitals";
-import { HYDRATED, STEPS } from "./_playground";
+import { config, need, READY, READY_LABEL } from "./_config";
 import { openView, parseArgs, waitFor } from "./_shared";
 
 const { url, throttle, flags } = parseArgs(undefined, { throttle: "none" });
@@ -17,8 +17,9 @@ const TOP = 15;
 const ORIGIN = /^https?:\/\/[^/]+\//;
 // An innermost rule: a selector and a body with no nested braces.
 const RULE = /([^{}]+)\{[^{}]*\}/g;
-// A BEM block (`.bx--btn`, `.cds--modal`) or the first class.
-const BLOCK = /\.((?:bx|cds)--[a-z0-9]+(?:-[a-z0-9]+)*?)(?=__|--|[^\w-]|$)|\.([\w-]+)/;
+// The configured block (`cssBlock`), else the first class.
+const BLOCK = config.cssBlock;
+const FIRST_CLASS = /\.([\w-]+)/;
 
 type Range = { startOffset: number; endOffset: number; count: number };
 type ScriptCoverage = { scriptId: string; url: string; functions: { functionName: string; ranges: Range[] }[] };
@@ -102,12 +103,12 @@ async function snapshot(phase: string) {
 }
 
 await view.navigate(url);
-await waitFor(view, HYDRATED);
-await snapshot("hydrated");
+await waitFor(view, READY);
+await snapshot(READY_LABEL);
 await Bun.sleep(3000);
 await snapshot("idle");
 if (flags.has("interact")) {
-  for (const step of STEPS) {
+  for (const step of need(config.steps, "steps", "perf:coverage --interact")) {
     await step.run(view);
     await Bun.sleep(500);
   }
@@ -170,12 +171,12 @@ for (const [key, f] of files) {
     for (let i = start; i < start + match[0].length && i < f.size; i++) unused += f.used[i] ? 0 : 1;
     if (!unused) continue;
     const selector = (match[1] as string).trim();
-    const found = selector.match(BLOCK);
+    const found = BLOCK?.exec(selector) ?? FIRST_CLASS.exec(selector);
     // Rule tracking never marks a font face used; see the font line below.
     const block = selector.startsWith("@font-face")
       ? "@font-face (not tracked)"
       : found
-        ? `.${found[1] ?? found[2]}`
+        ? `.${found[1]}`
         : selector.includes("[theme")
           ? "[theme=…]"
           : selector.startsWith(":root")

@@ -1,4 +1,5 @@
 // One cold load's vitals and bytes, shared by load-vitals.ts and compare.ts.
+import { config, READY_TIME } from "./_config";
 import { openView, type Throttle, waitFor } from "./_shared";
 
 const SCRIPT_URL = /\.js(\?|$)/;
@@ -41,7 +42,7 @@ const summarize = `(() => {
     cls,
     tbt: after.reduce((sum, [, d]) => sum + Math.max(0, d - 50), 0),
     longestTask: Math.max(0, ...v.tasks.map(([, d]) => d)),
-    hydrated: performance.getEntriesByName("hydrated")[0]?.startTime,
+    ready: ${READY_TIME},
     load: nav ? nav.loadEventEnd : undefined,
   };
 })()`;
@@ -54,9 +55,13 @@ export const METRICS = {
   cls: "CLS",
   tbt: "TBT",
   longestTask: "Longest task",
-  hydrated: "Hydrated",
+  // The mark's name, capitalized: `hydrated` reads "Hydrated".
+  ready: config.readyMark ? config.readyMark[0]?.toUpperCase() + config.readyMark.slice(1) : "Ready (load)",
   load: "Load",
-} as const;
+};
+
+/** Width of the label column in reports. */
+export const LABEL_WIDTH = Math.max(14, ...Object.values(METRICS).map((label) => label.length + 2));
 
 export type Vitals = Partial<Record<keyof typeof METRICS, number>>;
 

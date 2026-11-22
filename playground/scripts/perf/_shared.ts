@@ -1,5 +1,6 @@
 // Shared setup for the Bun.WebView perf scripts: a headless Chrome tab with
 // Lighthouse-style throttling applied over CDP.
+import { config } from "./_config";
 
 /** Lighthouse's presets: mobile is "slow 4G" with a 4x slower CPU. */
 export const THROTTLE = {
@@ -16,7 +17,7 @@ export type Args = { url: string; positional: string[]; runs: number; throttle: 
 /** `[url] [--runs N] [--throttle mobile|desktop|none] [--flag]...` */
 export function parseArgs(argv = process.argv.slice(2), defaults: Partial<Args> = {}): Args {
   const args: Args = {
-    url: "https://sveld.onrender.com/",
+    url: config.url ?? "",
     positional: [],
     runs: 5,
     throttle: "mobile",
@@ -31,6 +32,7 @@ export function parseArgs(argv = process.argv.slice(2), defaults: Partial<Args> 
     else args.positional.push(arg);
   }
   if (args.positional[0]) args.url = args.positional[0];
+  if (!args.url) throw new Error("pass a URL, or set `url` in perf.config.ts");
   if (!(args.throttle in THROTTLE)) throw new Error(`--throttle must be one of ${Object.keys(THROTTLE).join(", ")}`);
   return args;
 }

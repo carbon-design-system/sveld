@@ -1,11 +1,12 @@
 // Did hydration adopt the prerendered DOM? Snapshots every element when HTML
-// parsing ends (before module scripts run), then again at the `hydrated` mark,
+// parsing ends (before module scripts run), then again at the ready mark,
 // and reports server elements that were thrown away, elements the client
 // created, and kept elements whose attributes or text changed. Also prints
 // the page's console warnings and errors.
 // Usage: bun run perf:hydration -- [url] [--throttle none|desktop|mobile]
 // Svelte names a mismatch (`hydration_mismatch`) only in dev builds; build one
 // with `svelte({ compilerOptions: { dev: true } })` to see which.
+import { config } from "./_config";
 import { openView, parseArgs, waitFor } from "./_shared";
 
 const { url, throttle } = parseArgs(undefined, { throttle: "none" });
@@ -66,11 +67,11 @@ const observe = `(() => {
       changed,
     };
   };
-  // Snapshot synchronously when the page marks hydration done.
+  // Snapshot synchronously when the page sets its ready mark.
   const mark = performance.mark.bind(performance);
   performance.mark = (name, options) => {
     const entry = mark(name, options);
-    if (name === "hydrated") h.snapshot("hydrated mark");
+    if (name === ${JSON.stringify(config.readyMark ?? null)}) h.snapshot(name + " mark");
     return entry;
   };
 })()`;
@@ -88,9 +89,9 @@ await view.navigate(url);
 try {
   await waitFor(view, "window.__hydration?.result", 15_000);
 } catch {
-  // No `hydrated` mark: fall back to the state after load.
+  // No ready mark: fall back to the state after load.
   await waitFor(view, `document.readyState === "complete"`);
-  await view.evaluate(`window.__hydration.snapshot("load (no hydrated mark)")`);
+  await view.evaluate(`window.__hydration.snapshot("load (no ready mark)")`);
 }
 
 type Root = { path: string; size: number };

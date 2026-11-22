@@ -6,7 +6,7 @@
 // prefetching competes with critical work, and whether a chunk lands before
 // someone could reach for it.
 // Usage: bun run perf:timeline -- [url] [--throttle mobile|desktop|none]
-import { HYDRATED, LAZY_UI } from "./_playground";
+import { config, READY, READY_LABEL, READY_TIME } from "./_config";
 import { ms, openView, parseArgs, waitFor } from "./_shared";
 import { cdpData } from "./_vitals";
 
@@ -37,7 +37,7 @@ type Timeline = {
   idle: number[];
   fcp?: number;
   lcp?: number;
-  hydrated?: number;
+  ready?: number;
   load: number;
   resources: Resource[];
 };
@@ -61,11 +61,11 @@ view.addEventListener("Network.requestWillBeSent", (event) => {
   });
 });
 await view.navigate(url);
-await waitFor(view, HYDRATED);
+await waitFor(view, READY);
 await Bun.sleep(SETTLE);
 const t = await view.evaluate<Timeline>(`({
   ...window.__timeline,
-  hydrated: performance.getEntriesByName("hydrated")[0]?.startTime,
+  ready: ${READY_TIME},
   load: performance.getEntriesByType("navigation")[0]?.loadEventEnd ?? 0,
   resources: [
     { name: location.href, start: 0, end: performance.getEntriesByType("navigation")[0].responseEnd, bytes: performance.getEntriesByType("navigation")[0].transferSize, blocking: "" },
@@ -73,7 +73,7 @@ const t = await view.evaluate<Timeline>(`({
   ],
 })`);
 
-const end = Math.max(...t.resources.map((r) => r.end), ...t.frames.map(([s, d]) => s + d), t.hydrated ?? 0);
+const end = Math.max(...t.resources.map((r) => r.end), ...t.frames.map(([s, d]) => s + d), t.ready ?? 0);
 const col = (time: number) => Math.min(WIDTH - 1, Math.floor((time / end) * WIDTH));
 const bar = (from: number, to: number, mark = "█") => {
   const row = Array(WIDTH).fill("·");
@@ -93,7 +93,7 @@ console.log(`${url} — ${throttle} throttling, one load, ${Math.round(end)} ms 
 const milestones = [
   ["FCP", t.fcp],
   ["LCP", t.lcp],
-  ["hydrated", t.hydrated],
+  [READY_LABEL, t.ready],
   ["load", t.load],
   ["first idle callback", t.idle[0]],
 ] as const;
@@ -117,10 +117,10 @@ console.log(
   `  ${busy.join("")}  main thread: ${t.frames.length} long frames, ${ms(t.frames.reduce((s, [, d]) => s + d, 0))}`,
 );
 
-// Idle gaps: time between long frames after hydration, where idle work fits.
-if (t.hydrated !== undefined) {
-  const after = t.frames.filter(([s, d]) => s + d > (t.hydrated ?? 0)).sort((a, b) => a[0] - b[0]);
-  let cursor = t.hydrated;
+// Idle gaps: time between long frames after the ready mark, where idle work fits.
+if (t.ready !== undefined) {
+  const after = t.frames.filter(([s, d]) => s + d > (t.ready ?? 0)).sort((a, b) => a[0] - b[0]);
+  let cursor = t.ready;
   const gaps: [number, number][] = [];
   for (const [s, d] of after) {
     if (s - cursor > 50) gaps.push([cursor, s]);
@@ -128,17 +128,17 @@ if (t.hydrated !== undefined) {
   }
   const lastNetwork = Math.max(...t.resources.map((r) => r.end));
   console.log(
-    `\n  after hydration: ${after.length} long frames; network done at ${ms(lastNetwork)}${gaps.length ? `; idle gaps over 50 ms: ${gaps.map(([a, b]) => `${ms(a)}–${ms(b)}`).join(", ")}` : ""}`,
+    `\n  after ${READY_LABEL}: ${after.length} long frames; network done at ${ms(lastNetwork)}${gaps.length ? `; idle gaps over 50 ms: ${gaps.map(([a, b]) => `${ms(a)}–${ms(b)}`).join(", ")}` : ""}`,
   );
 
-  console.log("\n  lazy chunks against the UI that needs them (usable at hydrated)");
-  for (const { ui, chunk } of LAZY_UI) {
+  console.log(`\n  lazy chunks against the UI that needs them (usable at ${READY_LABEL})`);
+  for (const { ui, chunk } of config.lazyUI ?? []) {
     const r = t.resources.find((res) => chunk.test(res.name));
     if (!r) {
-      console.log(`    ${ui.padEnd(30)} not loaded within ${SETTLE} ms of hydration`);
+      console.log(`    ${ui.padEnd(30)} not loaded within ${SETTLE} ms of ${READY_LABEL}`);
       continue;
     }
-    const lead = t.hydrated - r.end;
+    const lead = t.ready - r.end;
     const verdict = lead >= 0 ? `ready ${ms(lead)} before` : `ready ${ms(-lead)} after: a fast user waits`;
     console.log(`    ${ui.padEnd(30)} ${short(r.name).padEnd(30)} ${verdict}`);
   }

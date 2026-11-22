@@ -5,16 +5,17 @@
 // Only same-origin files: fonts from a CDN follow that CDN's headers.
 // Exits 1 if any file fails.
 // Usage: bun run perf:cache -- [url]
+import { ASSETS } from "./_config";
 import { parseArgs } from "./_shared";
 import { IMMUTABLE } from "./serve";
 
 const { url } = parseArgs();
 const page = new URL(url);
 
-// `assets/name-[hash].ext`, quoted or in `url()`, absolute or relative.
-const ASSET = /(?:^|["'(\s,])\.?\/?(assets\/[\w.-]+\.\w+)/g;
-// Vite's `name-[hash].ext`: an 8-character hash before the extension.
-const HASH = /-[\w-]{8}\.\w+$/;
+// A file under the assets path, quoted or in `url()`, absolute or relative.
+const DIR = ASSETS.path.replace(/^\//, "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const ASSET = new RegExp(String.raw`(?:^|["'(\s,])\.?\/?(${DIR}[\w.-]+\.\w+)`, "g");
+const HASH = ASSETS.hash;
 const TEXT = /\.(js|css|svg|html|json)$/;
 const MAX_AGE = /max-age=(\d+)/;
 const YEAR = 31_536_000;

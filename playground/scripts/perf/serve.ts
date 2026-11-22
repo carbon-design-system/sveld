@@ -1,9 +1,10 @@
 // Serves a built dist/ like production (Render): gzip, `Cache-Control:
 // public, max-age=0` with an ETag, to measure a local build. `--immutable`
-// serves `/assets/*` with a year-long immutable cache instead, as a Render
-// header rule for that path would.
+// serves the content-hashed assets (`/assets/*` by default; `assets.path` in
+// perf.config.ts) with a year-long immutable cache, as a header rule would.
 // Usage: bun run perf:serve (serves dist/ on :4790), or
 //   bun serve.ts <dir> [port] [--immutable]
+import { ASSETS } from "./_config";
 
 const REVALIDATE = "public, max-age=0";
 /** Content-hashed: a changed file gets a new name, so it never goes stale. */
@@ -20,7 +21,7 @@ export function serveDist(root: string, port: number, { immutable = false } = {}
       if (!(await file.exists())) return new Response("Not found", { status: 404 });
       const bytes = await file.bytes();
       const etag = `"${Bun.hash(bytes).toString(16)}"`;
-      const cacheControl = immutable && path.startsWith("/assets/") ? IMMUTABLE : REVALIDATE;
+      const cacheControl = immutable && path.startsWith(ASSETS.path) ? IMMUTABLE : REVALIDATE;
       if (req.headers.get("if-none-match") === etag) {
         return new Response(null, { status: 304, headers: { etag, "cache-control": cacheControl } });
       }
@@ -37,5 +38,5 @@ if (import.meta.main) {
   const [root, port = "4790"] = args.filter((arg) => !arg.startsWith("--"));
   if (!root) throw new Error("usage: bun serve.ts <dist> [port] [--immutable]");
   const server = serveDist(root, Number(port), { immutable });
-  console.log(`serving ${root} at ${server.url}${immutable ? " (/assets/* immutable)" : ""}`);
+  console.log(`serving ${root} at ${server.url}${immutable ? ` (${ASSETS.path}* immutable)` : ""}`);
 }

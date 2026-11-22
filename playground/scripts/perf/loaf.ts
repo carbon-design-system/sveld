@@ -4,10 +4,11 @@
 // layout. `interactions.ts` says how slow an interaction is; this says why.
 // Usage: bun run perf:loaf -- [url] [--throttle mobile|desktop|none] [--runs 3]
 // Function names are only readable in an unminified build (see profile.ts).
-import { HYDRATED, STEPS } from "./_playground";
+import { config, need, READY } from "./_config";
 import { ms, openView, parseArgs, waitFor } from "./_shared";
 
 const { url, throttle, runs } = parseArgs(undefined, { runs: 3 });
+const steps = need(config.steps, "steps", "perf:loaf");
 const ORIGIN = /^https?:\/\/[^/]+\//;
 const QUERY = /\?.*$/;
 
@@ -50,10 +51,10 @@ const byPhase = new Map<string, Loaf[]>();
 for (let i = 0; i < runs; i++) {
   await using view = await openView(throttle, { initScript: observe });
   await view.navigate(url);
-  await waitFor(view, HYDRATED);
+  await waitFor(view, READY);
   await Bun.sleep(2000);
   const marks: { label: string; at: number }[] = [{ label: "load", at: 0 }];
-  for (const step of STEPS) {
+  for (const step of steps) {
     marks.push({ label: step.label, at: await view.evaluate<number>("performance.now()") });
     await step.run(view);
     await Bun.sleep(800);

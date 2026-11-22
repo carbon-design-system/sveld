@@ -4,10 +4,11 @@
 //   [--repeat] [--immutable]
 // A dist directory is served on a fresh port, so a stale server left on a
 // fixed port can never answer for it. `--repeat` compares second visits with
-// a warm cache. `--immutable` serves B's `/assets/*` with a year-long
+// a warm cache. `--immutable` serves B's hashed assets with a year-long
 // immutable cache, so `dist dist --repeat --immutable` measures that header.
+import { ASSETS } from "./_config";
 import { mad, median, ms, parseArgs } from "./_shared";
-import { METRICS, measureLoad, type Requests, type Vitals } from "./_vitals";
+import { LABEL_WIDTH, METRICS, measureLoad, type Requests, type Vitals } from "./_vitals";
 import { serveDist } from "./serve";
 
 const { positional, runs, throttle, flags } = parseArgs(undefined, { runs: 7 });
@@ -21,7 +22,7 @@ const sides = positional.map((target, index) => {
   const immutable = index === 1 && flags.has("immutable");
   const server = serveDist(target, 0, { immutable });
   servers.push(server);
-  return { target: immutable ? `${target} (/assets/* immutable)` : target, url: server.url.href };
+  return { target: immutable ? `${target} (${ASSETS.path}* immutable)` : target, url: server.url.href };
 });
 
 // One unrecorded load of each side first, so neither pays for a cold Chrome.
@@ -45,7 +46,7 @@ const signed = (value: number, cls: boolean) => (value > 0 ? "+" : "") + (cls ? 
 
 console.log(`A  ${sides[0]?.target}\nB  ${sides[1]?.target}`);
 console.log(`${throttle} throttling, median of ${runs} alternating ${repeat ? "repeat visits" : "cold loads"} each\n`);
-console.log(`  ${"".padEnd(14)}${"A".padStart(9)}${"B".padStart(9)}  ${"B − A".padEnd(18)}noise`);
+console.log(`  ${"".padEnd(LABEL_WIDTH)}${"A".padStart(9)}${"B".padStart(9)}  ${"B − A".padEnd(18)}noise`);
 for (const [key, label] of Object.entries(METRICS)) {
   const cls = key === "cls";
   const values = (side: typeof a) => side.vitals.map((v) => v[key as keyof Vitals]).filter((v) => v !== undefined);
@@ -58,14 +59,16 @@ for (const [key, label] of Object.entries(METRICS)) {
   // A difference inside twice the run-to-run spread, or under 2%, is noise.
   const mark = Math.abs(delta) <= Math.max(2 * noise, 0.02 * Math.abs(ma)) ? "~" : " ";
   console.log(
-    `  ${label.padEnd(14)}${cell(ma, cls)}${cell(mb, cls)}  ${mark}${(signed(delta, cls) + pct).padEnd(17)}±${cls ? noise.toFixed(3) : ms(noise)}`,
+    `  ${label.padEnd(LABEL_WIDTH)}${cell(ma, cls)}${cell(mb, cls)}  ${mark}${(signed(delta, cls) + pct).padEnd(17)}±${cls ? noise.toFixed(3) : ms(noise)}`,
   );
 }
 const kb = (n: number) => `${(n / 1000).toFixed(1)} kB`;
-console.log(`  ${"Transferred".padEnd(14)}${kb(median(a.bytes)).padStart(9)}${kb(median(b.bytes)).padStart(9)}`);
+console.log(
+  `  ${"Transferred".padEnd(LABEL_WIDTH)}${kb(median(a.bytes)).padStart(9)}${kb(median(b.bytes)).padStart(9)}`,
+);
 const asked = (side: typeof a) => {
   const count = (key: keyof Requests) => median(side.requests.map((r) => r[key]));
   return `${count("network")}/${count("revalidated")}/${count("cache")}`;
 };
-console.log(`  ${"Requests".padEnd(14)}${asked(a).padStart(9)}${asked(b).padStart(9)}  downloaded/304/cached`);
+console.log(`  ${"Requests".padEnd(LABEL_WIDTH)}${asked(a).padStart(9)}${asked(b).padStart(9)}  downloaded/304/cached`);
 console.log("\n~ under 2% or within twice the run-to-run noise (median absolute deviation)");

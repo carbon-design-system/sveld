@@ -4,6 +4,7 @@
 // With --base, adds a delta column; content hashes are ignored when matching
 // assets across the two builds.
 import { brotliCompressSync, constants } from "node:zlib";
+import { ASSETS } from "./_config";
 
 const argv = process.argv.slice(2);
 const baseAt = argv.indexOf("--base");
@@ -13,8 +14,7 @@ const dist = argv[0] ?? "dist";
 // `<script src>`, `<link rel=modulepreload|stylesheet|icon href>` in index.html.
 const LINKED = /<(?:script[^>]*\ssrc|link[^>]*\srel="?(?:modulepreload|stylesheet|icon)"?[^>]*\shref)="?([^"\s>]+)/g;
 const INLINE = /<(style|script)\b[^>]*>([\s\S]*?)<\/\1>/g;
-// Vite's `name-[hash].ext`: an 8-character hash before the extension.
-const HASH = /-[\w-]{8}(?=\.\w+$)/;
+const HASH = ASSETS.hash;
 const LEADING_SLASH = /^\.?\//;
 
 type Asset = { raw: number; gzip: number; brotli: number; initial: boolean };

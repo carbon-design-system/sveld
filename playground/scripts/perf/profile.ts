@@ -1,11 +1,12 @@
 // Where a cold load's main-thread time goes: a V8 CPU profile from navigation
-// to the page's `hydrated` mark (or load), as self and total time per function
+// to the page's ready mark (or load), as self and total time per function
 // and self time per script.
 // Usage: bun run perf:profile -- [url] [--runs 3] [--throttle mobile|desktop|none]
 // Function names and lines are only useful in an unminified build:
 //   bunx vite build --minify false --outDir /tmp/prof-dist
 //   bun scripts/perf/serve.ts /tmp/prof-dist 4791
 //   bun run perf:profile -- http://localhost:4791/
+import { READY, READY_LABEL } from "./_config";
 import { openView, parseArgs, waitFor } from "./_shared";
 
 const { url, runs, throttle } = parseArgs(undefined, { runs: 3 });
@@ -34,7 +35,7 @@ for (let i = 0; i < runs; i++) {
   await view.cdp("Profiler.setSamplingInterval", { interval: 100 }); // µs
   await view.cdp("Profiler.start");
   await view.navigate(url);
-  await waitFor(view, `performance.getEntriesByName("hydrated").length || document.readyState === "complete"`);
+  await waitFor(view, READY);
   const { profile } = await view.cdp<{ profile: Profile }>("Profiler.stop");
 
   const nodes = new Map(profile.nodes.map((node) => [node.id, node]));
@@ -68,7 +69,7 @@ const top = (map: Map<string, number>, n = TOP) => [...map].sort((a, b) => b[1] 
 const fmt = (n: number) => `${n.toFixed(1)} ms`.padStart(10);
 const js = [...self.values()].reduce((a, b) => a + b, 0);
 
-console.log(`${url} — ${throttle} throttling, mean of ${runs} cold loads until hydrated\n`);
+console.log(`${url} — ${throttle} throttling, mean of ${runs} cold loads until ${READY_LABEL}\n`);
 console.log(`  ${"JavaScript".padEnd(20)}${fmt(js)}`);
 for (const [name, n] of top(meta)) if (name !== "(root)") console.log(`  ${name.padEnd(20)}${fmt(n)}`);
 console.log(`\n  ${"self".padStart(10)}${"total".padStart(10)}  function`);
