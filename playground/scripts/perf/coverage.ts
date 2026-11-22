@@ -4,6 +4,10 @@
 // ran, the candidates to split out or drop.
 // Usage: bun run perf:coverage -- [url] [--interact] [--throttle none|desktop|mobile]
 // Function names are only readable in an unminified build (see profile.ts).
+// Unused is not removable: code and CSS for states the run never reached (an
+// open menu, a loading spinner, a copy tooltip, an invalid field) count as
+// unused too. Before cutting, check what optimizeComponents({ report: true })
+// and optimizeCss already prune, and what the app can render.
 import { cdpData } from "./_vitals";
 import { HYDRATED, STEPS } from "./_playground";
 import { openView, parseArgs, waitFor } from "./_shared";
@@ -198,3 +202,4 @@ console.log(
 
 console.log(`\n  largest functions that never ran (${phases.at(-1)})`);
 for (const f of outermost.slice(0, TOP)) console.log(`  ${kb(f.size).padStart(10)}  ${f.name}  ${f.file}`);
+console.log("\n  Unused is not dead: states this run never reached count too (see the header).");
