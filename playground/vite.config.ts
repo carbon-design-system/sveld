@@ -31,7 +31,7 @@ function defaultParsed(): Plugin {
   };
 }
 
-const LATER = ["/playground/src/parser.ts", "/playground/src/TabJson.svelte", "/playground/src/TabMarkdown.svelte"];
+const LATER = ["/playground/src/parser.ts"];
 
 /**
  * Prefetch the chunks the page loads later once it has loaded and gone
