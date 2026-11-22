@@ -10,17 +10,27 @@ export const THROTTLE = {
 
 export type Throttle = keyof typeof THROTTLE;
 
-export type Args = { url: string; runs: number; throttle: Throttle };
+/** `positional` holds every non-flag argument; `url` is the first of them. */
+export type Args = { url: string; positional: string[]; runs: number; throttle: Throttle; flags: Set<string> };
 
-/** `[url] [--runs N] [--throttle mobile|desktop|none]` */
+/** `[url] [--runs N] [--throttle mobile|desktop|none] [--flag]...` */
 export function parseArgs(argv = process.argv.slice(2), defaults: Partial<Args> = {}): Args {
-  const args: Args = { url: "https://sveld.onrender.com/", runs: 5, throttle: "mobile", ...defaults };
+  const args: Args = {
+    url: "https://sveld.onrender.com/",
+    positional: [],
+    runs: 5,
+    throttle: "mobile",
+    flags: new Set(),
+    ...defaults,
+  };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i] as string;
     if (arg === "--runs") args.runs = Number(argv[++i]);
     else if (arg === "--throttle") args.throttle = argv[++i] as Throttle;
-    else args.url = arg;
+    else if (arg.startsWith("--")) args.flags.add(arg.slice(2));
+    else args.positional.push(arg);
   }
+  if (args.positional[0]) args.url = args.positional[0];
   if (!(args.throttle in THROTTLE)) throw new Error(`--throttle must be one of ${Object.keys(THROTTLE).join(", ")}`);
   return args;
 }
@@ -30,8 +40,8 @@ export function parseArgs(argv = process.argv.slice(2), defaults: Partial<Args> 
  * the user's own browser), cache off, throttled, with `initScript` injected
  * before any of the page's scripts. Navigate it yourself.
  */
-export async function openView(throttle: Throttle, initScript = "") {
-  const view = new Bun.WebView({ width: 1400, height: 900, backend: { type: "chrome", url: false } });
+export async function openView(throttle: Throttle, initScript = "", console?: Bun.WebView.ConsoleCapture) {
+  const view = new Bun.WebView({ width: 1400, height: 900, backend: { type: "chrome", url: false }, console });
   await view.navigate("about:blank"); // cdp() needs a first navigation
   await view.cdp("Network.enable");
   await view.cdp("Network.setCacheDisabled", { cacheDisabled: true });
@@ -60,5 +70,11 @@ export async function waitFor(view: Bun.WebView, expression: string, timeout = 3
 }
 
 export const median = (values: number[]) => [...values].sort((a, b) => a - b)[values.length >> 1] as number;
+
+/** Median absolute deviation: the run-to-run noise around the median. */
+export const mad = (values: number[]) => {
+  const mid = median(values);
+  return median(values.map((v) => Math.abs(v - mid)));
+};
 
 export const ms = (value: number | undefined) => (value === undefined ? "—" : `${Math.round(value)} ms`);
