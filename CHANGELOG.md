@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.40.5](https://github.com/carbon-design-system/sveld/releases/tag/v0.40.5) - 2026-11-21
+
+**Features**
+
+- leave HTML's named entities out of the template parser, 9.4 kB gzip off `sveld/browser` (b67a821, #599)
+- create the `en` collator on first use, so loading the parser no longer spends about 7 ms creating it in V8 (6ccc4e4, #607)
+- create the template parser on first use, so a `sveld/browser` bundle that only writes output leaves it out (fbfaf16, #608)
+- parse script sections without the entity table, 9.8 kB gzip off the Node build (cf5d991, #609)
+
 ## [0.40.4](https://github.com/carbon-design-system/sveld/releases/tag/v0.40.4) - 2026-11-18
 
 **Features**
