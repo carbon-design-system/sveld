@@ -7,7 +7,7 @@
         "@sveltejs/vite-plugin-svelte": "^7.3.1",
         "carbon-components-svelte": "^0.114.3",
         "carbon-icons-svelte": "^13.17.0",
-        "carbon-preprocess-svelte": "^0.12.2",
+        "carbon-preprocess-svelte": "^0.12.3",
         "svelte": "^5.58.0",
         "svelte-highlight": "^7.25.2",
         "typescript": "^7.0.2",
@@ -118,7 +118,7 @@
 
     "carbon-icons-svelte": ["carbon-icons-svelte@13.17.0", "", {}, "sha512-lFpkXDgkOupXQ/SVw3ZORH4vY5+abNYrm5s/9PB1cni45wnpIE3eXdcqgdM5znj+tWdkurwHcY6IUBMmosP5nw=="],
 
-    "carbon-preprocess-svelte": ["carbon-preprocess-svelte@0.12.2", "", { "bin": { "carbon-preprocess-svelte": "cli.js" } }, "sha512-b/x1xyDmkvvZ6+YWXqsgmCnrroKxe1OlWA3WmfgPq9sFmnhKnXu1l0spAkcQDdLmbmupPQwruEnOi0ynMz39ww=="],
+    "carbon-preprocess-svelte": ["carbon-preprocess-svelte@0.12.3", "", { "bin": { "carbon-preprocess-svelte": "cli.js" } }, "sha512-FfpqRZyTj0pNqvRlEbXRIlqMm1jFgdM+loq11lTtNhqgc82nZg5yAC9+yE9Op7W9pUV21PJuxnTUkAV0Zh2XiA=="],
 
     "clsx": ["clsx@2.1.1", "", {}, "sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA=="],
 
