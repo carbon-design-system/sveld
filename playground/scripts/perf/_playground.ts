@@ -19,3 +19,13 @@ export const STEPS: Step[] = [
 
 /** Waits until the page marks hydration (or loads, if it never does). */
 export const HYDRATED = `performance.getEntriesByName("hydrated").length > 0 || document.readyState === "complete"`;
+
+/**
+ * Lazy chunks and the UI that needs them. That UI is usable from the
+ * `hydrated` mark, so a chunk that lands after it can show a loading state.
+ */
+export const LAZY_UI: { ui: string; chunk: RegExp }[] = [
+  { ui: "JSON tab", chunk: /\/TabJson-/ },
+  { ui: "Markdown tab", chunk: /\/TabMarkdown-/ },
+  { ui: "editing or picking an example", chunk: /\/parser-/ },
+];

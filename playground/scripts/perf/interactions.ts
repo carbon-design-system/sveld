@@ -1,11 +1,16 @@
 // INP from the browser's Event Timing API, over scripted playground
 // interactions: tab switches, picking an example, and typing in the editor.
 // Bun.WebView's input is native (isTrusted), so the browser times it as it
-// would a person's. Usage: bun run perf:interactions -- [url] [--runs 3] [--throttle mobile|desktop|none]
+// would a person's. `--early` starts right at the `hydrated` mark instead of
+// 2 s later, before idle-time loading finishes. INP doesn't count waiting
+// for a lazy chunk, so an early click can score better while showing a
+// spinner; `perf:frames --early` shows what the user sees.
+// Usage: bun run perf:interactions -- [url] [--runs 3] [--throttle mobile|desktop|none] [--early]
 import { HYDRATED, STEPS as steps } from "./_playground";
 import { median, ms, openView, parseArgs, waitFor } from "./_shared";
 
-const { url, runs, throttle } = parseArgs(undefined, { runs: 3 });
+const { url, runs, throttle, flags } = parseArgs(undefined, { runs: 3 });
+const early = flags.has("early");
 
 // Latency per interaction: the longest event entry sharing its interactionId.
 const observe = `
@@ -26,7 +31,7 @@ for (let i = 0; i < runs; i++) {
   await view.navigate(url);
   // Interactive once the page marks hydration (or after load, if it doesn't).
   await waitFor(view, HYDRATED);
-  await Bun.sleep(2000); // like a person reading first; idle-time work settles
+  if (!early) await Bun.sleep(2000); // like a person reading first; idle-time work settles
   for (const step of steps) {
     const before = await view.evaluate("[...window.__interactions.keys()]");
     await step.run(view);

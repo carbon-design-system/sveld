@@ -16,7 +16,8 @@
     "perf:cache": "bun scripts/perf/cache-headers.ts",
     "perf:coverage": "bun scripts/perf/coverage.ts",
     "perf:frames": "bun scripts/perf/frames.ts",
-    "perf:loaf": "bun scripts/perf/loaf.ts"
+    "perf:loaf": "bun scripts/perf/loaf.ts",
+    "perf:timeline": "bun scripts/perf/timeline.ts"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.3.1",

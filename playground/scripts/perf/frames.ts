@@ -3,8 +3,10 @@
 // An instant change paints one new frame and runs no animation; a fade or a
 // loading flash shows up as several frames.
 // Usage: bun run perf:frames -- [url] [--action theme|tab|example] [--out dir]
-//   [--throttle none|desktop|mobile]
+//   [--throttle none|desktop|mobile] [--early]
 // --out writes each distinct frame as a JPEG, to look at what changed.
+// --early acts right at the `hydrated` mark, before idle-time loading finishes,
+// the worst case for anything loaded lazily.
 import { mkdirSync } from "node:fs";
 import { HYDRATED, THEME_TOGGLE } from "./_playground";
 import { openView, parseArgs, waitFor } from "./_shared";
@@ -17,7 +19,8 @@ const option = (name: string) => {
 };
 const actionName = option("action") ?? "theme";
 const out = option("out");
-const { url, throttle } = parseArgs(argv, { throttle: "none" });
+const { url, throttle, flags } = parseArgs(argv, { throttle: "none" });
+const early = flags.has("early");
 const WATCH = 1500;
 
 /** What to do before (setup) and the action itself. */
@@ -65,7 +68,7 @@ type Frame = { data: string; metadata: { timestamp: number }; sessionId: number 
 await using view = await openView(throttle);
 await view.navigate(url);
 await waitFor(view, HYDRATED);
-await Bun.sleep(2000);
+if (!early) await Bun.sleep(2000);
 if (action.setup) {
   await action.setup(view);
   await Bun.sleep(500);
@@ -81,7 +84,7 @@ view.addEventListener("Page.screencastFrame", (event) => {
   acks = acks.then(() => view.cdp("Page.screencastFrameAck", { sessionId: frame.sessionId }).then(() => undefined));
 });
 await view.cdp("Page.startScreencast", { format: "jpeg", quality: 80, everyNthFrame: 1 });
-await Bun.sleep(300); // the first frame is the current page
+await Bun.sleep(early ? 50 : 300); // the first frame is the current page
 await view.evaluate(watch);
 const start = Date.now();
 await action.run(view);
@@ -100,7 +103,9 @@ const before = distinct.filter((f) => f.time < start);
 const after = distinct.filter((f) => f.time >= start);
 if (out) mkdirSync(out, { recursive: true });
 
-console.log(`${url} — ${actionName}, ${throttle} throttling, ${WATCH} ms after the action\n`);
+console.log(
+  `${url} — ${actionName}${early ? " at hydration" : ""}, ${throttle} throttling, ${WATCH} ms after the action\n`,
+);
 console.log(`  frames       ${after.length} distinct after the action (${frames.length} received)`);
 for (const [i, f] of after.entries()) {
   const path = out ? `${out}/${actionName}-${String(i).padStart(2, "0")}.jpg` : "";
