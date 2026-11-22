@@ -6,7 +6,6 @@
       "devDependencies": {
         "@sveltejs/vite-plugin-svelte": "^7.3.1",
         "carbon-components-svelte": "^0.114.4",
-        "carbon-icons-svelte": "^13.18.0",
         "carbon-preprocess-svelte": "^0.12.3",
         "svelte": "^5.59.1",
         "svelte-highlight": "^7.25.2",
@@ -127,8 +126,6 @@
     "axobject-query": ["axobject-query@4.1.0", "", {}, "sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ=="],
 
     "carbon-components-svelte": ["carbon-components-svelte@0.114.4", "", { "dependencies": { "@ibm/telemetry-js": "^1.10.2" }, "hasInstallScript": true }, "sha512-pAeoNK0RBEsX5A+Rh5XIIXrQKDUNB8AC+pA4JbFp/jYpCQkFBJhc3lsyvII/yfDaco/CI+kK9bGCqVakI8yhxg=="],
-
-    "carbon-icons-svelte": ["carbon-icons-svelte@13.18.0", "", {}, "sha512-9Ga25DuZkqWuxdofqHwE5mjGiS0uM22bfdSNz6NVEGCpl//kDpUrAE9rDiZE4IbhHZoWl3rBx9GX6f7wDL9kmA=="],
 
     "carbon-preprocess-svelte": ["carbon-preprocess-svelte@0.12.3", "", { "bin": { "carbon-preprocess-svelte": "cli.js" } }, "sha512-FfpqRZyTj0pNqvRlEbXRIlqMm1jFgdM+loq11lTtNhqgc82nZg5yAC9+yE9Op7W9pUV21PJuxnTUkAV0Zh2XiA=="],
 

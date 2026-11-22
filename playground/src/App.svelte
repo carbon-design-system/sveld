@@ -10,19 +10,19 @@
     TabContent,
     Tabs,
   } from "carbon-components-svelte";
-  import Code from "carbon-icons-svelte/lib/Code.svelte";
-  import Json from "carbon-icons-svelte/lib/Json.svelte";
-  import TextCreation from "carbon-icons-svelte/lib/TextCreation.svelte";
   import { type Component, onMount } from "svelte";
   import { HighlightStyle } from "svelte-highlight";
   import github from "svelte-highlight/styles/github";
   import zenburn from "svelte-highlight/styles/zenburn";
   import defaultParsed from "virtual:default-parsed";
+  import Code16 from "./Code16.svelte";
   import CodeEditor from "./CodeEditor.svelte";
   import data from "./data";
   import Header from "./Header.svelte";
+  import Json16 from "./Json16.svelte";
   import TabContentOverlay from "./TabContentOverlay.svelte";
   import TabTypeScript from "./TabTypeScript.svelte";
+  import TextCreation16 from "./TextCreation16.svelte";
 
   // The build inlines the default example's parse, so the parser loads
   // once the code changes, or when the pointer or focus moves into the
@@ -150,9 +150,9 @@
         <Column xlg={9} lg={10} sm={8}>
           <FormLabel id="output">Sveld output</FormLabel>
           <Tabs type="container" id="output" bind:selected={selectedTab} on:change={handleTabChange}>
-            <Tab label="TypeScript" icon={Code} />
-            <Tab label="JSON" icon={Json} />
-            <Tab label="Markdown" icon={TextCreation} />
+            <Tab label="TypeScript" icon={Code16} />
+            <Tab label="JSON" icon={Json16} />
+            <Tab label="Markdown" icon={TextCreation16} />
             <div class="tab-content-slot" slot="content">
               {#if parse_error}
                 <TabContentOverlay title="Parse error">{parse_error}</TabContentOverlay>
