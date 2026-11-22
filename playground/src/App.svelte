@@ -13,7 +13,7 @@
   import Code from "carbon-icons-svelte/lib/Code.svelte";
   import Json from "carbon-icons-svelte/lib/Json.svelte";
   import TextCreation from "carbon-icons-svelte/lib/TextCreation.svelte";
-  import type { Component } from "svelte";
+  import { type Component, onMount } from "svelte";
   import { HighlightStyle } from "svelte-highlight";
   import github from "svelte-highlight/styles/github";
   import zenburn from "svelte-highlight/styles/zenburn";
@@ -70,6 +70,21 @@
     tabComponents[index] = importee.default;
     tabComponents = [...tabComponents];
   }
+
+  // Import the other tabs once the page is idle, so a tab switch renders the
+  // tab at once rather than a loading state for a frame or more.
+  onMount(() => {
+    const load = () => {
+      ensureTabLoaded(1);
+      ensureTabLoaded(2);
+    };
+    if (typeof requestIdleCallback === "function") {
+      const id = requestIdleCallback(load);
+      return () => cancelIdleCallback(id);
+    }
+    const id = setTimeout(load);
+    return () => clearTimeout(id);
+  });
 
   function handleTabChange(event: CustomEvent<number>) {
     ensureTabLoaded(event.detail);
