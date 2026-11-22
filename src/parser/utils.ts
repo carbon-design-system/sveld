@@ -21,7 +21,8 @@ export function formatParamList(params: Array<{ name: string; type: string; opti
   return params.map((param) => `${param.name}${param.optional ? "?" : ""}: ${param.type}`).join(", ");
 }
 
-const TEXT_COLLATOR = new Intl.Collator("en");
+/** Created on first use: creating a collator takes milliseconds, and most runs that load this never sort. */
+let textCollator: Intl.Collator | undefined;
 
 /**
  * Sort comparator for names in generated output. A fixed `en` collation (what `localeCompare()`
@@ -29,5 +30,6 @@ const TEXT_COLLATOR = new Intl.Collator("en");
  * machine's locale, so e.g. Czech sorts `change` after `hover` and breaks `--check` elsewhere.
  */
 export function compareText(a: string, b: string): number {
-  return TEXT_COLLATOR.compare(a, b);
+  textCollator ??= new Intl.Collator("en");
+  return textCollator.compare(a, b);
 }
