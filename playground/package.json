@@ -4,7 +4,11 @@
   "scripts": {
     "dev": "bun vite",
     "build": "bun vite build",
-    "preview": "bun vite preview"
+    "preview": "bun vite preview",
+    "perf:serve": "bun scripts/perf/serve.ts dist",
+    "perf:load": "bun scripts/perf/load-vitals.ts",
+    "perf:first-paint": "bun scripts/perf/first-paint.ts",
+    "perf:interactions": "bun scripts/perf/interactions.ts"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.3.1",
