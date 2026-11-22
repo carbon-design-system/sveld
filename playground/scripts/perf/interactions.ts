@@ -2,6 +2,7 @@
 // interactions: tab switches, picking an example, and typing in the editor.
 // Bun.WebView's input is native (isTrusted), so the browser times it as it
 // would a person's. Usage: bun run perf:interactions -- [url] [--runs 3] [--throttle mobile|desktop|none]
+import { HYDRATED, STEPS as steps } from "./_playground";
 import { median, ms, openView, parseArgs, waitFor } from "./_shared";
 
 const { url, runs, throttle } = parseArgs(undefined, { runs: 3 });
@@ -18,24 +19,13 @@ const observe = `
   }).observe({ type: "event", durationThreshold: 16, buffered: true });
 `;
 
-// Each step is one interaction; `label` names it in the report.
-const steps: { label: string; run: (view: Bun.WebView) => Promise<unknown> }[] = [
-  { label: "JSON tab", run: (v) => v.click(".bx--tabs__nav-item:nth-of-type(2) a") },
-  { label: "Markdown tab", run: (v) => v.click(".bx--tabs__nav-item:nth-of-type(3) a") },
-  { label: "TypeScript tab", run: (v) => v.click(".bx--tabs__nav-item:nth-of-type(1) a") },
-  { label: "open dropdown", run: (v) => v.click(".bx--dropdown") },
-  { label: "pick example", run: (v) => v.click(".bx--list-box__menu-item:nth-of-type(5)") },
-  { label: "focus editor", run: (v) => v.click(".code-editor code") },
-  { label: "type in editor", run: (v) => v.press("Enter") },
-];
-
 const perStep: Record<string, number[]> = {};
 const inps: number[] = [];
 for (let i = 0; i < runs; i++) {
   await using view = await openView(throttle, { initScript: observe });
   await view.navigate(url);
   // Interactive once the page marks hydration (or after load, if it doesn't).
-  await waitFor(view, `performance.getEntriesByName("hydrated").length > 0 || document.readyState === "complete"`);
+  await waitFor(view, HYDRATED);
   await Bun.sleep(2000); // like a person reading first; idle-time work settles
   for (const step of steps) {
     const before = await view.evaluate("[...window.__interactions.keys()]");
