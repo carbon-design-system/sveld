@@ -33,7 +33,7 @@ function defaultParsed(): Plugin {
 
 /** Lazy chunks UI can reach right after hydration: preloaded with the page. */
 const SOON = ["/playground/src/TabJson.svelte", "/playground/src/TabMarkdown.svelte"];
-/** Lazy chunks only editing needs: prefetched once the page has loaded. */
+/** Lazy chunks only editing needs: prefetched once the page has hydrated. */
 const LATER = ["/playground/src/parser.ts"];
 
 /**
@@ -41,9 +41,10 @@ const LATER = ["/playground/src/parser.ts"];
  * hydrates, so their small chunks are preloaded with the page, at low
  * priority so they yield to the chunks the first render needs; waiting for
  * an idle callback left a spinner for a click right after hydration. The
- * parser is prefetched once the page has loaded and gone idle. A
+ * parser is prefetched at the first idle moment after hydration. A
  * `<link rel="prefetch">` in the HTML would start right away and take
- * bandwidth from the first render.
+ * bandwidth from the first render, and waiting for `load` also waits for
+ * the fonts from IBM's CDN.
  */
 function scheduleLazyChunks(): Plugin {
   return {
@@ -82,7 +83,8 @@ function scheduleLazyChunks(): Plugin {
             ? [
                 {
                   tag: "script",
-                  children: `addEventListener("load",()=>(window.requestIdleCallback||setTimeout)(()=>{for(const href of ${JSON.stringify(later)}){const link=document.createElement("link");link.rel="prefetch";link.as="script";link.crossOrigin="";link.href=href;document.head.append(link)}}))`,
+                  // On the `hydrated` mark index.ts sets, or on `load` if it never comes.
+                  children: `(()=>{let done=false;const go=()=>{if(done)return;done=true;(window.requestIdleCallback||setTimeout)(()=>{for(const href of ${JSON.stringify(later)}){const link=document.createElement("link");link.rel="prefetch";link.as="script";link.crossOrigin="";link.href=href;document.head.append(link)}})};new PerformanceObserver((list,observer)=>{if(list.getEntriesByName("hydrated").length){observer.disconnect();go()}}).observe({type:"mark",buffered:true});addEventListener("load",go)})()`,
                   injectTo: "body" as const,
                 },
               ]
