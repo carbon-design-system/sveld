@@ -86,7 +86,14 @@ function fontDisplaySwap(): Plugin {
   };
 }
 
-/** Render the page into index.html after the client build; index.ts hydrates it. */
+/** The stylesheets `index.html` links, as `[tag, path]`. */
+const STYLESHEET_LINK = /<link rel="stylesheet"[^>]*href="\/(assets\/[^"]+\.css)"[^>]*>/g;
+
+/**
+ * Render the page into index.html after the client build; index.ts
+ * hydrates it. The stylesheets go inline, so the first paint doesn't wait
+ * for a second request.
+ */
 function prerender(): Plugin {
   let config: ResolvedConfig;
   return {
@@ -108,7 +115,12 @@ function prerender(): Plugin {
         const { default: renderPage } = await import(pathToFileURL(join(outDir, "ssr.js")).href);
         const { head, body } = renderPage();
         const htmlPath = join(config.build.outDir, "index.html");
-        const html = await readFile(htmlPath, "utf8");
+        let html = await readFile(htmlPath, "utf8");
+        const links = [...html.matchAll(STYLESHEET_LINK)];
+        const paths = links.map(([, path]) => join(config.build.outDir, path));
+        const sheets = await Promise.all(paths.map((path) => readFile(path, "utf8")));
+        for (const [i, [link]] of links.entries()) html = html.replace(link, `<style>${sheets[i]}</style>`);
+        await Promise.all(paths.map((path) => rm(path)));
         await writeFile(htmlPath, html.replace("</head>", `${head}</head>`).replace("<body>", `<body>${body}`));
       } finally {
         await rm(outDir, { recursive: true, force: true });
@@ -131,6 +143,9 @@ export default defineConfig({
     exclude: ["carbon-components-svelte", "carbon-icons-svelte"],
   },
   build: {
+    // One stylesheet, which `prerender` inlines: lazy chunks then list no
+    // CSS to load, which would fetch it again.
+    cssCodeSplit: false,
     rollupOptions: {
       output: {
         manualChunks(id) {
