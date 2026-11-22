@@ -31,42 +31,62 @@ function defaultParsed(): Plugin {
   };
 }
 
+/** Lazy chunks UI can reach right after hydration: preloaded with the page. */
+const SOON = ["/playground/src/TabJson.svelte", "/playground/src/TabMarkdown.svelte"];
+/** Lazy chunks only editing needs: prefetched once the page has loaded. */
 const LATER = ["/playground/src/parser.ts"];
 
 /**
- * Prefetch the chunks the page loads later once it has loaded and gone
- * idle. A `<link rel="prefetch">` in the HTML starts right away and
- * takes bandwidth from the chunks the first render needs.
+ * Schedule the lazy chunks. The output tabs are usable as soon as the page
+ * hydrates, so their small chunks are preloaded with the page, at low
+ * priority so they yield to the chunks the first render needs; waiting for
+ * an idle callback left a spinner for a click right after hydration. The
+ * parser is prefetched once the page has loaded and gone idle. A
+ * `<link rel="prefetch">` in the HTML would start right away and take
+ * bandwidth from the first render.
  */
-function prefetchLater(): Plugin {
+function scheduleLazyChunks(): Plugin {
   return {
-    name: "prefetch-later",
+    name: "schedule-lazy-chunks",
     apply: "build",
     transformIndexHtml: {
       order: "post",
       handler(_html, { bundle }) {
         const chunks = Object.values(bundle ?? {}).filter((output) => output.type === "chunk");
         const byFile = new Map(chunks.map((chunk) => [chunk.fileName, chunk]));
-        const loaded = new Set<string>();
         const visit = (fileName: string, into: Set<string>) => {
           if (into.has(fileName)) return;
           into.add(fileName);
           for (const imported of byFile.get(fileName)?.imports ?? []) visit(imported, into);
         };
+        const loaded = new Set<string>();
         for (const chunk of chunks) if (chunk.isEntry) visit(chunk.fileName, loaded);
+        // Each listed chunk with the static imports the page doesn't load already.
+        const reach = (paths: string[]) => {
+          const found = new Set<string>();
+          for (const chunk of chunks) {
+            if (paths.some((path) => chunk.facadeModuleId?.endsWith(path))) visit(chunk.fileName, found);
+          }
+          return [...found].filter((fileName) => !loaded.has(fileName)).map((fileName) => `/${fileName}`);
+        };
 
-        const later = new Set<string>();
-        for (const chunk of chunks) {
-          if (LATER.some((path) => chunk.facadeModuleId?.endsWith(path))) visit(chunk.fileName, later);
-        }
-        const hrefs = [...later].filter((fileName) => !loaded.has(fileName)).map((fileName) => `/${fileName}`);
-        if (hrefs.length === 0) return [];
+        const soon = reach(SOON);
+        const later = reach(LATER).filter((href) => !soon.includes(href));
         return [
-          {
-            tag: "script",
-            children: `addEventListener("load",()=>(window.requestIdleCallback||setTimeout)(()=>{for(const href of ${JSON.stringify(hrefs)}){const link=document.createElement("link");link.rel="prefetch";link.as="script";link.crossOrigin="";link.href=href;document.head.append(link)}}))`,
-            injectTo: "body" as const,
-          },
+          ...soon.map((href) => ({
+            tag: "link",
+            attrs: { rel: "modulepreload", crossorigin: true, fetchpriority: "low", href },
+            injectTo: "head" as const,
+          })),
+          ...(later.length
+            ? [
+                {
+                  tag: "script",
+                  children: `addEventListener("load",()=>(window.requestIdleCallback||setTimeout)(()=>{for(const href of ${JSON.stringify(later)}){const link=document.createElement("link");link.rel="prefetch";link.as="script";link.crossOrigin="";link.href=href;document.head.append(link)}}))`,
+                  injectTo: "body" as const,
+                },
+              ]
+            : []),
         ];
       },
     },
@@ -135,7 +155,7 @@ export default defineConfig({
     svelte({ preprocess: [optimizeImports()] }),
     optimizeCss(),
     defaultParsed(),
-    prefetchLater(),
+    scheduleLazyChunks(),
     fontDisplaySwap(),
     prerender(),
   ],
