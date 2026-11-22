@@ -140,7 +140,7 @@ export default defineConfig({
     prerender(),
   ],
   optimizeDeps: {
-    exclude: ["carbon-components-svelte", "carbon-icons-svelte"],
+    exclude: ["carbon-components-svelte"],
   },
   build: {
     // One stylesheet, which `prerender` inlines: lazy chunks then list no
