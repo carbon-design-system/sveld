@@ -11,7 +11,7 @@
     "carbon-components-svelte": "^0.114.4",
     "carbon-preprocess-svelte": "^0.12.3",
     "svelte": "^5.59.1",
-    "svelte-highlight": "^7.25.2",
+    "svelte-highlight": "^7.26.0",
     "typescript": "^7.0.2",
     "vite": "^8.3.8"
   }
