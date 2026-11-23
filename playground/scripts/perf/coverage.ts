@@ -8,13 +8,11 @@
 // open menu, a loading spinner, a copy tooltip, an invalid field) count as
 // unused too. Before cutting, check what optimizeComponents({ report: true })
 // and optimizeCss already prune, and what the app can render.
-import { cdpData } from "./_vitals";
 import { config, need, READY, READY_LABEL } from "./_config";
-import { openView, parseArgs, waitFor } from "./_shared";
+import { afterInteraction, cdpData, openView, parseArgs, settle, shortUrl, waitFor } from "./_shared";
 
 const { url, throttle, flags } = parseArgs(undefined, { throttle: "none" });
 const TOP = 15;
-const ORIGIN = /^https?:\/\/[^/]+\//;
 // An innermost rule: a selector and a body with no nested braces.
 const RULE = /([^{}]+)\{[^{}]*\}/g;
 // The configured block (`cssBlock`), else the first class.
@@ -32,7 +30,6 @@ const files = new Map<string, File>();
 const phases: string[] = [];
 const neverCalled = new Map<string, { name: string; file: string; size: number }>();
 
-const short = (src: string) => src.replace(ORIGIN, "") || "(inline)";
 const usedBytes = (mask: Uint8Array) => mask.reduce((sum, byte) => sum + byte, 0);
 
 function file(key: string, name: string, kind: File["kind"], size: number) {
@@ -69,7 +66,7 @@ async function snapshot(phase: string) {
   for (const script of result) {
     if (!script.url || script.url.startsWith("chrome") || !(sources.get(script.scriptId) ?? 0)) continue;
     const size = sources.get(script.scriptId) ?? 0;
-    const entry = file(`js:${script.url}`, short(script.url), "JS", size);
+    const entry = file(`js:${script.url}`, shortUrl(script.url), "JS", size);
     // Outer ranges first, so a nested range's count overrides its parent's.
     const ranges = script.functions
       .flatMap((f) => f.ranges)
@@ -85,7 +82,7 @@ async function snapshot(phase: string) {
       else if (phases.length === 1 || neverCalled.has(key)) {
         neverCalled.set(key, {
           name: f.functionName || "(anonymous)",
-          file: short(script.url),
+          file: shortUrl(script.url),
           size: whole.endOffset - whole.startOffset,
         });
       }
@@ -95,7 +92,7 @@ async function snapshot(phase: string) {
   for (const rule of coverage) {
     const sheet = sheets.get(rule.styleSheetId);
     if (!sheet) continue;
-    const name = sheet.sourceURL && !sheet.isInline ? short(sheet.sourceURL) : "inline <style>";
+    const name = sheet.sourceURL && !sheet.isInline ? shortUrl(sheet.sourceURL) : "inline <style>";
     const entry = file(`css:${rule.styleSheetId}`, name, "CSS", sheet.length);
     if (rule.used) entry.used.fill(1, rule.startOffset, Math.min(rule.endOffset, sheet.length));
   }
@@ -105,12 +102,12 @@ async function snapshot(phase: string) {
 await view.navigate(url);
 await waitFor(view, READY);
 await snapshot(READY_LABEL);
-await Bun.sleep(3000);
+await settle(view);
 await snapshot("idle");
 if (flags.has("interact")) {
   for (const step of need(config.steps, "steps", "perf:coverage --interact")) {
     await step.run(view);
-    await Bun.sleep(500);
+    await afterInteraction(view);
   }
   await snapshot("interact");
 }

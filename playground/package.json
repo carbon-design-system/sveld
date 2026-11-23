@@ -7,7 +7,6 @@
     "preview": "bun vite preview",
     "perf:serve": "bun scripts/perf/serve.ts dist",
     "perf:load": "bun scripts/perf/load-vitals.ts",
-    "perf:first-paint": "bun scripts/perf/first-paint.ts",
     "perf:interactions": "bun scripts/perf/interactions.ts",
     "perf:compare": "bun scripts/perf/compare.ts",
     "perf:bundle": "bun scripts/perf/bundle-size.ts",

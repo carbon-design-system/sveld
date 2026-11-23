@@ -10,8 +10,7 @@
 // the worst case for anything loaded lazily.
 import { mkdirSync } from "node:fs";
 import { config, need, READY } from "./_config";
-import { openView, parseArgs, waitFor } from "./_shared";
-import { cdpData } from "./_vitals";
+import { afterInteraction, cdpData, openView, parseArgs, settle, waitFor } from "./_shared";
 
 const argv = process.argv.slice(2);
 const option = (name: string) => {
@@ -23,6 +22,7 @@ const out = option("out");
 const { url, throttle, flags } = parseArgs(argv, { throttle: "none" });
 const early = flags.has("early");
 const WATCH = 1500;
+const QUIET = 500;
 
 const actions = need(config.actions, "actions", "perf:frames");
 const action = actions[actionName];
@@ -58,27 +58,33 @@ type Frame = { data: string; metadata: { timestamp: number }; sessionId: number 
 await using view = await openView(throttle);
 await view.navigate(url);
 await waitFor(view, READY);
-if (!early) await Bun.sleep(2000);
+if (!early) await settle(view);
 if (action.setup) {
   await action.setup(view);
-  await Bun.sleep(500);
+  await afterInteraction(view);
 }
 
 const frames: { time: number; data: string }[] = [];
+let lastArrival = Date.now();
 // Each frame must be acknowledged before Chrome sends the next. `cdp()` takes
 // one call at a time, so the acknowledgements queue.
 let acks = Promise.resolve();
 view.addEventListener("Page.screencastFrame", (event) => {
   const frame = cdpData<Frame>(event);
   frames.push({ time: frame.metadata.timestamp * 1000, data: frame.data });
+  lastArrival = Date.now();
   acks = acks.then(() => view.cdp("Page.screencastFrameAck", { sessionId: frame.sessionId }).then(() => undefined));
 });
 await view.cdp("Page.startScreencast", { format: "jpeg", quality: 80, everyNthFrame: 1 });
-await Bun.sleep(early ? 50 : 300); // the first frame is the current page
+// The first frame is the current page.
+for (const end = Date.now() + 1000; frames.length === 0 && Date.now() < end;) await Bun.sleep(10);
 await view.evaluate(watch);
 const start = Date.now();
 await action.run(view);
-await Bun.sleep(WATCH);
+// Watch until nothing new has painted for QUIET, or for WATCH at most.
+while (Date.now() - start < WATCH && !(Date.now() - start > QUIET && Date.now() - lastArrival > QUIET)) {
+  await Bun.sleep(25);
+}
 await acks;
 await view.cdp("Page.stopScreencast");
 type Animation = { kind: string; name: string; target: string; duration: number; delay: number; start: number };
@@ -94,7 +100,7 @@ const after = distinct.filter((f) => f.time >= start);
 if (out) mkdirSync(out, { recursive: true });
 
 console.log(
-  `${url} — ${actionName}${early ? " at the ready mark" : ""}, ${throttle} throttling, ${WATCH} ms after the action\n`,
+  `${url} — ${actionName}${early ? " at the ready mark" : ""}, ${throttle} throttling, until it stopped painting (${WATCH} ms at most)\n`,
 );
 console.log(`  frames       ${after.length} distinct after the action (${frames.length} received)`);
 for (const [i, f] of after.entries()) {

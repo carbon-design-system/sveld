@@ -1,5 +1,6 @@
 // Cold-load metrics: TTFB, FCP, LCP, CLS, TBT, longest task, the page's
-// ready mark (`readyMark` in perf.config.ts), and bytes transferred by type.
+// ready mark (`readyMark` in perf.config.ts), when the `element` in it first
+// appears (if set), and bytes transferred by type.
 // `--repeat` measures a second visit with a warm cache instead of a cold one.
 // Usage: bun run perf:load -- [url] [--runs 5] [--throttle mobile|desktop|none] [--repeat]
 import { median, ms, parseArgs } from "./_shared";

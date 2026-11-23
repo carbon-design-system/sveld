@@ -21,7 +21,7 @@ export type PerfConfig = {
   actions?: Record<string, { setup?: Step["run"]; run: Step["run"] }>;
   /** Lazy chunks and the UI that needs them, for `timeline`. */
   lazyUI?: { ui: string; chunk: RegExp }[];
-  /** For `first-paint`: an element whose arrival marks the content ready. */
+  /** For `load` and `compare`: an element whose arrival marks the content ready. */
   element?: { label: string; selector: string };
   /** For `coverage`: the CSS block a selector styles (group 1), such as a BEM block. */
   cssBlock?: RegExp;

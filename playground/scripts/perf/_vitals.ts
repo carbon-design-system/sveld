@@ -1,14 +1,8 @@
 // One cold load's vitals and bytes, shared by load-vitals.ts and compare.ts.
 import { config, READY_TIME } from "./_config";
-import { openView, type Throttle, waitFor } from "./_shared";
+import { cdpData, openView, settle, type Throttle, waitFor } from "./_shared";
 
 const SCRIPT_URL = /\.js(\?|$)/;
-
-/**
- * A CDP event's params, which `Bun.WebView` dispatches as `event.data`. Its
- * types give listeners the `MessageEvent` constructor, hence the cast.
- */
-export const cdpData = <T>(event: unknown) => (event as MessageEvent<T>).data;
 
 // Collects the raw entries; summarized after the page settles.
 const observe = `
@@ -22,6 +16,14 @@ const observe = `
     .observe({ type: "layout-shift", buffered: true });
   new PerformanceObserver((l) => { for (const e of l.getEntries()) v.tasks.push([e.startTime, e.duration]); })
     .observe({ type: "longtask", buffered: true });
+  ${
+    // When the element set in perf.config.ts first appears.
+    config.element
+      ? `new MutationObserver((_, o) => {
+          if (document.querySelector(${JSON.stringify(config.element.selector)})) { v.element = performance.now(); o.disconnect(); }
+        }).observe(document, { subtree: true, childList: true });`
+      : ""
+  }
 `;
 
 const summarize = `(() => {
@@ -43,6 +45,7 @@ const summarize = `(() => {
     tbt: after.reduce((sum, [, d]) => sum + Math.max(0, d - 50), 0),
     longestTask: Math.max(0, ...v.tasks.map(([, d]) => d)),
     ready: ${READY_TIME},
+    element: v.element,
     load: nav ? nav.loadEventEnd : undefined,
   };
 })()`;
@@ -58,6 +61,7 @@ export const METRICS = {
   // The mark's name, capitalized: `hydrated` reads "Hydrated".
   ready: config.readyMark ? config.readyMark[0]?.toUpperCase() + config.readyMark.slice(1) : "Ready (load)",
   load: "Load",
+  ...(config.element ? { element: config.element.label[0]?.toUpperCase() + config.element.label.slice(1) } : {}),
 };
 
 /** Width of the label column in reports. */
@@ -109,13 +113,13 @@ export async function measureLoad(url: string, throttle: Throttle, { repeat = fa
     await view.navigate(url);
     await waitFor(view, `document.readyState === "complete"`);
     // Idle-time prefetches fill the cache too.
-    await Bun.sleep(3000);
+    await settle(view);
     measuring = true;
   }
   await view.navigate(url);
   await waitFor(view, "window.__vitals?.fcp !== undefined");
-  // Let late work (hydration, idle-time imports) finish before reading.
-  await Bun.sleep(3000);
+  // Let late work (hydration, idle-time imports and prefetches) finish.
+  await settle(view);
   const vitals: Vitals = await view.evaluate(summarize);
   return { vitals, bytes, requests };
 }

@@ -54,6 +54,7 @@ export type ViewOptions = {
 export async function openView(throttle: Throttle, { initScript, console, cache = false }: ViewOptions = {}) {
   const view = new Bun.WebView({ width: 1400, height: 900, backend: { type: "chrome", url: false }, console });
   await view.navigate("about:blank"); // cdp() needs a first navigation
+  trackRequests(view);
   await view.cdp("Network.enable");
   await view.cdp("Network.setCacheDisabled", { cacheDisabled: !cache });
   const preset = THROTTLE[throttle];
@@ -70,15 +71,79 @@ export async function openView(throttle: Throttle, { initScript, console, cache 
   return view;
 }
 
-/** Polls `expression` in the page until it's truthy. */
-export async function waitFor(view: Bun.WebView, expression: string, timeout = 30_000) {
-  const start = Date.now();
-  while (Date.now() - start < timeout) {
-    if (await view.evaluate(expression)) return;
-    await Bun.sleep(50);
-  }
-  throw new Error(`timed out waiting for ${expression}`);
+/**
+ * A CDP event's params, which `Bun.WebView` dispatches as `event.data`. Its
+ * types give listeners the `MessageEvent` constructor, hence the cast.
+ */
+export const cdpData = <T>(event: unknown) => (event as MessageEvent<T>).data;
+
+/** Requests each view has in flight, and when that last changed. */
+const network = new WeakMap<Bun.WebView, { pending: Set<string>; changed: number }>();
+
+function trackRequests(view: Bun.WebView) {
+  const state = { pending: new Set<string>(), changed: Date.now() };
+  network.set(view, state);
+  const update = (event: unknown, add: boolean) => {
+    const { requestId } = cdpData<{ requestId: string }>(event);
+    if (add) state.pending.add(requestId);
+    else state.pending.delete(requestId);
+    state.changed = Date.now();
+  };
+  view.addEventListener("Network.requestWillBeSent", (event) => update(event, true));
+  view.addEventListener("Network.loadingFinished", (event) => update(event, false));
+  view.addEventListener("Network.loadingFailed", (event) => update(event, false));
 }
+
+/**
+ * Waits in the page until `expression` is truthy: one round trip, and it
+ * resolves within a few ms of the condition instead of at the next poll.
+ */
+export async function waitFor(view: Bun.WebView, expression: string, timeout = 30_000) {
+  const met = await view.evaluate<boolean>(`new Promise((resolve) => {
+    const end = performance.now() + ${timeout};
+    (function check() {
+      let value;
+      try { value = (${expression}); } catch {}
+      if (value) resolve(true);
+      else if (performance.now() > end) resolve(false);
+      else setTimeout(check, 16);
+    })();
+  })`);
+  if (!met) throw new Error(`timed out waiting for ${expression}`);
+}
+
+const IDLE = `new Promise((resolve) => (window.requestIdleCallback ?? setTimeout)(() => resolve(), { timeout: 1000 }))`;
+
+/**
+ * Waits until the page has settled: no request in flight for `quiet` ms,
+ * then an idle callback, and again if that callback started a request (an
+ * idle-time prefetch). Gives up after `timeout`, as a page that polls or
+ * streams never settles.
+ */
+export async function settle(view: Bun.WebView, { quiet = 500, timeout = 15_000 } = {}) {
+  const state = network.get(view);
+  const end = Date.now() + timeout;
+  while (Date.now() < end) {
+    if (!state || (state.pending.size === 0 && Date.now() - state.changed >= quiet)) {
+      const idleFrom = Date.now();
+      await view.evaluate(IDLE);
+      if (!state || (state.pending.size === 0 && state.changed < idleFrom)) return;
+    }
+    await Bun.sleep(25);
+  }
+}
+
+/** After an interaction: its next frame, then a short settle for what it loaded. */
+export async function afterInteraction(view: Bun.WebView) {
+  await view.evaluate("new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)))");
+  await settle(view, { quiet: 150 });
+}
+
+const ORIGIN = /^https?:\/\/[^/]+\//;
+const QUERY = /\?.*$/;
+
+/** A URL without its origin or query, or `empty` for a page-relative "". */
+export const shortUrl = (url: string, empty = "(inline)") => url.replace(ORIGIN, "").replace(QUERY, "") || empty;
 
 export const median = (values: number[]) => [...values].sort((a, b) => a - b)[values.length >> 1] as number;
 

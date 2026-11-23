@@ -5,12 +5,10 @@
 // Usage: bun run perf:loaf -- [url] [--throttle mobile|desktop|none] [--runs 3]
 // Function names are only readable in an unminified build (see profile.ts).
 import { config, need, READY } from "./_config";
-import { ms, openView, parseArgs, waitFor } from "./_shared";
+import { afterInteraction, ms, openView, parseArgs, settle, shortUrl, waitFor } from "./_shared";
 
 const { url, throttle, runs } = parseArgs(undefined, { runs: 3 });
 const steps = need(config.steps, "steps", "perf:loaf");
-const ORIGIN = /^https?:\/\/[^/]+\//;
-const QUERY = /\?.*$/;
 
 const observe = `
   window.__loaf = [];
@@ -52,12 +50,12 @@ for (let i = 0; i < runs; i++) {
   await using view = await openView(throttle, { initScript: observe });
   await view.navigate(url);
   await waitFor(view, READY);
-  await Bun.sleep(2000);
+  await settle(view);
   const marks: { label: string; at: number }[] = [{ label: "load", at: 0 }];
   for (const step of steps) {
     marks.push({ label: step.label, at: await view.evaluate<number>("performance.now()") });
     await step.run(view);
-    await Bun.sleep(800);
+    await afterInteraction(view);
   }
   const frames = await view.evaluate<Loaf[]>("window.__loaf");
   for (const frame of frames) {
@@ -66,8 +64,7 @@ for (let i = 0; i < runs; i++) {
   }
 }
 
-const short = (src: string) => src.replace(ORIGIN, "").replace(QUERY, "") || "(inline)";
-const where = (s: Script) => `${s.fn || "(anonymous)"}  ${s.source ? short(s.source) : ""}`.trim();
+const where = (s: Script) => `${s.fn || "(anonymous)"}  ${s.source ? shortUrl(s.source) : ""}`.trim();
 
 console.log(`${url} — ${throttle} throttling, ${runs} runs, frames over 50 ms (per-run averages)\n`);
 console.log(

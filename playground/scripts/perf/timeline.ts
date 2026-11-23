@@ -7,14 +7,10 @@
 // someone could reach for it.
 // Usage: bun run perf:timeline -- [url] [--throttle mobile|desktop|none]
 import { config, READY, READY_LABEL, READY_TIME } from "./_config";
-import { ms, openView, parseArgs, waitFor } from "./_shared";
-import { cdpData } from "./_vitals";
+import { cdpData, ms, openView, parseArgs, settle, shortUrl, waitFor } from "./_shared";
 
 const { url, throttle } = parseArgs();
 const WIDTH = 50;
-const SETTLE = 5000;
-const ORIGIN = /^https?:\/\/[^/]+\//;
-const QUERY = /\?.*$/;
 
 const observe = `
   window.__timeline = { frames: [], idle: [], fcp: undefined, lcp: undefined };
@@ -62,7 +58,7 @@ view.addEventListener("Network.requestWillBeSent", (event) => {
 });
 await view.navigate(url);
 await waitFor(view, READY);
-await Bun.sleep(SETTLE);
+await settle(view);
 const t = await view.evaluate<Timeline>(`({
   ...window.__timeline,
   ready: ${READY_TIME},
@@ -82,7 +78,7 @@ const bar = (from: number, to: number, mark = "█") => {
 };
 const NAME = 34;
 const short = (name: string) => {
-  const path = name.replace(ORIGIN, "").replace(QUERY, "") || "(document)";
+  const path = shortUrl(name, "(document)");
   return path.length > NAME ? `…${path.slice(-(NAME - 1))}` : path;
 };
 const page = new URL(url).origin;
@@ -135,7 +131,7 @@ if (t.ready !== undefined) {
   for (const { ui, chunk } of config.lazyUI ?? []) {
     const r = t.resources.find((res) => chunk.test(res.name));
     if (!r) {
-      console.log(`    ${ui.padEnd(30)} not loaded within ${SETTLE} ms of ${READY_LABEL}`);
+      console.log(`    ${ui.padEnd(30)} not loaded by the time the page settled`);
       continue;
     }
     const lead = t.ready - r.end;

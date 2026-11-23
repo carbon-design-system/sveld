@@ -7,7 +7,7 @@
 // spinner; `perf:frames --early` shows what the user sees.
 // Usage: bun run perf:interactions -- [url] [--runs 3] [--throttle mobile|desktop|none] [--early]
 import { config, need, READY } from "./_config";
-import { median, ms, openView, parseArgs, waitFor } from "./_shared";
+import { afterInteraction, median, ms, openView, parseArgs, settle, waitFor } from "./_shared";
 
 const { url, runs, throttle, flags } = parseArgs(undefined, { runs: 3 });
 const early = flags.has("early");
@@ -32,18 +32,25 @@ for (let i = 0; i < runs; i++) {
   await view.navigate(url);
   // Interactive once the page sets its ready mark (or after load).
   await waitFor(view, READY);
-  if (!early) await Bun.sleep(2000); // like a person reading first; idle-time work settles
+  if (!early) await settle(view); // like a person reading first; idle-time work settles
+  // Entries can arrive after the next step starts, so each is matched to a
+  // step by when its input happened, once they're all in.
+  const starts: number[] = [];
   for (const step of steps) {
-    const before = await view.evaluate("[...window.__interactions.keys()]");
+    starts.push(await view.evaluate<number>("performance.now()"));
     await step.run(view);
-    await Bun.sleep(800); // let the response paint so its duration is final
-    const added: number[] = await view.evaluate(
-      `[...window.__interactions].filter(([id]) => !${JSON.stringify(before)}.includes(id)).map(([, e]) => e.duration)`,
-    );
-    (perStep[step.label] ??= []).push(added.length ? Math.max(...added) : 0);
+    await afterInteraction(view);
   }
-  const all: number[] = await view.evaluate("[...window.__interactions.values()].map((e) => e.duration)");
-  inps.push(all.length ? Math.max(...all) : 0); // under 50 interactions, INP is the worst one
+  await settle(view, { quiet: 300 });
+  const entries = await view.evaluate<{ start: number; duration: number }[]>("[...window.__interactions.values()]");
+  for (const [index, step] of steps.entries()) {
+    const from = starts[index] ?? 0;
+    const to = starts[index + 1] ?? Infinity;
+    const durations = entries.filter((e) => e.start >= from && e.start < to).map((e) => e.duration);
+    (perStep[step.label] ??= []).push(durations.length ? Math.max(...durations) : 0);
+  }
+  // Under 50 interactions, INP is the worst one.
+  inps.push(entries.length ? Math.max(...entries.map((e) => e.duration)) : 0);
 }
 
 console.log(`${url} — ${throttle} throttling, median of ${runs} runs`);

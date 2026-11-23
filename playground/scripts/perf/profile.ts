@@ -7,7 +7,7 @@
 //   bun scripts/perf/serve.ts /tmp/prof-dist 4791
 //   bun run perf:profile -- http://localhost:4791/
 import { READY, READY_LABEL } from "./_config";
-import { openView, parseArgs, waitFor } from "./_shared";
+import { openView, parseArgs, shortUrl, waitFor } from "./_shared";
 
 const { url, runs, throttle } = parseArgs(undefined, { runs: 3 });
 const TOP = 25;
@@ -24,10 +24,8 @@ const total = new Map<string, number>();
 const byScript = new Map<string, number>();
 const meta = new Map<string, number>();
 const add = (map: Map<string, number>, key: string, n: number) => map.set(key, (map.get(key) ?? 0) + n);
-const ORIGIN = /^https?:\/\/[^/]+\//;
-const QUERY = /\?.*$/;
 // Built-ins have no URL; the page's own inline scripts have the page's.
-const short = (src: string) => (src === "" ? "(native)" : src.replace(ORIGIN, "").replace(QUERY, "") || "(inline)");
+const short = (src: string) => (src === "" ? "(native)" : shortUrl(src));
 
 for (let i = 0; i < runs; i++) {
   await using view = await openView(throttle);

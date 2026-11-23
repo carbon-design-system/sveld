@@ -9,7 +9,7 @@
 // typing, which catch work a keystroke schedules for later.
 // Usage: bun run perf:typing -- [url] [--runs 1] [--throttle mobile|desktop|none]
 import { config, need, READY } from "./_config";
-import { median, ms, openView, parseArgs, waitFor } from "./_shared";
+import { median, ms, openView, parseArgs, settle, waitFor } from "./_shared";
 
 const { url, runs, throttle } = parseArgs(undefined, { runs: 1 });
 const typing = need(config.typing, "typing", "perf:typing");
@@ -86,7 +86,7 @@ for (const lines of sizes) {
     await view.navigate(url);
     await waitFor(view, READY);
     await view.click(typing.target); // focus it, as a person would, first
-    await Bun.sleep(2000);
+    await settle(view);
 
     const text = JSON.stringify(typing.fill(lines));
     await view.evaluate(select(false));
@@ -122,7 +122,7 @@ for (const lines of sizes) {
       await view.press(key);
       await Bun.sleep(GAP);
     }
-    await Bun.sleep(1000);
+    await settle(view, { quiet: 300 });
     const keys = await view.evaluate<Keystroke[]>(
       `[...window.__typing.events].filter(([id]) => !${JSON.stringify(before)}.includes(id)).map(([, e]) => e)`,
     );
