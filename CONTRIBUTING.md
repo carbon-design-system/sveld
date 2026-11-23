@@ -196,7 +196,7 @@ The published binary is `dist/cli.js`, which enables Node's compile cache, dynam
 
 ## Playground
 
-[`playground/`](playground) is a standalone Vite + Svelte app that runs sveld in the browser to preview generated output. It has its own `package.json` and dependencies:
+[`playground/`](playground) is a standalone Svelte app, served and bundled by Bun, that runs sveld in the browser to preview generated output. It has its own `package.json` and dependencies:
 
 ```sh
 cd playground
@@ -204,7 +204,7 @@ bun install
 bun dev
 ```
 
-It imports the parser and writers from `../src` directly (see [`playground/vite.config.ts`](playground/vite.config.ts)), so source edits show up without a build step.
+It imports the parser and writers from `../src` directly, so source edits show up without a build step. `bun dev` runs Bun's dev server, compiling Svelte with [svelte-bun](https://github.com/metonym/svelte-bun), plus a plugin for Carbon's stylesheet in [`playground/scripts/dev-plugins.ts`](playground/scripts/dev-plugins.ts); `bun run build` ([`playground/scripts/build.ts`](playground/scripts/build.ts)) bundles to `dist/` and prerenders the page.
 
 ## Continuous integration
 

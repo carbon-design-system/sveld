@@ -1,0 +1,2 @@
+[serve.static]
+plugins = ["svelte-bun", "./scripts/dev-plugins.ts"]

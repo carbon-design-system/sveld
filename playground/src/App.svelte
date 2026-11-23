@@ -10,11 +10,11 @@
     TabContent,
     Tabs,
   } from "carbon-components-svelte";
-  import { type Component, onDestroy, onMount } from "svelte";
+  import { type Component, onMount } from "svelte";
   import { HighlightStyle } from "svelte-highlight";
   import github from "svelte-highlight/styles/github";
   import zenburn from "svelte-highlight/styles/zenburn";
-  import defaultParsed from "virtual:default-parsed";
+  import defaultParsed from "./default-parsed";
   import Code16 from "./Code16.svelte";
   import CodeEditor from "./CodeEditor.svelte";
   import data from "./data";
@@ -96,43 +96,23 @@
 
   let parsed_component = {};
   let parse_error: string | null = null;
-  /** The example the output was last parsed for. */
-  let parsedId: string | undefined;
+  let parsedCode: string | undefined;
 
   $: isDefault = defaultParsed !== null && value === data[0].code && moduleName === data[0].moduleName;
   $: if (!isDefault) loadParser();
-
-  // What the output shows. A new example parses at once; an edit waits for
-  // a pause in typing, so a long component isn't re-parsed on every key.
-  const PARSE_DELAY = 150;
-  let source: string | undefined;
-  let sourceId: string | undefined;
-  let parseTimer: ReturnType<typeof setTimeout> | undefined;
-  $: if (value !== source) {
-    clearTimeout(parseTimer);
-    if (selectedId === sourceId) {
-      parseTimer = setTimeout(() => (source = value), PARSE_DELAY);
-    } else {
-      source = value;
-      sourceId = selectedId;
-    }
-  }
-  onDestroy(() => clearTimeout(parseTimer));
-
-  $: sourceIsDefault = defaultParsed !== null && source === data[0].code && moduleName === data[0].moduleName;
 
   $: {
     try {
       parse_error = null;
 
-      if (sourceIsDefault && defaultParsed) {
+      if (isDefault && defaultParsed) {
         parsed_component = defaultParsed;
-        parsedId = sourceId;
-      } else if (sveld && parser && source) {
+        parsedCode = value;
+      } else if (sveld && parser && value) {
         const diagnostics = { moduleName, filePath: "VIRTUAL" };
-        parsedId = sourceId;
+        parsedCode = value;
         parsed_component = sveld.finalizeWithoutCrossFileResolution(
-          parser.parseSvelteComponent(source, diagnostics),
+          parser.parseSvelteComponent(value, diagnostics),
           diagnostics,
         );
       }
@@ -141,8 +121,7 @@
     }
   }
 
-  // While an edit waits to parse, the last output for this example stays.
-  $: ready = parsedId === selectedId;
+  $: ready = parsedCode === value;
 </script>
 
 <Header>
