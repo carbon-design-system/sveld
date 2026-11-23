@@ -12,7 +12,8 @@ const root = join(import.meta.dir, "..");
 async function render() {
   const outdir = await mkdtemp(join(tmpdir(), "sveld-playground-ssr-"));
   try {
-    const carbon = optimizeCarbonBun({ root, optimizeCss: false });
+    // Silent: the client build reports the same rewrites.
+    const carbon = optimizeCarbonBun({ root, optimizeComponents: { silent: true }, optimizeCss: false });
     const ssr = await Bun.build({
       entrypoints: [join(root, "src/ssr.ts")],
       outdir,
@@ -52,3 +53,5 @@ await Bun.build({
     }),
   ],
 });
+
+console.log(`✓ Built dist/ in ${Math.round(performance.now())} ms`);
