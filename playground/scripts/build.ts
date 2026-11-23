@@ -30,6 +30,8 @@ async function render() {
   }
 }
 
+// Renders alongside the client build.
+const rendered = render();
 const carbon = optimizeCarbonBun({ root, optimizeCss: { fontDisplay: "swap" } });
 await rm(join(root, "dist"), { recursive: true, force: true });
 await Bun.build({
@@ -46,7 +48,7 @@ await Bun.build({
       inlineCss: { transform: (css, result) => carbon.pruneCss({ ...css }, result) },
       preload: ["src/TabJson.svelte", "src/TabMarkdown.svelte"],
       prefetch: ["src/parser.ts"],
-      prerender: render,
+      prerender: () => rendered,
     }),
   ],
 });
