@@ -24,9 +24,10 @@
   import TabTypeScript from "./TabTypeScript.svelte";
   import TextCreation16 from "./TextCreation16.svelte";
 
-  // The build inlines the default example's parse, so the parser loads
-  // once the code changes, or when the pointer or focus moves into the
-  // code column, a few hundred ms before an edit or a new example.
+  // The build parses every example: the default one is inlined, the others
+  // come in a small chunk. The parser loads once the code is edited, or
+  // when the pointer or focus moves into the code column, a few hundred ms
+  // before an edit.
   let sveld: typeof import("./parser") | undefined;
   let parser: import("./parser").ComponentParser | undefined;
   let parserRequested = false;
@@ -37,6 +38,18 @@
     import("./parser").then((module) => {
       parser = new module.ComponentParser();
       sveld = module;
+    });
+  }
+
+  /** The other examples, parsed at build time; `null` on the dev server. */
+  let examplesParsed: Record<string, Record<string, unknown>> | null | undefined;
+  let examplesRequested = false;
+
+  function loadExamples() {
+    if (examplesRequested) return;
+    examplesRequested = true;
+    import("virtual:examples-parsed").then((module) => {
+      examplesParsed = module.default;
     });
   }
 
@@ -99,8 +112,29 @@
   /** The example the output was last parsed for. */
   let parsedId: string | undefined;
 
-  $: isDefault = defaultParsed !== null && value === data[0].code && moduleName === data[0].moduleName;
-  $: if (!isDefault) loadParser();
+  const isExample = (code: string | undefined, name: string) =>
+    data.some((datum) => datum.moduleName === name && datum.code === code);
+  /** The build's parse of an unedited example, if it has one. */
+  const precomputed = (
+    code: string | undefined,
+    name: string,
+    others: typeof examplesParsed,
+  ): Record<string, unknown> | undefined => {
+    if (!isExample(code, name)) return undefined;
+    if (name === data[0].moduleName) return defaultParsed ?? undefined;
+    return others?.[name];
+  };
+
+  $: if (isExample(value, moduleName) && moduleName !== data[0].moduleName) loadExamples();
+  // Edits need the parser, and so does an example the build couldn't
+  // precompute (or any, on the dev server) once the examples are in.
+  $: if (
+    !isExample(value, moduleName) ||
+    (moduleName === data[0].moduleName
+      ? defaultParsed === null
+      : examplesParsed !== undefined && !examplesParsed?.[moduleName])
+  )
+    loadParser();
 
   // What the output shows. A new example parses at once; an edit waits for
   // a pause in typing, so a long component isn't re-parsed on every key.
@@ -119,14 +153,13 @@
   }
   onDestroy(() => clearTimeout(parseTimer));
 
-  $: sourceIsDefault = defaultParsed !== null && source === data[0].code && moduleName === data[0].moduleName;
-
   $: {
     try {
       parse_error = null;
 
-      if (sourceIsDefault && defaultParsed) {
-        parsed_component = defaultParsed;
+      const prebuilt = precomputed(source, moduleName, examplesParsed);
+      if (prebuilt) {
+        parsed_component = prebuilt;
         parsedId = sourceId;
       } else if (sveld && parser && source) {
         const diagnostics = { moduleName, filePath: "VIRTUAL" };

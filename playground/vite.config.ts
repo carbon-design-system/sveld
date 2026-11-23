@@ -8,37 +8,50 @@ import { optimizeComponents, optimizeCss, optimizeImports } from "carbon-preproc
 import { build, defineConfig, type Plugin, type ResolvedConfig } from "vite";
 
 const DEFAULT_PARSED = "virtual:default-parsed";
+const EXAMPLES_PARSED = "virtual:examples-parsed";
 
-/** The dev server exports `null` and parses live, so parser edits show up. */
-function defaultParsed(): Plugin {
+/**
+ * The examples, parsed at build time: the default one inlined for the first
+ * render, the others in a small chunk of their own. The dev server exports
+ * `null` from both and parses live, so parser edits show up.
+ */
+function examplesParsed(): Plugin {
   let build = false;
+  let result: { default: string; parsed: Record<string, unknown> } | undefined;
+  const read = () => {
+    // A separate process, so this config doesn't import sveld's source.
+    const script = fileURLToPath(new URL("scripts/examples-parsed.ts", import.meta.url));
+    result ??= JSON.parse(execFileSync("bun", [script], { encoding: "utf8" }));
+    return result as NonNullable<typeof result>;
+  };
+  const exportJson = (value: unknown) => `export default JSON.parse(${JSON.stringify(JSON.stringify(value))});`;
   return {
-    name: "default-parsed",
+    name: "examples-parsed",
     configResolved(config) {
       build = config.command === "build";
     },
     resolveId(id) {
-      if (id === DEFAULT_PARSED) return `\0${DEFAULT_PARSED}`;
+      if (id === DEFAULT_PARSED || id === EXAMPLES_PARSED) return `\0${id}`;
     },
     load(id) {
-      if (id !== `\0${DEFAULT_PARSED}`) return;
+      if (id !== `\0${DEFAULT_PARSED}` && id !== `\0${EXAMPLES_PARSED}`) return;
       if (!build) return "export default null;";
-      // A separate process, so this config doesn't import sveld's source.
-      const script = fileURLToPath(new URL("scripts/default-parsed.ts", import.meta.url));
-      const json = execFileSync("bun", [script], { encoding: "utf8" });
-      return `export default JSON.parse(${JSON.stringify(json)});`;
+      const { default: name, parsed } = read();
+      if (id === `\0${DEFAULT_PARSED}`) return exportJson(parsed[name] ?? null);
+      return exportJson(Object.fromEntries(Object.entries(parsed).filter(([key]) => key !== name)));
     },
   };
 }
 
 /** Lazy chunks UI can reach right after hydration: preloaded with the page. */
-const SOON = ["/playground/src/TabJson.svelte", "/playground/src/TabMarkdown.svelte"];
+const SOON = ["/playground/src/TabJson.svelte", "/playground/src/TabMarkdown.svelte", EXAMPLES_PARSED];
 /** Lazy chunks only editing needs: prefetched once the page has hydrated. */
 const LATER = ["/playground/src/parser.ts"];
 
 /**
- * Schedule the lazy chunks. The output tabs are usable as soon as the page
- * hydrates, so their small chunks are preloaded with the page, at low
+ * Schedule the lazy chunks. The output tabs and the example picker are
+ * usable as soon as the page hydrates, so their small chunks (the tabs, the
+ * precomputed examples) are preloaded with the page, at low
  * priority so they yield to the chunks the first render needs; waiting for
  * an idle callback left a spinner for a click right after hydration. The
  * parser is prefetched at the first idle moment after hydration. A
@@ -156,7 +169,7 @@ export default defineConfig({
     optimizeComponents(),
     svelte({ preprocess: [optimizeImports()] }),
     optimizeCss(),
-    defaultParsed(),
+    examplesParsed(),
     scheduleLazyChunks(),
     fontDisplaySwap(),
     prerender(),
