@@ -4,6 +4,6 @@ import App from "./App.svelte";
 import { initTheme } from "./theme";
 
 initTheme();
-// The build prerenders index.html; the dev server serves it empty.
-(import.meta.env.DEV ? mount : hydrate)(App, { target: document.body });
+// The build prerenders the page; the dev server serves it empty.
+(document.body.firstElementChild ? hydrate : mount)(App, { target: document.body });
 performance.mark("hydrated");
