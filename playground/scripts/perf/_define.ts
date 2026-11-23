@@ -27,6 +27,13 @@ export type PerfConfig = {
   cssBlock?: RegExp;
   /** For `typing`: an editable element, and text of a given number of lines to fill it with. */
   typing?: { target: string; fill: (lines: number) => string; sizes?: number[] };
+  /** Selectors for loading indicators (spinners, skeletons); time any is visible is reported. */
+  loaders?: string[];
+  /**
+   * For `intent`: an action a person signals first, by pointing at `hover`,
+   * then does with `steps`, and the lazy chunk it needs.
+   */
+  intent?: { label: string; hover: string; steps: Step["run"][]; chunk: RegExp }[];
 };
 
 export const definePerfConfig = (config: PerfConfig) => config;

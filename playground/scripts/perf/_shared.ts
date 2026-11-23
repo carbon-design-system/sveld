@@ -133,9 +133,13 @@ export async function settle(view: Bun.WebView, { quiet = 500, timeout = 15_000 
   }
 }
 
+/** Waits for the page's next frame. */
+export const nextFrame = (view: Bun.WebView) =>
+  view.evaluate("new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)))");
+
 /** After an interaction: its next frame, then a short settle for what it loaded. */
 export async function afterInteraction(view: Bun.WebView) {
-  await view.evaluate("new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)))");
+  await nextFrame(view);
   await settle(view, { quiet: 150 });
 }
 

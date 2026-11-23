@@ -17,7 +17,8 @@
     "perf:frames": "bun scripts/perf/frames.ts",
     "perf:loaf": "bun scripts/perf/loaf.ts",
     "perf:timeline": "bun scripts/perf/timeline.ts",
-    "perf:typing": "bun scripts/perf/typing.ts"
+    "perf:typing": "bun scripts/perf/typing.ts",
+    "perf:intent": "bun scripts/perf/intent.ts"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.3.1",

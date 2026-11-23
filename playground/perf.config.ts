@@ -36,6 +36,17 @@ export default definePerfConfig({
   element: { label: "editor colored", selector: ".code-editor code span[class^=hljs-]" },
   // Carbon's BEM blocks: `.bx--btn`, `.cds--modal`.
   cssBlock: /\.((?:bx|cds)--[a-z0-9]+(?:-[a-z0-9]+)*?)(?=__|--|[^\w-]|$)/,
+  // Carbon's spinner and the overlay that stands in for a tab's output.
+  loaders: [".bx--loading", ".bx--inline-loading"],
+  intent: [
+    {
+      label: "pick an example (needs the parser)",
+      // Pointing anywhere in the code column starts loading the parser.
+      hover: ".bx--dropdown",
+      steps: [(v) => v.click(".bx--dropdown"), (v) => v.click(".bx--list-box__menu-item:nth-of-type(5)")],
+      chunk: /\/parser-/,
+    },
+  ],
   typing: {
     target: ".code-editor code",
     // A component with one prop per line, so sveld has more to document.
