@@ -4,7 +4,21 @@
   "scripts": {
     "dev": "bun vite",
     "build": "bun vite build",
-    "preview": "bun vite preview"
+    "preview": "bun vite preview",
+    "perf:serve": "bun scripts/perf/serve.ts dist",
+    "perf:load": "bun scripts/perf/load-vitals.ts",
+    "perf:interactions": "bun scripts/perf/interactions.ts",
+    "perf:compare": "bun scripts/perf/compare.ts",
+    "perf:bundle": "bun scripts/perf/bundle-size.ts",
+    "perf:profile": "bun scripts/perf/profile.ts",
+    "perf:hydration": "bun scripts/perf/hydration-check.ts",
+    "perf:cache": "bun scripts/perf/cache-headers.ts",
+    "perf:coverage": "bun scripts/perf/coverage.ts",
+    "perf:frames": "bun scripts/perf/frames.ts",
+    "perf:loaf": "bun scripts/perf/loaf.ts",
+    "perf:timeline": "bun scripts/perf/timeline.ts",
+    "perf:typing": "bun scripts/perf/typing.ts",
+    "perf:intent": "bun scripts/perf/intent.ts"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.3.1",

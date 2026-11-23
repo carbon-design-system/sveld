@@ -55,9 +55,10 @@ rules = { "no-restricted-syntax" = "off" }
 
 # Scripts run their steps one at a time, so each build's output and
 # errors stay readable. The e2e runner links and installs one project at
-# a time, through one shared bun link registry.
+# a time, through one shared bun link registry. The playground's perf
+# scripts load the page one run at a time, so runs don't skew each other.
 [[lint.overrides]]
-files = ["scripts/**", "tests/test-e2e.ts"]
+files = ["scripts/**", "tests/test-e2e.ts", "playground/scripts/**"]
 rules = { "no-await-in-loop" = "off" }
 
 # Fixtures hold odd or invalid component code on purpose, to exercise the
