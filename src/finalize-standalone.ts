@@ -4,7 +4,10 @@ import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "./parsed-component-metada
 import { importPath } from "./parser/value-imports";
 
 export interface FinalizeWithoutCrossFileResolutionOptions {
-  /** Path recorded on the new diagnostics. Defaults to the component's own `filePath`, if it has one. */
+  /**
+   * Path recorded on the new diagnostics. Defaults to the component's own
+   * `filePath`, if it has one.
+   */
   filePath?: string;
 }
 
@@ -14,11 +17,11 @@ const FILE_ACCESS = "resolving it needs file access (generateBundle or the CLI)"
 
 /**
  * Settle the cross-file candidates `parseSvelteComponent` leaves for
- * `generateBundle`, for a caller that will never resolve them. Each pending
- * imported `setContext` key, imported-const or imported-call prop default,
- * and imported dispatch helper gets a `cross-file-unresolved` warning naming
- * the import, and the `event-no-source` diagnostics held back for those
- * helpers are released.
+ * `generateBundle`, for a caller that will never resolve them. Each
+ * pending imported `setContext` key, imported-const or imported-call prop
+ * default, and imported dispatch helper gets a `cross-file-unresolved`
+ * warning naming the import, and the `event-no-source` diagnostics held
+ * back for those helpers are released.
  *
  * Returns a new component (the input is not modified) whose pending
  * candidates are cleared, so a second call adds nothing. A component with

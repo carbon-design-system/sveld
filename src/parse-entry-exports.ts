@@ -24,7 +24,10 @@ export interface EntryExport {
   deprecated?: DeprecatedValue;
   /** `@since` / `@example` / `@see` tags in source order. */
   tags?: JsDocPassthroughTag[];
-  /** True from `@ignore`/`@internal` JSDoc; excluded from every output by `buildComponentApiDocument`. */
+  /**
+   * True from `@ignore`/`@internal` JSDoc; excluded from every output
+   * by `buildComponentApiDocument`.
+   */
   internal?: boolean;
   /** Declaring module, relative to the entry file. */
   source?: string;
@@ -57,9 +60,9 @@ export async function parseEntryExports(
   const entryDir = dirname(resolved);
   const relativeSource = (declFile: string) => normalizeSeparators(`./${relative(entryDir, declFile)}`);
 
-  // `collectModuleExports` already drops an ambiguous `export *` name; report
-  // the entry's own, since the author likely meant to export it. A nested
-  // barrel's was never one of the entry's exports.
+  // `collectModuleExports` already drops an ambiguous `export *` name;
+  // report the entry's own, since the author likely meant to export it. A
+  // nested barrel's was never one of the entry's exports.
   const collected = collectModuleExports(resolved, {
     ...createResolveContext(options.graph ?? new ModuleGraph()),
     onAmbiguousStarExport: (filePath, name, entries) => {
@@ -96,7 +99,8 @@ export async function parseEntryExports(
       ...rest
     } = entry;
     const source = relativeSource(declFile);
-    // No declaration to copy type text from; `kind` stays "const" (a namespace object).
+    // No declaration to copy type text from; `kind` stays "const" (a
+    // namespace object).
     if (namespaceFile !== undefined) rest.type = `typeof import(${JSON.stringify(relativeSource(namespaceFile))})`;
     byName.set(entry.name, { ...rest, source });
   }

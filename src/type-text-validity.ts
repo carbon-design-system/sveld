@@ -4,8 +4,8 @@ const typeTextValidity = new Map<string, boolean>();
 
 /**
  * Whether `typeText` parses as a single TypeScript type. `inline` because
- * sveld embeds types mid-line (`CustomEvent<${type}>`), where a trailing `//`
- * comment would swallow the rest of the line.
+ * sveld embeds types mid-line (`CustomEvent<${type}>`), where a trailing
+ * `//` comment would swallow the rest of the line.
  */
 export function isValidTypeText(typeText: string): boolean {
   const cached = typeTextValidity.get(typeText);

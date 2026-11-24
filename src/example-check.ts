@@ -4,15 +4,27 @@ import type { ComponentProp, ParsedComponent, SourceRange } from "./model";
 import { loadParserStack } from "./parser-stack";
 import type { TypeResolver } from "./resolve-types";
 
-/** `"compile"` runs through the TypeScript program; `"syntax"` runs through sveld's template parser only. */
+/**
+ * `"compile"` runs through the TypeScript program; `"syntax"` runs through
+ * sveld's template parser only.
+ */
 type ExampleCheckKind = "compile" | "syntax";
 
 export interface ExampleCheckSource {
-  /** Stable id for diagnostics, e.g. `"prop:variant"` or `"prop:variant#1"` for a second example. */
+  /**
+   * Stable id for diagnostics, e.g. `"prop:variant"` or `"prop:variant#1"`
+   * for a second example.
+   */
   id: string;
-  /** Human-readable name shown in diagnostics, e.g. `"variant"` or `"variant (example 2)"`. */
+  /**
+   * Human-readable name shown in diagnostics, e.g. `"variant"`
+   * or `"variant (example 2)"`.
+   */
   name: string;
-  /** TypeScript type to bind the documented symbol to before running `code`. Unused for `kind: "syntax"`. */
+  /**
+   * TypeScript type to bind the documented symbol to before running `code`.
+   * Unused for `kind: "syntax"`.
+   */
   type: string;
   /** The `@example` body, stripped of any surrounding code fence. */
   code: string;
@@ -47,7 +59,10 @@ function extractCheckableCode(body: string): Pick<ExampleCheckSource, "kind" | "
   return { kind: "compile", code: trimmed };
 }
 
-/** The type sveld declares the documented symbol as before running its examples. */
+/**
+ * The type sveld declares the documented symbol as before running
+ * its examples.
+ */
 function typeForProp(prop: ComponentProp): string {
   if (!prop.isFunction) return "any";
   const params = (prop.params ?? []).map((param) => `${param.name}${param.optional ? "?" : ""}: any`).join(", ");
@@ -79,7 +94,10 @@ function sourcesFromTags(
   });
 }
 
-/** The checkable `@example` blocks on a component's props, module exports, slots, and events. */
+/**
+ * The checkable `@example` blocks on a component's props, module exports,
+ * slots, and events.
+ */
 export function collectExampleSources(component: ParsedComponent): ExampleCheckSource[] {
   const sources: ExampleCheckSource[] = [];
 
@@ -158,8 +176,8 @@ async function compileExamples(
   resolver: TypeResolver,
   resolveComponentFilePath: ResolveComponentFilePath,
 ): Promise<Map<ComponentDocApi, SveldDiagnostic[]>> {
-  // Keyed by resolved filePath, not moduleName: two components discovered via
-  // `--glob` can share a basename, and moduleName alone isn't unique.
+  // Keyed by resolved filePath, not moduleName: two components discovered
+  // via `--glob` can share a basename, and moduleName alone isn't unique.
   const diagnosticsByFilePath = await resolver.checkExamples(
     candidates.map(({ component, sources }) => ({
       moduleName: component.moduleName,
@@ -191,7 +209,10 @@ async function compileExamples(
   return found;
 }
 
-/** Each component's `example-syntax-error` diagnostics, then its `example-compile-error` ones. */
+/**
+ * Each component's `example-syntax-error` diagnostics, then its
+ * `example-compile-error` ones.
+ */
 export async function checkComponentExamples(
   components: Iterable<ComponentDocApi>,
   mode: true | "syntax",

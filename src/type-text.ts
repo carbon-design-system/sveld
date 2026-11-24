@@ -1,7 +1,9 @@
 /**
- * Scanning helpers for TypeScript type text (`{ a: Map<string, () => void> }`,
- * `"x" | "y"`, ...). Every helper follows the same rules:
- * - `<>`, `()`, `[]` and `{}` nest, and a closer never takes the depth below 0;
+ * Scanning helpers for TypeScript type text
+ * (`{ a: Map<string, () => void> }`, `"x" | "y"`, ...). Every helper
+ * follows the same rules:
+ * - `<>`, `()`, `[]` and `{}` nest, and a closer never takes the depth
+ *   below 0;
  * - the `>` of an arrow (`=>`) is not a closer;
  * - string and template literals (`"`, `'`, `` ` ``, with `\` escapes) are
  *   skipped whole, so brackets and separators inside them don't count.
@@ -27,11 +29,11 @@ const WHITESPACE_REGEX = /\s/;
 type TypeTextVisitor = (index: number, depth: number) => boolean | undefined;
 
 /**
- * Walks `text[start, end)` from bracket depth `initialDepth`, calling `visit(index,
- * depth)` for every character outside a string literal, where `depth` already
- * includes that character (an opener reports its inner depth, a closer the
- * depth it returns to). Stops early when `visit` returns `true`. Returns the
- * depth at the point the scan stopped.
+ * Walks `text[start, end)` from bracket depth `initialDepth`, calling
+ * `visit(index, depth)` for every character outside a string literal,
+ * where `depth` already includes that character (an opener reports its
+ * inner depth, a closer the depth it returns to). Stops early when `visit`
+ * returns `true`. Returns the depth at the point the scan stopped.
  */
 export function scanTypeText(
   text: string,
@@ -64,7 +66,10 @@ export function scanTypeText(
   return depth;
 }
 
-/** Index of the quote closing the string literal that opens at `start`, or `end - 1` if unclosed. */
+/**
+ * Index of the quote closing the string literal that opens at `start`, or
+ * `end - 1` if unclosed.
+ */
 function skipStringLiteral(text: string, start: number, end: number): number {
   const quote = text.charCodeAt(start);
   for (let i = start + 1; i < end; i++) {
@@ -75,7 +80,10 @@ function skipStringLiteral(text: string, start: number, end: number): number {
   return end - 1;
 }
 
-/** Splits `text` on every top-level character in `separators` (e.g. `","` or `";,"`). Parts are not trimmed. */
+/**
+ * Splits `text` on every top-level character in `separators` (e.g. `","`
+ * or `";,"`). Parts are not trimmed.
+ */
 export function splitTopLevel(text: string, separators: string): string[] {
   const parts: string[] = [];
   let partStart = 0;
@@ -90,7 +98,10 @@ export function splitTopLevel(text: string, separators: string): string[] {
   return parts;
 }
 
-/** Index of the first character `matches` accepts, scanning from `start`, or -1. */
+/**
+ * Index of the first character `matches` accepts, scanning from `start`,
+ * or -1.
+ */
 function findIndex(text: string, matches: (index: number, depth: number) => boolean, start = 0): number {
   let found = -1;
   scanTypeText(
@@ -114,18 +125,27 @@ export function indexOfTopLevelArrow(text: string): number {
   return findIndex(text, (index, depth) => depth === 0 && text[index] === "=" && text[index + 1] === ">");
 }
 
-/** Index of the bracket closing the one at `openIndex`, or -1 when it never closes. */
+/**
+ * Index of the bracket closing the one at `openIndex`, or -1 when it
+ * never closes.
+ */
 export function indexOfClosingBracket(text: string, openIndex: number): number {
   return findIndex(text, (_index, depth) => depth === 0, openIndex);
 }
 
-/** Whether `text` is a tuple type (`[A, B]`), not an array of one (`[A, B][]`). */
+/**
+ * Whether `text` is a tuple type (`[A, B]`), not an array of
+ * one (`[A, B][]`).
+ */
 export function isTupleType(text: string): boolean {
   const trimmed = text.trim();
   return trimmed.startsWith("[") && indexOfClosingBracket(trimmed, 0) === trimmed.length - 1;
 }
 
-/** Return type of a function type (`(a: A) => () => B` gives `() => B`), or `undefined` without a top-level arrow. */
+/**
+ * Return type of a function type (`(a: A) => () => B` gives `() => B`), or
+ * `undefined` without a top-level arrow.
+ */
 export function returnTypeOfFunctionType(type: string | undefined): string | undefined {
   if (!type) return undefined;
   const arrowIndex = indexOfTopLevelArrow(type);
@@ -133,12 +153,16 @@ export function returnTypeOfFunctionType(type: string | undefined): string | und
   return type.slice(arrowIndex + 2).trim() || undefined;
 }
 
-/** Members a union can add to a callback type without making it something else to call. */
+/**
+ * Members a union can add to a callback type without making it something
+ * else to call.
+ */
 const NULLISH_TYPES = new Set(["null", "undefined"]);
 
 /**
- * Whether `type` is a function type, alone or unioned with `null`/`undefined`
- * (`(() => void) | undefined`). An object type with a callback member isn't.
+ * Whether `type` is a function type, alone or unioned with
+ * `null`/`undefined` (`(() => void) | undefined`). An object type with a
+ * callback member isn't.
  */
 export function isFunctionType(type: string | undefined): boolean {
   if (!type) return false;
@@ -157,7 +181,8 @@ export function isFunctionType(type: string | undefined): boolean {
  */
 export function normalizeTypeText(text: string): string {
   let result = "";
-  // A comment or whitespace run becomes one space, written before the next token.
+  // A comment or whitespace run becomes one space, written only before the
+  // next token.
   let pendingSpace = false;
   const emit = (token: string) => {
     if (pendingSpace && result !== "") result += " ";
@@ -190,7 +215,10 @@ export function normalizeTypeText(text: string): string {
   return result;
 }
 
-/** `text` without the parentheses that wrap all of it: `((() => void))` gives `() => void`. */
+/**
+ * `text` without the parentheses that wrap all of it: `((() => void))`
+ * gives `() => void`.
+ */
 export function unwrapParens(text: string): string {
   let result = text.trim();
   while (result.startsWith("(") && indexOfClosingBracket(result, 0) === result.length - 1) {

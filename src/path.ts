@@ -3,7 +3,10 @@ import type { NormalizedPath } from "./brands";
 
 export const SVELTE_EXT_REGEX = /\.svelte$/;
 
-/** Probed in order for a specifier without an extension and for a directory's `index` file. */
+/**
+ * Probed in order for a specifier without an extension and for a
+ * directory's `index` file.
+ */
 export const MODULE_EXTENSIONS: readonly string[] = [
   ".ts",
   ".mts",
@@ -20,9 +23,9 @@ export const MODULE_EXTENSIONS: readonly string[] = [
 export const WATCH_RELEVANT_EXT_REGEX = /\.(?:svelte|[mc]?ts|[mc]?js|tsx|jsx)$/;
 
 /**
- * Same answer as `path.parse(filePath).ext === ".svelte"`, without building
- * the parse result: a leading dot is part of the name, so `.svelte` and
- * `dir/.svelte` have no extension.
+ * Same answer as `path.parse(filePath).ext === ".svelte"`, without
+ * building the parse result: a leading dot is part of the name, so
+ * `.svelte` and `dir/.svelte` have no extension.
  */
 export function hasSvelteExtension(filePath: string): boolean {
   if (!filePath.endsWith(".svelte")) return false;

@@ -32,7 +32,10 @@ import type {
 import type { JSDocComment } from "./comment-parser";
 import type { TypeCasts } from "./typescript-casts";
 
-/** One top-level member of an object `@typedef`, from a `@property` tag or an inline `{ ... }` type. */
+/**
+ * One top-level member of an object `@typedef`, from a `@property` tag or
+ * an inline `{ ... }` type.
+ */
 export interface TypedefMember {
   name: string;
   type: string;
@@ -40,7 +43,10 @@ export interface TypedefMember {
   description?: string;
 }
 
-/** Per-parse mutable state for {@link ComponentParser}. Reset via {@link createParserContext} on each parse. */
+/**
+ * Per-parse mutable state for {@link ComponentParser}. Reset via {@link
+ * createParserContext} on each parse.
+ */
 export interface ParserContext {
   syntaxMode: SyntaxMode;
   scriptLanguage?: ScriptLanguage;
@@ -54,13 +60,22 @@ export interface ParserContext {
   sourceLocator?: (offset: number) => SourcePosition;
   /** Parsed JSDoc blocks keyed by their formatted comment text. */
   readonly parsedJsDocByText: Map<string, JSDocComment[]>;
-  /** Every `/** *\/` block `parseCustomTypes` found in the source, keyed by absolute start offset. */
+  /**
+   * Every `/** *\/` block `parseCustomTypes` found in the source, keyed by
+   * absolute start offset.
+   */
   readonly jsDocBlocksByStart: Map<number, JSDocComment>;
-  /** Starts of JSDoc blocks documenting a function, whose `@template` is the function's own. */
+  /**
+   * Starts of JSDoc blocks documenting a function, whose `@template` is the
+   * function's own.
+   */
   functionDocCommentStarts: Set<number>;
 
   rest_props?: RestProps;
-  /** The local a `<svelte:element this={tag}>` rest props target names as its tag. */
+  /**
+   * The local a `<svelte:element this={tag}>` rest props target names as
+   * its tag.
+   */
   restPropsTagLocal?: string;
   /** Where the rest props target was spread, for diagnostics. */
   restPropsSource?: SourceRange;
@@ -71,7 +86,10 @@ export interface ParserContext {
   componentCommentSource?: SourceRange;
   generics: ComponentGenerics;
 
-  /** `<script generics>`, held until parse end so it can override JSDoc-derived {@link ParserContext.generics}. */
+  /**
+   * `<script generics>`, held until parse end so it can override
+   * JSDoc-derived {@link ParserContext.generics}.
+   */
   scriptGenericsAttribute?: { value: string; source?: SourceRange };
 
   readonly diagnosticRecords: SveldDiagnostic[];
@@ -86,25 +104,40 @@ export interface ParserContext {
   readonly valueImportBindingsByLocalName: Map<string, ValueImportBinding>;
   /** CallExpression defaults that still need a return type after AST parsing. */
   readonly pendingCallDefaultCandidates: PendingCallDefaultCandidate[];
-  /** Identifier defaults bound to a named value import, resolved after AST parsing. */
+  /**
+   * Identifier defaults bound to a named value import, resolved after
+   * AST parsing.
+   */
   readonly pendingConstDefaultCandidates: PendingConstDefaultCandidate[];
   /** Imported `setContext` keys that need a string value after AST parsing. */
   readonly pendingContextKeyCandidates: PendingContextKeyCandidate[];
   /** Dispatchers passed to imported functions, resolved after AST parsing. */
   readonly pendingDispatchEscapeCandidates: PendingDispatchEscapeCandidate[];
-  /** `event-no-source` diagnostics that wait on {@link pendingDispatchEscapeCandidates}. */
+  /**
+   * `event-no-source` diagnostics that wait on
+   * {@link pendingDispatchEscapeCandidates}.
+   */
   readonly deferredEventNoSourceDiagnostics: SveldDiagnostic[];
 
   readonly runesPropsDeclarationMetadataByDeclaratorStart: Map<number, RunesPropsDeclarationMetadata>;
   readonly typedRunesPropsDeclarations: RunesPropsDeclarationMetadata[];
   readonly explicitVariableTypesByName: Map<string, string>;
-  /** The annotation node behind each {@link explicitVariableTypesByName} entry. */
+  /**
+   * The annotation node behind each {@link
+   * explicitVariableTypesByName} entry.
+   */
   readonly explicitVariableTypeNodesByName: Map<string, TSNode>;
   readonly typeImportBindingsByLocalName: Map<string, TypeImportBinding>;
   readonly localTypeDeclarationsByName: Map<string, LocalTypeDeclaration>;
-  /** Type nodes read outside the whole-object `$props()` path whose dependencies the `.d.ts` still needs. */
+  /**
+   * Type nodes read outside the whole-object `$props()` path whose
+   * dependencies the `.d.ts` still needs.
+   */
   readonly additionalTypeDependencyNodes: TSNode[];
-  /** Imports the `.d.ts` needs that no type node names, like a component a prop is `bind:this`'d to. */
+  /**
+   * Imports the `.d.ts` needs that no type node names, like a component a
+   * prop is `bind:this`'d to.
+   */
   readonly additionalImportedTypes: Map<string, ValueImportBinding>;
   readonly wholePropsLocals: Set<string>;
   readonly restPropLocals: Set<string>;
@@ -114,11 +147,17 @@ export interface ParserContext {
 
   readonly slots: Map<string | null, InternalComponentSlot>;
   readonly snippetPropLocals: Set<string>;
-  /** `@slot`/`@snippet` tags by slot key, for `slot-not-rendered` diagnostics. */
+  /**
+   * `@slot`/`@snippet` tags by slot key, for
+   * `slot-not-rendered` diagnostics.
+   */
   readonly jsDocSlots: Map<string | null, { tag: string; source?: SourceRange }>;
   /** Slot keys the template renders with `<slot>` or `{@render}`. */
   readonly renderedSlots: Set<string | null>;
-  /** Set when slots may be forwarded or rendered where sveld can't see (`<Child {...$$props} />`). */
+  /**
+   * Set when slots may be forwarded or rendered where sveld can't
+   * see (`<Child {...$$props} />`).
+   */
   slotsUntracked: boolean;
 
   /** From component-level `@csspart` JSDoc tags. */
@@ -126,18 +165,30 @@ export interface ParserContext {
   /** From component-level `@cssprop`/`@cssproperty` JSDoc tags. */
   readonly cssProperties: ComponentCssProperty[];
 
-  /** `@template` tags from a `@slot`/`@snippet` block (no `@extends`), held until finalization. */
+  /**
+   * `@template` tags from a `@slot`/`@snippet` block (no `@extends`), held
+   * until finalization.
+   */
   deferredSlotBlockGenerics: Array<{ name: string; constraint: string }>;
 
   readonly events: Map<string, ComponentEvent>;
   readonly eventDescriptions: Map<string, string | undefined>;
   readonly forwardedEvents: Map<string, ComponentInlineElement | ComponentElement>;
   readonly jsDocEventNames: Set<string>;
-  /** Events a typed dispatcher declares (`createEventDispatcher<{ save: ... }>()`), dispatched or not. */
+  /**
+   * Events a typed dispatcher declares
+   * (`createEventDispatcher<{ save: ... }>()`), dispatched or not.
+   */
   readonly typedDispatcherEventNames: Set<string>;
-  /** Props with an explicit `@default`, which another file's constant must not replace. */
+  /**
+   * Props with an explicit `@default`, which another file's constant must
+   * not replace.
+   */
   readonly explicitDefaultPropNames: Set<string>;
-  /** `@event` tags with no `{type}` or `@property`: their `null` detail gives way to a dispatch's. */
+  /**
+   * `@event` tags with no `{type}` or `@property`: their `null` detail gives
+   * way to a dispatch's.
+   */
   readonly untypedJsDocEventNames: Set<string>;
 
   /** Source range per `@event` JSDoc tag, for `event-no-source` diagnostics. */
@@ -156,13 +207,22 @@ export interface ParserContext {
    */
   variableInfoCache: Map<string, { type?: string; description?: string; internal?: boolean }> | undefined;
 
-  /** `@sveld-ignore` codes keyed by `"<kind>:<name>"`; see `recordSveldIgnore`. */
+  /**
+   * `@sveld-ignore` codes keyed by `"<kind>:<name>"`;
+   * see `recordSveldIgnore`.
+   */
   readonly sveldIgnoreDirectives: Map<string, Set<string>>;
-  /** `@sveld-ignore` codes from each prop's JSDoc, for diagnostics reported after parsing. */
+  /**
+   * `@sveld-ignore` codes from each prop's JSDoc, for diagnostics reported
+   * after parsing.
+   */
   readonly propIgnoreCodes: Map<string, string[]>;
 }
 
-/** Fresh {@link ParserContext}. Keep in sync with new fields on {@link ParserContext}. */
+/**
+ * Fresh {@link ParserContext}. Keep in sync with new fields on
+ * {@link ParserContext}.
+ */
 export function createParserContext(): ParserContext {
   return {
     syntaxMode: "legacy",
@@ -235,7 +295,10 @@ export function createParserContext(): ParserContext {
   };
 }
 
-/** The public name of the prop bound locally as `name` (`let { class: klass } = $props()`), else `name`. */
+/**
+ * The public name of the prop bound locally as `name`
+ * (`let { class: klass } = $props()`), else `name`.
+ */
 export function resolvePublicPropName(ctx: ParserContext, name: string): string {
   return ctx.propLocalToPublicName.get(name) ?? name;
 }

@@ -25,8 +25,9 @@ import {
 import { getTypeDefs, isAccessorProp } from "./writer-ts-definitions-core";
 
 /**
- * The part of `MarkdownDocument` the renderers call. `renderComponentsToMarkdown`
- * is public, so it keeps accepting any object with this shape.
+ * The part of `MarkdownDocument` the renderers call.
+ * `renderComponentsToMarkdown` is public, so it keeps accepting any object
+ * with this shape.
  */
 interface MarkdownRenderTarget {
   append(type: AppendType, raw?: string): MarkdownRenderTarget;
@@ -51,7 +52,10 @@ export function renderComponentsToMarkdown(
   }
 }
 
-/** The `markdownOptions.outDir` index page: links to each component's own file, then Exports. */
+/**
+ * The `markdownOptions.outDir` index page: links to each component's own
+ * file, then Exports.
+ */
 export function renderComponentIndexToMarkdown(
   document: MarkdownRenderTarget,
   components: ComponentDocApi[],
@@ -75,7 +79,8 @@ function renderExports(document: MarkdownRenderTarget, entryExports: EntryExport
   document.append("raw", EXPORT_TABLE_HEADER);
 
   for (const entry of entryExports) {
-    // Keeps multi-line types (e.g. interface bodies) on one table row.
+    // Whitespace collapses, so multi-line types (e.g. interface bodies) stay
+    // on one table row.
     const type = (entry.type ?? entry.value)?.replace(WHITESPACE_REGEX, " ").trim();
     document.append(
       "raw",
@@ -111,11 +116,15 @@ function renderSectionIfNotEmpty(document: MarkdownRenderTarget, items: readonly
   }
 }
 
-/** One component's section, for both the combined document and `outDir`'s per-component files. */
+/**
+ * One component's section, for both the combined document and `outDir`'s
+ * per-component files.
+ */
 export function renderComponentToMarkdown(document: MarkdownRenderTarget, component: ComponentDocApi) {
   document.append("h2", `\`${component.moduleName}\``);
 
-  // Without this, generic names like `Row` would appear in the tables undefined.
+  // Without this, generic names like `Row` would appear in the
+  // tables undefined.
   if (component.generics) {
     document.append("p", `**Type parameters:** ${formatPropType(`<${component.generics[1]}>`)}`);
   }

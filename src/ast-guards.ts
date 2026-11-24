@@ -71,7 +71,10 @@ export function resolveStaticStringLiteral(node: unknown): string | null {
   return null;
 }
 
-/** Name of a non-computed object key: an identifier's name or a literal's value as text. */
+/**
+ * Name of a non-computed object key: an identifier's name or a literal's
+ * value as text.
+ */
 export function getPropertyName(node: Property["key"]): string | undefined {
   if (isIdentifier(node)) return node.name;
   if (isLiteral(node)) return node.value == null ? undefined : String(node.value);

@@ -9,9 +9,11 @@ const IDENTIFIER_REGEX = /[A-Za-z_$][\w$]*/g;
 const LEADING_TYPE_PARAM_MODIFIERS_REGEX = /^(?:(?:const|in|out)\s+)+/;
 
 /**
- * Parses the `generics` script attribute value (a TypeScript type-parameter
- * list, e.g. `"Row extends DataTableRow = DataTableRow, Header"`) into the
- * same `[names, constraints]` tuple the `@generics`/`@template` JSDoc tags produce.
+ * Parses the `generics` script attribute value (a TypeScript
+ * type-parameter list, e.g.
+ * `"Row extends DataTableRow = DataTableRow, Header"`) into the same
+ * `[names, constraints]` tuple the `@generics`/`@template` JSDoc
+ * tags produce.
  */
 export function parseGenericsAttribute(value: string): ComponentGenerics {
   const constraints = splitTopLevel(value, ",")
@@ -29,9 +31,10 @@ export function parseGenericsAttribute(value: string): ComponentGenerics {
 }
 
 /**
- * Type names in the `generics` attribute (`DataTableRow` in `Row extends
- * DataTableRow`) exist only as raw text, not in any AST
- * {@link collectReferencedTypeDependencies} walks, so they're matched here.
+ * Type names in the `generics` attribute (`DataTableRow` in
+ * `Row extends DataTableRow`) exist only as raw text, not in any AST
+ * {@link collectReferencedTypeDependencies} walks, so they're
+ * matched here.
  */
 export function collectGenericsAttributeTypeDependencies(
   ctx: ParserContext,

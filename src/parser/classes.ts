@@ -24,7 +24,10 @@ type ClassMemberNode = MethodDefinition | PropertyDefinition;
 
 type MemberJSDoc = ReturnType<typeof processNodeJSDoc>;
 
-/** `name`, `"quoted-name"`, or `0`; unset for a computed (`[Symbol.iterator]`) or `#private` key. */
+/**
+ * `name`, `"quoted-name"`, or `0`; unset for a computed
+ * (`[Symbol.iterator]`) or `#private` key.
+ */
 function memberName(member: ClassMemberNode): string | undefined {
   if (member.computed) return undefined;
   if (member.key.type === "Identifier") return member.key.name;
@@ -51,7 +54,10 @@ function stripAngleBrackets(typeParameters: string | undefined): string | undefi
   return typeParameters?.slice(1, -1).trim() || undefined;
 }
 
-/** The widened type of a param's literal default (`name = "store"` is `string`). */
+/**
+ * The widened type of a param's literal default (`name = "store"`
+ * is `string`).
+ */
 function defaultValueType(rawParam: MethodDefinition["value"]["params"][number] | undefined): string | undefined {
   const param = rawParam?.type === "TSParameterProperty" ? rawParam.parameter : rawParam;
   return param?.type === "AssignmentPattern" ? literalType(param.right, "widen") : undefined;
@@ -59,7 +65,8 @@ function defaultValueType(rawParam: MethodDefinition["value"]["params"][number] 
 
 /**
  * A method or constructor's params, return type, and own type parameters:
- * each from its TypeScript annotation, else its JSDoc tag, else its literal default, else `any`.
+ * each from its TypeScript annotation, else its JSDoc tag, else its
+ * literal default, else `any`.
  */
 function readMethodSignature(
   ctx: ParserContext,
@@ -89,18 +96,25 @@ function readMethodSignature(
 /**
  * A module-script class's public members in source order: constructor,
  * methods, and properties (fields, constructor parameter properties,
- * getter/setter pairs, and in JS, `this.x = ...` in the constructor). Leaves
- * out `#x`, `private`, `protected`, computed-key, and `@internal`/`@ignore`
- * members; an overloaded method keeps its overload signatures only.
+ * getter/setter pairs, and in JS, `this.x = ...` in the constructor).
+ * Leaves out `#x`, `private`, `protected`, computed-key, and
+ * `@internal`/`@ignore` members; an overloaded method keeps its overload
+ * signatures only.
  */
 export function readClassDeclaration(
   ctx: ParserContext,
   classDecl: ClassDeclarationLike,
 ): { members: ComponentClassMember[]; typeParameters?: string; extends?: string; implements?: string[] } {
   const members: ComponentClassMember[] = [];
-  /** Getter/setter pairs, keyed `static name` or `name`, merged into one property. */
+  /**
+   * Getter/setter pairs, keyed `static name` or `name`, merged into
+   * one property.
+   */
   const accessors = new Map<string, ComponentClassMember>();
-  /** Methods with (non-abstract) overload signatures, whose implementation is left out. */
+  /**
+   * Methods with (non-abstract) overload signatures, whose implementation is
+   * left out.
+   */
   const overloaded = new Set<string>();
   const instanceProperties = new Set<string>();
   let constructorBody: Statement[] | undefined;
@@ -152,7 +166,8 @@ export function readClassDeclaration(
       continue;
     }
 
-    // A method's own `<U>` is on the method, not its function value.
+    // A method's own `<U>` is on the method, not its function value, so it's
+    // copied onto the value.
     const fn = member.typeParameters ? { ...member.value, typeParameters: member.typeParameters } : member.value;
 
     if (member.kind === "constructor") {
@@ -202,7 +217,8 @@ export function readClassDeclaration(
       continue;
     }
 
-    // `f(a: string): void;` with no body: an overload signature (or an abstract method).
+    // `f(a: string): void;` with no body: an overload signature (or an
+    // abstract method).
     if (fn.type === "TSDeclareMethod" && !member.abstract) overloaded.add(key);
     else if (fn.type !== "TSDeclareMethod" && overloaded.has(key)) continue;
     members.push({ kind: "method", name, ...modifiers, ...readMethodSignature(ctx, fn, jsdoc), ...memberDocs(jsdoc) });
@@ -221,7 +237,10 @@ export function readClassDeclaration(
   return { members, ...(typeParameters ? { typeParameters } : {}), ...heritage };
 }
 
-/** `extends`/`implements` as source text; their names are tracked so imported ones get an `import type`. */
+/**
+ * `extends`/`implements` as source text; their names are tracked so
+ * imported ones get an `import type`.
+ */
 function readClassHeritage(
   ctx: ParserContext,
   classDecl: ClassDeclarationLike,
@@ -245,7 +264,10 @@ function readClassHeritage(
   return heritage;
 }
 
-/** Tracks `typeName<typeArguments>` as a type dependency, as if written as a type annotation. */
+/**
+ * Tracks `typeName<typeArguments>` as a type dependency, as if written as
+ * a type annotation.
+ */
 function trackTypeReference(
   ctx: ParserContext,
   typeName: EntityName,

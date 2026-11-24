@@ -3,7 +3,10 @@ import { isFunctionType } from "../type-text";
 import type { ParserContext } from "./context";
 import { formatParamList } from "./utils";
 
-/** A prop's type provenance, in the same precedence {@link resolvePropTypeAndDocs} picks its type. */
+/**
+ * A prop's type provenance, in the same precedence {@link
+ * resolvePropTypeAndDocs} picks its type.
+ */
 export function resolveTypeSource({
   hasTypeScriptType,
   hasJSDocType,
@@ -23,11 +26,20 @@ export function resolveTypeSource({
 }
 
 export interface ResolvePropTypeAndDocsInput {
-  /** A legacy `: T` annotation, or the matching `$props()` type-literal member. */
+  /**
+   * A legacy `: T` annotation, or the matching `$props()`
+   * type-literal member.
+   */
   explicitType?: string;
-  /** Lowest precedence: the type inferred from the initializer or `export function` node. */
+  /**
+   * Lowest precedence: the type inferred from the initializer or
+   * `export function` node.
+   */
   typeSeed?: string;
-  /** Differs from `typeSeed` for function declarations, whose seed doesn't count as an inferred type. */
+  /**
+   * Differs from `typeSeed` for function declarations, whose seed doesn't
+   * count as an inferred type.
+   */
   inferredTypeForSource?: string;
   jsdocType?: string;
   jsdocDescription?: string;
@@ -44,7 +56,10 @@ export interface ResolvePropTypeAndDocsInput {
   resolvedReturnType?: string;
   initializerIsFunction: boolean;
   isFunctionDeclaration: boolean;
-  /** A prop typed as a `@typedef` with no description of its own takes the typedef's. */
+  /**
+   * A prop typed as a `@typedef` with no description of its own takes
+   * the typedef's.
+   */
   typedefs?: Map<string, { description?: string }>;
 }
 
@@ -58,13 +73,17 @@ export interface ResolvedPropTypeAndDocs {
   typeParameters?: string;
 }
 
-/** The type and docs decisions shared by module exports, `export let`/`export function`, and `$props()`. */
+/**
+ * The type and docs decisions shared by module exports,
+ * `export let`/`export function`, and `$props()`.
+ */
 export function resolvePropTypeAndDocs(input: ResolvePropTypeAndDocsInput): ResolvedPropTypeAndDocs {
   let type = input.explicitType ?? input.jsdocType ?? input.resolvedType ?? input.typeSeed;
   const params = input.jsdocParams ?? input.resolvedParams;
   const returnType = input.jsdocReturnType ?? input.resolvedReturnType;
 
-  // A function's inferred signature gives way to one built from `@param`/`@returns`.
+  // A function's inferred signature gives way to one built from `@param` and
+  // `@returns`, since those say more.
   const hasPlaceholderSignature =
     (input.isFunctionDeclaration || input.initializerIsFunction) && type === input.typeSeed;
   if (hasPlaceholderSignature && (returnType || (input.isFunctionDeclaration && params?.length))) {
@@ -88,7 +107,8 @@ export function resolvePropTypeAndDocs(input: ResolvePropTypeAndDocsInput): Reso
     finalType: type,
   });
 
-  // A callback-looking declared type makes the prop a function too.
+  // A callback-looking declared type makes the prop a function too, even
+  // without a function value.
   const isFunction =
     input.initializerIsFunction ||
     input.isFunctionDeclaration ||
@@ -104,8 +124,9 @@ export function resolvePropTypeAndDocs(input: ResolvePropTypeAndDocsInput): Reso
 }
 
 /**
- * A prop's own JSDoc with an explicit `@default` taken out of its description: the prop
- * shows it as its default (`value`) instead, and no other file's constant replaces it.
+ * A prop's own JSDoc with an explicit `@default` taken out of
+ * its description: the prop shows it as its default (`value`) instead, and
+ * no other file's constant replaces it.
  */
 export function withExplicitDefault(ctx: ParserContext, propName: string, jsdoc: NodeJsDoc | undefined) {
   if (jsdoc?.explicitDefault === undefined) return jsdoc;
@@ -113,7 +134,10 @@ export function withExplicitDefault(ctx: ParserContext, propName: string, jsdoc:
   return { ...jsdoc, description: jsdoc.descriptionWithoutDefault };
 }
 
-/** The fields a prop copies verbatim from its own JSDoc block, in prop key order. */
+/**
+ * The fields a prop copies verbatim from its own JSDoc block, in prop
+ * key order.
+ */
 export function propJsDocFields(jsdoc: NodeJsDoc | undefined) {
   return {
     binding: jsdoc?.binding,

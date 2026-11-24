@@ -29,9 +29,15 @@ import { buildJsonDocument } from "./writer/writer-json";
 export interface SveldResult {
   /** Diagnostics from this run. */
   diagnostics: SveldDiagnostic[];
-  /** Populated when `check` is enabled: the API diff against the committed snapshot. */
+  /**
+   * Populated when `check` is enabled: the API diff against the
+   * committed snapshot.
+   */
   check?: CheckResult;
-  /** Parse errors for components that failed to parse (empty unless `failFast` is disabled and a component errors). */
+  /**
+   * Parse errors for components that failed to parse (empty unless
+   * `failFast` is disabled and a component errors).
+   */
   errors: ComponentParseError[];
   /**
    * The component API document for the exported components, exactly as the
@@ -41,8 +47,9 @@ export interface SveldResult {
   document: ComponentApiDocument;
   /**
    * Suggested process exit code for this run, using the same mapping as the
-   * CLI (see {@link resolveExitCode}). `sveld()` never mutates `process.exitCode` itself; assign this
-   * value yourself if you want the process to exit non-zero.
+   * CLI (see {@link resolveExitCode}). `sveld()` never mutates
+   * `process.exitCode` itself; assign this value yourself if you want the
+   * process to exit non-zero.
    */
   exitCode: ExitCode;
 }
@@ -107,10 +114,11 @@ function githubFileResolver(input: string): (component: string) => string {
 }
 
 /**
- * Prints the run's diagnostics summary to stderr when `reportDiagnostics` or
- * `strict` asks for it, and resolves the exit code. Shared by the CLI and
- * `sveld()` so their reporting and exit codes can't drift apart. `input` is
- * the resolved entry, which `format: "github"` needs to place annotations.
+ * Prints the run's diagnostics summary to stderr when `reportDiagnostics`
+ * or `strict` asks for it, and resolves the exit code. Shared by the CLI
+ * and `sveld()` so their reporting and exit codes can't drift apart.
+ * `input` is the resolved entry, which `format: "github"` needs to
+ * place annotations.
  */
 export function reportRun(
   result: GenerateBundleResult,
@@ -148,8 +156,8 @@ export function reportRun(
 
 export interface SveldOptions extends Omit<SveldRuntimeOptions, "config"> {
   /**
-   * Whether to load `sveld.config.{js,mjs,ts}` from the working directory and
-   * merge it under these options. `false` ignores it.
+   * Whether to load `sveld.config.{js,mjs,ts}` from the working directory
+   * and merge it under these options. `false` ignores it.
    * @default true
    */
   config?: boolean;

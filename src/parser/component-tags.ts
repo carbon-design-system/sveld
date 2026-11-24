@@ -1,6 +1,7 @@
 /**
- * Component-level JSDoc tags (`@event`, `@slot`, `@typedef`, `@generics`, ...): anywhere in a
- * component's comments, they describe the component, not the declaration they sit on.
+ * Component-level JSDoc tags (`@event`, `@slot`, `@typedef`, `@generics`,
+ * ...): anywhere in a component's comments, they describe the component,
+ * not the declaration they sit on.
  */
 import { closestMatch } from "../levenshtein";
 import type { DeprecatedValue, JsDocPassthroughTag, SourceRange } from "../model";
@@ -31,7 +32,11 @@ const GENERIC_DEFAULT_EQUALS_REGEX = /\s*=\s*/;
 /** An import specifier written without quotes (`./Button.svelte`). */
 const UNQUOTED_SPECIFIER_REGEX = /^[^"'`\s]\S*$/;
 
-/** `Name<Row=DataTableRow,Header=Foo>` to `Name<Row = DataTableRow, Header = Foo>`, as sveld spaces other generics. */
+/**
+ * `Name<Row=DataTableRow,Header=Foo>` to
+ * `Name<Row = DataTableRow, Header = Foo>`, as sveld spaces
+ * other generics.
+ */
 function normalizeGenericNameSpacing(name: string): string {
   const openIndex = name.indexOf("<");
   if (openIndex === -1 || !name.endsWith(">")) return name;
@@ -47,32 +52,49 @@ function normalizeGenericNameSpacing(name: string): string {
 
 type BlockLines = JSDocTag["lines"];
 
-/** Tags that take the description lines directly above them when they have none on their own line. */
+/**
+ * Tags that take the description lines directly above them when they have
+ * none on their own line.
+ */
 const PRECEDING_DESCRIPTION_TAGS = new Set(["restProps", "slot", "snippet", "event", "typedef", "callback"]);
 
-/** Tags that stay inside the preceding `@event`'s scope instead of ending it. */
+/**
+ * Tags that stay inside the preceding `@event`'s scope instead of
+ * ending it.
+ */
 const EVENT_SCOPE_TAGS = new Set(["property", "type"]);
 
-/** Tags that declare something of their own, closing the preceding `@event`'s scope. */
+/**
+ * Tags that declare something of their own, closing the preceding
+ * `@event`'s scope.
+ */
 const EVENT_SCOPE_ENDING_TAGS = new Set(["slot", "snippet", "typedef", "callback"]);
 
 /**
- * Cleaned text on the tag's own line, without the continuation lines `parseComments` folds
- * into `description`. A multi-line `{type}` moves that line down to where the type closes.
+ * Cleaned text on the tag's own line, without the continuation lines
+ * `parseComments` folds into `description`. A multi-line `{type}` moves
+ * that line down to where the type closes.
  */
 function getInlineTagDescription(tagLines: BlockLines): string | undefined {
   if (tagLines.length === 0) return undefined;
   return cleanDescription(tagLines[tagHeadIndex(tagLines)].content);
 }
 
-/** A block line with no text, not part of a tag's opening line or its multi-line `{type}`. */
+/**
+ * A block line with no text, not part of a tag's opening line or its
+ * multi-line `{type}`.
+ */
 function isBlankLine(line: { tag?: string; continuesType?: true; content: string } | undefined): boolean {
   return !line || (!line.tag && !line.continuesType && line.content.trim() === "");
 }
 
-/** Whether a tag has body text on its own line (`@since 1.0`), not only below it (`@example`). */
+/**
+ * Whether a tag has body text on its own line (`@since 1.0`), not only
+ * below it (`@example`).
+ */
 function hasBodyOnTagLine(tag: JSDocTag): boolean {
-  // `text` leaves out an empty tag line, so then it has one line fewer than the tag.
+  // `text` leaves out an empty tag line, so then it has one line fewer than
+  // the tag.
   return tag.text.split("\n").length === tag.lines.length;
 }
 
@@ -141,7 +163,10 @@ const STANDARD_JSDOC_TAGS = new Set([
   "yields",
 ]);
 
-/** Tags a `jsdoc-unknown-tag` typo (`@typ`, `@evnet`) is matched against for a suggestion. */
+/**
+ * Tags a `jsdoc-unknown-tag` typo (`@typ`, `@evnet`) is matched against
+ * for a suggestion.
+ */
 const SUGGESTED_JSDOC_TAGS = [
   ...IDE_PASSTHROUGH_TAGS,
   ...OTHER_KNOWN_JSDOC_TAGS,
@@ -181,12 +206,16 @@ function isSingleObjectLiteral(source: string): boolean {
 
 const IDENTIFIER_REGEX = /[\w$]+/g;
 
-/** Tags whose types make up the body of the `@typedef`/`@callback` above them. */
+/**
+ * Tags whose types make up the body of the `@typedef`/`@callback`
+ * above them.
+ */
 const TYPE_DECLARATION_BODY_TAGS = new Set(["property", "param", "returns", "return"]);
 
 /**
- * Whether the `@typedef`/`@callback` at `ownerIndex` refers to any of `parameters` in its own
- * type or in the `@property`/`@param`/`@returns` types right below it.
+ * Whether the `@typedef`/`@callback` at `ownerIndex` refers to any of
+ * `parameters` in its own type or in the `@property`/`@param`/`@returns`
+ * types right below it.
  */
 function typeDeclarationUsesAny(
   tags: readonly JSDocTag[],
@@ -202,16 +231,20 @@ function typeDeclarationUsesAny(
 }
 
 /**
- * Whether `@property` tags below a `@typedef` of this type describe its members. As in
- * TypeScript, only an untyped or `object`/`Object` typedef takes them; a `@property` under
- * `@typedef {string | Fn} Name` is ignored rather than turning it into an object type.
+ * Whether `@property` tags below a `@typedef` of this type describe its
+ * members. As in TypeScript, only an untyped or `object`/`Object` typedef
+ * takes them; a `@property` under `@typedef {string | Fn} Name` is ignored
+ * rather than turning it into an object type.
  */
 function typedefTakesProperties(typedefType: string): boolean {
   const type = typedefType.trim();
   return !type || type === "object" || type === "Object";
 }
 
-/** Spans all of a component's comment blocks, for the duplicate/mixed generics warnings. */
+/**
+ * Spans all of a component's comment blocks, for the duplicate/mixed
+ * generics warnings.
+ */
 interface GenericsTagState {
   usedGenericsTag: boolean;
   usedTemplateTag: boolean;
@@ -242,7 +275,10 @@ function warnAndTrackGenericName(
   }
 }
 
-/** Redeclaring a generic (e.g. via both tags) updates its constraint instead of adding an invalid duplicate. */
+/**
+ * Redeclaring a generic (e.g. via both tags) updates its constraint
+ * instead of adding an invalid duplicate.
+ */
 function accumulateOrReplaceGeneric(ctx: ParserContext, declaredName: string, constraint: string) {
   if (ctx.generics) {
     const names = splitTopLevel(ctx.generics[0], ",").map((n) => n.trim());
@@ -266,7 +302,10 @@ interface TagProperty {
   default?: string;
 }
 
-/** An `@event`, `@typedef`, or `@callback` still collecting the tags below it. */
+/**
+ * An `@event`, `@typedef`, or `@callback` still collecting the tags
+ * below it.
+ */
 interface OpenDeclaration {
   name: string;
   description: string | undefined;
@@ -293,7 +332,10 @@ interface OpenCallback extends OpenDeclaration {
   returnType: string | undefined;
 }
 
-/** `@typedef` and `@callback` share `ctx.typedefs`, so either one can overwrite the other. */
+/**
+ * `@typedef` and `@callback` share `ctx.typedefs`, so either one can
+ * overwrite the other.
+ */
 function addTypedef(
   ctx: ParserContext,
   { name, description, tags, internal, source }: OpenDeclaration,
@@ -320,7 +362,10 @@ function addTypedef(
   });
 }
 
-/** Two properties with the same key would otherwise both appear in the emitted object type. */
+/**
+ * Two properties with the same key would otherwise both appear in the
+ * emitted object type.
+ */
 function pushOrReplaceProperty<T extends { name: string }>(
   ctx: ParserContext,
   list: T[],
@@ -345,14 +390,18 @@ function pushOrReplaceProperty<T extends { name: string }>(
 }
 
 /**
- * Reads one comment block's tags in order. Tags build on each other (an `@event` collects
- * the `@property` tags below it, a tag with no description takes the text above it), so the
- * in-progress event/typedef/callback and the claimed description lines live here.
+ * Reads one comment block's tags in order. Tags build on each other (an
+ * `@event` collects the `@property` tags below it, a tag with no
+ * description takes the text above it), so the in-progress
+ * event/typedef/callback and the claimed description lines live here.
  */
 class CommentBlockReader {
   private readonly tags: JSDocTag[];
   private readonly lines: BlockLines;
-  /** The block's leading description, which the first structural tag takes when it has none of its own. */
+  /**
+   * The block's leading description, which the first structural tag takes
+   * when it has none of its own.
+   */
   private readonly commentDescription: string;
   private commentDescriptionUsed = false;
   private isFirstTag = true;
@@ -360,13 +409,16 @@ class CommentBlockReader {
   private event: OpenEvent | undefined;
   private typedef: OpenTypedef | undefined;
   private callback: OpenCallback | undefined;
-  /** The `@typedef`/`@callback` read last, until a `@slot`/`@event` follows: it takes a trailing `@deprecated`/`@internal`. */
+  /**
+   * The `@typedef`/`@callback` read last, until a `@slot`/`@event` follows:
+   * it takes a trailing `@deprecated`/`@internal`.
+   */
   private typeDeclaration: OpenDeclaration | undefined;
 
   /**
-   * Set whenever a structural tag (`@slot`/`@event`/`@typedef`/...) starts, so a passthrough
-   * tag (`@since`, `@see`, ...) after it attaches to it instead of queuing in `pendingTags`
-   * for the next structural tag.
+   * Set whenever a structural tag (`@slot`/`@event`/`@typedef`/...) starts,
+   * so a passthrough tag (`@since`, `@see`, ...) after it attaches to it
+   * instead of queuing in `pendingTags` for the next structural tag.
    */
   private attachTrailingTag: ((tag: JsDocPassthroughTag) => void) | undefined;
   private readonly pendingTags: JsDocPassthroughTag[] = [];
@@ -374,35 +426,43 @@ class CommentBlockReader {
   private pendingDeprecated: DeprecatedValue | undefined;
   /** `@ignore`/`@internal` for the next structural tag in this block. */
   private pendingInternal = false;
-  /** `@template` type parameters for the `@typedef`/`@callback` right below them. */
+  /**
+   * `@template` type parameters for the `@typedef`/`@callback` right
+   * below them.
+   */
   private readonly pendingTypeParameters: string[] = [];
 
   private readonly lineDescriptions = new Map<number, string>();
   private readonly tagLineNumbers = new Set<number>();
   private readonly consumedDescriptionLines = new Set<number>();
   /**
-   * Indented lines directly under a tag's line: that tag's wrapped description, never the
-   * description of the tag after it. Unindented text between two tags stays ambiguous and
-   * keeps the description-above-the-tag reading.
+   * Indented lines directly under a tag's line: that tag's wrapped
+   * description, never the description of the tag after it. Unindented text
+   * between two tags stays ambiguous and keeps the
+   * description-above-the-tag reading.
    */
   private readonly indentedContinuationLines = new Set<number>();
   /**
-   * Cuts the body of the tag above the current one short at the first line the current tag
-   * claims as its description, so the text isn't in both. `trimThisBody` is handed to the next tag.
+   * Cuts the body of the tag above the current one short at the first line
+   * the current tag claims as its description, so the text isn't in both.
+   * `trimThisBody` is handed to the next tag.
    */
   private trimBodyAbove: ((fromLine: number) => void) | undefined;
   private trimThisBody: ((fromLine: number) => void) | undefined;
 
   /**
-   * `@template` with `@slot`/`@snippet` is slot prose only, unless `@extends`
-   * is in the same block (then it parameterizes inherited props).
+   * `@template` with `@slot`/`@snippet` is slot prose only, unless
+   * `@extends` is in the same block (then it parameterizes inherited props).
    */
   private readonly hasSlotOrSnippetTag: boolean;
   private readonly hasExtendsTag: boolean;
 
   private readonly ctx: ParserContext;
   private readonly generics: GenericsTagState;
-  /** The block documents an ordinary function, so its `@template`s are that function's. */
+  /**
+   * The block documents an ordinary function, so its `@template`s are
+   * that function's.
+   */
   private readonly documentsFunction: boolean;
 
   constructor(ctx: ParserContext, generics: GenericsTagState, block: JSDocComment, documentsFunction: boolean) {
@@ -421,15 +481,17 @@ class CommentBlockReader {
         this.tagLineNumbers.add(tagInfo.lines[0].number);
       }
     }
-    // A multi-line `{type}`'s lines, including the one where it closes, belong to the tag's
-    // opening line: their text is the tag's inline description, never a continuation line.
+    // A multi-line `{type}`'s lines, including the one where it closes, belong
+    // to the tag's opening line: their text is the tag's inline description,
+    // never a continuation line.
     for (const line of blockLines) {
       if (line.continuesType) this.tagLineNumbers.add(line.number);
     }
     let inIndentedContinuation = false;
     let inCodeFence = false;
     for (const line of blockLines) {
-      // A lone "}" outside a code fence is the tail of a multi-line `{...}` type, not prose.
+      // A lone "}" outside a code fence is the tail of a multi-line `{...}`
+      // type, not prose.
       if (!line.tag && !line.continuesType && line.content && (inCodeFence || line.content.trim() !== "}")) {
         this.lineDescriptions.set(line.number, line.content);
       }
@@ -438,7 +500,8 @@ class CommentBlockReader {
       } else if (!line.content.trim()) {
         // A blank line between paragraphs doesn't end an indented continuation.
       } else if (inIndentedContinuation && (line.indent || inCodeFence)) {
-        // A code fence opened in an indented continuation runs to its closing line.
+        // A code fence opened in an indented continuation runs to its
+        // closing line.
         this.indentedContinuationLines.add(line.number);
       } else {
         inIndentedContinuation = false;
@@ -447,14 +510,20 @@ class CommentBlockReader {
     }
   }
 
-  /** Falls back to the block's leading description for the block's first structural tag. */
+  /**
+   * Falls back to the block's leading description for the block's first
+   * structural tag.
+   */
   private orCommentDescription(description: string | undefined): string | undefined {
     if (description || !this.isFirstTag || this.commentDescriptionUsed || !this.commentDescription) return description;
     this.commentDescriptionUsed = true;
     return this.commentDescription;
   }
 
-  /** A `@typedef`/`@callback` name, taking any `@template`s right above it as its type parameters. */
+  /**
+   * A `@typedef`/`@callback` name, taking any `@template`s right above it as
+   * its type parameters.
+   */
   private typeDeclarationName(name: string): string {
     if (this.pendingTypeParameters.length === 0) return normalizeGenericNameSpacing(name);
     const declared = `${name}<${this.pendingTypeParameters.join(", ")}>`;
@@ -463,8 +532,9 @@ class CommentBlockReader {
   }
 
   /**
-   * Joins block lines `lineNums` (ascending) after `head` (the tag line's text). Blank lines
-   * between two of them stay a paragraph break when nothing else sits in between.
+   * Joins block lines `lineNums` (ascending) after `head` (the tag line's
+   * text). Blank lines between two of them stay a paragraph break when
+   * nothing else sits in between.
    */
   private joinBlockLines(lineNums: readonly number[], head?: { text: string; line: number }): string {
     const texts = head ? head.text.split("\n") : [];
@@ -482,7 +552,10 @@ class CommentBlockReader {
     return joinDescriptionLines(texts);
   }
 
-  /** Description lines immediately above a tag (not continuation lines the tag's own body absorbed). */
+  /**
+   * Description lines immediately above a tag (not continuation lines the
+   * tag's own body absorbed).
+   */
   private getPrecedingDescription(tagSource: BlockLines): string | undefined {
     if (tagSource.length === 0) return undefined;
     const tagLineNumber = tagSource[0].number;
@@ -513,9 +586,10 @@ class CommentBlockReader {
   }
 
   /**
-   * Keeps a prose tag's body and the next tag's description apart. A tag with nothing on its
-   * own line (`@example` above a code fence) owns every line below it; one with text there
-   * gives up its trailing lines when the next tag claims them, dropping them via `trim`.
+   * Keeps a prose tag's body and the next tag's description apart. A tag
+   * with nothing on its own line (`@example` above a code fence) owns every
+   * line below it; one with text there gives up its trailing lines when the
+   * next tag claims them, dropping them via `trim`.
    */
   private claimBodyLines(tagInfo: JSDocTag, trim: (droppedLineCount: number) => void) {
     if (!hasBodyOnTagLine(tagInfo)) {
@@ -529,9 +603,10 @@ class CommentBlockReader {
   }
 
   /**
-   * A tag's line plus its continuation lines, which run to the next tag as in JSDoc. Unindented
-   * lines are left for the next tag when it takes the text above it (see
-   * {@link PRECEDING_DESCRIPTION_TAGS}), and for the event when this tag ends an `@event`'s scope.
+   * A tag's line plus its continuation lines, which run to the next tag as
+   * in JSDoc. Unindented lines are left for the next tag when it takes the
+   * text above it (see {@link PRECEDING_DESCRIPTION_TAGS}), and for the
+   * event when this tag ends an `@event`'s scope.
    */
   private getTagDescription(tagSource: BlockLines, nextTag: JSDocTag | undefined, inEventScope = false) {
     const inline = getInlineTagDescription(tagSource);
@@ -552,8 +627,9 @@ class CommentBlockReader {
   }
 
   /**
-   * Unindented text after an `@event`'s scope describes the tag below it. When that leaves the
-   * event with no description, the author likely meant it for the event, so flag it.
+   * Unindented text after an `@event`'s scope describes the tag below it.
+   * When that leaves the event with no description, the author likely meant
+   * it for the event, so flag it.
    */
   private flagDescriptionAfterEvent(
     tag: string,
@@ -563,7 +639,8 @@ class CommentBlockReader {
   ) {
     const { event } = this;
     if (event === undefined || event.description) return;
-    // Indented lines under the `@event` are its description; they're merged in later.
+    // Indented lines under the `@event` are its description; they're merged
+    // in later.
     if (event.tagLine !== undefined && this.indentedContinuationLines.has(event.tagLine + 1)) return;
     if (previousTag?.tag !== "event" && !EVENT_SCOPE_TAGS.has(previousTag?.tag ?? "")) return;
     if (getInlineTagDescription(tagSource)) return;
@@ -578,8 +655,9 @@ class CommentBlockReader {
   }
 
   /**
-   * The text above `tags[tagIndex]`. Only a tag that uses it claims it: otherwise it stays with
-   * the tag above (e.g. an `@event`'s trailing text).
+   * The text above `tags[tagIndex]`. Only a tag that uses it claims it:
+   * otherwise it stays with the tag above (e.g. an `@event`'s
+   * trailing text).
    */
   private takePrecedingDescription(tagIndex: number): string | undefined {
     const { tag, name, lines: tagSource } = this.tags[tagIndex];
@@ -592,7 +670,8 @@ class CommentBlockReader {
     const { ctx, event } = this;
     if (event === undefined) return;
     this.event = undefined;
-    // Prefer explicit `@type` over `@property`-built objects; `{object}` falls through.
+    // An explicit `@type` wins over a `@property`-built object, unless it's
+    // only `{object}`.
     const explicitType = event.type && event.type !== "object" && event.type !== "Object" ? event.type : undefined;
     const detailType =
       explicitType ??
@@ -623,8 +702,9 @@ class CommentBlockReader {
     }
 
     const { name, description, source } = event;
-    // With no `{type}` or `@property`, the `null` detail is only a fallback that a dispatch
-    // replaces (see `addDispatchedEvent`), unless an earlier `@event` typed this one.
+    // With no `{type}` or `@property`, the `null` detail is only a fallback
+    // that a dispatch replaces (see `addDispatchedEvent`), unless an earlier
+    // `@event` typed this one.
     const fallbackDetail = detailType === "" && (!ctx.events.has(name) || ctx.untypedJsDocEventNames.has(name));
     addDispatchedEvent(ctx, {
       name,
@@ -679,8 +759,9 @@ class CommentBlockReader {
   }
 
   /**
-   * Opens a `@typedef`/`@callback`: its name (with any `@template`s above it), description,
-   * and the tags queued for it. Tags after it attach to it.
+   * Opens a `@typedef`/`@callback`: its name (with any `@template`s above
+   * it), description, and the tags queued for it. Tags after it attach
+   * to it.
    */
   private openTypeDeclaration(tagIndex: number): OpenDeclaration {
     const { name, lines: tagSource } = this.tags[tagIndex];
@@ -744,7 +825,8 @@ class CommentBlockReader {
 
   private readSlot(tagIndex: number, type: string) {
     const { tag, name: rawName, lines: tagSource } = this.tags[tagIndex];
-    // `@slot {Type} - description` describes the default slot, as does `@snippet {Type} children`.
+    // Unnamed, since `@slot {Type} - description` describes the default slot,
+    // as does `@snippet {Type} children`.
     const name = rawName === "-" || (tag === "snippet" && rawName === "children") ? undefined : rawName;
     let slotDesc = this.orCommentDescription(this.getTagDescription(tagSource, this.tags[tagIndex + 1]));
     if (!slotDesc && this.pendingTags.length === 0) {
@@ -785,7 +867,8 @@ class CommentBlockReader {
 
   private readEvent(tagIndex: number, type: string) {
     const { name, lines: tagSource } = this.tags[tagIndex];
-    // Claim the text above before the previous event takes it as its trailing description.
+    // Claim the text above first, so the previous event doesn't take it as its
+    // trailing description.
     const description = getInlineTagDescription(tagSource) || this.takePrecedingDescription(tagIndex);
     this.finalizeEvent();
 
@@ -852,9 +935,10 @@ class CommentBlockReader {
     const { tags } = this;
     const parameters = templateTagParameters(tags[tagIndex], type);
 
-    // Right above a `@typedef`/`@callback` without its own `<...>` that uses them, the
-    // `@template`s parameterize that type (`type Box<T>`), as in TypeScript. Otherwise
-    // (`@template {Node} [Node=Node]` above `@typedef {object} Node`) they stay component generics.
+    // Right above a `@typedef`/`@callback` without its own `<...>` that uses
+    // them, the `@template`s parameterize that type (`type Box<T>`), as in
+    // TypeScript. Otherwise (`@template {Node} [Node=Node]` above
+    // `@typedef {object} Node`) they stay component generics.
     let ownerIndex = tagIndex + 1;
     while (tags[ownerIndex]?.tag === "template") ownerIndex++;
     const owner = tags[ownerIndex];
@@ -888,7 +972,8 @@ class CommentBlockReader {
   private readDeprecated(tagIndex: number) {
     const { text } = this.tags[tagIndex];
     const { event } = this;
-    // A type alias has no `deprecated` field; the tag is kept as written, so the .d.ts carries it.
+    // A type alias has no `deprecated` field; the tag is kept as written, so
+    // the .d.ts carries it.
     if (!event && this.typeDeclaration) {
       const deprecatedTag = { name: "deprecated", body: text };
       this.typeDeclaration.tags.push(deprecatedTag);
@@ -909,7 +994,10 @@ class CommentBlockReader {
     });
   }
 
-  /** A tag sveld has no structure for: kept as-is on the structural tag it belongs to, and flagged if unknown. */
+  /**
+   * A tag sveld has no structure for: kept as-is on the structural tag it
+   * belongs to, and flagged if unknown.
+   */
   private readPassthrough(tagIndex: number) {
     const { tag, text, lines: tagSource } = this.tags[tagIndex];
     const passthroughTag = { name: tag, body: text };
@@ -917,7 +1005,8 @@ class CommentBlockReader {
       passthroughTag.body = dropLastLines(text, droppedLineCount);
     });
     if (!IDE_PASSTHROUGH_TAGS.has(tag) && !OTHER_KNOWN_JSDOC_TAGS.has(tag)) {
-      // One edit for a short tag name, two for a longer one: tag names are short.
+      // One edit for a short tag name, two for a longer one, since tag names
+      // are short.
       const suggestion = STANDARD_JSDOC_TAGS.has(tag)
         ? undefined
         : closestMatch(tag, SUGGESTED_JSDOC_TAGS, tag.length <= 4 ? 1 : 2);
@@ -1039,8 +1128,9 @@ class CommentBlockReader {
     this.finalizeTypedef();
     this.finalizeCallback();
 
-    // Leftover tags in a plain prop or context comment are expected: `processJSDocComment`
-    // captures those. They're only dropped when the block had a structural tag to attach to.
+    // Leftover tags in a plain prop or context comment are expected:
+    // `processJSDocComment` captures those. They're only dropped when the
+    // block had a structural tag to attach to.
     const danglingTags = [
       ...this.pendingTags,
       ...(this.pendingDeprecated === undefined ? [] : [{ name: "deprecated" }]),
@@ -1069,11 +1159,13 @@ export function parseCustomTypes(ctx: ParserContext, scanSource: string | undefi
     warnedMixedGenericsTags: false,
     seenGenericNames: new Set(),
   };
-  // Only a `@template` tag reads this set, so skip the statement scan without one.
+  // Only a `@template` tag reads this set, so skip the statement scan
+  // without one.
   const functionDocStarts = scanSource.includes("@template") ? functionDocCommentStarts(ctx) : new Set<number>();
   ctx.functionDocCommentStarts = functionDocStarts;
   const blocks = parseComments(scanSource);
-  // Reused by leading-comment lookups in the main walk (see `parsedSourceBlock`).
+  // Reused by leading-comment lookups in the main walk
+  // (see `parsedSourceBlock`).
   for (const block of blocks) ctx.jsDocBlocksByStart.set(block.start, block);
   for (const block of blocks) {
     new CommentBlockReader(ctx, generics, block, functionDocStarts.has(block.start)).read();

@@ -70,7 +70,10 @@ export function resolveSvelteEntry(entryPoint?: string): SvelteEntryResolution {
   return { entry: asSvelteEntryPoint(svelteField) };
 }
 
-/** {@link resolveSvelteEntry}, printing the reason to stderr when there's no entry. */
+/**
+ * {@link resolveSvelteEntry}, printing the reason to stderr when there's
+ * no entry.
+ */
 export function getSvelteEntry(entryPoint?: string): SvelteEntryPoint | null {
   const resolution = resolveSvelteEntry(entryPoint);
   if (resolution.entry === null) console.error(resolution.message);

@@ -7,9 +7,9 @@ import { VERSION as svelteVersion } from "../svelte-version";
 export const COMPONENT_API_SCHEMA_VERSION = 1;
 
 /**
- * Canonical, renderer-agnostic representation of a component collection. Every
- * writer builds it via `buildComponentApiDocument`, so sort order and field
- * stripping can't drift between output formats.
+ * Canonical, renderer-agnostic representation of a component collection.
+ * Every writer builds it via `buildComponentApiDocument`, so sort order
+ * and field stripping can't drift between output formats.
  */
 export interface ComponentApiDocument {
   schemaVersion: 1;
@@ -34,7 +34,10 @@ function excludeInternal<T extends { internal?: boolean }>(items: T[]): T[] {
   return items.some((item) => item.internal) ? items.filter((item) => !item.internal) : items;
 }
 
-/** Done once here so no writer filters independently; `sveld --check` still sees the raw `ParsedComponent`. */
+/**
+ * Done once here so no writer filters independently; `sveld --check` still
+ * sees the raw `ParsedComponent`.
+ */
 function excludeInternalMembers(component: ComponentDocApi): ComponentDocApi {
   return {
     ...component,

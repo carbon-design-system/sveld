@@ -3,8 +3,8 @@ import { SKIP, walk } from "svelte-ast/walk";
 
 /**
  * TS nodes whose entire subtree is type-level: annotations, type aliases,
- * interfaces, and type parameter lists. Nothing under them is a value-level
- * node (no calls, declarations, assignments, or scopes).
+ * interfaces, and type parameter lists. Nothing under them is a
+ * value-level node (no calls, declarations, assignments, or scopes).
  */
 export function isTypeOnlySubtree(type: string): boolean {
   return (

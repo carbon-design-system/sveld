@@ -24,7 +24,8 @@ function createRestPropsFromParent(parent: unknown): RestProps {
   if (isComponentLike) return { type: "InlineComponent", name: parentName };
 
   const restProps: ComponentElement = { type: "Element", name: parentName };
-  // `<svelte:element this="div">` has a static `Literal` tag; `this={expr}` doesn't.
+  // `<svelte:element this="div">` has a static `Literal` tag;
+  // `this={expr}` doesn't.
   if (parentName === "svelte:element" && "tag" in parent && parent.tag && typeof parent.tag === "object") {
     const tag = parent.tag as { type?: string; value?: unknown };
     if (tag.type === "Literal" && typeof tag.value === "string") restProps.thisValue = tag.value;
@@ -36,9 +37,10 @@ export function maybeSetRestProps(ctx: ParserContext, parent: unknown, spread: A
   const restProps = createRestPropsFromParent(parent);
   if (!restProps) return;
 
-  // A plain element target is typeable; a component target is not. Prefer the
-  // first element target seen over an earlier component target, regardless of
-  // template order, so one untypeable spread doesn't shadow a typeable one.
+  // A plain element target is typeable; a component target is not. Prefer
+  // the first element target seen over an earlier component target,
+  // regardless of template order, so one untypeable spread doesn't shadow a
+  // typeable one.
   if (ctx.rest_props !== undefined && !(ctx.rest_props.type === "InlineComponent" && restProps.type === "Element")) {
     return;
   }
@@ -48,7 +50,10 @@ export function maybeSetRestProps(ctx: ParserContext, parent: unknown, spread: A
   ctx.restPropsSource = sourceRangeFromNode(ctx, spread);
 }
 
-/** The rest props name (`$$restProps` or a runes rest local) an object literal initializer spreads. */
+/**
+ * The rest props name (`$$restProps` or a runes rest local) an object
+ * literal initializer spreads.
+ */
 function restPropsSpreadIn(ctx: ParserContext, init: Expression | null | undefined): string | undefined {
   let value = unwrapTypeCastExpression(init);
   if (isCallExpressionNamed(value, "$derived")) value = unwrapTypeCastExpression(value.arguments[0] as Expression);
@@ -63,11 +68,11 @@ function restPropsSpreadIn(ctx: ParserContext, init: Expression | null | undefin
 }
 
 /**
- * Top-level locals whose object literal spreads rest props, mapped to the rest
- * name spread: `props` in `$: props = { ...$$restProps, class }`, which the
- * template then spreads in turn. One level only: an object spreading such a
- * local isn't followed. Reads `ctx.restPropLocals`, so call it once the
- * instance script has been walked.
+ * Top-level locals whose object literal spreads rest props, mapped to the
+ * rest name spread: `props` in `$: props = { ...$$restProps, class }`,
+ * which the template then spreads in turn. One level only: an object
+ * spreading such a local isn't followed. Reads `ctx.restPropLocals`, so
+ * call it once the instance script has been walked.
  */
 export function collectRestPropsObjectLocals(ctx: ParserContext, instance: AST.Script | undefined) {
   const locals = new Map<string, string>();

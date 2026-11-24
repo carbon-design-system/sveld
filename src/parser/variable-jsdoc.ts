@@ -13,11 +13,17 @@ interface ScriptComment {
 
 interface TopLevelDeclaration {
   name: string;
-  /** Offset of the declaration's (or, for `export`, the export statement's) first token. */
+  /**
+   * Offset of the declaration's (or, for `export`, the export statement's)
+   * first token.
+   */
   start: number;
 }
 
-/** Every `/* *\/` comment svelte-ast collected inside `[programStart, programEnd)`. */
+/**
+ * Every `/* *\/` comment svelte-ast collected
+ * inside `[programStart, programEnd)`.
+ */
 function collectBlockComments(
   comments: AST.JSComment[],
   source: string,
@@ -35,7 +41,10 @@ function collectBlockComments(
   }
 }
 
-/** Every top-level `const`/`let`/`function` (`export`-ed ones included) in a script's body. */
+/**
+ * Every top-level `const`/`let`/`function` (`export`-ed ones included) in
+ * a script's body.
+ */
 function collectTopLevelDeclarations(body: Program["body"], into: TopLevelDeclaration[]): void {
   for (const statement of body) {
     const { start } = statement;
@@ -74,9 +83,10 @@ function findAttachedComment(comments: ScriptComment[], declStart: number, sourc
 }
 
 /**
- * Maps each top-level variable/function name in the module and instance scripts to the
- * `@type`/description/`@internal` of its attached JSDoc block. A block without `@type` is
- * still recorded, for a TS-annotated variable.
+ * Maps each top-level variable/function name in the module and instance
+ * scripts to the `@type`/description/`@internal` of its attached JSDoc
+ * block. A block without `@type` is still recorded, for a
+ * TS-annotated variable.
  */
 function buildVariableJsDocTable(ctx: ParserContext): NonNullable<ParserContext["variableInfoCache"]> {
   const table: NonNullable<ParserContext["variableInfoCache"]> = new Map();
@@ -121,7 +131,10 @@ function variableJsDocEntry(ctx: ParserContext, varName: string) {
   return ctx.variableInfoCache.get(varName);
 }
 
-/** The type and docs of `varName`: from a prop, a TS annotation, or a JSDoc `@type`. */
+/**
+ * The type and docs of `varName`: from a prop, a TS annotation, or a
+ * JSDoc `@type`.
+ */
 export function findVariableTypeAndDescription(
   ctx: ParserContext,
   varName: string,
@@ -134,14 +147,15 @@ export function findVariableTypeAndDescription(
   const explicitType = ctx.explicitVariableTypesByName.get(varName);
   if (explicitType) return { type: explicitType, description: cached?.description, internal: cached?.internal };
 
-  // A JSDoc block without `@type` only types a TS-annotated variable (above).
+  // A JSDoc block without `@type` only types a TS-annotated
+  // variable (above).
   if (!cached?.type) return null;
   return { type: cached.type, description: cached.description, internal: cached.internal };
 }
 
 /**
- * {@link findVariableTypeAndDescription} for a variable whose type ends up in a
- * generated type (a context, an event detail), so its TS annotation's
+ * {@link findVariableTypeAndDescription} for a variable whose type ends up
+ * in a generated type (a context, an event detail), so its TS annotation's
  * dependencies are pulled into the `.d.ts`.
  */
 export function findTrackedVariableType(ctx: ParserContext, name: string) {
@@ -152,7 +166,10 @@ export function findTrackedVariableType(ctx: ParserContext, name: string) {
   return varInfo;
 }
 
-/** The description and `@internal` flag of the JSDoc above `varName`, with or without `@type`. */
+/**
+ * The description and `@internal` flag of the JSDoc above `varName`, with
+ * or without `@type`.
+ */
 export function findVariableJsDoc(ctx: ParserContext, varName: string): { description?: string; internal?: boolean } {
   const cached = variableJsDocEntry(ctx, varName);
   return {
@@ -172,7 +189,10 @@ export function resolveLocalVarJSDoc(ctx: ParserContext, name: string) {
   return funcDecl && declarationJSDoc(ctx, funcDecl);
 }
 
-/** A declaration's JSDoc, which sits on the `export` statement when it's exported. */
+/**
+ * A declaration's JSDoc, which sits on the `export` statement when
+ * it's exported.
+ */
 function declarationJSDoc(ctx: ParserContext, declaration: object) {
   const own = processNodeJSDoc(ctx, declaration);
   if (own) return own;

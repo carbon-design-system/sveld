@@ -14,8 +14,9 @@ const LEADING_DIGIT_REGEX = /^[0-9]/;
 
 /**
  * Makes a file-derived name a valid `.d.ts` identifier: strips invalid
- * characters (`my.component.svelte`) and prefixes `_` before a leading digit
- * (`3d-model.svelte`). Warns on rename, once per name when given `warned`.
+ * characters (`my.component.svelte`) and prefixes `_` before a leading
+ * digit (`3d-model.svelte`). Warns on rename, once per name when
+ * given `warned`.
  */
 function sanitizeModuleName(rawModuleName: string, warned?: Set<string>): string {
   const stripped = rawModuleName.replace(INVALID_MODULE_NAME_CHAR_REGEX, "");
@@ -36,8 +37,9 @@ export type ComponentEntry = [string, ParsedExports[string]];
 
 /**
  * `exports` holds the barrel's exported components (JSON/Markdown);
- * `allComponentEntries` adds glob-discovered ones (`.d.ts`). It's a list, not
- * a map keyed by `moduleName`, so two files sharing a basename both survive.
+ * `allComponentEntries` adds glob-discovered ones (`.d.ts`). It's a list,
+ * not a map keyed by `moduleName`, so two files sharing a basename
+ * both survive.
  */
 export interface CollectedComponents {
   exports: ParsedExports;
@@ -52,9 +54,9 @@ interface GlobbedComponentSource {
 }
 
 /**
- * Every `.svelte` file under `dir`, skipping dot-entries. Follows symlinked
- * directories, guarding against cycles by real path. A missing `dir` yields
- * no matches.
+ * Every `.svelte` file under `dir`, skipping dot-entries. Follows
+ * symlinked directories, guarding against cycles by real path. A missing
+ * `dir` yields no matches.
  */
 function findSvelteFiles(
   graph: ModuleGraph,
@@ -102,18 +104,27 @@ function globComponentSources(graph: ModuleGraph, rootDir: string): GlobbedCompo
     .sort((a, b) => compareText(a.source, b.source));
 }
 
-/** True when an export `source` still needs glob resolution, like `export { X } from "./dir"`. */
+/**
+ * True when an export `source` still needs glob resolution,
+ * like `export { X } from "./dir"`.
+ */
 function isUnresolvedBarrelSource(source: string): boolean {
   return !hasSvelteExtension(source);
 }
 
-/** Whether `candidateSource` is a file located under the directory `dirSource` points at. */
+/**
+ * Whether `candidateSource` is a file located under the directory
+ * `dirSource` points at.
+ */
 function isWithinSourceDir(dirSource: string, candidateSource: string): boolean {
   const dir = dirSource.endsWith("/") ? dirSource : `${dirSource}/`;
   return candidateSource.startsWith(dir);
 }
 
-/** Shared across {@link mergeGlobbedComponents} calls; watch mode keeps one across re-globs. */
+/**
+ * Shared across {@link mergeGlobbedComponents} calls; watch mode keeps one
+ * across re-globs.
+ */
 export interface GlobMergeState {
   seenPaths: Set<string>;
   seenModuleNamePaths: Map<string, string>;
@@ -136,9 +147,9 @@ export function createGlobMergeState(
 /**
  * Merges every `.svelte` file under `rootDir` into `exports` and
  * `allComponentEntries`. A barrel export still pointing at a directory
- * (`export { Button } from "./button"`) is matched to the same-basename hit
- * under it; every other unseen hit gets its own `allComponentEntries` row.
- * Idempotent for a given `state`.
+ * (`export { Button } from "./button"`) is matched to the same-basename
+ * hit under it; every other unseen hit gets its own `allComponentEntries`
+ * row. Idempotent for a given `state`.
  */
 export function mergeGlobbedComponents(
   graph: ModuleGraph,
@@ -197,7 +208,7 @@ export function collectComponents(
   const isFile = lstatSync(input).isFile();
   const dir = isFile ? dirname(input) : input;
   const rootDir = resolve(dir);
-  // Memoized: the same `source` is resolved several times per run.
+  // Memoized, since the same `source` is resolved several times per run.
   const resolvedPaths = new Map<string, string>();
   const resolveComponentFilePath: ResolveComponentFilePath = (filePath) => {
     let resolved = resolvedPaths.get(filePath);
@@ -238,7 +249,10 @@ export function collectComponents(
   return { exports, allComponentEntries, rootDir, resolveComponentFilePath };
 }
 
-/** The export name, except a lone `default` entry is named after its file, like a `--glob` component. */
+/**
+ * The export name, except a lone `default` entry is named after its file,
+ * like a `--glob` component.
+ */
 export function componentModuleName(
   exportName: string,
   source: string,

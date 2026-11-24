@@ -26,7 +26,10 @@ function levenshteinDistance(a: string, b: string): number {
   return distances[rows - 1][columns - 1];
 }
 
-/** Closest candidate to `input` by edit distance, or `undefined` if none is within `maxDistance`. */
+/**
+ * Closest candidate to `input` by edit distance, or `undefined` if none is
+ * within `maxDistance`.
+ */
 export function closestMatch(
   input: string,
   candidates: Iterable<string>,

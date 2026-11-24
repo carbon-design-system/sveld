@@ -36,7 +36,10 @@ export function addProp(ctx: ParserContext, prop_name: string, data: ComponentPr
   ctx.props.set(prop_name, existing ? { ...existing, ...data } : data);
 }
 
-/** Queue an initializer's unresolved cross-file default for `generateBundle`. */
+/**
+ * Queue an initializer's unresolved cross-file default
+ * for `generateBundle`.
+ */
 export function queuePendingCrossFileDefault(
   ctx: ParserContext,
   initResult: Pick<ProcessedInitializer, "pendingCallDefault" | "pendingConstDefault">,
@@ -65,8 +68,8 @@ const NEW_EXPRESSION_TYPES = new Map([
 
 /**
  * The default text, type, and metadata of an initializer. A value written
- * with a cast (`as const`, `as T`, `/** @type {T} *\/ (value)`) is typed as
- * the cast says.
+ * with a cast (`as const`, `as T`, `/** @type {T} *\/ (value)`) is typed
+ * as the cast says.
  */
 export function processInitializer(ctx: ParserContext, init: unknown, depth = 0): ProcessedInitializer {
   const result = processInitializerWithoutAssertion(ctx, init, depth);
@@ -164,7 +167,8 @@ function processInitializerWithoutAssertion(ctx: ParserContext, init: unknown, d
           };
         }
 
-        // `function defaultX() {}` has no initializer. Read JSDoc off the declaration.
+        // JSDoc is read off the declaration, since `function defaultX() {}` has
+        // no initializer.
         const funcNode = ctx.funcDecls.get(name);
         if (funcNode) {
           const resolvedJSDoc = resolveLocalVarJSDoc(ctx, name);
@@ -181,11 +185,13 @@ function processInitializerWithoutAssertion(ctx: ParserContext, init: unknown, d
         }
       }
 
-      // Named value import. The cross-file pass may swap in the imported literal.
+      // Named value import. The cross-file pass may swap in the
+      // imported literal.
       return withPendingConstDefault(result(nodeSourceText(ctx, node)), ctx.valueImportBindingsByLocalName.get(name));
     }
     case "MemberExpression":
-      // Member of a namespace import (`C.DELAY`). The cross-file pass may swap in the literal.
+      // Member of a namespace import (`C.DELAY`). The cross-file pass may swap
+      // in the literal.
       return withPendingConstDefault(
         result(nodeSourceText(ctx, node), isNumericConstant(node) ? "number" : undefined),
         importedMemberBinding(ctx, node),
@@ -199,7 +205,10 @@ function processInitializerWithoutAssertion(ctx: ParserContext, init: unknown, d
   }
 }
 
-/** `initResult`, left for the cross-file pass to read the imported value `binding` names, if any. */
+/**
+ * `initResult`, left for the cross-file pass to read the imported value
+ * `binding` names, if any.
+ */
 function withPendingConstDefault(
   initResult: ProcessedInitializer,
   binding: { source: string; importedName: string; members?: string[] } | undefined,
@@ -209,7 +218,10 @@ function withPendingConstDefault(
   return { ...initResult, pendingConstDefault: { importSource, importedName, ...(members ? { members } : {}) } };
 }
 
-/** A call default: a `$state`/`$derived` rune unwrapped, or a call whose type may resolve here or cross-file. */
+/**
+ * A call default: a `$state`/`$derived` rune unwrapped, or a call whose
+ * type may resolve here or cross-file.
+ */
 function processCallInitializer(
   ctx: ParserContext,
   call: CallExpression,
@@ -232,7 +244,8 @@ function processCallInitializer(
     // prop's `returnType` even though it isn't a function.
     const sameFileReturnType = resolveSameFileCallReturnType(ctx, calleeName);
     if (sameFileReturnType?.declared) return { ...result, resolvedType: sameFileReturnType.type };
-    // Read off the function's `return`s, so it's as inferred as a literal default.
+    // Read off the function's `return`s, so it's as inferred as a
+    // literal default.
     if (sameFileReturnType) return { ...result, type: sameFileReturnType.type };
 
     if (ctx.funcDecls.has(calleeName) || localFunctionValuedInitializer(ctx, calleeName)) {
@@ -267,14 +280,18 @@ export function literalValueType(node: Literal): string | undefined {
   return node.value == null ? undefined : typeof node.value;
 }
 
-/** Operators whose result is always a number (or a bigint, when both operands are). */
+/**
+ * Operators whose result is always a number (or a bigint, when both
+ * operands are).
+ */
 const NUMERIC_BINARY_OPERATORS = new Set(["-", "*", "/", "%", "**", "<<", ">>", ">>>", "&", "|", "^"]);
 const BOOLEAN_BINARY_OPERATORS = new Set(["==", "!=", "===", "!==", "<", "<=", ">", ">=", "in", "instanceof"]);
 
 /**
- * Type of an operator expression (`a * 2`, `"#" + id`, `!open`, `a ?? 5`) from its
- * operators and operand types. `undefined` when that needs a type checker (`a + b`
- * of untyped values), so the caller falls back to `any`, not the expression text.
+ * Type of an operator expression (`a * 2`, `"#" + id`, `!open`, `a ?? 5`)
+ * from its operators and operand types. `undefined` when that needs a type
+ * checker (`a + b` of untyped values), so the caller falls back to `any`,
+ * not the expression text.
  */
 function inferExpressionType(ctx: ParserContext, node: unknown, depth: number): string | undefined {
   const expr = asExpression(node);
@@ -330,7 +347,10 @@ function inferExpressionType(ctx: ParserContext, node: unknown, depth: number): 
   }
 }
 
-/** `A | B` from the branches of `??`/`||`/`&&`/`?:`, or `undefined` if any branch is unknown. */
+/**
+ * `A | B` from the branches of `??`/`||`/`&&`/`?:`, or `undefined` if any
+ * branch is unknown.
+ */
 function unionOfBranchTypes(types: Array<string | undefined>): string | undefined {
   const members = new Set<string>();
   for (const type of types) {
@@ -343,13 +363,18 @@ function unionOfBranchTypes(types: Array<string | undefined>): string | undefine
 
 /**
  * How {@link literalType} types members, as TypeScript would:
- * - `"widen"`: `let x = ...`, so `{ sm: false }` is `{ sm: boolean }` and `[]` is `any[]`.
- * - `"literal"`: a `const` export, so `{ close: "close" }` and `[1, 2]` keep their literals.
+ * - `"widen"`: `let x = ...`, so `{ sm: false }` is `{ sm: boolean }` and
+ *   `[]` is `any[]`.
+ * - `"literal"`: a `const` export, so `{ close: "close" }` and `[1, 2]`
+ *   keep their literals.
  * - `"const"`: `as const`, so literals plus `readonly` members and tuples.
  */
 export type LiteralTypeMode = "widen" | "literal" | "const";
 
-/** The type of a default built only from literals, or `undefined` if any part isn't one. */
+/**
+ * The type of a default built only from literals, or `undefined` if any
+ * part isn't one.
+ */
 export function literalType(node: unknown, mode: LiteralTypeMode): string | undefined {
   const expr = asExpression(node);
   const widen = mode === "widen";
@@ -386,7 +411,7 @@ export function literalType(node: unknown, mode: LiteralTypeMode): string | unde
       return members.size === 1 ? `${element}[]` : `(${element})[]`;
     }
     case "ObjectExpression": {
-      // A repeated key keeps its last value, as at runtime.
+      // A Map, so a repeated key keeps its last value, as at runtime.
       const members = new Map<string, string>();
       for (const property of expr.properties) {
         if (
@@ -421,7 +446,10 @@ export function literalType(node: unknown, mode: LiteralTypeMode): string | unde
  * argument (`$state<number>(0)`) wins over its argument. A function
  * declaration is typed as a function default is. `undefined` when unknown.
  */
-/** With `exactArity`, a function is typed as a value ({@link inferFunctionValueType}), not a prop default. */
+/**
+ * With `exactArity`, a function is typed as a value ({@link
+ * inferFunctionValueType}), not a prop default.
+ */
 export function inferVariableInitializerType(ctx: ParserContext, name: string, exactArity = false): string | undefined {
   const init = resolveLocalVarInitializer(ctx, name);
   if (init === undefined) {
@@ -448,14 +476,16 @@ export function inferVariableInitializerType(ctx: ParserContext, name: string, e
     }
   }
 
-  // A call's declared return type (`@returns`) lands in `resolvedType`.
+  // Processed so a call's declared return type (`@returns`) lands
+  // in `resolvedType`.
   const processed = processInitializer(ctx, init);
   return processed.type ?? processed.resolvedType;
 }
 
 /**
  * Type of the function `node` declared as `name`: its TS annotations, else
- * its JSDoc, else what {@link inferFunctionTypeFromNode} reads off the node.
+ * its JSDoc, else what {@link inferFunctionTypeFromNode} reads off
+ * the node.
  */
 function localFunctionType(ctx: ParserContext, name: string, node: FunctionNode, exactArity: boolean): string {
   const returnType = exactArity ? inferFunctionValueReturnType(node) : inferReturnTypeFromNode(node);
@@ -475,13 +505,17 @@ const SVELTE_STORE_TYPES = new Map([
   ["readonly", "Readable"],
 ]);
 
-/** `T` from a store type: `Writable<T>`, `Readable<T>`, with or without the `import("svelte/store")`. */
+/**
+ * `T` from a store type: `Writable<T>`, `Readable<T>`, with or without
+ * the `import("svelte/store")`.
+ */
 const STORE_VALUE_TYPE_REGEX = /^(?:import\("svelte\/store"\)\.)?(?:Writable|Readable)<([\s\S]*)>$/;
 
 /**
- * `import("svelte/store").Writable<T>` for `writable(value)`, `Readable<T>`
- * for `readable(value)` or `derived(stores, fn)`; `undefined` for any other
- * call. `T` is the type argument, else the initial value's type, else `any`.
+ * `import("svelte/store").Writable<T>` for `writable(value)`,
+ * `Readable<T>` for `readable(value)` or `derived(stores, fn)`;
+ * `undefined` for any other call. `T` is the type argument, else the
+ * initial value's type, else `any`.
  */
 export function svelteStoreType(ctx: ParserContext, call: CallExpression): string | undefined {
   const binding = isIdentifier(call.callee) ? ctx.valueImportBindingsByLocalName.get(call.callee.name) : undefined;
@@ -495,7 +529,8 @@ export function svelteStoreType(ctx: ParserContext, call: CallExpression): strin
     trackAdditionalTypeDependencyNode(ctx, typeArgument);
     valueType = sourceForExpression(ctx, typeArgument);
   } else if (binding?.importedName === "readonly") {
-    // `readonly(store)` reads the value type off the store it wraps.
+    // Only the wrapped store is read, since `readonly(store)` has its
+    // value type.
     const [wrapped] = call.arguments;
     const wrappedType = isIdentifier(wrapped)
       ? (findTrackedVariableType(ctx, wrapped.name)?.type ?? inferVariableInitializerType(ctx, wrapped.name))
@@ -504,7 +539,8 @@ export function svelteStoreType(ctx: ParserContext, call: CallExpression): strin
         : undefined;
     valueType = wrappedType?.trim().match(STORE_VALUE_TYPE_REGEX)?.[1];
   } else if (isDerived) {
-    // A callback that takes `set` reports its value through it, not its return.
+    // Only the callback's `set` is read, since a callback that takes `set`
+    // reports its value through it, not its return.
     const callback = call.arguments[1];
     const isFunction = callback?.type === "ArrowFunctionExpression" || callback?.type === "FunctionExpression";
     valueType = isFunction && callback.params.length < 2 ? inferReturnTypeFromNode(callback) : undefined;
@@ -518,8 +554,9 @@ export function svelteStoreType(ctx: ParserContext, call: CallExpression): strin
 }
 
 /**
- * The value inside `$state(x)`, `$state.raw(x)`, or `$derived(x)`: a prop defaulting to such a
- * local defaults to `x`, and the rune call means nothing to a consumer.
+ * The value inside `$state(x)`, `$state.raw(x)`, or `$derived(x)`: a prop
+ * defaulting to such a local defaults to `x`, and the rune call means
+ * nothing to a consumer.
  */
 function unwrapStateInitializer(init: Expression): Expression {
   if (init.type !== "CallExpression" || init.arguments.length !== 1) return init;
@@ -546,7 +583,10 @@ function resolveLocalVarInitializer(ctx: ParserContext, name: string, constOnly 
   return undefined;
 }
 
-/** Unlike `let`/`var`, a `const` can't change at runtime, so only it can be a context key. */
+/**
+ * Unlike `let`/`var`, a `const` can't change at runtime, so only it can be
+ * a context key.
+ */
 export function resolveConstInitializer(ctx: ParserContext, name: string): Expression | undefined {
   return resolveLocalVarInitializer(ctx, name, true);
 }
@@ -557,7 +597,10 @@ export function resolveConstInitializer(ctx: ParserContext, name: string): Expre
  * literal returns via {@link inferReturnTypeFromNode}. Returns `undefined`
  * (not `"any"`) when nothing confident turns up.
  */
-/** What calling a same-file function returns; `declared` when JSDoc or TypeScript says so, not its body. */
+/**
+ * What calling a same-file function returns; `declared` when JSDoc or
+ * TypeScript says so, not its body.
+ */
 function resolveSameFileCallReturnType(
   ctx: ParserContext,
   calleeName: string,
@@ -583,7 +626,10 @@ function localFunctionValuedInitializer(
   return init?.type === "ArrowFunctionExpression" || init?.type === "FunctionExpression" ? init : undefined;
 }
 
-/** Return type from `const f: () => string = ...` when the arrow omits `): string`. */
+/**
+ * Return type from `const f: () => string = ...` when the arrow
+ * omits `): string`.
+ */
 function bindingCallableReturnTypeText(ctx: ParserContext, name: string): string | undefined {
   for (const decl of ctx.vars) {
     for (const declarator of decl.declarations) {
@@ -625,15 +671,16 @@ function buildFunctionTypeFromParts(
  */
 function inferFunctionTypeFromNode(ctx: ParserContext, node: FunctionNode): string {
   const returnType = inferReturnTypeFromNode(node);
-  // TypeScript annotations on the function (`(value: string) => ...`) say more than its body.
+  // TypeScript annotations on the function (`(value: string) => ...`) win,
+  // since they say more than its body.
   const annotated = buildFunctionDeclarationSignature(ctx, node, returnType);
   if (annotated.hasAnnotations) return annotated.signature;
   return `(${inferParamsFromNode(node)}) => ${returnType}`;
 }
 
 /**
- * Turn params into `name: any`, or use `...args: any[]` when arity is unclear:
- * no params, destructuring, rest, or defaults.
+ * Turn params into `name: any`, or use `...args: any[]` when arity
+ * is unclear: no params, destructuring, rest, or defaults.
  */
 function inferParamsFromNode({ params }: FunctionNode): string {
   const names: string[] = [];
@@ -646,9 +693,9 @@ function inferParamsFromNode({ params }: FunctionNode): string {
 
 /**
  * The type of a function that is itself the value (an `export function`, a
- * context member), not a prop's default: its TS annotations, else each param
- * as `any` (optional when it has a default, `any[]` when rest), returning
- * what {@link inferFunctionValueReturnType} reads.
+ * context member), not a prop's default: its TS annotations, else each
+ * param as `any` (optional when it has a default, `any[]` when rest),
+ * returning what {@link inferFunctionValueReturnType} reads.
  */
 export function inferFunctionValueType(ctx: ParserContext, node: FunctionNode): string {
   const returnType = inferFunctionValueReturnType(node);
@@ -657,9 +704,12 @@ export function inferFunctionValueType(ctx: ParserContext, node: FunctionNode): 
   return `(${untypedParamList(node)}) => ${returnType}`;
 }
 
-/** A function value's params as `any`: optional when it has a default, `any[]` when rest. */
+/**
+ * A function value's params as `any`: optional when it has a default,
+ * `any[]` when rest.
+ */
 function untypedParamList(node: FunctionNode): string {
-  // A destructured param has no name of its own.
+  // Named by position, since a destructured param has no name of its own.
   const unnamed = (index: number) => (node.params.length === 1 ? "arg" : `arg${index}`);
   const params = node.params.map((param, index) => {
     if (param.type === "RestElement") {
@@ -675,9 +725,9 @@ function untypedParamList(node: FunctionNode): string {
 
 /**
  * A function value's type from its JSDoc `@param`/`@returns` tags, or
- * `undefined` when it has neither. Without `@returns`, the return type is read
- * off the body, as for an unannotated function; without `@param`, each param
- * is `any`.
+ * `undefined` when it has neither. Without `@returns`, the return type is
+ * read off the body, as for an unannotated function; without `@param`,
+ * each param is `any`.
  */
 export function jsdocFunctionValueType(
   jsdoc: { params?: ComponentPropParam[]; returnType?: string } | undefined,
@@ -689,14 +739,18 @@ export function jsdocFunctionValueType(
 }
 
 /**
- * What calling a function value gives, read off its body: `void` (`Promise<void>`
- * when async) when it returns no value, else {@link inferReturnTypeFromNode}.
+ * What calling a function value gives, read off its body: `void`
+ * (`Promise<void>` when async) when it returns no value, else
+ * {@link inferReturnTypeFromNode}.
  */
 export function inferFunctionValueReturnType(node: FunctionNode): string {
   return returnsNothing(node) ? (node.async ? "Promise<void>" : "void") : inferReturnTypeFromNode(node);
 }
 
-/** A block-bodied function with no `return` of a value: calling it gives `undefined`. */
+/**
+ * A block-bodied function with no `return` of a value: calling it
+ * gives `undefined`.
+ */
 function returnsNothing(node: FunctionNode): boolean {
   return (
     !node.generator &&
@@ -706,8 +760,8 @@ function returnsNothing(node: FunctionNode): boolean {
 }
 
 /**
- * Infer return type from literal returns only. Every `return` must agree on
- * the same primitive. Bare `return;`, no returns, identifiers, calls,
+ * Infer return type from literal returns only. Every `return` must agree
+ * on the same primitive. Bare `return;`, no returns, identifiers, calls,
  * objects, ternaries, async, or generators all become `any`.
  */
 function inferReturnTypeFromNode(node: FunctionNode): string {
@@ -721,7 +775,8 @@ function inferReturnTypeFromNode(node: FunctionNode): string {
 
 /**
  * Map one return expression to `string`, `number`, or `boolean`, or `null`
- * if it isn't a literal, template literal, or `String`/`Number`/`Boolean` call.
+ * if it isn't a literal, template literal, or
+ * `String`/`Number`/`Boolean` call.
  */
 function inferReturnPrimitive(node: unknown): "string" | "number" | "boolean" | null {
   const expr = asExpression(node);
@@ -759,8 +814,9 @@ function paramsSourceText(ctx: ParserContext, { params }: FunctionNode): string 
 }
 
 /**
- * A function default as arrow shorthand (`(value) => String(value)`), or `undefined` unless
- * the body is an expression, empty, or a single `return <expr>;` (see #203).
+ * A function default as arrow shorthand (`(value) => String(value)`), or
+ * `undefined` unless the body is an expression, empty, or a single
+ * `return <expr>;` (see #203).
  */
 function conciseFunctionDefaultText(ctx: ParserContext, node: FunctionNode): string | undefined {
   // An arrow can't be a generator.
@@ -770,7 +826,8 @@ function conciseFunctionDefaultText(ctx: ParserContext, node: FunctionNode): str
   const params = paramsSourceText(ctx, node);
   const asyncPrefix = node.async ? "async " : "";
 
-  // An object-literal arrow body needs parens (`() => ({ a: 1 })`) to not read as a block.
+  // An object-literal arrow body needs parens (`() => ({ a: 1 })`) to not
+  // read as a block.
   const arrowBody = (expr: { type: string }, exprText: string) =>
     expr.type === "ObjectExpression" ? `(${exprText})` : exprText;
 
@@ -886,7 +943,10 @@ const NUMBER_CONSTANTS = new Set([
 ]);
 const MATH_CONSTANTS = new Set(["PI", "E", "LN2", "LN10", "LOG2E", "LOG10E", "SQRT2", "SQRT1_2"]);
 
-/** `Number.MAX_SAFE_INTEGER`, `Math.PI`, and the other numeric constants on `Number` and `Math`. */
+/**
+ * `Number.MAX_SAFE_INTEGER`, `Math.PI`, and the other numeric constants on
+ * `Number` and `Math`.
+ */
 function isNumericConstant({ object, property }: MemberExpression): boolean {
   if (!isIdentifier(object) || !isIdentifier(property)) return false;
   if (object.name === "Number") return NUMBER_CONSTANTS.has(property.name);

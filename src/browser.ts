@@ -1,12 +1,12 @@
 /**
  * Browser-safe entry point.
  *
- * Everything exported here avoids Node built-ins (`node:fs`, `node:path`, ...),
- * so it bundles for the browser (Vite, esbuild, webpack, Rollup) without a
- * polyfill. It covers parsing a single component's source and rendering that
- * result to JSON, Markdown, or TypeScript definitions: everything except the
- * filesystem-driven project scanning (`sveld()`/`pluginSveld()`) and CLI,
- * which only make sense in Node.
+ * Everything exported here avoids Node built-ins (`node:fs`, `node:path`,
+ * ...), so it bundles for the browser (Vite, esbuild, webpack, Rollup)
+ * without a polyfill. It covers parsing a single component's source and
+ * rendering that result to JSON, Markdown, or TypeScript definitions:
+ * everything except the filesystem-driven project scanning
+ * (`sveld()`/`pluginSveld()`) and CLI, which only make sense in Node.
  *
  * @example
  * ```ts

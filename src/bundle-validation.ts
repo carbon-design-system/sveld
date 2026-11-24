@@ -1,4 +1,7 @@
-/** Checks that span components, run once every component has parsed and been resolved. */
+/**
+ * Checks that span components, run once every component has parsed and
+ * been resolved.
+ */
 
 import { dirname } from "node:path";
 import type { ComponentDocApi, ComponentDocs, ResolveComponentFilePath } from "./bundle";
@@ -8,10 +11,16 @@ import { getParsedComponentPropIgnores } from "./parsed-component-metadata";
 import { MODULE_EXTENSIONS } from "./path";
 import { exportsTypeName, extendsTypeName, propsTypeName } from "./writer/writer-ts-definitions-core";
 
-/** An import's extensions, and a component's: `"./Base"` may name `Base.svelte`. */
+/**
+ * An import's extensions, and a component's: `"./Base"` may
+ * name `Base.svelte`.
+ */
 const EXTENDS_TARGET_EXTENSIONS = [...MODULE_EXTENSIONS, ".svelte"];
 
-/** `@extends`/`@extendProps` import specifiers are stored with their quotes. */
+/**
+ * `@extends`/`@extendProps` import specifiers are stored with
+ * their quotes.
+ */
 function stripQuotes(text: string): string | undefined {
   const trimmed = text.trim();
   if (trimmed.length < 2) return undefined;
@@ -51,11 +60,11 @@ export function validateModuleReExportNames(component: ComponentDocApi): SveldDi
 }
 
 /**
- * Checks a component's `@extends`/`@extendProps` target: the file must exist,
- * and when it's a bundled `.svelte` file, the named interface must match its
- * generated `<Name>Props`. Also flags an own prop whose type differs from the
- * target's same-named prop, since `Base & $Props` collapses it to `never`.
- * Bare/package specifiers are skipped.
+ * Checks a component's `@extends`/`@extendProps` target: the file must
+ * exist, and when it's a bundled `.svelte` file, the named interface must
+ * match its generated `<Name>Props`. Also flags an own prop whose type
+ * differs from the target's same-named prop, since `Base & $Props`
+ * collapses it to `never`. Bare/package specifiers are skipped.
  */
 export function createExtendsTargetValidator(
   components: ComponentDocs,
@@ -87,12 +96,14 @@ export function createExtendsTargetValidator(
       ];
     }
 
-    // A file outside the bundle (e.g. a hand-written .ts interface): existence is all that's verifiable.
+    // A file outside the bundle, such as a hand-written .ts interface, can
+    // only be checked to exist.
     const target = componentsByAbsolutePath.get(targetPath);
     if (!target) return [];
 
     const expectedInterface = propsTypeName(target.moduleName);
-    // `ChartProps<T>` names `ChartProps`; the arguments are the extender's to pass.
+    // `ChartProps<T>` names `ChartProps`; the arguments are the extender's
+    // to pass.
     if (extendsTypeName(extendsInfo.interface) !== expectedInterface) {
       return [
         createDiagnostic({

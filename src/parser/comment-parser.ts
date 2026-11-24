@@ -1,10 +1,12 @@
 /**
- * sveld's own `/** ... *\/` parser: a description plus `@tag` entries, each split into an
- * optional `{type}`, an optional `name`/`[name=default]`, and description text.
+ * sveld's own `/** ... *\/` parser: a description plus `@tag` entries,
+ * each split into an optional `{type}`, an optional
+ * `name`/`[name=default]`, and description text.
  *
- * Best-effort: an unpaired `[` or `{` falls back to description text. Bare `name=default`
- * without brackets is unsupported. Indentation after the gutter is kept so `@example` code
- * keeps its formatting, and each line keeps its absolute source offset for source ranges.
+ * Best-effort: an unpaired `[` or `{` falls back to description text. Bare
+ * `name=default` without brackets is unsupported. Indentation after the
+ * gutter is kept so `@example` code keeps its formatting, and each line
+ * keeps its absolute source offset for source ranges.
  */
 
 import { indexOfClosingBracket } from "../type-text";
@@ -17,14 +19,17 @@ interface CommentLine {
   number: number;
   /** Whitespace after the gutter, minus its one separator space. */
   indent: string;
-  /** Text after the gutter, minus whatever tag/type/name parsing has consumed. */
+  /**
+   * Text after the gutter, minus whatever tag/type/name parsing
+   * has consumed.
+   */
   content: string;
   /** Set on a tag section's first line. */
   tag?: string;
   /**
-   * Set on each line after a tag's first that its multi-line `{type}` runs onto. The last such
-   * line holds whatever follows the closing `}` (name, description) - the tag's own line in
-   * every sense but the physical one.
+   * Set on each line after a tag's first that its multi-line `{type}` runs
+   * onto. The last such line holds whatever follows the closing `}` (name,
+   * description) - the tag's own line in every sense but the physical one.
    */
   continuesType?: true;
 }
@@ -36,7 +41,10 @@ export interface JSDocTag {
   optional: boolean;
   default?: string;
   description: string;
-  /** Body text after `@tag` as written, braces included, untouched by type/name parsing. */
+  /**
+   * Body text after `@tag` as written, braces included, untouched by
+   * type/name parsing.
+   */
   text: string;
   /** Shares objects with the parent `JSDocComment.lines`. */
   lines: CommentLine[];
@@ -63,7 +71,10 @@ const WHITESPACE_CHAR_REGEX = /\s/;
 const TAG_SECTION_START_REGEX = /^@[^\s/]+(?=\s|$)/;
 const TAG_PREFIX_REGEX = /^@(\S+)\s*/;
 
-/** Tags that mean nothing without a name, so the name may wrap onto a line of its own. */
+/**
+ * Tags that mean nothing without a name, so the name may wrap onto a line
+ * of its own.
+ */
 const NAME_REQUIRED_TAGS = new Set(["extends", "extendProps", "generics", "template", "typedef"]);
 
 /** Length of the leading `\s` run in `text`. */
@@ -78,7 +89,10 @@ export function leadingWhitespaceLength(text: string): number {
   return index;
 }
 
-/** Strips the comment gutter from one physical line, splitting what's left into `indent` + `content`. */
+/**
+ * Strips the comment gutter from one physical line, splitting what's left
+ * into `indent` + `content`.
+ */
 function tokenizeLine(text: string, isOpeningLine: boolean): { indent: string; content: string } {
   let rest = text.slice(leadingWhitespaceLength(text));
   let hasMarker = false;
@@ -97,7 +111,8 @@ function tokenizeLine(text: string, isOpeningLine: boolean): { indent: string; c
   const trimmedEnd = rest.trimEnd();
   const content = trimmedEnd.endsWith(BLOCK_CLOSE) ? trimmedEnd.slice(0, -BLOCK_CLOSE.length).trimEnd() : rest;
 
-  // The gutter is "marker + one space"; any further whitespace is indentation.
+  // The gutter is only the marker and one space, so any further whitespace
+  // is indentation.
   const indent = hasMarker ? separator.slice(1) : separator;
   return { indent, content };
 }
@@ -109,9 +124,10 @@ function physicalLineText(source: string, lineStart: number, lineEnd: number): s
 }
 
 /**
- * Every `/** ... *\/` block in `source`. A block opens on a line whose first text is `/**` (not
- * `/***`) and closes on the first line ending with `*\/`; an unterminated block is dropped. Jumps
- * between `/**` with `indexOf` rather than splitting the whole source into lines.
+ * Every `/** ... *\/` block in `source`. A block opens on a line whose
+ * first text is `/**` (not `/***`) and closes on the first line ending
+ * with `*\/`; an unterminated block is dropped. Jumps between `/**` with
+ * `indexOf` rather than splitting the whole source into lines.
  */
 function findCommentBlocks(source: string): Array<{ start: number; end: number; lines: CommentLine[] }> {
   const blocks: Array<{ start: number; end: number; lines: CommentLine[] }> = [];
@@ -170,7 +186,10 @@ function trimBoilerplateEdges(lines: CommentLine[]): CommentLine[] {
   return result;
 }
 
-/** Splits lines into a leading description section plus one per `@tag`, ignoring `@` inside fenced code. */
+/**
+ * Splits lines into a leading description section plus one per `@tag`,
+ * ignoring `@` inside fenced code.
+ */
 function splitIntoSections(lines: CommentLine[]): CommentLine[][] {
   const sections: CommentLine[][] = [[]];
   let fenced = false;
@@ -187,12 +206,18 @@ function splitIntoSections(lines: CommentLine[]): CommentLine[][] {
   return sections;
 }
 
-/** Whether `text` opens or closes a fenced (```` ``` ````) code block: an odd number of fences. */
+/**
+ * Whether `text` opens or closes a fenced (```` ``` ````) code block: an
+ * odd number of fences.
+ */
 export function togglesCodeFence(text: string): boolean {
   return countOccurrences(text, FENCE) % 2 === 1;
 }
 
-/** Non-overlapping `needle` occurrences in `text`, without a `split` allocation. */
+/**
+ * Non-overlapping `needle` occurrences in `text`, without a
+ * `split` allocation.
+ */
 function countOccurrences(text: string, needle: string): number {
   let count = 0;
   let index = text.indexOf(needle);
@@ -208,15 +233,17 @@ function joinLines(lines: CommentLine[]): string {
 }
 
 /**
- * Consumes a leading, possibly multi-line, balanced `{...}`, mutating the consumed lines'
- * `content`. Returns `null` without mutating if there's no `{` or the braces never balance.
+ * Consumes a leading, possibly multi-line, balanced `{...}`, mutating the
+ * consumed lines' `content`. Returns `null` without mutating if there's no
+ * `{` or the braces never balance.
  */
 function extractType(lines: CommentLine[]): { type: string; endIndex: number } | null {
   let start = 0;
   while (start < lines.length - 1 && lines[start].content.trim() === "") start++;
   if (lines[start].content[0] !== "{") return null;
 
-  // Scanned as one text so a string literal type (`{"}"}`) that spans lines still hides its brackets.
+  // Scanned as one text so a string literal type (`{"}"}`) that spans lines
+  // still hides its brackets.
   const text = lines
     .slice(start)
     .map((line) => line.content)
@@ -236,7 +263,8 @@ function extractType(lines: CommentLine[]): { type: string; endIndex: number } |
   const fragments = consumedPerLine.map((count, idx) => {
     const lineIndex = start + idx;
     const fragment = lines[lineIndex].content.slice(0, count);
-    // Drop the whitespace after the type here so `@type {Foo}` doesn't leave a stray space as its description.
+    // Drop the whitespace after the type here so `@type {Foo}` doesn't leave a
+    // stray space as its description.
     lines[lineIndex].content = lines[lineIndex].content.slice(count).replace(LEADING_WS_REGEX, "");
     if (lineIndex > 0) lines[lineIndex].continuesType = true;
     return idx === 0 ? fragment : lines[lineIndex].indent + fragment;
@@ -246,8 +274,9 @@ function extractType(lines: CommentLine[]): { type: string; endIndex: number } |
 }
 
 /**
- * Consumes a leading `name`, `[name]`, or `[name=default]` from `line`, mutating `line.content`.
- * Returns `null` without mutating if there's none or the brackets don't balance.
+ * Consumes a leading `name`, `[name]`, or `[name=default]` from `line`,
+ * mutating `line.content`. Returns `null` without mutating if there's none
+ * or the brackets don't balance.
  */
 function extractName(line: CommentLine): { name: string; optional: boolean; default?: string } | null {
   const leadingWs = line.content.match(LEADING_WS_REGEX)?.[0] ?? "";
@@ -255,7 +284,8 @@ function extractName(line: CommentLine): { name: string; optional: boolean; defa
 
   let depth = 0;
   let consumed = 0;
-  // A quoted name (`@event "my change"`) runs to its closing quote, spaces included.
+  // A quoted name (`@event "my change"`) runs to its closing quote, since it
+  // may contain spaces.
   const closingQuote = source[0] === '"' || source[0] === "'" ? source.indexOf(source[0], 1) : -1;
   if (closingQuote === -1) {
     for (const ch of source) {
@@ -278,14 +308,16 @@ function extractName(line: CommentLine): { name: string; optional: boolean; defa
   if (token.startsWith("[") && token.endsWith("]")) {
     optional = true;
     const inner = token.slice(1, -1);
-    // Rejoin past the first "=" so a default containing "=" (`[cb=() => 1]`) survives.
+    // Rejoin past the first "=" so a default containing "="
+    // (`[cb=() => 1]`) survives.
     const parts = inner.split("=");
     name = parts[0].trim();
     if (parts.length > 1) defaultValue = parts.slice(1).join("=").trim();
     if (!name) return null;
   }
 
-  // Unquote `@event "change"` so it matches the inferred `dispatch("change")` name.
+  // Unquote `@event "change"` so it matches the inferred
+  // `dispatch("change")` name.
   if (name.length > 1 && (name[0] === '"' || name[0] === "'") && name[name.length - 1] === name[0]) {
     name = name.slice(1, -1);
   }
@@ -300,7 +332,8 @@ function parseTagSection(sectionLines: CommentLine[]): JSDocTag {
   const tag = tagMatch ? tagMatch[1] : "";
   const afterTagPrefix = tagMatch ? first.content.slice(tagMatch[0].length) : first.content;
 
-  // Snapshot the body before extraction mutates it. A bare `@example` line contributes no line of its own.
+  // Snapshot the body, since extraction mutates it. A bare `@example` line
+  // contributes no line of its own.
   const firstBodyLine = afterTagPrefix.trimEnd();
   const proseLines = sectionLines.slice(1).map((line) => line.indent + line.content);
   const text = (firstBodyLine ? [firstBodyLine, ...proseLines] : proseLines).join("\n");
@@ -311,8 +344,9 @@ function parseTagSection(sectionLines: CommentLine[]): JSDocTag {
   const typeResult = extractType(sectionLines);
   const type = typeResult?.type ?? "";
 
-  // The name shares the line the type ends on, so after `@slot {{ item: string }}` the next line
-  // stays description. A tag that requires a name may take it from the next non-empty line.
+  // The name shares the line the type ends on, so after
+  // `@slot {{ item: string }}` the next line stays description. A tag that
+  // requires a name may take it from the next non-empty line.
   let nameLineIndex = typeResult?.endIndex ?? 0;
   if (NAME_REQUIRED_TAGS.has(tag)) {
     while (nameLineIndex < sectionLines.length - 1 && sectionLines[nameLineIndex].content.trim() === "") {

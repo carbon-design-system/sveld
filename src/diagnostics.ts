@@ -5,35 +5,83 @@ import type { ParsedComponent, SourceRange } from "./model";
  * Why sveld could not pin a type during parsing.
  *
  * - `prop-unknown-type`: prop `typeSource` is `"unknown"`.
- * - `context-any-type`: `setContext` value inferred as `any`, or with `any` inside it (`Writable<any>`, `(id: any) => void`).
- * - `bind-this-type-mismatch`: a `bind:this` prop's declared type names an element type it's never bound to, e.g. `HTMLElement` on a `<div>`; the declared type ships as written.
- * - `slot-missing-type`: `@slot`/`@snippet` tag omitted the required `{Type}` annotation.
- * - `slot-not-rendered`: a `@slot`/`@snippet` tag names a slot the component never renders, e.g. a description's first word read as the slot name.
- * - `event-no-source`: `@event` with no dispatch, forward, or callback prop.
- * - `dispatch-escapes`: the `createEventDispatcher()` result is passed to a function sveld can't read the dispatched events of; they must be documented with `@event`.
- * - `example-compile-error`: a TS/JS `@example` block failed to type-check (opt-in, `checkExamples`).
- * - `example-syntax-error`: a `svelte`/`html` `@example` block failed to parse (opt-in, `checkExamples`).
- * - `syntax-skipped`: `$props()`/`{@render}` syntax the parser can't model; omitted from output.
- * - `type-syntax-error`: a JSDoc `{type}` isn't valid TypeScript (e.g. `{"a" | }`, or closure-style `{?string}`), or has a `//` comment, so it would break the `.d.ts`; typed as `any` instead.
- * - `rest-props-unresolved`: every `{...$$restProps}` target was a component, so `$RestProps` couldn't be typed.
- * - `context-duplicate-key`: `setContext` called more than once with the same key; only the first call's shape is used.
- * - `context-key-unresolved`: a `setContext` key isn't a string literal, a `const`-bound string, `Symbol()`, or an imported `export const` string; the context is skipped.
- * - `context-value-unresolved`: a `setContext` value isn't an object literal or a variable (e.g. `writable(0)`), so sveld can't describe its shape; the context is skipped.
- * - `spread-unresolved`: a `{...spread}` in a context or slot-props object literal couldn't be resolved; widened to `Record<string, any>`.
- * - `export-unresolved`: a named export specifier couldn't be resolved to a local declaration (instance script), or to a local declaration or value import (module script); or an exported class, which isn't documented.
- * - `module-export-conflict`: a `<script context="module">` export collides with the component's default export or a generated type name; the export is skipped or may not type-check.
- * - `extend-props-target-missing`: an `@extends`/`@extendProps` target file wasn't found, or its named interface doesn't match the bundled component it points at.
- * - `extend-props-duplicate`: a second `@extends`/`@extendProps` tag overwrote the first.
- * - `extend-props-override`: an own prop has the same name as an `@extends` target's prop but a different type.
- * - `jsdoc-unknown-tag`: a JSDoc tag sveld doesn't recognize (e.g. a typo like `@depreacted`); passed through unchanged, surfaced only under `--strict`/`--report-diagnostics`.
- * - `typedef-duplicate`: a second `@typedef`/`@callback` reused a name; the later declaration overwrites the earlier one.
- * - `property-duplicate`: a second `@property` reused a name on the same `@event`/`@typedef`; the later declaration overwrites the earlier one.
- * - `generics-conflict`: a second `@generics`/`@template` reused a generic name.
- * - `event-description-ambiguous`: unindented text after an `@event` in the same comment block was read as the next tag's description; the author may have meant it for the event.
- * - `jsdoc-tag-dropped`: a passthrough JSDoc tag (e.g. `@see`) couldn't attach to a following or preceding structural tag.
- * - `internal-typedef-referenced`: a public prop/typedef/event/slot/module-export/context type references an `@internal` typedef by name, which is excluded from output; the generated `.d.ts` will contain a dangling reference.
- * - `cross-file-unresolved`: output depends on an import that was never read, because the component was parsed standalone (`sveld/browser`, or `ComponentParser` directly) and finalized with `finalizeWithoutCrossFileResolution`. `generateBundle` and the CLI resolve these and never record it.
- * - `export-ambiguous`: two `export *` statements in the entry barrel bring in the same name from different modules, so the barrel doesn't export it and the entry-exports docs leave it out (`documentExports` only). Attributed to the barrel file, not a component.
+ * - `context-any-type`: `setContext` value inferred as `any`, or with
+ *   `any` inside it (`Writable<any>`, `(id: any) => void`).
+ * - `bind-this-type-mismatch`: a `bind:this` prop's declared type names an
+ *   element type it's never bound to, e.g. `HTMLElement` on a `<div>`; the
+ *   declared type ships as written.
+ * - `slot-missing-type`: `@slot`/`@snippet` tag omitted the required
+ *   `{Type}` annotation.
+ * - `slot-not-rendered`: a `@slot`/`@snippet` tag names a slot the
+ *   component never renders, e.g. a description's first word read as the
+ *   slot name.
+ * - `event-no-source`: `@event` with no dispatch, forward, or callback
+ *   prop.
+ * - `dispatch-escapes`: the `createEventDispatcher()` result is passed to
+ *   a function sveld can't read the dispatched events of; they must be
+ *   documented with `@event`.
+ * - `example-compile-error`: a TS/JS `@example` block failed to type-check
+ *   (opt-in, `checkExamples`).
+ * - `example-syntax-error`: a `svelte`/`html` `@example` block failed to
+ *   parse (opt-in, `checkExamples`).
+ * - `syntax-skipped`: `$props()`/`{@render}` syntax the parser can't
+ *   model; omitted from output.
+ * - `type-syntax-error`: a JSDoc `{type}` isn't valid TypeScript (e.g.
+ *   `{"a" | }`, or closure-style `{?string}`), or has a `//` comment, so
+ *   it would break the `.d.ts`; typed as `any` instead.
+ * - `rest-props-unresolved`: every `{...$$restProps}` target was a
+ *   component, so `$RestProps` couldn't be typed.
+ * - `context-duplicate-key`: `setContext` called more than once with the
+ *   same key; only the first call's shape is used.
+ * - `context-key-unresolved`: a `setContext` key isn't a string literal, a
+ *   `const`-bound string, `Symbol()`, or an imported `export const`
+ *   string; the context is skipped.
+ * - `context-value-unresolved`: a `setContext` value isn't an object
+ *   literal or a variable (e.g. `writable(0)`), so sveld can't describe
+ *   its shape; the context is skipped.
+ * - `spread-unresolved`: a `{...spread}` in a context or slot-props object
+ *   literal couldn't be resolved; widened to `Record<string, any>`.
+ * - `export-unresolved`: a named export specifier couldn't be resolved to
+ *   a local declaration (instance script), or to a local declaration or
+ *   value import (module script); or an exported class, which isn't
+ *   documented.
+ * - `module-export-conflict`: a `<script context="module">` export
+ *   collides with the component's default export or a generated type name;
+ *   the export is skipped or may not type-check.
+ * - `extend-props-target-missing`: an `@extends`/`@extendProps` target
+ *   file wasn't found, or its named interface doesn't match the bundled
+ *   component it points at.
+ * - `extend-props-duplicate`: a second `@extends`/`@extendProps` tag
+ *   overwrote the first.
+ * - `extend-props-override`: an own prop has the same name as an
+ *   `@extends` target's prop but a different type.
+ * - `jsdoc-unknown-tag`: a JSDoc tag sveld doesn't recognize (e.g. a typo
+ *   like `@depreacted`); passed through unchanged, surfaced only under
+ *   `--strict`/`--report-diagnostics`.
+ * - `typedef-duplicate`: a second `@typedef`/`@callback` reused a name;
+ *   the later declaration overwrites the earlier one.
+ * - `property-duplicate`: a second `@property` reused a name on the same
+ *   `@event`/`@typedef`; the later declaration overwrites the earlier one.
+ * - `generics-conflict`: a second `@generics`/`@template` reused a generic
+ *   name.
+ * - `event-description-ambiguous`: unindented text after an `@event` in
+ *   the same comment block was read as the next tag's description; the
+ *   author may have meant it for the event.
+ * - `jsdoc-tag-dropped`: a passthrough JSDoc tag (e.g. `@see`) couldn't
+ *   attach to a following or preceding structural tag.
+ * - `internal-typedef-referenced`: a public
+ *   prop/typedef/event/slot/module-export/context type references an
+ *   `@internal` typedef by name, which is excluded from output; the
+ *   generated `.d.ts` will contain a dangling reference.
+ * - `cross-file-unresolved`: output depends on an import that was never
+ *   read, because the component was parsed standalone (`sveld/browser`, or
+ *   `ComponentParser` directly) and finalized with
+ *   `finalizeWithoutCrossFileResolution`. `generateBundle` and the CLI
+ *   resolve these and never record it.
+ * - `export-ambiguous`: two `export *` statements in the entry barrel
+ *   bring in the same name from different modules, so the barrel doesn't
+ *   export it and the entry-exports docs leave it out (`documentExports`
+ *   only). Attributed to the barrel file, not a component.
  */
 export type SveldDiagnosticKind =
   | "prop-unknown-type"
@@ -67,7 +115,10 @@ export type SveldDiagnosticKind =
   | "cross-file-unresolved"
   | "export-ambiguous";
 
-/** `"error"` fails `--strict=errors`; `"warning"` only fails plain `--strict`. */
+/**
+ * `"error"` fails `--strict=errors`; `"warning"` only fails
+ * plain `--strict`.
+ */
 export type SveldDiagnosticSeverity = "error" | "warning";
 
 /**
@@ -125,24 +176,33 @@ export interface SveldDiagnostic {
    */
   component: string;
   kind: SveldDiagnosticKind;
-  /** Stable, namespaced identifier for `kind` (e.g. `"sveld/prop-unknown-type"`). */
+  /**
+   * Stable, namespaced identifier for `kind`
+   * (e.g. `"sveld/prop-unknown-type"`).
+   */
   code: string;
   severity: SveldDiagnosticSeverity;
   /** Prop, context field, or event name. */
   name: string;
   /** What went wrong and what type sveld used. */
   message: string;
-  /** Where in the component source this diagnostic points, when the parser holds a stable position. */
+  /**
+   * Where in the component source this diagnostic points, when the parser
+   * holds a stable position.
+   */
   source?: SourceRange;
   /**
-   * True when suppressed by an inline `@sveld-ignore` tag or a `diagnostics.ignore`
-   * config matcher. Still present here (and counted in the summary) but never
-   * fails `--strict` / `--strict=errors`.
+   * True when suppressed by an inline `@sveld-ignore` tag or a
+   * `diagnostics.ignore` config matcher. Still present here (and counted in
+   * the summary) but never fails `--strict` / `--strict=errors`.
    */
   ignored?: boolean;
 }
 
-/** Fields recordable at the point a diagnostic is discovered; `code`/`severity` are derived from `kind`. */
+/**
+ * Fields recordable at the point a diagnostic is discovered;
+ * `code`/`severity` are derived from `kind`.
+ */
 export type SveldDiagnosticInput = Omit<SveldDiagnostic, "code" | "severity">;
 
 export function createDiagnostic(input: SveldDiagnosticInput): SveldDiagnostic {
@@ -154,11 +214,11 @@ export function createDiagnostic(input: SveldDiagnosticInput): SveldDiagnostic {
 }
 
 /**
- * `jsdoc-unknown-tag` is speculative: a misspelled tag (`@depreacted`) and an
- * intentional custom tag look identical to the parser, so it's noisier than
- * the rest of the codes. Surface it only when the caller opted into
- * diagnostics via `--strict`/`--report-diagnostics`; a plain run stays quiet
- * about tags sveld already passes through unchanged.
+ * `jsdoc-unknown-tag` is speculative: a misspelled tag (`@depreacted`) and
+ * an intentional custom tag look identical to the parser, so it's noisier
+ * than the rest of the codes. Surface it only when the caller opted into
+ * diagnostics via `--strict`/`--report-diagnostics`; a plain run stays
+ * quiet about tags sveld already passes through unchanged.
  */
 export function filterSpeculativeDiagnostics(
   diagnostics: SveldDiagnostic[],
@@ -169,10 +229,11 @@ export function filterSpeculativeDiagnostics(
 }
 
 /**
- * Diagnostics that should fail `--strict` (`strict: true`) or `--strict=errors`
- * (`strict: "errors"`): never an `ignored` one, and only `severity: "error"`
- * ones under `"errors"`. Shared by the CLI and the programmatic `sveld()` API
- * so their exit-code contracts can't drift apart.
+ * Diagnostics that should fail `--strict` (`strict: true`) or
+ * `--strict=errors` (`strict: "errors"`): never an `ignored` one, and only
+ * `severity: "error"` ones under `"errors"`. Shared by the CLI and the
+ * programmatic `sveld()` API so their exit-code contracts can't
+ * drift apart.
  */
 export function failingDiagnostics(
   diagnostics: SveldDiagnostic[],
@@ -203,9 +264,9 @@ function matchesIgnoreMatcher(diagnostic: SveldDiagnostic, matcher: DiagnosticIg
 }
 
 /**
- * Marks every diagnostic matching at least one `diagnostics.ignore` matcher
- * as `ignored`, on top of whatever inline `@sveld-ignore` tags already set.
- * Never un-ignores a diagnostic; only ever adds the flag.
+ * Marks every diagnostic matching at least one `diagnostics.ignore`
+ * matcher as `ignored`, on top of whatever inline `@sveld-ignore` tags
+ * already set. Never un-ignores a diagnostic; only ever adds the flag.
  */
 export function applyDiagnosticIgnores(
   diagnostics: SveldDiagnostic[],
@@ -225,8 +286,8 @@ const KIND_ORDER = Object.keys(DIAGNOSTIC_KINDS) as SveldDiagnosticKind[];
 /**
  * Stable, namespaced identifier for a {@link SveldDiagnosticKind}, e.g.
  * `"sveld/prop-unknown-type"`. Safe to match on in CI config or an
- * `ignore` matcher; `kind` is kept as the bare, un-namespaced form for
- * compatibility.
+ * `ignore` matcher; `kind` is kept as the bare, un-namespaced form
+ * for compatibility.
  */
 export const DIAGNOSTIC_CODES = Object.fromEntries(KIND_ORDER.map((kind) => [kind, `sveld/${kind}`])) as Record<
   SveldDiagnosticKind,
@@ -305,9 +366,9 @@ function escapeCommandProperty(value: string): string {
 }
 
 /**
- * One GitHub Actions workflow command (`::warning file=...::message`), which
- * the runner turns into an annotation on the PR's diff and the run summary.
- * Properties with no value are left out.
+ * One GitHub Actions workflow command (`::warning file=...::message`),
+ * which the runner turns into an annotation on the PR's diff and the run
+ * summary. Properties with no value are left out.
  */
 function formatGithubAnnotation(annotation: {
   severity: "error" | "warning";
@@ -335,14 +396,15 @@ function formatGithubAnnotation(annotation: {
 }
 
 /**
- * One annotation per active diagnostic, errors first: GitHub shows only the
- * first 10 errors and 10 warnings of a step, so a flood of warnings must not
- * hide an error. `resolveFile` maps a diagnostic's `component` to the path
- * GitHub should place it at, relative to the repository root.
+ * One annotation per active diagnostic, errors first: GitHub shows only
+ * the first 10 errors and 10 warnings of a step, so a flood of warnings
+ * must not hide an error. `resolveFile` maps a diagnostic's `component` to
+ * the path GitHub should place it at, relative to the repository root.
  *
  * A diagnostic with no `source` still annotates its file, without a line.
- * `col` is 1-based on GitHub, unlike {@link SourcePosition}'s `column`, and
- * GitHub rejects columns on a range that spans lines, so those are left out.
+ * `col` is 1-based on GitHub, unlike {@link SourcePosition}'s `column`,
+ * and GitHub rejects columns on a range that spans lines, so those are
+ * left out.
  */
 export function formatDiagnosticsGithub(
   diagnostics: SveldDiagnostic[],
@@ -371,23 +433,35 @@ export function formatDiagnosticsGithub(
     .join("\n");
 }
 
-/** Envelope schema version for {@link DiagnosticsJson}. Bump when the shape of `diagnostics` changes incompatibly. */
+/**
+ * Envelope schema version for {@link DiagnosticsJson}. Bump when the shape
+ * of `diagnostics` changes incompatibly.
+ */
 export const DIAGNOSTICS_SCHEMA_VERSION = 1;
 
-/** `SveldDiagnostic[]`, serialized for stream consumers with a `kind` discriminator. */
+/**
+ * `SveldDiagnostic[]`, serialized for stream consumers with a
+ * `kind` discriminator.
+ */
 export interface DiagnosticsJson {
   kind: "diagnostics";
   schemaVersion: typeof DIAGNOSTICS_SCHEMA_VERSION;
   diagnostics: SveldDiagnostic[];
 }
 
-/** Serializes deduped diagnostics as JSON, for `--format=json --report-diagnostics` / `--strict`. */
+/**
+ * Serializes deduped diagnostics as JSON, for
+ * `--format=json --report-diagnostics` / `--strict`.
+ */
 export function formatDiagnosticsSummaryJson(diagnostics: SveldDiagnostic[]): string {
   const document: DiagnosticsJson = { kind: "diagnostics", schemaVersion: DIAGNOSTICS_SCHEMA_VERSION, diagnostics };
   return `${JSON.stringify(document, null, 2)}\n`;
 }
 
-/** Adds `diagnostics` to `component`'s own, as a new array (the old one may be shared). */
+/**
+ * Adds `diagnostics` to `component`'s own, as a new array (the old one may
+ * be shared).
+ */
 export function appendDiagnostics(component: ParsedComponent, diagnostics: SveldDiagnostic[]): void {
   if (diagnostics.length === 0) return;
   component.diagnostics = [...(component.diagnostics ?? []), ...diagnostics];

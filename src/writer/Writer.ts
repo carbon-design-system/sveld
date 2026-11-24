@@ -4,7 +4,10 @@ import { parse } from "node:path";
 export default class Writer {
   private readonly ensuredDirs = new Set<string>();
 
-  /** Skips unchanged files so their mtime is preserved. Returns whether the file was written. */
+  /**
+   * Skips unchanged files so their mtime is preserved. Returns whether the
+   * file was written.
+   */
   public async write(filePath: string, raw: string): Promise<boolean> {
     try {
       if ((await readFile(filePath, "utf-8")) === raw) {

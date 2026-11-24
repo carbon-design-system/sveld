@@ -13,7 +13,8 @@ function globToRegExpSource(pattern: string): string {
 
     if (ch === "*" && pattern[i + 1] === "*") {
       i++;
-      // `**/` matches zero or more whole segments, so `**/Button.svelte` doesn't match `MyButton.svelte`.
+      // `**/` matches zero or more whole segments, so `**/Button.svelte` doesn't
+      // match `MyButton.svelte`.
       if (pattern[i + 1] === "/") {
         source += "(?:.*/)?";
         i++;

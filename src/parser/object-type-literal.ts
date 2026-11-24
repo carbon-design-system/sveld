@@ -11,18 +11,23 @@ export interface ObjectTypeLiteralMember {
   name: string;
   type: string;
   optional: boolean;
-  /** Set only with `withReadonly`: whether the member has the `readonly` modifier. */
+  /**
+   * Set only with `withReadonly`: whether the member has the
+   * `readonly` modifier.
+   */
   readonly?: boolean;
 }
 
 /**
- * Parses an inline TypeScript object-type literal (e.g. `"{ a: string; b?: number }"`)
- * into its member list. Returns `null` when `typeText` isn't an object-type literal,
- * or when a member can't be split into `name: type` (index signatures, mapped types,
- * computed names) so the caller can fall back to treating the type as unresolved.
- * With `skipIndexSignatures`, an index signature (`[key: string]: any`) is left out
- * instead, for a caller that only reads the named members. With `withReadonly`, each
- * member records its `readonly` modifier, which is otherwise dropped.
+ * Parses an inline TypeScript object-type literal (e.g.
+ * `"{ a: string; b?: number }"`) into its member list. Returns `null` when
+ * `typeText` isn't an object-type literal, or when a member can't be split
+ * into `name: type` (index signatures, mapped types, computed names) so
+ * the caller can fall back to treating the type as unresolved. With
+ * `skipIndexSignatures`, an index signature (`[key: string]: any`) is left
+ * out instead, for a caller that only reads the named members. With
+ * `withReadonly`, each member records its `readonly` modifier, which is
+ * otherwise dropped.
  */
 export function parseObjectTypeLiteralMembers(
   typeText: string,

@@ -1,7 +1,7 @@
 /**
- * Everything that needs the parser stack (svelte-ast, the JSDoc parser), loaded
- * as one lazy chunk by {@link loadParserStack}. Modules outside it reach
- * these only through `getParserStack()`, so a fully cached run never
+ * Everything that needs the parser stack (svelte-ast, the JSDoc parser),
+ * loaded as one lazy chunk by {@link loadParserStack}. Modules outside it
+ * reach these only through `getParserStack()`, so a fully cached run never
  * evaluates them.
  */
 export { parseModule } from "svelte-ast";

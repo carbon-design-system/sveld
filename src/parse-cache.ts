@@ -12,7 +12,10 @@ import type {
 import { PARSED_COMPONENT_PROP_IGNORES, PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "./parsed-component-metadata";
 import { VERSION as svelteVersion } from "./svelte-version";
 
-/** Bumped whenever the on-disk cache shape changes in a way old caches can't read. */
+/**
+ * Bumped whenever the on-disk cache shape changes in a way old caches
+ * can't read.
+ */
 const CACHE_FORMAT_VERSION = 11;
 
 /** Relative to the project root. */
@@ -22,7 +25,10 @@ interface ParseCacheEntry {
   /** sha256 of the source. */
   hash: string;
   component: ParsedComponent;
-  /** `component[PARSED_COMPONENT_TYPE_SCRIPT_METADATA]`: JSON drops symbol keys. */
+  /**
+   * `component[PARSED_COMPONENT_TYPE_SCRIPT_METADATA]`: JSON drops
+   * symbol keys.
+   */
   typeScriptMetadata?: ParsedComponentTypeScriptMetadata;
   /** `component[PARSED_COMPONENT_PROP_IGNORES]`, for the same reason. */
   propIgnores?: Record<string, string[]>;
@@ -37,7 +43,10 @@ interface ParseCacheFile {
   entries: Record<string, ParseCacheEntry>;
 }
 
-/** Replaced at build time (`scripts/build.ts`) with a fingerprint of `src/`. */
+/**
+ * Replaced at build time (`scripts/build.ts`) with a fingerprint
+ * of `src/`.
+ */
 declare const __SVELD_BUILD_ID__: string | undefined;
 
 /** Unset when running from source, where tests use fresh caches anyway. */
@@ -49,7 +58,8 @@ function currentToolchainVersion(): string {
 
 /**
  * The nearest `package.json` directory at or above `dir`, else `dir`. The
- * input is often `src/`, and the cache belongs in the project's `node_modules`.
+ * input is often `src/`, and the cache belongs in the
+ * project's `node_modules`.
  */
 function findProjectRoot(dir: string): string {
   const packageJson = findUp(dir, ["package.json"]);
@@ -108,7 +118,10 @@ export class ParseCache {
     return this.lookup(resolvedPath, hash) !== undefined;
   }
 
-  /** This run's entry first, so a long-lived cache (watch mode) sees files parsed this session. */
+  /**
+   * This run's entry first, so a long-lived cache (watch mode) sees files
+   * parsed this session.
+   */
   private lookup(resolvedPath: string, hash: string): ParseCacheEntry | undefined {
     const current = this.next.get(resolvedPath);
     if (current?.hash === hash) return current;
@@ -152,7 +165,10 @@ export class ParseCache {
     });
   }
 
-  /** Reads this run's entry only, so the text is for the hash `get()`/`set()` verified. */
+  /**
+   * Reads this run's entry only, so the text is for the hash
+   * `get()`/`set()` verified.
+   */
   getGeneratedText(resolvedPath: string, key: string): string | undefined {
     const entry = this.next.get(resolvedPath);
     if (entry?.generatedText === undefined || entry.generatedText.key !== key) return undefined;
