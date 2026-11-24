@@ -67,17 +67,14 @@ const FENCE = "```";
 
 const LEADING_WS_REGEX = /^\s+/;
 const WHITESPACE_CHAR_REGEX = /\s/;
-/** A line opening a tag (`@param ...`); an `@scope/pkg` mention is not one. */
+// `/` can't follow the name, so an `@scope/pkg` mention isn't a tag.
 const TAG_SECTION_START_REGEX = /^@[^\s/]+(?=\s|$)/;
 const TAG_PREFIX_REGEX = /^@(\S+)\s*/;
 
-/**
- * Tags that mean nothing without a name, so the name may wrap onto a line
- * of its own.
- */
+// These tags mean nothing without a name, so the name may wrap onto a
+// line of its own.
 const NAME_REQUIRED_TAGS = new Set(["extends", "extendProps", "generics", "template", "typedef"]);
 
-/** Length of the leading `\s` run in `text`. */
 export function leadingWhitespaceLength(text: string): number {
   let index = 0;
   while (index < text.length) {
@@ -89,10 +86,6 @@ export function leadingWhitespaceLength(text: string): number {
   return index;
 }
 
-/**
- * Strips the comment gutter from one physical line, splitting what's left
- * into `indent` + `content`.
- */
 function tokenizeLine(text: string, isOpeningLine: boolean): { indent: string; content: string } {
   let rest = text.slice(leadingWhitespaceLength(text));
   let hasMarker = false;
@@ -117,18 +110,15 @@ function tokenizeLine(text: string, isOpeningLine: boolean): { indent: string; c
   return { indent, content };
 }
 
-/** `\r`-stripped text of the physical line spanning `[lineStart, lineEnd)`. */
 function physicalLineText(source: string, lineStart: number, lineEnd: number): string {
   const end = lineEnd > lineStart && source.charCodeAt(lineEnd - 1) === 13 /* \r */ ? lineEnd - 1 : lineEnd;
   return source.slice(lineStart, end);
 }
 
-/**
- * Every `/** ... *\/` block in `source`. A block opens on a line whose
- * first text is `/**` (not `/***`) and closes on the first line ending
- * with `*\/`; an unterminated block is dropped. Jumps between `/**` with
- * `indexOf` rather than splitting the whole source into lines.
- */
+// A block opens only where `/**` (not `/***`) leads its line, and
+// closes on the first line ending in `*/`; an unterminated one is
+// dropped. perf: jumps between `/**` with `indexOf` instead of splitting
+// the whole source into lines.
 function findCommentBlocks(source: string): Array<{ start: number; end: number; lines: CommentLine[] }> {
   const blocks: Array<{ start: number; end: number; lines: CommentLine[] }> = [];
   let searchFrom = 0;
@@ -178,7 +168,6 @@ function findCommentBlocks(source: string): Array<{ start: number; end: number; 
   return blocks;
 }
 
-/** Drops an empty `/**` opening line or `*​/` closing line. */
 function trimBoilerplateEdges(lines: CommentLine[]): CommentLine[] {
   let result = lines;
   if (result.length > 0 && result[0].content === "") result = result.slice(1);
@@ -186,10 +175,7 @@ function trimBoilerplateEdges(lines: CommentLine[]): CommentLine[] {
   return result;
 }
 
-/**
- * Splits lines into a leading description section plus one per `@tag`,
- * ignoring `@` inside fenced code.
- */
+// An `@` inside fenced code never starts a section.
 function splitIntoSections(lines: CommentLine[]): CommentLine[][] {
   const sections: CommentLine[][] = [[]];
   let fenced = false;
@@ -206,18 +192,11 @@ function splitIntoSections(lines: CommentLine[]): CommentLine[][] {
   return sections;
 }
 
-/**
- * Whether `text` opens or closes a fenced (```` ``` ````) code block: an
- * odd number of fences.
- */
 export function togglesCodeFence(text: string): boolean {
   return countOccurrences(text, FENCE) % 2 === 1;
 }
 
-/**
- * Non-overlapping `needle` occurrences in `text`, without a
- * `split` allocation.
- */
+// perf: counts with `indexOf`, without a `split` allocation.
 function countOccurrences(text: string, needle: string): number {
   let count = 0;
   let index = text.indexOf(needle);
@@ -232,11 +211,8 @@ function joinLines(lines: CommentLine[]): string {
   return lines.map((line) => line.indent + line.content).join("\n");
 }
 
-/**
- * Consumes a leading, possibly multi-line, balanced `{...}`, mutating the
- * consumed lines' `content`. Returns `null` without mutating if there's no
- * `{` or the braces never balance.
- */
+// Mutates the consumed lines' `content` only on success; with no `{`,
+// or braces that never balance, it returns null and leaves them alone.
 function extractType(lines: CommentLine[]): { type: string; endIndex: number } | null {
   let start = 0;
   while (start < lines.length - 1 && lines[start].content.trim() === "") start++;
@@ -273,11 +249,8 @@ function extractType(lines: CommentLine[]): { type: string; endIndex: number } |
   return { type: fragments.join("\n").slice(1, -1), endIndex };
 }
 
-/**
- * Consumes a leading `name`, `[name]`, or `[name=default]` from `line`,
- * mutating `line.content`. Returns `null` without mutating if there's none
- * or the brackets don't balance.
- */
+// Mutates `line.content` only on success: with no name, or brackets
+// that don't balance, it returns null and leaves it alone.
 function extractName(line: CommentLine): { name: string; optional: boolean; default?: string } | null {
   const leadingWs = line.content.match(LEADING_WS_REGEX)?.[0] ?? "";
   const source = line.content.slice(leadingWs.length);
@@ -385,7 +358,6 @@ function parseBlock(rawLines: CommentLine[], start: number, end: number): JSDocC
   };
 }
 
-/** Parses every `/** ... *\/` block found in `source`. */
 export function parseComments(source: string): JSDocComment[] {
   return findCommentBlocks(source).map(({ start, end, lines }) => parseBlock(lines, start, end));
 }

@@ -24,10 +24,8 @@ import { sourceRangeFromNode } from "./source-position";
 import { readFunctionDeclarationParts, trackAdditionalTypeDependencyNode } from "./type-resolution";
 import { collectReExportableImports, collectValueImportBindings } from "./value-imports";
 
-/**
- * The bare base-class name in an `extends` clause: `Base` in `Base<T>`;
- * none for `mixin(Base)` or `ns.Base`.
- */
+// Only a bare name (`Base` in `Base<T>`), never `mixin(Base)` or
+// a member like `ns.Base`.
 const CLASS_BASE_NAME_REGEX = /^[A-Za-z_$][\w$]*(?=\s*(?:<|$))/;
 
 function addModuleExport(ctx: ParserContext, prop_name: string, data: ComponentProp) {
@@ -36,10 +34,7 @@ function addModuleExport(ctx: ParserContext, prop_name: string, data: ComponentP
   ctx.moduleExports.set(prop_name, existing ? { ...existing, ...data } : data);
 }
 
-/**
- * Records an `export ... from` (or `export { imported }`) as-is; the
- * `.d.ts` writer emits it verbatim.
- */
+// Recorded as-is, since the `.d.ts` writer emits it verbatim.
 function addModuleReExport(ctx: ParserContext, node: Node, name: string, reExport: ComponentPropReExport) {
   const jsdocInfo = processNodeJSDoc(ctx, node);
   // Each `export * from` shares the name "*", so key those by
@@ -61,10 +56,8 @@ function addModuleReExport(ctx: ParserContext, node: Node, name: string, reExpor
   });
 }
 
-/**
- * `export { x as default }` / `export * as default from "..."` collide
- * with the component itself.
- */
+// `export { x as default }` and `export * as default from "..."` would
+// collide with the component itself.
 function recordDefaultExportConflict(ctx: ParserContext, node: Node) {
   recordDiagnostic(
     ctx,
@@ -116,10 +109,6 @@ function addModuleClassExport(
   });
 }
 
-/**
- * The exports a module-script `export` declaration (or one specifier of an
- * `export { ... }`) declares.
- */
 function addModuleDeclarationExports(
   ctx: ParserContext,
   node: ExportNamedDeclaration,
@@ -165,21 +154,15 @@ function addModuleDeclarationExports(
   }
 }
 
-/**
- * The top-level `{#snippet name(...)}`, the only kind a module script
- * can export.
- */
+// Only a top-level snippet can be exported from a module script.
 function findTopLevelSnippet(ctx: ParserContext, name: string): AST.SnippetBlock | undefined {
   return ctx.parsed?.fragment.nodes.find(
     (node): node is AST.SnippetBlock => node.type === "SnippetBlock" && node.expression.name === name,
   );
 }
 
-/**
- * Records the types a snippet's type parameters name, so the `.d.ts` keeps
- * them. The parser gives the list as text, so it's parsed on its own; only
- * the names matter here, not the offsets.
- */
+// The parser gives the list as text, so it's parsed on its own; only
+// the names matter here, not the offsets.
 function trackSnippetTypeParameters(ctx: ParserContext, typeParams: string) {
   let program: ReturnType<typeof parseModule>;
   try {
@@ -195,12 +178,9 @@ function trackSnippetTypeParameters(ctx: ParserContext, typeParams: string) {
   }
 }
 
-/**
- * `export { row }` of a top-level `{#snippet row(item: Item)}`, typed as
- * `Snippet<[item: Item]>`. `Snippet` can't take type parameters, so a
- * generic snippet is typed as the function it compiles to instead, as
- * svelte2tsx does: `<T>(item: T) => ReturnType<Snippet>`.
- */
+// `Snippet` can't take type parameters, so a generic snippet is typed
+// as the function it compiles to instead,
+// as svelte2tsx does: `<T>(item: T) => ReturnType<Snippet>`.
 function addModuleSnippetExport(
   ctx: ParserContext,
   node: ExportNamedDeclaration,
@@ -244,12 +224,10 @@ function addModuleSnippetExport(
   });
 }
 
-/**
- * The `.d.ts` can only say `extends Base` when `Base` is in scope there:
- * imported, or another exported class. A class extending anything else
- * (a local class, a call like `mixin(Base)`) is declared without it, and
- * flagged, since consumers won't see its inherited members.
- */
+// The `.d.ts` can only say `extends Base` when `Base` is in scope there
+// (imported, or another exported class); otherwise the class is
+// declared without it, and flagged, since consumers won't see its
+// inherited members.
 function dropUndeclaredClassBases(ctx: ParserContext) {
   const classes = Array.from(ctx.moduleExports.values()).filter((entry) => entry.kind === "class");
   const declared = new Set(classes.map((entry) => entry.localName ?? entry.name));
@@ -275,11 +253,9 @@ function dropUndeclaredClassBases(ctx: ParserContext) {
   }
 }
 
-/**
- * Not fused with the component walk: `module` is a separate root, and one
- * synthetic root would need branch-tracking to keep module and instance
- * export handling apart, for a pass most components skip.
- */
+// Not fused with the component walk: `module` is a separate root, and
+// one synthetic root would need branch-tracking to keep module and
+// instance export handling apart, for a pass most components skip.
 export function walkModuleScript(ctx: ParserContext): void {
   const module = ctx.parsed?.module;
   if (!module) return;

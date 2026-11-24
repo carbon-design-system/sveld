@@ -20,10 +20,6 @@ interface TopLevelDeclaration {
   start: number;
 }
 
-/**
- * Every `/* *\/` comment svelte-ast collected
- * inside `[programStart, programEnd)`.
- */
 function collectBlockComments(
   comments: AST.JSComment[],
   source: string,
@@ -41,10 +37,6 @@ function collectBlockComments(
   }
 }
 
-/**
- * Every top-level `const`/`let`/`function` (`export`-ed ones included) in
- * a script's body.
- */
 function collectTopLevelDeclarations(body: Program["body"], into: TopLevelDeclaration[]): void {
   for (const statement of body) {
     const { start } = statement;
@@ -59,12 +51,8 @@ function collectTopLevelDeclarations(body: Program["body"], into: TopLevelDeclar
   }
 }
 
-/**
- * The closest JSDoc block comment with only whitespace or other comments
- * between it and `declStart`, if any. `comments` is sorted by `end`. Any
- * JSDoc block before the closest one has that block in its gap, so only
- * the closest can attach.
- */
+// `comments` must be sorted by `end`. Only the closest JSDoc block can
+// attach, since any before it has that block in its gap.
 function findAttachedComment(comments: ScriptComment[], declStart: number, source: string): ScriptComment | undefined {
   let low = 0;
   let high = comments.length;
@@ -82,12 +70,8 @@ function findAttachedComment(comments: ScriptComment[], declStart: number, sourc
   return undefined;
 }
 
-/**
- * Maps each top-level variable/function name in the module and instance
- * scripts to the `@type`/description/`@internal` of its attached JSDoc
- * block. A block without `@type` is still recorded, for a
- * TS-annotated variable.
- */
+// A block without `@type` is still recorded, since a TS-annotated
+// variable still uses its docs.
 function buildVariableJsDocTable(ctx: ParserContext): NonNullable<ParserContext["variableInfoCache"]> {
   const table: NonNullable<ParserContext["variableInfoCache"]> = new Map();
   if (!ctx.source) return table;
@@ -125,16 +109,11 @@ function buildVariableJsDocTable(ctx: ParserContext): NonNullable<ParserContext[
   return table;
 }
 
-/** The JSDoc table entry for `varName`, building the table on first use. */
 function variableJsDocEntry(ctx: ParserContext, varName: string) {
   ctx.variableInfoCache ??= buildVariableJsDocTable(ctx);
   return ctx.variableInfoCache.get(varName);
 }
 
-/**
- * The type and docs of `varName`: from a prop, a TS annotation, or a
- * JSDoc `@type`.
- */
 export function findVariableTypeAndDescription(
   ctx: ParserContext,
   varName: string,
@@ -153,11 +132,8 @@ export function findVariableTypeAndDescription(
   return { type: cached.type, description: cached.description, internal: cached.internal };
 }
 
-/**
- * {@link findVariableTypeAndDescription} for a variable whose type ends up
- * in a generated type (a context, an event detail), so its TS annotation's
- * dependencies are pulled into the `.d.ts`.
- */
+// For a type that ends up in generated output (a context, an event
+// detail), so its TS annotation's dependencies reach the `.d.ts`.
 export function findTrackedVariableType(ctx: ParserContext, name: string) {
   const varInfo = findVariableTypeAndDescription(ctx, name);
   if (varInfo && varInfo.type === ctx.explicitVariableTypesByName.get(name)) {
@@ -166,10 +142,6 @@ export function findTrackedVariableType(ctx: ParserContext, name: string) {
   return varInfo;
 }
 
-/**
- * The description and `@internal` flag of the JSDoc above `varName`, with
- * or without `@type`.
- */
 export function findVariableJsDoc(ctx: ParserContext, varName: string): { description?: string; internal?: boolean } {
   const cached = variableJsDocEntry(ctx, varName);
   return {
@@ -178,7 +150,6 @@ export function findVariableJsDoc(ctx: ParserContext, varName: string): { descri
   };
 }
 
-/** The JSDoc on the local variable or function declaration named `name`. */
 export function resolveLocalVarJSDoc(ctx: ParserContext, name: string) {
   for (const decl of ctx.vars) {
     if (decl.declarations.some((declarator) => declarator.id.type === "Identifier" && declarator.id.name === name)) {
@@ -189,10 +160,8 @@ export function resolveLocalVarJSDoc(ctx: ParserContext, name: string) {
   return funcDecl && declarationJSDoc(ctx, funcDecl);
 }
 
-/**
- * A declaration's JSDoc, which sits on the `export` statement when
- * it's exported.
- */
+// When exported, the JSDoc sits on the `export` statement instead of
+// the declaration.
 function declarationJSDoc(ctx: ParserContext, declaration: object) {
   const own = processNodeJSDoc(ctx, declaration);
   if (own) return own;

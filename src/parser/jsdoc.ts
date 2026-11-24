@@ -11,11 +11,9 @@ import type { ParserContext } from "./context";
 
 const WHITESPACE_CHAR_REGEX = /\s/;
 
-/**
- * Whether `source` from `start` to `end` may sit between a JSDoc block and
- * the declaration it documents: whitespace, or comments that aren't JSDoc,
- * such as a `// biome-ignore ...` or `/* istanbul ignore next *\/` line.
- */
+// A non-JSDoc comment (a `// biome-ignore` or
+// `/* istanbul ignore next */` line) doesn't detach a JSDoc block from
+// its declaration.
 export function isJsDocGap(source: string, start: number, end: number): boolean {
   let index = start;
   while (index < end) {
@@ -37,18 +35,12 @@ export function isJsDocGap(source: string, start: number, end: number): boolean 
   return true;
 }
 
-/** A description's leading `- ` (`@param name - text`). */
 const DESCRIPTION_DASH_PREFIX_REGEX = /^-\s*/;
 
-/**
- * Joins a wrapped tag description's lines into text. Prose lines lose
- * their indentation, a run of blank lines between paragraphs becomes one
- * blank line, and lines inside a ```` ``` ```` fence keep their
- * indentation relative to the fence's opening line (blank lines included).
- */
+// Lines inside a ``` fence keep their indentation relative to the
+// fence's opening line, blank lines included; prose lines don't.
 export function joinDescriptionLines(lines: readonly string[]): string {
   const out: string[] = [];
-  /** Indentation of the open fence's opening line; undefined outside a fence. */
   let fenceIndent: number | undefined;
   let paragraphBreak = false;
   for (const line of lines) {
@@ -79,38 +71,25 @@ export function cleanDescription(description: string | undefined): string | unde
   return description?.replace(DESCRIPTION_DASH_PREFIX_REGEX, "").trim();
 }
 
-/**
- * The prose after a `@type {T}` tag's type, same line or below it. Tag
- * parsing reads its first word as a name (`@type {T} Opens the modal`), so
- * that word is joined back on.
- */
+// Tag parsing reads the first word as a name
+// (`@type {T} Opens the modal`), so it's joined back on.
 export function typeTagDescription(tag: JSDocTag): string | undefined {
   const text = tag.name ? `${tag.name} ${tag.description}` : tag.description;
   return cleanDescription(joinDescriptionLines(text.split("\n")));
 }
 
-/**
- * Index in a tag's lines of the one holding its inline description (where
- * a multi-line `{type}` closes).
- */
 export function tagHeadIndex(tagLines: ReadonlyArray<{ continuesType?: true }>): number {
   let headIndex = 0;
   while (tagLines[headIndex + 1]?.continuesType) headIndex++;
   return headIndex;
 }
 
-/**
- * `@since`, `@example`, and `@see` are kept out of prose descriptions and
- * exposed as `tags` instead.
- */
+// These are exposed as `tags` instead of joining prose descriptions.
 export const IDE_PASSTHROUGH_TAGS = new Set(["since", "example", "see"]);
 
-/**
- * Known tags that `parseCustomTypes`'s switch doesn't handle: `@bindable`
- * is read in {@link getCommentTags}; `@default`/`@required` are
- * conventional but unused. Anything else outside this set and
- * `IDE_PASSTHROUGH_TAGS` is flagged as `jsdoc-unknown-tag`.
- */
+// Known, so never flagged, but outside `parseCustomTypes`'s switch:
+// `@bindable` is read in `getCommentTags`, and `@default`/`@required`
+// are conventional but unused.
 export const OTHER_KNOWN_JSDOC_TAGS = new Set(["bindable", "default", "required"]);
 
 function toPassthroughTags(tags: JSDocTag[]): JsDocPassthroughTag[] | undefined {
@@ -122,48 +101,32 @@ export function deprecatedValueFromBody(body: string): DeprecatedValue {
   return message === "" ? true : message;
 }
 
-/**
- * Wraps a parser comment value (`* doc `) back into `/** doc *\/` form
- * for `parseComments`.
- */
+// `parseComments` needs the `/** ... */` delimiters back.
 function formatComment(comment: string) {
   const opened = comment.startsWith("/*") ? comment : `/*${comment}`;
   return opened.endsWith("*/") ? opened : `${opened}*/`;
 }
 
-/**
- * A JSDoc `{type}` as TypeScript text: trimmed, with the JSDoc wildcard
- * `*` as `any`.
- */
 export function aliasType(type: string): string {
   return type === "*" ? "any" : type.trim();
 }
 
-/**
- * Tags of raw JSDoc text (with or without `/**` delimiters). Needs no
- * parser context, so modules outside a component can use the
- * `extractJsDoc*` helpers.
- */
+// Needs no parser context, so modules outside a component can use the
+// `extractJsDoc*` helpers.
 function commentTagsOf(commentValue: string) {
   return getCommentTags(parseComments(formatComment(commentValue)));
 }
 
-/** `@returns`/`@return` type from raw JSDoc text. */
 export function extractJsDocReturnType(commentValue: string): string | undefined {
   const { returns } = commentTagsOf(commentValue);
   return returns ? aliasType(returns.type) : undefined;
 }
 
-/** `@type` type from raw JSDoc text. */
 export function extractJsDocType(commentValue: string): string | undefined {
   const { type } = commentTagsOf(commentValue);
   return type ? aliasType(type.type) : undefined;
 }
 
-/**
- * `@deprecated`, passthrough tags, and `@ignore`/`@internal` from raw
- * JSDoc text.
- */
 export function extractJsDocDeprecatedAndTags(commentValue: string): {
   deprecated?: DeprecatedValue;
   tags?: JsDocPassthroughTag[];
@@ -173,10 +136,7 @@ export function extractJsDocDeprecatedAndTags(commentValue: string): {
   return { deprecated, tags: toPassthroughTags(passthrough), internal };
 }
 
-/**
- * Tags {@link getCommentTags} handles structurally (or elsewhere), so they
- * never land in `additional`.
- */
+// Handled structurally or elsewhere, so these never land in `additional`.
 const EXCLUDED_TAGS = new Set([
   "type",
   "param",
@@ -199,11 +159,8 @@ const EXCLUDED_TAGS = new Set([
   "cssproperty",
 ]);
 
-/**
- * `parseComments` memoized per component: the leading-comment pass and the
- * variable JSDoc table both parse the same blocks. Results are
- * never mutated.
- */
+// Memoized, since the leading-comment pass and the variable JSDoc table
+// parse the same blocks; callers must never mutate the results.
 export function parseCommentText(ctx: ParserContext, text: string): JSDocComment[] {
   let parsed = ctx.parsedJsDocByText.get(text);
   if (parsed === undefined) {
@@ -272,14 +229,11 @@ interface LeadingJSDocComment {
   end: number;
 }
 
-/**
- * The block `parseCustomTypes` already parsed at this comment's offset,
- * when it spans exactly the same text. The source scan only opens a block
- * whose `/**` leads its line and closes on a line ending in `*\/`, so a
- * block with the same `start` and `end` tokenizes the same as
- * `formatComment(value)` would. Anything else (`/** doc *\/ code` on one
- * line, `/***`) misses and is parsed from `value`.
- */
+// Reuses the block `parseCustomTypes` parsed at this offset only when
+// it spans the same text: that scan opens a block only where `/**`
+// leads its line and closes on a line ending in `*/`, so equal `start`
+// and `end` tokenize as `formatComment(value)` would. Anything else
+// (`/** doc */ code` on one line, `/***`) is parsed from `value`.
 function parsedSourceBlock(ctx: ParserContext, comment: LeadingJSDocComment): JSDocComment[] | undefined {
   const block = ctx.jsDocBlocksByStart.get(comment.start);
   return block?.end === comment.end ? [block] : undefined;
@@ -308,15 +262,9 @@ function findAdjacentJSDocComment(
 
 const FUNCTION_EXPRESSION_TYPES = new Set(["ArrowFunctionExpression", "FunctionExpression"]);
 
-/**
- * Absolute `/**` start offsets of every JSDoc comment directly documenting
- * a function: a `function` declaration, a variable initialized with an
- * arrow or function expression, or a module-script class or one of its
- * methods. A `@template` in one of these types that function's own generic
- * parameter, not the component's. The exception is an instance-script
- * `export let`: it's a prop, so its `@template` still declares a
- * component generic.
- */
+// A `@template` in these types the function's own generic parameter,
+// not the component's, unless it's on an instance-script `export let`:
+// that's a prop, so its `@template` still declares a component generic.
 export function functionDocCommentStarts(ctx: ParserContext): Set<number> {
   const starts = new Set<number>();
   const addDocumented = (node: unknown) => {
@@ -357,10 +305,8 @@ export function functionDocCommentStarts(ctx: ParserContext): Set<number> {
   return starts;
 }
 
-/**
- * Tags that declare part of the component's API rather than document
- * a declaration.
- */
+// These declare part of the component's API instead of documenting the
+// declaration below.
 const COMPONENT_LEVEL_TAGS = new Set([
   "slot",
   "snippet",
@@ -383,10 +329,6 @@ export function processNodeJSDoc(
   return comment && processJSDocComment(ctx, comment);
 }
 
-/**
- * One `@template` tag as a type parameter: `T`, `T extends Foo`,
- * or `T extends Foo = Bar`.
- */
 function templateTagConstraint(name: string, type: string, defaultValue: string | undefined): string {
   let constraint = name;
   if (type) constraint = `${name} extends ${type}`;
@@ -395,14 +337,10 @@ function templateTagConstraint(name: string, type: string, defaultValue: string 
 }
 
 const TEMPLATE_FIRST_NAME_REGEX = /^[^\s,]+/;
-/** The next `, U` in a `@template` name list, capturing the name. */
 const TEMPLATE_NEXT_NAME_REGEX = /^\s*,\s*([^\s,]+)/;
 
-/**
- * Every type parameter one `@template` tag declares: `@template T, U`
- * lists several. As in TypeScript, a `{constraint}` or `[T=default]`
- * applies to the first name only.
- */
+// As in TypeScript, a `{constraint}` or `[T=default]` applies only to
+// the first name in `@template T, U`.
 export function templateTagParameters(tag: JSDocTag, type: string): Array<{ name: string; constraint: string }> {
   const firstName = tag.optional ? tag.name : TEMPLATE_FIRST_NAME_REGEX.exec(tag.name)?.[0];
   if (!firstName) return [];
@@ -417,15 +355,11 @@ export function templateTagParameters(tag: JSDocTag, type: string): Array<{ name
   return parameters;
 }
 
-/** Param types that `@param name.member` tags fill in with an object type. */
 const OBJECT_PLACEHOLDER_TYPES = new Set(["", "any", "object", "Object"]);
 const IDENTIFIER_REGEX = /^[A-Za-z_$][\w$]*$/;
 
-/**
- * `@param` tags as params. `@param options.label` tags become members of
- * `options`' type (`{ label: string }`) when it's only declared
- * `{object}`, as TypeScript reads them.
- */
+// As TypeScript reads them, `@param options.label` tags become members
+// of `options`' type only when it's declared just `{object}`.
 function paramsWithNestedMembers(paramTags: JSDocTag[]): ComponentPropParam[] {
   const membersByParam = new Map<string, string[]>();
   for (const { name, type, optional } of paramTags) {

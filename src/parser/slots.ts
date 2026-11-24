@@ -11,18 +11,11 @@ import { findVariableTypeAndDescription } from "./variable-jsdoc";
 
 export const DEFAULT_SLOT_NAME = null;
 
-/**
- * `ctx.slots` key for a slot name; `default` is the default slot, as
- * in Svelte.
- */
+// compat: `default` keys the default slot, as in Svelte.
 export function slotKey(slot_name: string | undefined) {
   return !slot_name || slot_name === "default" ? DEFAULT_SLOT_NAME : slot_name;
 }
 
-/**
- * A slot prop's type from the expression passed for it, in
- * `<slot name={expr}>` or `{@render x({ name: expr })}`.
- */
 export function slotPropValueFromExpression(ctx: ParserContext, expression: Property["value"]): SlotPropValue {
   switch (expression.type) {
     case "Identifier":
@@ -43,11 +36,8 @@ export function slotPropValueFromExpression(ctx: ParserContext, expression: Prop
   }
 }
 
-/**
- * `{...identifier}` in a `{@render x({...})}` argument: the object literal
- * it's bound to, else the members of its object-type annotation. `null`
- * when neither resolves, so the caller widens to `Record<string, any>`.
- */
+// `null` when neither the object literal nor an object-type annotation
+// resolves, so the caller widens to `Record<string, any>`.
 function resolveSlotSpreadShape(ctx: ParserContext, argument: unknown, documented: boolean): SlotProps | null {
   if (!isIdentifier(argument)) return null;
 
@@ -69,12 +59,8 @@ function resolveSlotSpreadShape(ctx: ParserContext, argument: unknown, documente
   return slot_props;
 }
 
-/**
- * Merges what a spread (`{...props}` on a `<slot>`, or in a
- * `{@render x({...})}` argument) adds to `slot_props`. Returns `false`
- * when the spread can't be resolved, reporting it unless the slot is
- * `documented` by a `@slot`/`@snippet` tag, whose type is used instead.
- */
+// `false` when the spread can't be resolved, reported unless a
+// `@slot`/`@snippet` tag documents the slot, whose type is used instead.
 export function mergeSlotPropsSpread(
   ctx: ParserContext,
   slot_props: SlotProps,

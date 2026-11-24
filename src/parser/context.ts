@@ -219,10 +219,7 @@ export interface ParserContext {
   readonly propIgnoreCodes: Map<string, string[]>;
 }
 
-/**
- * Fresh {@link ParserContext}. Keep in sync with new fields on
- * {@link ParserContext}.
- */
+// invariant: must initialize each new field added to `ParserContext`.
 export function createParserContext(): ParserContext {
   return {
     syntaxMode: "legacy",
@@ -295,10 +292,6 @@ export function createParserContext(): ParserContext {
   };
 }
 
-/**
- * The public name of the prop bound locally as `name`
- * (`let { class: klass } = $props()`), else `name`.
- */
 export function resolvePublicPropName(ctx: ParserContext, name: string): string {
   return ctx.propLocalToPublicName.get(name) ?? name;
 }

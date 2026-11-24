@@ -48,13 +48,8 @@ import { importedBindingByName, importedCalleeBinding } from "./value-imports";
 import { resolveLocalVarJSDoc } from "./variable-jsdoc";
 
 const SURROUNDING_QUOTES_REGEX = /^["']|["']$/g;
-/**
- * A constrained type parameter declaration, capturing its name: `Tag`
- * in `Tag extends ...`.
- */
 const CONSTRAINED_TYPE_PARAMETER_REGEX = /^([\w$]+)\s+extends\s/;
 
-/** A JSDoc `@slot`/`@snippet` type of `{}`. */
 const EMPTY_OBJECT_TYPE_REGEX = /^\{\s*\}$/;
 
 function mapToArray<T>(map: Map<string, T> | Map<string | null, T>) {
@@ -109,11 +104,8 @@ interface DispatchedEventNames {
   mayDispatch(name: string): boolean;
 }
 
-/**
- * Adds the events the dispatcher and `$host().dispatchEvent()` dispatch,
- * and turns a JSDoc `@event` that's only forwarded with `on:` into a
- * forwarded event. Returns the names actually dispatched.
- */
+// A JSDoc `@event` only forwarded with `on:` becomes a forwarded
+// event. Returns the names actually dispatched.
 function resolveDispatchedEvents(ctx: ParserContext, walk: ComponentWalkResult): DispatchedEventNames {
   const { dispatcherName, callees } = walk;
   const actuallyDispatchedEvents = new Set<string>(walk.hostDispatchedEventNames);
@@ -182,21 +174,12 @@ function resolveDispatchedEvents(ctx: ParserContext, walk: ComponentWalkResult):
   };
 }
 
-/**
- * What `bind:this` gives for a component: the instance of a class
- * component (Svelte 4, or a `class`-format `.d.ts`), or the exports a
- * Svelte 5 `Component` returns.
- */
+// Must cover both a class component (Svelte 4, or a `class`-format
+// `.d.ts`) and the exports a Svelte 5 `Component` returns.
 function componentInstanceType(name: string): string {
   return `(typeof ${name} extends abstract new (...args: any) => infer I ? I : typeof ${name} extends (...args: any) => infer R ? R : never)`;
 }
 
-/**
- * The type `bind:this` gives a prop: each bound element's DOM type and
- * each component's instance, as an array when bound by index. A
- * `<svelte:element>` whose tag is a type parameter in `tagTypes` is that
- * tag's element type.
- */
 function boundPropType(binding: ComponentPropBindings, tagTypes?: Map<string, string>): string {
   const boundTypes = [
     ...boundElementTypes(binding, tagTypes),
@@ -205,7 +188,6 @@ function boundPropType(binding: ComponentPropBindings, tagTypes?: Map<string, st
   return binding.target === "indexed" ? `(null | ${boundTypes})[]` : `null | ${boundTypes}`;
 }
 
-/** Each bound element's DOM type, sorted by tag. */
 function boundElementTypes(binding: ComponentPropBindings, tagTypes?: Map<string, string>): string[] {
   return binding.elements
     .sort((a, b) => (a.tag < b.tag ? -1 : a.tag > b.tag ? 1 : 0))
@@ -215,10 +197,7 @@ function boundElementTypes(binding: ComponentPropBindings, tagTypes?: Map<string
     });
 }
 
-/**
- * Props in output form: `bind:this` element types applied, and snippet
- * props left to their slots.
- */
+// Snippet props are left out, since their slots describe them.
 function buildProps(ctx: ParserContext): ComponentProp[] {
   const snippetPropNames =
     ctx.syntaxMode === "runes"
@@ -245,10 +224,6 @@ function buildProps(ctx: ParserContext): ComponentProp[] {
     });
 }
 
-/**
- * Slots in output form, sorted by name, with template-built slot props
- * formatted as type text.
- */
 function buildSlots(ctx: ParserContext): ComponentSlot[] {
   return mapToArray(ctx.slots)
     .map((slot) => {
@@ -298,11 +273,8 @@ function buildSlots(ctx: ParserContext): ComponentSlot[] {
     });
 }
 
-/**
- * Adds the `@template`s of `@slot`/`@snippet` blocks that the output types
- * use to the component's generics, then lets the `generics` script
- * attribute, if any, replace them all.
- */
+// The `generics` script attribute, if any, replaces every `@template`
+// generic instead of adding to them.
 function resolveGenerics(ctx: ParserContext, props: ComponentProp[], slots: ComponentSlot[]) {
   if (ctx.deferredSlotBlockGenerics.length > 0) {
     const referencedTypeText = [
@@ -331,10 +303,6 @@ function resolveGenerics(ctx: ParserContext, props: ComponentProp[], slots: Comp
   }
 }
 
-/**
- * Events in output form, sorted: forwarded events name their element as
- * a string.
- */
 function serializeEvents(ctx: ParserContext): SerializedComponentEvent[] {
   return mapToArray(ctx.events)
     .map((event): SerializedComponentEvent =>
@@ -343,10 +311,7 @@ function serializeEvents(ctx: ParserContext): SerializedComponentEvent[] {
     .sort(compareSerializedEvents);
 }
 
-/**
- * Reports every prop whose type is still unknown, which the `.d.ts`
- * declares `any`.
- */
+// The `.d.ts` declares an unknown prop type `any`, so each is reported.
 function recordUnknownPropTypes(ctx: ParserContext, props: ComponentProp[]) {
   const pendingCallDefaults = new Map(
     ctx.pendingCallDefaultCandidates.filter((c) => c.location === "props").map((c) => [c.propName, c]),
@@ -367,10 +332,6 @@ function recordUnknownPropTypes(ctx: ParserContext, props: ComponentProp[]) {
   }
 }
 
-/**
- * Whether `type` parses as TypeScript; records a `type-syntax-error` when
- * it doesn't.
- */
 function isValidType(ctx: ParserContext, type: string | undefined, name: string, source?: SourceRange): boolean {
   if (type === undefined || isValidTypeText(type)) return true;
   // Valid when not inline, so what failed is the check for a `//` comment.
@@ -387,11 +348,9 @@ function isValidType(ctx: ParserContext, type: string | undefined, name: string,
   return false;
 }
 
-/**
- * A JSDoc `{type}` is copied into the `.d.ts` as written, so one that
- * doesn't parse (`{"a" | }`, closure-style `{?string}`) would break the
- * whole file. It's typed `any` instead, with an error diagnostic.
- */
+// A JSDoc `{type}` is copied into the `.d.ts` as written, so one that
+// doesn't parse (`{"a" | }`, closure-style `{?string}`) would break
+// the whole file; it's typed `any` instead, with an error.
 function replaceInvalidTypes(
   ctx: ParserContext,
   props: ComponentProp[],
@@ -416,12 +375,9 @@ function replaceInvalidTypes(
   }
 }
 
-/**
- * The dispatcher handed to another function (`helper(dispatch)`). For an
- * imported function, `generateBundle` reads the events it dispatches (see
- * `resolve-dispatch-escapes.ts`), so it's queued for that. Returns the
- * calls to any other callee, which can't be followed.
- */
+// Only an imported callee is queued, since `generateBundle` can read
+// its events (`resolve-dispatch-escapes.ts`); calls to any other callee
+// can't be followed, so they're returned.
 function queueDispatcherEscapes(ctx: ParserContext, walk: ComponentWalkResult): CallExpression[] {
   const { dispatcherName } = walk;
   const unfollowableEscapes: CallExpression[] = [];
@@ -458,13 +414,9 @@ function queueDispatcherEscapes(ctx: ParserContext, walk: ComponentWalkResult): 
   return unfollowableEscapes;
 }
 
-/**
- * `@event` in JSDoc with no dispatch, typed dispatcher member, `on:`
- * forward, or `on<event>` callback prop. While the dispatcher escapes,
- * such an event may come from the function it escapes to: an imported one
- * gets checked once its events are known, anything else gets the benefit
- * of the doubt.
- */
+// While the dispatcher escapes, the event may come from the function it
+// escapes to, so an imported one is checked only once its events are
+// known; anything else gets the benefit of the doubt.
 function recordOrphanJsDocEvents(
   ctx: ParserContext,
   dispatchedEvents: DispatchedEventNames,
@@ -490,11 +442,8 @@ function recordOrphanJsDocEvents(
   }
 }
 
-/**
- * `@slot`/`@snippet` with no `<slot>` or `{@render}` to match, often a
- * description's first word read as the slot name. A declared snippet prop
- * counts, since it may be passed on to a child.
- */
+// Often a description's first word read as the slot name. A declared
+// snippet prop counts, since it may be passed on to a child.
 function recordUnrenderedJsDocSlots(ctx: ParserContext) {
   if (ctx.slotsUntracked) return;
   const runes = ctx.syntaxMode === "runes";
@@ -511,11 +460,9 @@ function recordUnrenderedJsDocSlots(ctx: ParserContext) {
   }
 }
 
-/**
- * Rest props spread only onto a component, with no `@restProps` tag:
- * another component's rest-prop shape is unknowable. `@extendProps` naming
- * the component the rest props go to already types them.
- */
+// Rest props spread only onto a component can't be typed, since its
+// rest-prop shape is unknowable, unless `@restProps` or `@extendProps`
+// naming that component types them.
 function recordUnresolvedRestProps(ctx: ParserContext) {
   const restProps = ctx.rest_props;
   if (restProps?.type !== "InlineComponent") return;
@@ -533,12 +480,9 @@ function recordUnresolvedRestProps(ctx: ParserContext) {
   );
 }
 
-/**
- * A public prop/typedef/event/slot/module-export/context-property whose
- * type text still names a now-excluded `@internal` typedef leaves a
- * dangling reference in the generated `.d.ts`. Cheap early-out: most
- * components declare no `@internal` typedefs at all.
- */
+// A public type that still names an excluded `@internal` typedef would
+// leave a dangling reference in the `.d.ts`. perf: most components
+// declare no `@internal` typedefs, so this exits early.
 function recordInternalTypedefReferences(
   ctx: ParserContext,
   output: {
@@ -601,10 +545,6 @@ function recordInternalTypedefReferences(
   }
 }
 
-/**
- * Type parameters declared with a
- * constraint (`Tag extends keyof HTMLElementTagNameMap`).
- */
 function constrainedTypeParameters(generics: ComponentGenerics): Set<string> {
   const names = new Set<string>();
   for (const declaration of splitTopLevel(generics?.[1] ?? "", ",")) {
@@ -614,10 +554,8 @@ function constrainedTypeParameters(generics: ComponentGenerics): Set<string> {
   return names;
 }
 
-/**
- * Locals typed by a constrained type parameter, which can name an element:
- * `tag` to `Tag`.
- */
+// Only locals typed by a constrained type parameter, which can name an
+// element (`tag` to `Tag`).
 function tagTypeParameters(ctx: ParserContext, props: ComponentProp[]): Map<string, string> {
   const constrained = constrainedTypeParameters(ctx.generics);
   const tagTypes = new Map<string, string>();
@@ -628,12 +566,9 @@ function tagTypeParameters(ctx: ParserContext, props: ComponentProp[]): Map<stri
   return tagTypes;
 }
 
-/**
- * A `<svelte:element this={tag}>` follows `tag`'s type when it's a
- * constrained type parameter: rest props spread on it, so `tag="a"` allows
- * `href`, and a `bind:this` ref. An unconstrained one might not be a tag
- * name, so it's left alone.
- */
+// `<svelte:element this={tag}>` follows `tag`'s type only when it's a
+// constrained type parameter (so `tag="a"` allows `href`); an
+// unconstrained one might not be a tag name.
 function typeFromTagTypeParameters(ctx: ParserContext, props: ComponentProp[], tagTypes: Map<string, string>) {
   if (tagTypes.size === 0) return;
 
@@ -655,20 +590,11 @@ function typeFromTagTypeParameters(ctx: ParserContext, props: ComponentProp[], t
   }
 }
 
-/**
- * A DOM element type: `HTMLElement`,
- * `SVGCircleElement`, `HTMLElementTagNameMap[Tag]`.
- */
 const DOM_ELEMENT_TYPE_REGEX = /^(?:(?:HTML|SVG|MathML)\w*)?Element$|^HTMLElementTagNameMap\[[\w$]+\]$/;
 
-/**
- * A declared `bind:this` type that names an element type the prop is never
- * bound to: wider than the element (`HTMLElement` on a `<div>`), or
- * another element (`HTMLAnchorElement` on a `<button>`). The declared type
- * wins in the output, so it ships as written. Checks only refs bound
- * directly, to elements whose type sveld knows, and declared as a union of
- * DOM element types.
- */
+// The declared type wins in the output, so a too-wide or wrong one
+// ships as written. Only checks refs bound directly, to elements
+// whose type sveld knows, and declared as a union of DOM element types.
 function recordBindThisTypeMismatches(ctx: ParserContext, props: ComponentProp[], tagTypes: Map<string, string>) {
   for (const prop of props) {
     if (prop.typeSource !== "typescript" && prop.typeSource !== "jsdoc") continue;
@@ -707,15 +633,10 @@ function recordBindThisTypeMismatches(ctx: ParserContext, props: ComponentProp[]
   }
 }
 
-/** `a`, `a and b`, `a, b and c`. */
 function formatList(items: string[]): string {
   return items.length < 2 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
 }
 
-/**
- * Builds the parse result from `ctx` and what {@link
- * walkComponent} collected.
- */
 export function finalizeComponent(ctx: ParserContext, walk: ComponentWalkResult): ComponentParseResult {
   const dispatchedEvents = resolveDispatchedEvents(ctx, walk);
 

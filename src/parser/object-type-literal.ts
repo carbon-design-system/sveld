@@ -2,9 +2,7 @@ import { indexOfTopLevel, splitTopLevel } from "../type-text";
 
 const OBJECT_TYPE_LITERAL_REGEX = /^\{([\s\S]*)\}$/;
 const MEMBER_NAME_REGEX = /^[A-Za-z_$][\w$]*$/;
-/** A member's `readonly` modifier. */
 const READONLY_MODIFIER_REGEX = /^readonly\s+/;
-/** An index signature key: `[key: string]`. */
 const INDEX_SIGNATURE_REGEX = /^\[[\w$]+\s*:[^\]]+\]$/;
 
 export interface ObjectTypeLiteralMember {
@@ -18,17 +16,12 @@ export interface ObjectTypeLiteralMember {
   readonly?: boolean;
 }
 
-/**
- * Parses an inline TypeScript object-type literal (e.g.
- * `"{ a: string; b?: number }"`) into its member list. Returns `null` when
- * `typeText` isn't an object-type literal, or when a member can't be split
- * into `name: type` (index signatures, mapped types, computed names) so
- * the caller can fall back to treating the type as unresolved. With
- * `skipIndexSignatures`, an index signature (`[key: string]: any`) is left
- * out instead, for a caller that only reads the named members. With
- * `withReadonly`, each member records its `readonly` modifier, which is
- * otherwise dropped.
- */
+// `null` when `typeText` isn't an object-type literal, or a member
+// can't be split into `name: type` (an index signature, mapped type,
+// computed name), so the caller can treat the type as unresolved.
+// `skipIndexSignatures` leaves index signatures out instead, for a
+// caller that only reads named members. Without `withReadonly`, each
+// member's `readonly` modifier is dropped.
 export function parseObjectTypeLiteralMembers(
   typeText: string,
   { skipIndexSignatures = false, withReadonly = false } = {},

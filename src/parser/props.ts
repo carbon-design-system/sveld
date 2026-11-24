@@ -36,10 +36,6 @@ export function addProp(ctx: ParserContext, prop_name: string, data: ComponentPr
   ctx.props.set(prop_name, existing ? { ...existing, ...data } : data);
 }
 
-/**
- * Queue an initializer's unresolved cross-file default
- * for `generateBundle`.
- */
 export function queuePendingCrossFileDefault(
   ctx: ParserContext,
   initResult: Pick<ProcessedInitializer, "pendingCallDefault" | "pendingConstDefault">,
@@ -66,21 +62,18 @@ const NEW_EXPRESSION_TYPES = new Map([
   ["Error", "Error"],
 ]);
 
-/**
- * The default text, type, and metadata of an initializer. A value written
- * with a cast (`as const`, `as T`, `/** @type {T} *\/ (value)`) is typed
- * as the cast says.
- */
+// A cast (`as const`, `as T`, `/** @type {T} */ (value)`) wins, so the
+// value is typed as the cast says.
 export function processInitializer(ctx: ParserContext, init: unknown, depth = 0): ProcessedInitializer {
   const result = processInitializerWithoutAssertion(ctx, init, depth);
   const castType = init && typeof init === "object" ? initializerCastType(ctx, init) : undefined;
   return castType === undefined ? result : { ...result, type: castType };
 }
 
-/** Only the `(` of a JSDoc cast, between its comment and expression. */
+// Only the `(` of a JSDoc cast may sit between its comment and the
+// expression it casts.
 const OPEN_PAREN_BETWEEN_REGEX = /^\s*\(\s*$/;
 
-/** The type a cast gives `init`, or `undefined` when it has none. */
 function initializerCastType(ctx: ParserContext, init: object): string | undefined {
   const { constAssertions, typeAssertions } = ctx.typeCasts;
   if (constAssertions.has(init)) return literalType(init, "const");
@@ -94,7 +87,6 @@ function initializerCastType(ctx: ParserContext, init: object): string | undefin
   return jsdocCastType(ctx, init);
 }
 
-/** `T` from a JSDoc cast: `/** @type {T} *\/ (init)`. */
 function jsdocCastType(ctx: ParserContext, init: object): string | undefined {
   const start = "start" in init && typeof init.start === "number" ? init.start : undefined;
   if (start === undefined) return undefined;
@@ -104,7 +96,6 @@ function jsdocCastType(ctx: ParserContext, init: object): string | undefined {
   return extractJsDocType(cast.value);
 }
 
-/** `node` as an expression, when it's an AST node at all. */
 function asExpression(node: unknown): Expression | undefined {
   return node && typeof node === "object" && "type" in node ? (node as Expression) : undefined;
 }
@@ -205,10 +196,6 @@ function processInitializerWithoutAssertion(ctx: ParserContext, init: unknown, d
   }
 }
 
-/**
- * `initResult`, left for the cross-file pass to read the imported value
- * `binding` names, if any.
- */
 function withPendingConstDefault(
   initResult: ProcessedInitializer,
   binding: { source: string; importedName: string; members?: string[] } | undefined,
@@ -218,10 +205,6 @@ function withPendingConstDefault(
   return { ...initResult, pendingConstDefault: { importSource, importedName, ...(members ? { members } : {}) } };
 }
 
-/**
- * A call default: a `$state`/`$derived` rune unwrapped, or a call whose
- * type may resolve here or cross-file.
- */
 function processCallInitializer(
   ctx: ParserContext,
   call: CallExpression,
@@ -270,29 +253,18 @@ function processCallInitializer(
   return { ...result, pendingCallDefault: { calleeName: calleeName ?? nodeSourceText(ctx, callee) ?? "call" } };
 }
 
-/**
- * Type of a literal's value: `RegExp` for `/a*\/g` (not `typeof`'s
- * `object`), `bigint` for `10n`, `undefined` for `null`.
- */
 export function literalValueType(node: Literal): string | undefined {
   if ("regex" in node && node.regex) return "RegExp";
   if ("bigint" in node && node.bigint) return "bigint";
   return node.value == null ? undefined : typeof node.value;
 }
 
-/**
- * Operators whose result is always a number (or a bigint, when both
- * operands are).
- */
+// These always give a number, unless both operands are bigints.
 const NUMERIC_BINARY_OPERATORS = new Set(["-", "*", "/", "%", "**", "<<", ">>", ">>>", "&", "|", "^"]);
 const BOOLEAN_BINARY_OPERATORS = new Set(["==", "!=", "===", "!==", "<", "<=", ">", ">=", "in", "instanceof"]);
 
-/**
- * Type of an operator expression (`a * 2`, `"#" + id`, `!open`, `a ?? 5`)
- * from its operators and operand types. `undefined` when that needs a type
- * checker (`a + b` of untyped values), so the caller falls back to `any`,
- * not the expression text.
- */
+// `undefined` when that would need a type checker (`a + b` of untyped
+// values), so the caller falls back to `any`, not the expression text.
 function inferExpressionType(ctx: ParserContext, node: unknown, depth: number): string | undefined {
   const expr = asExpression(node);
   if (!expr) return undefined;
@@ -347,10 +319,6 @@ function inferExpressionType(ctx: ParserContext, node: unknown, depth: number): 
   }
 }
 
-/**
- * `A | B` from the branches of `??`/`||`/`&&`/`?:`, or `undefined` if any
- * branch is unknown.
- */
 function unionOfBranchTypes(types: Array<string | undefined>): string | undefined {
   const members = new Set<string>();
   for (const type of types) {
@@ -371,10 +339,6 @@ function unionOfBranchTypes(types: Array<string | undefined>): string | undefine
  */
 export type LiteralTypeMode = "widen" | "literal" | "const";
 
-/**
- * The type of a default built only from literals, or `undefined` if any
- * part isn't one.
- */
 export function literalType(node: unknown, mode: LiteralTypeMode): string | undefined {
   const expr = asExpression(node);
   const widen = mode === "widen";
@@ -446,10 +410,8 @@ export function literalType(node: unknown, mode: LiteralTypeMode): string | unde
  * argument (`$state<number>(0)`) wins over its argument. A function
  * declaration is typed as a function default is. `undefined` when unknown.
  */
-/**
- * With `exactArity`, a function is typed as a value ({@link
- * inferFunctionValueType}), not a prop default.
- */
+// With `exactArity`, a function is typed as a value
+// (`inferFunctionValueType`), not as a prop default would be.
 export function inferVariableInitializerType(ctx: ParserContext, name: string, exactArity = false): string | undefined {
   const init = resolveLocalVarInitializer(ctx, name);
   if (init === undefined) {
@@ -482,11 +444,8 @@ export function inferVariableInitializerType(ctx: ParserContext, name: string, e
   return processed.type ?? processed.resolvedType;
 }
 
-/**
- * Type of the function `node` declared as `name`: its TS annotations, else
- * its JSDoc, else what {@link inferFunctionTypeFromNode} reads off
- * the node.
- */
+// TS annotations win, else its JSDoc, else what
+// `inferFunctionTypeFromNode` reads off the node.
 function localFunctionType(ctx: ParserContext, name: string, node: FunctionNode, exactArity: boolean): string {
   const returnType = exactArity ? inferFunctionValueReturnType(node) : inferReturnTypeFromNode(node);
   const annotated = buildFunctionDeclarationSignature(ctx, node, returnType);
@@ -505,18 +464,10 @@ const SVELTE_STORE_TYPES = new Map([
   ["readonly", "Readable"],
 ]);
 
-/**
- * `T` from a store type: `Writable<T>`, `Readable<T>`, with or without
- * the `import("svelte/store")`.
- */
 const STORE_VALUE_TYPE_REGEX = /^(?:import\("svelte\/store"\)\.)?(?:Writable|Readable)<([\s\S]*)>$/;
 
-/**
- * `import("svelte/store").Writable<T>` for `writable(value)`,
- * `Readable<T>` for `readable(value)` or `derived(stores, fn)`;
- * `undefined` for any other call. `T` is the type argument, else the
- * initial value's type, else `any`.
- */
+// `T` is the type argument, else the initial value's type, else `any`;
+// any call but `writable`/`readable`/`derived` gives `undefined`.
 export function svelteStoreType(ctx: ParserContext, call: CallExpression): string | undefined {
   const binding = isIdentifier(call.callee) ? ctx.valueImportBindingsByLocalName.get(call.callee.name) : undefined;
   const store = binding?.source === "svelte/store" ? SVELTE_STORE_TYPES.get(binding.importedName) : undefined;
@@ -553,11 +504,8 @@ export function svelteStoreType(ctx: ParserContext, call: CallExpression): strin
   return `import("svelte/store").${store}<${valueType ?? "any"}>`;
 }
 
-/**
- * The value inside `$state(x)`, `$state.raw(x)`, or `$derived(x)`: a prop
- * defaulting to such a local defaults to `x`, and the rune call means
- * nothing to a consumer.
- */
+// A prop defaulting to such a local defaults to `x`, since the rune
+// call means nothing to a consumer.
 function unwrapStateInitializer(init: Expression): Expression {
   if (init.type !== "CallExpression" || init.arguments.length !== 1) return init;
   const [argument] = init.arguments;
@@ -583,10 +531,8 @@ function resolveLocalVarInitializer(ctx: ParserContext, name: string, constOnly 
   return undefined;
 }
 
-/**
- * Unlike `let`/`var`, a `const` can't change at runtime, so only it can be
- * a context key.
- */
+// Unlike `let`/`var`, a `const` can't change at runtime, so only it can
+// be a context key.
 export function resolveConstInitializer(ctx: ParserContext, name: string): Expression | undefined {
   return resolveLocalVarInitializer(ctx, name, true);
 }
@@ -597,10 +543,7 @@ export function resolveConstInitializer(ctx: ParserContext, name: string): Expre
  * literal returns via {@link inferReturnTypeFromNode}. Returns `undefined`
  * (not `"any"`) when nothing confident turns up.
  */
-/**
- * What calling a same-file function returns; `declared` when JSDoc or
- * TypeScript says so, not its body.
- */
+// `declared` only when JSDoc or TypeScript says so, not the body.
 function resolveSameFileCallReturnType(
   ctx: ParserContext,
   calleeName: string,
@@ -626,10 +569,8 @@ function localFunctionValuedInitializer(
   return init?.type === "ArrowFunctionExpression" || init?.type === "FunctionExpression" ? init : undefined;
 }
 
-/**
- * Return type from `const f: () => string = ...` when the arrow
- * omits `): string`.
- */
+// An arrow that omits `): string` needs the binding's
+// `const f: () => string` annotation for its return type.
 function bindingCallableReturnTypeText(ctx: ParserContext, name: string): string | undefined {
   for (const decl of ctx.vars) {
     for (const declarator of decl.declarations) {
@@ -648,10 +589,8 @@ function functionReturnTypeAnnotationText(ctx: ParserContext, node: FunctionNode
   return annotation && sourceAtPos(ctx, annotation.start, annotation.end);
 }
 
-/**
- * A function type from JSDoc `@param`/`@returns` when `@type` is missing,
- * else what {@link inferFunctionTypeFromNode} reads off `node`.
- */
+// Only used when `@type` is missing: JSDoc `@param`/`@returns`, else
+// what `inferFunctionTypeFromNode` reads off `node`.
 function buildFunctionTypeFromParts(
   ctx: ParserContext,
   jsdoc: { params?: ComponentPropParam[]; returnType?: string } | undefined,
@@ -664,11 +603,8 @@ function buildFunctionTypeFromParts(
   return inferFunctionTypeFromNode(ctx, node);
 }
 
-/**
- * A function default's type from its node alone: named params and literal
- * returns, `any` for the rest. A default's body is a weak signal for the
- * prop's contract, so the prop's own JSDoc always wins over this.
- */
+// A default's body is a weak signal for the prop's contract, so the
+// prop's own JSDoc always wins over this.
 function inferFunctionTypeFromNode(ctx: ParserContext, node: FunctionNode): string {
   const returnType = inferReturnTypeFromNode(node);
   // TypeScript annotations on the function (`(value: string) => ...`) win,
@@ -678,10 +614,8 @@ function inferFunctionTypeFromNode(ctx: ParserContext, node: FunctionNode): stri
   return `(${inferParamsFromNode(node)}) => ${returnType}`;
 }
 
-/**
- * Turn params into `name: any`, or use `...args: any[]` when arity
- * is unclear: no params, destructuring, rest, or defaults.
- */
+// Falls back to `...args: any[]` unless arity is clear: no params,
+// destructuring, rest, or defaults make it unclear.
 function inferParamsFromNode({ params }: FunctionNode): string {
   const names: string[] = [];
   for (const param of params) {
@@ -691,12 +625,8 @@ function inferParamsFromNode({ params }: FunctionNode): string {
   return names.length > 0 ? names.join(", ") : "...args: any[]";
 }
 
-/**
- * The type of a function that is itself the value (an `export function`, a
- * context member), not a prop's default: its TS annotations, else each
- * param as `any` (optional when it has a default, `any[]` when rest),
- * returning what {@link inferFunctionValueReturnType} reads.
- */
+// Only for a function that is itself the value (an `export function`,
+// a context member), not a prop's default.
 export function inferFunctionValueType(ctx: ParserContext, node: FunctionNode): string {
   const returnType = inferFunctionValueReturnType(node);
   const annotated = buildFunctionDeclarationSignature(ctx, node, returnType);
@@ -704,10 +634,6 @@ export function inferFunctionValueType(ctx: ParserContext, node: FunctionNode): 
   return `(${untypedParamList(node)}) => ${returnType}`;
 }
 
-/**
- * A function value's params as `any`: optional when it has a default,
- * `any[]` when rest.
- */
 function untypedParamList(node: FunctionNode): string {
   // Named by position, since a destructured param has no name of its own.
   const unnamed = (index: number) => (node.params.length === 1 ? "arg" : `arg${index}`);
@@ -723,12 +649,8 @@ function untypedParamList(node: FunctionNode): string {
   return params.join(", ");
 }
 
-/**
- * A function value's type from its JSDoc `@param`/`@returns` tags, or
- * `undefined` when it has neither. Without `@returns`, the return type is
- * read off the body, as for an unannotated function; without `@param`,
- * each param is `any`.
- */
+// `undefined` when it has neither tag. Without `@returns`, the return
+// type is read off the body; without `@param`, each param is `any`.
 export function jsdocFunctionValueType(
   jsdoc: { params?: ComponentPropParam[]; returnType?: string } | undefined,
   node: FunctionNode,
@@ -738,19 +660,10 @@ export function jsdocFunctionValueType(
   return `(${params}) => ${jsdoc.returnType ?? inferFunctionValueReturnType(node)}`;
 }
 
-/**
- * What calling a function value gives, read off its body: `void`
- * (`Promise<void>` when async) when it returns no value, else
- * {@link inferReturnTypeFromNode}.
- */
 export function inferFunctionValueReturnType(node: FunctionNode): string {
   return returnsNothing(node) ? (node.async ? "Promise<void>" : "void") : inferReturnTypeFromNode(node);
 }
 
-/**
- * A block-bodied function with no `return` of a value: calling it
- * gives `undefined`.
- */
 function returnsNothing(node: FunctionNode): boolean {
   return (
     !node.generator &&
@@ -759,11 +672,9 @@ function returnsNothing(node: FunctionNode): boolean {
   );
 }
 
-/**
- * Infer return type from literal returns only. Every `return` must agree
- * on the same primitive. Bare `return;`, no returns, identifiers, calls,
- * objects, ternaries, async, or generators all become `any`.
- */
+// Only literal returns count, and every `return` must agree on one
+// primitive; anything else (bare `return;`, identifiers, calls, async,
+// generators) becomes `any`.
 function inferReturnTypeFromNode(node: FunctionNode): string {
   if (node.async || node.generator) return "any";
   const { body } = node;
@@ -773,11 +684,6 @@ function inferReturnTypeFromNode(node: FunctionNode): string {
   return primitives.size === 1 && only ? only : "any";
 }
 
-/**
- * Map one return expression to `string`, `number`, or `boolean`, or `null`
- * if it isn't a literal, template literal, or
- * `String`/`Number`/`Boolean` call.
- */
 function inferReturnPrimitive(node: unknown): "string" | "number" | "boolean" | null {
   const expr = asExpression(node);
   switch (expr?.type) {
@@ -803,21 +709,15 @@ function inferReturnPrimitive(node: unknown): "string" | "number" | "boolean" | 
   }
 }
 
-/**
- * Source text of a function default's parameter list, verbatim (names only
- * matter for a value default; `inferParamsFromNode`'s `: any` annotations
- * are for the prop's *type*, not this).
- */
+// Verbatim, since a value default needs only the names;
+// `inferParamsFromNode`'s `: any` annotations are for the prop's type.
 function paramsSourceText(ctx: ParserContext, { params }: FunctionNode): string {
   if (params.length === 0) return "";
   return sourceAtPos(ctx, params[0].start, params[params.length - 1].end) ?? "";
 }
 
-/**
- * A function default as arrow shorthand (`(value) => String(value)`), or
- * `undefined` unless the body is an expression, empty, or a single
- * `return <expr>;` (see #203).
- */
+// `undefined` unless the body is an expression, empty, or a single
+// `return <expr>;` (see #203).
 function conciseFunctionDefaultText(ctx: ParserContext, node: FunctionNode): string | undefined {
   // An arrow can't be a generator.
   if (node.generator) return undefined;
@@ -943,10 +843,6 @@ const NUMBER_CONSTANTS = new Set([
 ]);
 const MATH_CONSTANTS = new Set(["PI", "E", "LN2", "LN10", "LOG2E", "LOG10E", "SQRT2", "SQRT1_2"]);
 
-/**
- * `Number.MAX_SAFE_INTEGER`, `Math.PI`, and the other numeric constants on
- * `Number` and `Math`.
- */
 function isNumericConstant({ object, property }: MemberExpression): boolean {
   if (!isIdentifier(object) || !isIdentifier(property)) return false;
   if (object.name === "Number") return NUMBER_CONSTANTS.has(property.name);

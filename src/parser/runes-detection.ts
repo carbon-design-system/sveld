@@ -5,18 +5,14 @@ import type { ParserContext } from "./context";
 import { collectPatternIdentifiers, isScopeOwner } from "./scopes";
 import { isTypeOnlySubtree } from "./walk";
 
-/**
- * Dotted forms (`$state.raw`) are a `MemberExpression` whose object is one
- * of these, a reference too.
- */
+// A dotted form (`$state.raw`) is a `MemberExpression` whose object is
+// one of these, so it counts as a reference too.
 const RUNE_NAMES = new Set(["$state", "$derived", "$effect", "$props", "$bindable", "$inspect", "$host"]);
 
 const RUNE_NAME_LIST = Array.from(RUNE_NAMES);
 
-/**
- * ASCII `[A-Za-z0-9_$]`: a rune name touching one of these is part of a
- * longer identifier (e.g. `$$props`).
- */
+// A rune name touching one of these is part of a longer identifier
+// (`$$props`), so it isn't a rune.
 function isAsciiIdentifierChar(code: number): boolean {
   return (
     (code >= 48 && code <= 57) ||
@@ -27,11 +23,9 @@ function isAsciiIdentifierChar(code: number): boolean {
   );
 }
 
-/**
- * Textual pre-check: false only when no rune name appears as a standalone
- * token and no `\u` escape could spell one. A false positive (a rune name
- * in a string or comment) just falls back to the walk.
- */
+// perf: false only when no rune name appears as a standalone token and
+// no `\u` escape could spell one; a false positive (a rune name in a
+// string or comment) just falls back to the walk.
 function mayContainRuneReference(source: string): boolean {
   if (source.includes("\\u")) return true;
   for (const name of RUNE_NAME_LIST) {
@@ -59,10 +53,6 @@ function isShadowed(name: string, scopeStack: ScopeStack): boolean {
   return false;
 }
 
-/**
- * The identifiers a scope-owning node introduces directly (not through
- * nested scopes).
- */
 function collectScopeOwnerNames(node: AST.SvelteNode): Set<string> {
   const names = new Set<string>();
   switch (node.type) {
@@ -90,10 +80,6 @@ function collectScopeOwnerNames(node: AST.SvelteNode): Set<string> {
   return names;
 }
 
-/**
- * Top-level `import`/`var`/`function`/`class` bindings directly within a
- * statement list.
- */
 function collectDirectBlockNames(body: Program["body"] | undefined, names: Set<string>) {
   for (const statement of body ?? []) {
     switch (statement.type) {
@@ -114,10 +100,6 @@ function collectDirectBlockNames(body: Program["body"] | undefined, names: Set<s
   }
 }
 
-/**
- * True if `root` contains an unshadowed rune reference; the first one ends
- * the walk.
- */
 function scanForRuneReference(root: AST.SvelteNode | undefined, baseScope: ScopeStack): boolean {
   if (!root) return false;
   const scopeStack = [...baseScope];
@@ -144,12 +126,9 @@ function scanForRuneReference(root: AST.SvelteNode | undefined, baseScope: Scope
   return found;
 }
 
-/**
- * Mirrors svelte's `analyze_component`: `<svelte:options runes={...} />`
- * wins; otherwise runes mode if any rune name is referenced unshadowed in
- * the module script, instance script, or template. Omitted: top-level
- * `await` forcing runes.
- */
+// compat: mirrors svelte's `analyze_component`, where
+// `<svelte:options runes={...} />` wins, else any unshadowed rune
+// reference means runes mode. Omitted: top-level `await` forcing runes.
 export function detectSyntaxMode(ctx: ParserContext): SyntaxMode {
   if (ctx.runesOptionOverride !== undefined) {
     return ctx.runesOptionOverride ? "runes" : "legacy";

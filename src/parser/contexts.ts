@@ -40,11 +40,8 @@ import { findTrackedVariableType, findVariableJsDoc, resolveLocalVarJSDoc } from
  */
 type VariableTypeInfo = NonNullable<ReturnType<typeof findTrackedVariableType>> & { inferred?: boolean };
 
-/**
- * {@link findTrackedVariableType}, else with `inferFromInitializer` typed
- * from its initializer (`let count = $state(0)` is a `number`), as a prop
- * default is.
- */
+// Falls back to the initializer only with `inferFromInitializer`
+// (`let count = $state(0)` is a `number`), as a prop default would.
 function findContextVariableType(
   ctx: ParserContext,
   name: string,
@@ -63,12 +60,8 @@ function findContextVariableType(
 
 const ANY_REGEX = /\bany\b/;
 
-/**
- * `context-any-type` for a type sveld inferred with `any` inside it, such
- * as `Writable<any>` from `writable(undefined)` or `(id: any) => void`
- * from an unannotated param. A bare `any` is reported where
- * it's defaulted.
- */
+// Only for `any` inside an inferred type (`Writable<any>`,
+// `(id: any) => void`); a bare `any` is reported where it's defaulted.
 function reportInferredAny(
   ctx: ParserContext,
   key: string,
@@ -87,12 +80,8 @@ function reportInferredAny(
   );
 }
 
-/**
- * `{...identifier}` in a `setContext` object literal: the properties of
- * the `const` object literal it's bound to (recursively), else the members
- * of its object-type annotation. `null` when neither resolves, so the
- * caller widens to `Record<string, any>`.
- */
+// `null` when neither the `const` object literal nor an object-type
+// annotation resolves, so the caller widens to `Record<string, any>`.
 function resolveSpreadShape(ctx: ParserContext, argument: unknown, key: string): ComponentContextProp[] | null {
   if (!isIdentifier(argument)) return null;
 
@@ -111,10 +100,6 @@ function hasGetter(objExpr: ObjectExpression, name: string): boolean {
   );
 }
 
-/**
- * Source text of a TS annotation (`owner[field]`, e.g. a function's
- * `returnType`), without the colon.
- */
 function annotationText(
   ctx: ParserContext,
   owner: unknown,
@@ -126,7 +111,6 @@ function annotationText(
   return sourceForExpression(ctx, annotation.typeAnnotation);
 }
 
-/** The value a getter returns when its body is a single `return` statement. */
 function returnedValue(getter: FunctionExpression | undefined): Node | undefined {
   const statements = getter?.body.body;
   if (statements?.length !== 1 || statements[0].type !== "ReturnStatement") return undefined;
@@ -316,10 +300,8 @@ function parseContextValue(ctx: ParserContext, node: Node, key: string): Compone
   return typed("any");
 }
 
-/**
- * Static description from `Symbol()` / `Symbol.for()`, or `""` when
- * unknown. Returns `null` for other calls.
- */
+// `""` for a Symbol with no static description, so only a non-Symbol
+// call gives `null`.
 function resolveSymbolKeyDescription(node: CallExpression): string | null {
   const callee = node.callee;
   const isSymbolCall = callee.type === "Identifier" && callee.name === "Symbol";
@@ -354,13 +336,9 @@ function pendingContextKey(binding: { source: string; importedName: string; memb
   };
 }
 
-/**
- * Resolve a `setContext` key. Literals, static templates, local `const`
- * chains (depth 5), and `Symbol()` become `{ kind: "resolved" }`. A
- * `Symbol()` with no description uses the binding name. A named import, or
- * a member of a namespace import (`keys.THEME`), is `{ kind: "pending" }`
- * so `generateBundle` can read the other file.
- */
+// A `Symbol()` with no description takes the binding name. An imported
+// key (`keys.THEME` included) is `pending`, so `generateBundle` can
+// read the other file; `const` chains stop at depth 5.
 function resolveContextKey(ctx: ParserContext, keyArg: unknown, depth = 0): ContextKeyResolution {
   if (!keyArg || typeof keyArg !== "object" || !("type" in keyArg)) return { kind: "unresolved" };
   const node = keyArg as Expression;
@@ -412,10 +390,8 @@ function resolveContextKey(ctx: ParserContext, keyArg: unknown, depth = 0): Cont
   return { kind: "unresolved" };
 }
 
-/**
- * A value other than an object literal or a variable (`writable(0)`,
- * `new Map()`) has no shape to describe.
- */
+// A value other than an object literal or a variable (`writable(0)`,
+// `new Map()`) has no shape, so it can't be described.
 function recordContextValueUnresolved(
   ctx: ParserContext,
   key: string,
@@ -433,11 +409,8 @@ function recordContextValueUnresolved(
   );
 }
 
-/**
- * Parse `setContext(key, value)`. Imported keys go to
- * `pendingContextKeyCandidates`. `statement` is the call's own expression
- * statement, whose `@internal`/`@ignore` JSDoc hides the context.
- */
+// `statement` must be the call's own expression statement, since its
+// `@internal`/`@ignore` JSDoc hides the context.
 export function parseSetContextCall(
   ctx: ParserContext,
   callExpr: SimpleCallExpression,

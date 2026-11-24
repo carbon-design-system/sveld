@@ -49,7 +49,7 @@ import { isTypeOnlySubtree } from "./walk";
 const COMPONENT_COMMENT_REGEX = /^@component/;
 const CARRIAGE_RETURN_REGEX = /\r/g;
 
-/** Keep in sync with the cases in {@link walkComponent}'s `enter`. */
+// invariant: must match the cases in `walkComponent`'s `enter`.
 const MAIN_WALK_NODE_TYPES = new Set([
   "AssignmentExpression",
   "UpdateExpression",
@@ -104,7 +104,6 @@ export interface ComponentWalkResult {
   locallyBoundCalls: Set<CallExpression>;
 }
 
-/** The name `parent` binds a call's result to: `x` in `const x = call()`. */
 function parentIdName(parent: AST.SvelteNode | null): string | undefined {
   return parent && "id" in parent && parent.id && "name" in parent.id ? parent.id.name : undefined;
 }
@@ -164,7 +163,6 @@ function enterCallExpression(
   }
 }
 
-/** The `value` of a `<slot>` attribute as a slot prop. */
 function slotPropValueFromAttribute(ctx: ParserContext, value: Exclude<AST.Attribute["value"], true>): SlotPropValue {
   // Only quoted or multi-chunk values are an array; `name={expr}` and
   // `{name}` are a bare tag.
@@ -210,10 +208,6 @@ function addSlotElement(ctx: ParserContext, node: AST.SlotElement) {
   });
 }
 
-/**
- * `{@render name(...)}`: the snippet prop `name` becomes a slot, typed
- * from an object argument.
- */
 function addRenderTagSlot(ctx: ParserContext, node: AST.RenderTag) {
   const renderInfo = extractRenderTagInfo(ctx, node.expression);
   if (!renderInfo) {
@@ -256,10 +250,8 @@ function addRenderTagSlot(ctx: ParserContext, node: AST.RenderTag) {
   }
 }
 
-/**
- * A bare `on:event` (no handler) forwards the event; dispatched events win
- * and are reconciled after the walk.
- */
+// A bare `on:event` (no handler) forwards the event. Dispatched events
+// win, but only after the walk reconciles them.
 function addForwardedEvent(ctx: ParserContext, node: AST.OnDirective, parent: AST.SvelteNode | null) {
   const eventName = node.name;
   if (node.expression != null || !eventName) return;
@@ -292,11 +284,8 @@ function addForwardedEvent(ctx: ParserContext, node: AST.OnDirective, parent: AS
   }
 }
 
-/**
- * The variable a `bind:` writes: `ref`, or the root of `values[i]` or
- * `settings.name`. `indexed` is `bind:this={refs[i]}`, the one member form
- * that also types the prop.
- */
+// `bind:this={refs[i]}` is the only member form that also types the
+// prop, so it's flagged `indexed`.
 function bindTarget(node: AST.BindDirective): { name: string; indexed: boolean } | undefined {
   const { expression } = node;
   if (expression.type === "Identifier") return { name: expression.name, indexed: false };
@@ -309,11 +298,6 @@ function bindTarget(node: AST.BindDirective): { name: string; indexed: boolean }
   return { name: root.name, indexed };
 }
 
-/**
- * `bind:*` marks props reactive. `bind:this` also narrows the prop type:
- * to the element, or to the instance of an imported component, or an array
- * of either when bound by index.
- */
 function recordBindDirective(
   ctx: ParserContext,
   node: AST.BindDirective,
@@ -355,10 +339,6 @@ function recordBindDirective(
   ctx.bindings.set(prop_name, binding);
 }
 
-/**
- * Walks the instance script and the template in one pass, with the
- * component's scopes live.
- */
 export function walkComponent(ctx: ParserContext): ComponentWalkResult {
   const walk: ComponentWalkResult = {
     dispatcherName: undefined,

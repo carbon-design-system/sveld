@@ -2,10 +2,6 @@ import { createDiagnostic, DIAGNOSTIC_CODES, type SveldDiagnosticKind } from "..
 import type { SourceRange } from "../model";
 import type { ParserContext } from "./context";
 
-/**
- * Records a diagnostic, marked `ignored` when {@link recordSveldIgnore}
- * saw a matching `@sveld-ignore`.
- */
 export function recordDiagnostic(
   ctx: ParserContext,
   kind: SveldDiagnosticKind,
@@ -16,10 +12,7 @@ export function recordDiagnostic(
   ctx.diagnosticRecords.push(buildDiagnostic(ctx, kind, name, message, source));
 }
 
-/**
- * The diagnostic {@link recordDiagnostic} would record, for callers that
- * hold it back.
- */
+// Builds without recording, for callers that hold a diagnostic back.
 export function buildDiagnostic(
   ctx: ParserContext,
   kind: SveldDiagnosticKind,
@@ -37,16 +30,13 @@ export function buildDiagnostic(
   });
 }
 
-/** Keyed by kind too, so a context variable and a prop can't collide. */
+// Keyed by kind too, so a context variable and a prop can't collide.
 function ignoreKey(kind: SveldDiagnosticKind, name: string): string {
   return `${kind}:${name}`;
 }
 
-/**
- * Registers a symbol's `@sveld-ignore <code>` codes (`""` for a bare one:
- * ignore everything). Must run before {@link recordDiagnostic} for the
- * same `kind`/`name`.
- */
+// Must run before `recordDiagnostic` for the same `kind`/`name`. A bare
+// `@sveld-ignore` records `""`, which ignores everything.
 export function recordSveldIgnore(
   ctx: ParserContext,
   kind: SveldDiagnosticKind,
@@ -60,10 +50,8 @@ export function recordSveldIgnore(
   ctx.sveldIgnoreDirectives.set(key, existing);
 }
 
-/**
- * A prop's `@sveld-ignore` codes, for {@link recordSveldIgnore} and
- * diagnostics reported after parsing.
- */
+// Also kept for diagnostics reported after parsing, not only for
+// `recordSveldIgnore` to read.
 export function recordPropSveldIgnore(ctx: ParserContext, propName: string, codes: string[] | undefined) {
   recordSveldIgnore(ctx, "prop-unknown-type", propName, codes);
   recordSveldIgnore(ctx, "bind-this-type-mismatch", propName, codes);

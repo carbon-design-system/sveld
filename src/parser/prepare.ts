@@ -12,13 +12,11 @@ import { collectScriptTypeInfo } from "./runes-props";
 import { stripTypeCastWrappers } from "./typescript-casts";
 import { collectHoistedScriptBindings } from "./value-imports";
 
-/** A `// @ts-...` comment, but not one on a `*` line of a JSDoc block (e.g. in an `@example`). */
+// Never matches on a `*` line of a JSDoc block, such as an `@example`.
 const TS_DIRECTIVE_REGEX = /\/\/(?<!^[ \t]*\*.*\/\/)\s*@ts-[^\n\r]*/gm;
 
-/**
- * Removes `// @ts-...` directives from the top-level `<script>`s only;
- * `lexComponent` finds those the way the parser does.
- */
+// Only the top-level `<script>`s, which `lexComponent` finds the way
+// the parser does.
 function stripTypeScriptDirectivesFromScripts(source: string): string {
   if (!source.includes("@ts-")) return source;
 
@@ -40,10 +38,6 @@ function stripTypeScriptDirectivesFromScripts(source: string): string {
   return cleaned + source.slice(last);
 }
 
-/**
- * Parses `source` into a fresh `ctx` and collects what the walks read
- * up front.
- */
 export function prepareComponent(ctx: ParserContext, source: string, filePath: string): void {
   ctx.componentFilePath = filePath;
   const cleanedSource = stripTypeScriptDirectivesFromScripts(source);

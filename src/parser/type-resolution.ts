@@ -23,10 +23,7 @@ export function getTypeReferenceName(typeName: EntityName): string {
   return typeName.type === "Identifier" ? typeName.name : typeName.right.name;
 }
 
-/**
- * The leftmost name, which is what's imported or declared (`ns`
- * in `ns.Type`).
- */
+// Only the leftmost name (`ns` in `ns.Type`) is imported or declared.
 function getTypeDependencyName(typeName: EntityName): string {
   return typeName.type === "Identifier" ? typeName.name : getTypeDependencyName(typeName.left);
 }
@@ -38,7 +35,6 @@ function getSpanText(ctx: ParserContext, span: { start?: number; end?: number } 
   return sourceAtPos(ctx, start + startOffset, end)?.trim();
 }
 
-/** A `TSTypeAnnotation`'s text without its leading colon. */
 export function getTypeAnnotationText(
   ctx: ParserContext,
   typeAnnotation: { start?: number; end?: number } | undefined,
@@ -157,10 +153,6 @@ function buildTypeImportStatements(ctx: ParserContext, referencedImportedTypes: 
     });
 }
 
-/**
- * A type reference's dependencies: `Name<Args>`, or an
- * interface's `extends Name<Args>`.
- */
 function collectTypeReferenceDependencies(
   ctx: ParserContext,
   typeName: EntityName,
@@ -201,20 +193,15 @@ function collectMemberDependencies(members: TypeElement[], collect: (node: TSNod
   }
 }
 
-/**
- * Records a type node outside the whole-object `$props()` path (legacy and
- * per-prop annotations, accessor signatures) so {@link
- * buildTypeScriptMetadata} pulls its dependencies into the `.d.ts`.
- */
+// Type nodes outside the whole-object `$props()` path (legacy and
+// per-prop annotations, accessor signatures) need this, so
+// `buildTypeScriptMetadata` pulls their dependencies into the `.d.ts`.
 export function trackAdditionalTypeDependencyNode(ctx: ParserContext, typeNode: TSNode | undefined) {
   if (typeNode) ctx.additionalTypeDependencyNodes.push(typeNode);
 }
 
-/**
- * Many bundlers reject `const enum` under `isolatedModules`, so one whose
- * members all have literal initializers is emitted as a literal
- * union instead.
- */
+// Many bundlers reject `const enum` under `isolatedModules`, so one
+// whose members all have literal initializers becomes a literal union.
 function buildConstEnumUnionTypeCode(enumStatement: TSEnumDeclaration): string | undefined {
   if (!enumStatement.const) return undefined;
   const name = enumStatement.id.name;
@@ -266,16 +253,8 @@ export interface FunctionDeclarationParts {
   typeParameters?: string;
 }
 
-/**
- * A `/** @type {T} *\/` comment right before a param, as
- * `(/** @type {string} *\/ id) => ...` types it.
- */
 const INLINE_JSDOC_REGEX = /\/\*\*((?:(?!\*\/)[\s\S])*)\*\/\s*$/;
 
-/**
- * The type an inline JSDoc comment between `from` and a param at `to`
- * gives that param.
- */
 function inlineJsDocType(ctx: ParserContext, from: number | undefined, to: number): string | undefined {
   if (from === undefined) return undefined;
   const between = sourceAtPos(ctx, from, to);
@@ -283,7 +262,7 @@ function inlineJsDocType(ctx: ParserContext, from: number | undefined, to: numbe
   return comment ? extractJsDocType(comment[0]) : undefined;
 }
 
-/** Also records each annotation so the `.d.ts` pulls in the types it names. */
+// Also records each annotation so the `.d.ts` pulls in its types.
 export function readFunctionDeclarationParts(
   ctx: ParserContext,
   funcDecl: FunctionDeclarationLike,
@@ -337,12 +316,8 @@ export function readFunctionDeclarationParts(
   };
 }
 
-/**
- * `<T>(params) => ReturnType` for an `export function` accessor in a
- * `lang="ts"` component, with `any` for untyped positions.
- * `hasAnnotations: false` when nothing was annotated, so the caller can
- * prefer a JSDoc-derived signature.
- */
+// `hasAnnotations: false` when nothing was annotated, so the caller can
+// prefer a JSDoc-derived signature.
 export function buildFunctionDeclarationSignature(
   ctx: ParserContext,
   funcDecl: FunctionDeclarationLike,
@@ -365,10 +340,6 @@ function copyIfAny<T>(items: T[]): T[] | undefined {
   return items.length > 0 ? items.slice() : undefined;
 }
 
-/**
- * What the parse leaves for the cross-file pass, or `undefined` when it
- * depends on no other file.
- */
 export function buildPendingCrossFileCandidates(ctx: ParserContext): PendingCrossFileCandidates | undefined {
   const pendingCallDefaultCandidates = copyIfAny(ctx.pendingCallDefaultCandidates);
   const pendingConstDefaultCandidates = copyIfAny(
@@ -403,7 +374,6 @@ export function buildPendingCrossFileCandidates(ctx: ParserContext): PendingCros
   };
 }
 
-/** Writer-only metadata, or `undefined` when the writer needs none. */
 export function buildTypeScriptMetadata(ctx: ParserContext): ParsedComponentTypeScriptMetadata | undefined {
   const referencedImportedTypes = new Set<string>();
   const referencedLocalTypes = new Set<string>();

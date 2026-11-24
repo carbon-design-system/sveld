@@ -32,12 +32,9 @@ export function resolveIdentifierToReactiveProp(ctx: ParserContext, name: string
   return undefined;
 }
 
-/**
- * True when `name` is bound by a function, block, or template scope around
- * the current walk position, so it isn't the script's top-level binding of
- * that name (an import,
- * say): `function register(KEY) { setContext(KEY, ...) }`.
- */
+// A name bound by a function, block, or template scope around the walk
+// isn't the script's top-level binding (an import,
+// say): `function register(KEY) { setContext(KEY, ...) }`.
 export function isBoundInNestedScope(ctx: ParserContext, name: string): boolean {
   for (let i = ctx.activeScopes.length - 1; i >= 0; i -= 1) {
     const scope = ctx.activeScopes[i];
@@ -47,20 +44,12 @@ export function isBoundInNestedScope(ctx: ParserContext, name: string): boolean 
   return false;
 }
 
-/**
- * {@link isBoundInNestedScope} for the identifier a callee starts with
- * (`helper`, or `h` in `h.fn`).
- */
 export function isCalleeBoundInNestedScope(ctx: ParserContext, callee: unknown): boolean {
   let node = callee;
   while (isMemberExpression(node)) node = node.object;
   return isIdentifier(node) && isBoundInNestedScope(ctx, node.name);
 }
 
-/**
- * The names a destructuring or assignment pattern binds. Anything else,
- * such as a member expression target, binds nothing.
- */
 export function collectPatternIdentifiers(
   target: Parameters<typeof extractIdentifiers>[0] | null | undefined,
   names: Set<string> = new Set(),
@@ -71,10 +60,6 @@ export function collectPatternIdentifiers(
   return names;
 }
 
-/**
- * Marks any reactive props referenced by a mutation target (assignment LHS
- * / update argument) as reactive.
- */
 export function markReactivePropsFromMutationTarget(
   ctx: ParserContext,
   target: Pattern | Expression | null | undefined,
@@ -111,11 +96,9 @@ type ScopeOwnerNode =
   | AST.EachBlock
   | AST.AwaitBlock;
 
-/**
- * True for node types that introduce a new lexical scope. `{:then}` and
- * `{:catch}` bindings share one AwaitBlock-wide scope, so every branch
- * sees both; only cross-branch shadowing of a prop name would notice.
- */
+// `{:then}` and `{:catch}` bindings share one AwaitBlock-wide scope, so
+// every branch sees both; only cross-branch shadowing of a prop name
+// would notice.
 export function isScopeOwner(node: unknown): node is ScopeOwnerNode {
   if (!node || typeof node !== "object" || !("type" in node)) return false;
 
@@ -133,17 +116,13 @@ export function isScopeOwner(node: unknown): node is ScopeOwnerNode {
   }
 }
 
-/** True for node types that introduce a `var`-hoisting (function) scope. */
 function isFunctionScopeOwner(node: unknown) {
   if (!node || typeof node !== "object" || !("type" in node)) return false;
   const type = String(node.type);
   return type === "FunctionDeclaration" || type === "FunctionExpression" || type === "ArrowFunctionExpression";
 }
 
-/**
- * Scope bindings from `const { a, b: c } = $props()`. Destructured props
- * are `prop`; rest is `local`.
- */
+// Only destructured props are `prop`; the rest element is `local`.
 function extractRunesScopeBindings(declarator: VariableDeclarator) {
   const bindings: Array<{ kind: ScopeBindingKind; name: string; publicPropName?: string }> = [];
 
@@ -208,7 +187,6 @@ function declareVariableDeclaration(
   }
 }
 
-/** Declares every name the `patterns` bind as a local. */
 function declareLocals(scope: LexicalScope, ...patterns: Array<Parameters<typeof collectPatternIdentifiers>[0]>) {
   for (const pattern of patterns) {
     for (const identifier of collectPatternIdentifiers(pattern)) {
@@ -217,10 +195,6 @@ function declareLocals(scope: LexicalScope, ...patterns: Array<Parameters<typeof
   }
 }
 
-/**
- * Declares the bindings a variable, `function`, or `class`
- * statement makes.
- */
 function declareStatement(
   statement: Program["body"][number],
   lexicalScope: LexicalScope,
@@ -238,12 +212,10 @@ function declareStatement(
   }
 }
 
-/**
- * `export { local as name }` makes `local` the `name` prop, so assigning
- * `local` marks `name` reactive. Replaces the `local` binding its
- * declaration made, if any; one declared after the export keeps this
- * binding (see `declareScopeBinding`).
- */
+// `export { local as name }` makes `local` the `name` prop, so
+// assigning `local` marks `name` reactive. This replaces the binding
+// `local`'s declaration made, and a declaration after the export keeps
+// it (see `declareScopeBinding`).
 function declareExportSpecifierProps(ctx: ParserContext, specifiers: ExportSpecifier[]) {
   for (const { local, exported } of specifiers) {
     if (local.type !== "Identifier") continue;
@@ -271,11 +243,8 @@ function collectComponentScopeDeclarations(ctx: ParserContext, instance: AST.Scr
   }
 }
 
-/**
- * Resets scope state and declares the top-level `<script>` bindings.
- * Nested scopes are built by {@link enterNestedScopeDeclarationNode}
- * during the caller's component walk.
- */
+// Only the top-level bindings; nested scopes are built by
+// `enterNestedScopeDeclarationNode` during the caller's walk.
 export function initComponentScope(ctx: ParserContext) {
   ctx.componentScope.clear();
   ctx.activeScopes.length = 0;
@@ -293,10 +262,6 @@ export function createScopeWalkState(ctx: ParserContext): ScopeWalkState {
   return { varScopeStack: [ctx.componentScope] };
 }
 
-/**
- * Declares the bindings of a scope-owning `node` in a new scope and
- * returns it; for functions, also pushes it as the active `var` scope.
- */
 export function enterNestedScopeDeclarationNode(
   ctx: ParserContext,
   state: ScopeWalkState,

@@ -50,10 +50,6 @@ export function maybeSetRestProps(ctx: ParserContext, parent: unknown, spread: A
   ctx.restPropsSource = sourceRangeFromNode(ctx, spread);
 }
 
-/**
- * The rest props name (`$$restProps` or a runes rest local) an object
- * literal initializer spreads.
- */
 function restPropsSpreadIn(ctx: ParserContext, init: Expression | null | undefined): string | undefined {
   let value = unwrapTypeCastExpression(init);
   if (isCallExpressionNamed(value, "$derived")) value = unwrapTypeCastExpression(value.arguments[0] as Expression);
@@ -67,13 +63,9 @@ function restPropsSpreadIn(ctx: ParserContext, init: Expression | null | undefin
   return undefined;
 }
 
-/**
- * Top-level locals whose object literal spreads rest props, mapped to the
- * rest name spread: `props` in `$: props = { ...$$restProps, class }`,
- * which the template then spreads in turn. One level only: an object
- * spreading such a local isn't followed. Reads `ctx.restPropLocals`, so
- * call it once the instance script has been walked.
- */
+// One level only: an object spreading such a local isn't followed.
+// Reads `ctx.restPropLocals`, so it must run after the instance script
+// is walked.
 export function collectRestPropsObjectLocals(ctx: ParserContext, instance: AST.Script | undefined) {
   const locals = new Map<string, string>();
   for (const statement of instance?.content.body ?? []) {

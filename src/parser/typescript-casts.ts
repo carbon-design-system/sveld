@@ -1,12 +1,10 @@
 import type { AST, TSNode } from "svelte-ast";
 import { walk } from "svelte-ast/walk";
 
-/**
- * Value-level TS wrappers that change a node's `.type` but not its runtime
- * meaning. Svelte's `compile()` strips them (`remove_typescript_nodes`)
- * but `parse()` doesn't, and code like `classifyDefaultValue` expects the
- * unwrapped node. Type declarations and annotations are deliberately kept.
- */
+// These change a node's `.type` but not its runtime meaning. Svelte's
+// `compile()` strips them (`remove_typescript_nodes`) but `parse()`
+// doesn't, and code like `classifyDefaultValue` expects the unwrapped
+// node. Type declarations and annotations are deliberately kept.
 const TYPE_CAST_WRAPPER_TYPES = new Set([
   "TSAsExpression",
   "TSSatisfiesExpression",
@@ -15,7 +13,6 @@ const TYPE_CAST_WRAPPER_TYPES = new Set([
   "TSInstantiationExpression",
 ]);
 
-/** `x as const` or `<const>x`. */
 function isConstAssertion(node: AST.SvelteNode): boolean {
   if (node.type !== "TSAsExpression" && node.type !== "TSTypeAssertion") return false;
   const annotation = "typeAnnotation" in node ? node.typeAnnotation : undefined;
@@ -34,13 +31,11 @@ export interface TypeCasts {
   typeAssertions: WeakMap<object, TSNode>;
 }
 
-/**
- * Returning the replacement from `enter` makes `walk` write it to the
- * parent and enter it next, so `a as B as C` unwraps one layer per call
- * down to `a`. Each cast is kept in `casts` for the expression under it.
- * The outermost cast wins, and passes through `!` and `satisfies`, which
- * don't change the type.
- */
+// Returning the replacement from `enter` makes `walk` write it to the
+// parent and enter it next, so `a as B as C` unwraps one layer per call
+// down to `a`. Each cast is kept in `casts` for the expression under
+// it; the outermost wins, passing through `!` and `satisfies`, which
+// don't change the type.
 export function stripTypeCastWrappers(root: AST.SvelteNode | undefined, casts: TypeCasts): void {
   if (!root) return;
   walk(root, {

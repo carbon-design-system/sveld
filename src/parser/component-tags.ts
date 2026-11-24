@@ -29,14 +29,10 @@ import { sourceRangeFromCommentTag } from "./source-position";
 import { formatParamList } from "./utils";
 
 const GENERIC_DEFAULT_EQUALS_REGEX = /\s*=\s*/;
-/** An import specifier written without quotes (`./Button.svelte`). */
 const UNQUOTED_SPECIFIER_REGEX = /^[^"'`\s]\S*$/;
 
-/**
- * `Name<Row=DataTableRow,Header=Foo>` to
- * `Name<Row = DataTableRow, Header = Foo>`, as sveld spaces
- * other generics.
- */
+// So a tag's generics read as sveld spaces other generics:
+// `Name<Row=X,H=Y>` becomes `Name<Row = X, H = Y>`.
 function normalizeGenericNameSpacing(name: string): string {
   const openIndex = name.indexOf("<");
   if (openIndex === -1 || !name.endsWith(">")) return name;
@@ -52,46 +48,29 @@ function normalizeGenericNameSpacing(name: string): string {
 
 type BlockLines = JSDocTag["lines"];
 
-/**
- * Tags that take the description lines directly above them when they have
- * none on their own line.
- */
+// These take the description lines directly above them, but only when
+// they have none on their own line.
 const PRECEDING_DESCRIPTION_TAGS = new Set(["restProps", "slot", "snippet", "event", "typedef", "callback"]);
 
-/**
- * Tags that stay inside the preceding `@event`'s scope instead of
- * ending it.
- */
+// These stay in the preceding `@event`'s scope instead of ending it.
 const EVENT_SCOPE_TAGS = new Set(["property", "type"]);
 
-/**
- * Tags that declare something of their own, closing the preceding
- * `@event`'s scope.
- */
+// These declare something of their own, so they close the preceding
+// `@event`'s scope.
 const EVENT_SCOPE_ENDING_TAGS = new Set(["slot", "snippet", "typedef", "callback"]);
 
-/**
- * Cleaned text on the tag's own line, without the continuation lines
- * `parseComments` folds into `description`. A multi-line `{type}` moves
- * that line down to where the type closes.
- */
+// Only the tag's own line, without the continuation lines
+// `parseComments` folds into `description`; after a multi-line `{type}`,
+// that's the line where the type closes.
 function getInlineTagDescription(tagLines: BlockLines): string | undefined {
   if (tagLines.length === 0) return undefined;
   return cleanDescription(tagLines[tagHeadIndex(tagLines)].content);
 }
 
-/**
- * A block line with no text, not part of a tag's opening line or its
- * multi-line `{type}`.
- */
 function isBlankLine(line: { tag?: string; continuesType?: true; content: string } | undefined): boolean {
   return !line || (!line.tag && !line.continuesType && line.content.trim() === "");
 }
 
-/**
- * Whether a tag has body text on its own line (`@since 1.0`), not only
- * below it (`@example`).
- */
 function hasBodyOnTagLine(tag: JSDocTag): boolean {
   // `text` leaves out an empty tag line, so then it has one line fewer than
   // the tag.
@@ -103,10 +82,8 @@ function dropLastLines(text: string, count: number): string {
   return text.split("\n").slice(0, -count).join("\n").trimEnd();
 }
 
-/**
- * Standard JSDoc/TSDoc tags sveld passes through: close enough to a sveld
- * tag to look like a typo (`@todo`/`@type`, `@prop`/`@param`), but meant.
- */
+// Close enough to a sveld tag to look like a typo (`@todo`/`@type`,
+// `@prop`/`@param`), but meant, so sveld passes them through.
 const STANDARD_JSDOC_TAGS = new Set([
   "abstract",
   "access",
@@ -163,10 +140,6 @@ const STANDARD_JSDOC_TAGS = new Set([
   "yields",
 ]);
 
-/**
- * Tags a `jsdoc-unknown-tag` typo (`@typ`, `@evnet`) is matched against
- * for a suggestion.
- */
 const SUGGESTED_JSDOC_TAGS = [
   ...IDE_PASSTHROUGH_TAGS,
   ...OTHER_KNOWN_JSDOC_TAGS,
@@ -194,10 +167,8 @@ const SUGGESTED_JSDOC_TAGS = [
 
 const TRAILING_SEMICOLON_REGEX = /;$/;
 
-/**
- * True when `source` is one balanced `{...}` (optional trailing `;`).
- * Unions like `{...} | {...}` must stay `type` aliases, not `interface`.
- */
+// Only one balanced `{...}` (optional trailing `;`) counts, since a
+// union like `{...} | {...}` must stay a `type` alias, not an `interface`.
 function isSingleObjectLiteral(source: string): boolean {
   const s = source.trim().replace(TRAILING_SEMICOLON_REGEX, "").trimEnd();
   if (!s.startsWith("{") || !s.endsWith("}")) return false;
@@ -206,17 +177,8 @@ function isSingleObjectLiteral(source: string): boolean {
 
 const IDENTIFIER_REGEX = /[\w$]+/g;
 
-/**
- * Tags whose types make up the body of the `@typedef`/`@callback`
- * above them.
- */
 const TYPE_DECLARATION_BODY_TAGS = new Set(["property", "param", "returns", "return"]);
 
-/**
- * Whether the `@typedef`/`@callback` at `ownerIndex` refers to any of
- * `parameters` in its own type or in the `@property`/`@param`/`@returns`
- * types right below it.
- */
 function typeDeclarationUsesAny(
   tags: readonly JSDocTag[],
   ownerIndex: number,
@@ -230,12 +192,9 @@ function typeDeclarationUsesAny(
   return parameters.some(({ name }) => identifiers.has(name));
 }
 
-/**
- * Whether `@property` tags below a `@typedef` of this type describe its
- * members. As in TypeScript, only an untyped or `object`/`Object` typedef
- * takes them; a `@property` under `@typedef {string | Fn} Name` is ignored
- * rather than turning it into an object type.
- */
+// As in TypeScript, only an untyped or `object`/`Object` typedef takes
+// `@property` members; under `@typedef {string | Fn} Name` they're
+// ignored instead of turning it into an object type.
 function typedefTakesProperties(typedefType: string): boolean {
   const type = typedefType.trim();
   return !type || type === "object" || type === "Object";
@@ -275,10 +234,8 @@ function warnAndTrackGenericName(
   }
 }
 
-/**
- * Redeclaring a generic (e.g. via both tags) updates its constraint
- * instead of adding an invalid duplicate.
- */
+// Redeclaring a generic (via both tags, say) updates its constraint
+// instead of adding an invalid duplicate.
 function accumulateOrReplaceGeneric(ctx: ParserContext, declaredName: string, constraint: string) {
   if (ctx.generics) {
     const names = splitTopLevel(ctx.generics[0], ",").map((n) => n.trim());
@@ -332,10 +289,8 @@ interface OpenCallback extends OpenDeclaration {
   returnType: string | undefined;
 }
 
-/**
- * `@typedef` and `@callback` share `ctx.typedefs`, so either one can
- * overwrite the other.
- */
+// `@typedef` and `@callback` share `ctx.typedefs`, so either one can
+// overwrite the other.
 function addTypedef(
   ctx: ParserContext,
   { name, description, tags, internal, source }: OpenDeclaration,
@@ -362,10 +317,8 @@ function addTypedef(
   });
 }
 
-/**
- * Two properties with the same key would otherwise both appear in the
- * emitted object type.
- */
+// Two properties with the same key would otherwise both appear in the
+// emitted object type.
 function pushOrReplaceProperty<T extends { name: string }>(
   ctx: ParserContext,
   list: T[],
@@ -1150,7 +1103,8 @@ class CommentBlockReader {
   }
 }
 
-/** `scanSource` is the component source with its `<style>` blanked out. */
+// Callers pass the source with its `<style>` blanked out, so a CSS
+// comment can't read as JSDoc.
 export function parseCustomTypes(ctx: ParserContext, scanSource: string | undefined = ctx.source) {
   if (!scanSource) return;
   const generics: GenericsTagState = {

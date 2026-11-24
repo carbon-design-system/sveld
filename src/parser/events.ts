@@ -20,10 +20,8 @@ export type DetailTypeSource = {
   variableType(name: string): string | undefined;
 };
 
-/**
- * Types a detail's variables by annotation, else initializer. Names in
- * `nestedBoundNames` are shadowed at the dispatch, so they stay untyped.
- */
+// Names in `nestedBoundNames` are shadowed at the dispatch, so they stay
+// untyped there.
 export function componentDetailTypeSource(
   ctx: ParserContext,
   nestedBoundNames?: ReadonlySet<string>,
@@ -36,12 +34,8 @@ export function componentDetailTypeSource(
   };
 }
 
-/**
- * Names in a detail argument (`count`, `{ count }`, `[count]`) shadowed by
- * a nested scope at the dispatch. Must run during the walk, while those
- * scopes are live. `undefined` when there are none, which is
- * almost always.
- */
+// Must run during the walk, while those scopes are live. `undefined`
+// when there are none, which is almost always.
 export function detailNamesBoundInNestedScope(
   ctx: ParserContext,
   node: unknown,
@@ -67,23 +61,16 @@ export function detailNamesBoundInNestedScope(
   return found;
 }
 
-/**
- * Detail type of a same-file dispatch argument that isn't a
- * scalar literal: an object or array literal structurally, a variable by
- * its type. `undefined` for anything else, so callers keep their
- * scalar-literal narrowing.
- */
+// `undefined` for anything but an object or array literal or a
+// variable, so callers keep their scalar-literal narrowing.
 function deriveDetailType(source: DetailTypeSource, node: unknown): string | undefined {
   if (isIdentifier(node)) return source.variableType(node.name);
   return deriveLiteralDetailType(source, node);
 }
 
-/**
- * Structural detail type of an object or array literal (`{ id: string }`,
- * `number[]`), falling back to `any` per member rather than for the whole
- * detail. `undefined` for anything else, so `dispatch("count", 5)` still
- * types as `5`.
- */
+// Falls back to `any` per member, not for the whole detail. `undefined`
+// for anything but an object or array literal, so `dispatch("count", 5)`
+// still types as `5`.
 export function deriveLiteralDetailType(source: DetailTypeSource, node: unknown): string | undefined {
   if (!node || typeof node !== "object" || !("type" in node)) return undefined;
   if (isObjectExpression(node)) return buildObjectLiteralDetailType(source, node);
@@ -95,11 +82,8 @@ function inferLiteralMemberType(source: DetailTypeSource, node: unknown): string
   return deriveDetailType(source, node) ?? (isLiteral(node) ? (literalValueType(node) ?? "null") : "any");
 }
 
-/**
- * Detail type text of a dispatch's detail argument: {@link
- * deriveDetailType}, else `null` or a scalar literal's type, else `""`
- * (typed by `addDispatchedEvent`).
- */
+// `""` when nothing here types the detail, so `addDispatchedEvent`
+// types it instead.
 export function dispatchDetailText(source: DetailTypeSource, detail: unknown): string {
   // A `null` value is also how a regex/bigint literal the runtime can't
   // build looks, so check `raw`.
@@ -110,12 +94,10 @@ export function dispatchDetailText(source: DetailTypeSource, detail: unknown): s
   return literal == null ? "" : literalDetailToTypeText(literal);
 }
 
-/**
- * `{}` types as `Record<string, never>` (never `null`, and not the banned
- * bare `{}`). A spread or computed key adds members sveld can't name, so
- * it becomes a `[key: string]: any` index signature alongside the known
- * members, or `Record<string, any>` when there are none.
- */
+// `{}` types as `Record<string, never>`, never `null` or the banned
+// bare `{}`. A spread or computed key adds members sveld can't name,
+// so it becomes a `[key: string]: any` index signature beside the
+// known members, or `Record<string, any>` when there are none.
 function buildObjectLiteralDetailType(source: DetailTypeSource, node: ObjectExpression): string {
   if (node.properties.length === 0) return "Record<string, never>";
 
@@ -145,12 +127,9 @@ function buildArrayLiteralDetailType(source: DetailTypeSource, node: ArrayExpres
   return `(${[...elementTypes].join(" | ")})[]`;
 }
 
-/**
- * Where `call` hands the dispatcher itself to another function: as an
- * argument (`helper(dispatch)`) or an object literal property
- * (`helper({ dispatch })`). Events dispatched in there are out of the
- * component's own script.
- */
+// Events dispatched where the dispatcher goes (`helper(dispatch)`,
+// `helper({ dispatch })`) are outside the component's own script, so
+// they can't be read here.
 export function findDispatcherArgument(
   call: CallExpression,
   dispatcherName: string,
@@ -174,10 +153,8 @@ export function literalDetailToTypeText(value: unknown): string {
   return typeof value === "string" ? JSON.stringify(value) : String(value);
 }
 
-/**
- * Merge or add a dispatched event. Detail defaults to `null` when the
- * dispatch has no argument and no `@event` detail.
- */
+// The detail is `null` only when the dispatch has no argument and no
+// `@event` detail.
 export function addDispatchedEvent(
   ctx: ParserContext,
   {
@@ -249,11 +226,8 @@ export interface HostDispatch {
   source: DispatchedEvent["source"];
 }
 
-/**
- * Detect `$host().dispatchEvent(new CustomEvent("name", { detail }))` (or
- * `new Event(...)`). Recorded after the walk by {@link
- * addHostDispatchedEvent}, once every variable is known.
- */
+// Only detected here; `addHostDispatchedEvent` records it after the
+// walk, since only then is every variable known.
 export function parseHostDispatchEventCall(
   ctx: ParserContext,
   dispatchEventCall: CallExpression,
@@ -288,10 +262,6 @@ export function parseHostDispatchEventCall(
   };
 }
 
-/**
- * Records a {@link parseHostDispatchEventCall} event, its detail typed as
- * a `dispatch()` detail is.
- */
 export function addHostDispatchedEvent(ctx: ParserContext, dispatch: HostDispatch) {
   addDispatchedEvent(ctx, {
     name: dispatch.name,

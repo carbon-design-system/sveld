@@ -37,10 +37,6 @@ import {
   trackAdditionalTypeDependencyNode,
 } from "./type-resolution";
 
-/**
- * Name of an export/import specifier's `local`/`exported`/`imported` (an
- * identifier or a string literal).
- */
 export function moduleExportName(node: Identifier | Literal | undefined): string | undefined {
   if (node?.type === "Identifier") return node.name;
   return typeof node?.value === "string" ? node.value : undefined;
@@ -66,10 +62,8 @@ export interface ResolvedExportSpecifier {
   statement?: Node;
 }
 
-/**
- * The top-level function, class, or variable declarator in `program` that
- * binds `localName`, which can come before or after the export naming it.
- */
+// The binding may come after the export naming it, so the whole body
+// is searched.
 function findTopLevelBinding(
   program: Program | null | undefined,
   localName: string,
@@ -91,11 +85,8 @@ function findTopLevelBinding(
   return undefined;
 }
 
-/**
- * `$: localName = value` with no other declaration of `localName` declares
- * it, so an export of it is a `let` prop initialized to `value`. Returns
- * that implied `let localName = value`.
- */
+// With no other declaration, `$: localName = value` declares it, so an
+// export of it is a `let` prop initialized to `value`.
 function findReactiveDeclaration(
   program: Program | null,
   localName: string,
@@ -131,26 +122,17 @@ function findReactiveDeclaration(
   return undefined;
 }
 
-/** `var` reads as `let`; `using` / `await using` as `const`. */
 function variableDeclarationKindToComponentPropKind(kind: VariableDeclaration["kind"]): "let" | "const" {
   if (kind === "var") return "let";
   if (kind === "using" || kind === "await using") return "const";
   return kind;
 }
 
-/**
- * Resolves one `export { local as exported }` specifier to the top-level
- * function, class, or variable declarator (including one destructured
- * from a pattern) it names. Each specifier resolves on its own, so
- * `export { a, b }` exports both, and `const a = 1, b = ""; export { b }`
- * exports `b`'s declarator rather than the first one in the declaration.
- *
- * `program` is the script the export sits in: only its top-level
- * declarations count, not a same-named variable inside a function. An
- * instance-script export can also name a module-script declaration, or a
- * variable that a `$: local = ...` reactive declaration
- * declares implicitly.
- */
+// Each specifier resolves on its own, so `export { b }` after
+// `const a = 1, b = ""` gets `b`'s declarator, not the first one.
+// Only `program`'s top-level declarations count, never a same-named
+// variable in a function. An instance-script export can also name a
+// module-script declaration, or a variable a `$:` declares implicitly.
 export function resolveExportSpecifier(
   ctx: ParserContext,
   node: ExportNamedDeclaration,
@@ -195,12 +177,9 @@ export function recordUnresolvedExportSpecifier(
   );
 }
 
-/**
- * Doc comment for a declaration exported by `node`. A specifier uses the
- * comment on the declaration it names. An `export { ... }` list's own
- * comment documents it too, but only when the list has a single specifier;
- * its tags and description then override the declaration's.
- */
+// A specifier uses the comment on the declaration it names. An
+// `export { ... }` list's own comment counts only with one specifier,
+// and then its tags and description override the declaration's.
 export function exportJSDoc(
   ctx: ParserContext,
   node: ExportNamedDeclaration,
@@ -240,13 +219,9 @@ export interface ExportDeclarator {
     | undefined;
 }
 
-/**
- * The bindings `declaration` exports (all of them, or just the one
- * `specifier` names): a named function, or each variable declarator,
- * including every name a destructuring pattern binds. Empty for anything
- * else (a class, a TypeScript declaration). Queues a cross-file default
- * for `location` where an initializer needs one.
- */
+// Only a named function or variable declarators (every name a pattern
+// binds) count; a class or TypeScript declaration gives none. Also
+// queues a cross-file default for `location` where one is needed.
 export function collectExportDeclarators(
   ctx: ParserContext,
   declaration: NonNullable<ExportNamedDeclaration["declaration"]>,
@@ -345,20 +320,14 @@ export function collectExportDeclarators(
   return declarators;
 }
 
-/**
- * A variable's own `: T` annotation, which a cast in its initializer
- * doesn't override (`export const x: T = y as any`). Tracked, so the
- * `.d.ts` keeps the types it names.
- */
+// A cast in the initializer doesn't override the annotation
+// (`export const x: T = y as any`). Tracked, so the `.d.ts` keeps the
+// types it names.
 function declaredType(ctx: ParserContext, id: Identifier): string | undefined {
   trackAdditionalTypeDependencyNode(ctx, id.typeAnnotation?.typeAnnotation);
   return getTypeAnnotationText(ctx, id.typeAnnotation);
 }
 
-/**
- * Type, description, and signature of one exported binding, merging its
- * JSDoc with what its initializer gave.
- */
 export function resolveExportDeclaratorTypeAndDocs(
   ctx: ParserContext,
   declarator: ExportDeclarator,
@@ -384,10 +353,8 @@ export function resolveExportDeclaratorTypeAndDocs(
   });
 }
 
-/**
- * An instance-script `export class Foo {}` or `export { Foo }` of a class:
- * neither a prop nor a documented accessor.
- */
+// A class can't be a prop or a documented accessor, so its export is
+// only reported.
 function recordClassExport(ctx: ParserContext, node: ExportNamedDeclaration, exportedName: string) {
   recordDiagnostic(
     ctx,
@@ -398,10 +365,6 @@ function recordClassExport(ctx: ParserContext, node: ExportNamedDeclaration, exp
   );
 }
 
-/**
- * Adds the props an instance-script `export` declaration (or one specifier
- * of an `export { ... }`) declares.
- */
 function addInstanceDeclarationExports(
   ctx: ParserContext,
   node: ExportNamedDeclaration,
@@ -449,10 +412,6 @@ function addInstanceDeclarationExports(
   }
 }
 
-/**
- * An instance-script `export` statement: its declaration's props, or
- * each specifier's.
- */
 export function addInstanceExports(ctx: ParserContext, node: ExportNamedDeclaration, program: Program | null) {
   if (node.declaration != null) {
     addInstanceDeclarationExports(ctx, node, node.declaration);
