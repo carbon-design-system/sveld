@@ -46,10 +46,8 @@ interface ParseEntryExportsOptions {
   graph?: ModuleGraph;
 }
 
-/**
- * Consts, functions, and types an entry barrel exports (not components),
- * following re-exports via the AST. Deduplicated by name, sorted by name.
- */
+// Only consts, functions, and types, not components, following re-exports
+// via the AST. Deduplicated by name, sorted by name.
 export async function parseEntryExports(
   entryFile: string,
   options: ParseEntryExportsOptions = {},

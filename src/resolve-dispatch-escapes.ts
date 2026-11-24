@@ -35,13 +35,10 @@ interface DispatchEscapeResolution {
  */
 type DispatcherBinding = { name: string } | { object: string; property: string };
 
-/**
- * Collects the events each candidate's helper dispatches. Every call
- * through the receiving parameter must name its event with a string
- * literal (or a conditional between them); a dispatcher passed on, or a
- * runtime-computed name, leaves the candidate unresolved. AST only,
- * no `tsc`.
- */
+// Every call through the receiving parameter must name its event with a
+// string literal (or a conditional between them); a dispatcher passed on,
+// or a runtime-computed name, leaves the candidate unresolved. AST only,
+// no `tsc`.
 function resolveDispatchEscapeCandidates(
   fromDir: string,
   candidates: PendingDispatchEscapeCandidate[],
@@ -61,7 +58,6 @@ function resolveDispatchEscapeCandidates(
   });
 }
 
-/** `param = fallback` → `param`. */
 function withoutDefault(node: Pattern | TSParameterProperty | undefined): Pattern | TSParameterProperty | undefined {
   return node?.type === "AssignmentPattern" ? node.left : node;
 }
@@ -87,10 +83,6 @@ function dispatcherBinding(
   return undefined;
 }
 
-/**
- * Event names a `dispatch(...)` first argument can take, or `null` when
- * one isn't static.
- */
 function staticEventNames(node: Expression | SpreadElement | undefined): string[] | null {
   if (!node) return null;
   if (node.type === "ConditionalExpression") {
@@ -102,18 +94,14 @@ function staticEventNames(node: Expression | SpreadElement | undefined): string[
   return name ? [name] : null;
 }
 
-/**
- * Literal detail inference inside a helper: its locals aren't typed, so an
- * identifier member is `any`.
- */
+// A helper's locals aren't typed, so an identifier member of a literal
+// detail is `any`.
 const helperDetailTypeSource: DetailTypeSource = {
   variableType: () => undefined,
 };
 
-/**
- * Inferred like a same-file dispatch's detail: literals structurally,
- * anything else `any`.
- */
+// Inferred like a same-file dispatch's detail, so only literals are typed
+// structurally; anything else is `any`.
 function detailType(node: Expression | SpreadElement | undefined): string {
   if (!node) return "null";
   const { deriveLiteralDetailType, literalDetailToTypeText } = getParserStack();
@@ -188,7 +176,7 @@ function collectDispatchedEvents(
   return { candidate, events };
 }
 
-/** Completes "sveld couldn't read the events it dispatches: ...". */
+// Must complete "sveld couldn't read the events it dispatches: ...".
 function describeDispatchEscapeFailure(
   candidate: PendingDispatchEscapeCandidate,
   reason: DispatchEscapeFailureReason,
@@ -212,13 +200,10 @@ function describeDispatchEscapeFailure(
   }
 }
 
-/**
- * Adds each helper's events unless the component already dispatches one by
- * that name; a helper event replaces a forwarded one of the same name. An
- * unreadable helper gets a `dispatch-escapes` diagnostic. Held-back
- * `event-no-source` diagnostics return only when every helper was read and
- * none dispatches the event.
- */
+// A helper's event is skipped when the component already dispatches one by
+// that name, but replaces a forwarded one. An unreadable helper gets a
+// `dispatch-escapes` diagnostic. Held-back `event-no-source` diagnostics
+// return only when every helper was read and none dispatches the event.
 function applyDispatchEscapeResolutions(
   component: ComponentDocApi,
   resolutions: DispatchEscapeResolution[],

@@ -56,11 +56,8 @@ export function isNewExpressionNamed(node: unknown, calleeName: string): node is
   return isNewExpression(node) && isIdentifier(node.callee) && node.callee.name === calleeName;
 }
 
-/**
- * String value of a `Literal` or a template with no interpolation.
- * `1` becomes `"1"`. Returns `null` for `null` literals, interpolated
- * templates, and anything else.
- */
+// Only a literal or a template without interpolation has a value; a number
+// is stringified (`1` gives `"1"`), but a `null` literal isn't.
 export function resolveStaticStringLiteral(node: unknown): string | null {
   if (!isObject(node)) return null;
   if (node.type === "Literal") return node.value == null ? null : String(node.value);
@@ -71,17 +68,14 @@ export function resolveStaticStringLiteral(node: unknown): string | null {
   return null;
 }
 
-/**
- * Name of a non-computed object key: an identifier's name or a literal's
- * value as text.
- */
 export function getPropertyName(node: Property["key"]): string | undefined {
   if (isIdentifier(node)) return node.name;
   if (isLiteral(node)) return node.value == null ? undefined : String(node.value);
   return undefined;
 }
 
-/** Template node types sveld treats as `InlineComponent` or `Element`. */
+// compat: Svelte 5 node types sveld treats as the legacy `InlineComponent`
+// and `Element`.
 const COMPONENT_LIKE_TYPES = new Set(["Component", "SvelteComponent", "SvelteSelf"]);
 const ELEMENT_LIKE_TYPES = new Set(["RegularElement", "SvelteElement"]);
 

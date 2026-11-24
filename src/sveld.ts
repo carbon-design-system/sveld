@@ -56,13 +56,11 @@ export interface SveldResult {
 
 type ExitCode = 0 | 1 | 2 | 3 | 4;
 
-/**
- * The exit-code contract shared by the CLI and `sveld()`. The lowest
- * applicable code wins: `1` for a `check` snapshot that's missing (unless
- * this run writes it) or whose `schemaVersion` doesn't match, `2` when a
- * component failed to parse, `3` when `check` finds a change at or above
- * `checkLevel`, `4` when `strict` diagnostics exist.
- */
+// Shared by the CLI and `sveld()`. The lowest applicable code wins: `1`
+// for a `check` snapshot that's missing (unless this run writes it) or
+// whose `schemaVersion` doesn't match, `2` when a component failed to
+// parse, `3` when `check` finds a change at or above `checkLevel`, `4`
+// when `strict` diagnostics exist.
 function resolveExitCode(run: {
   errors: readonly unknown[];
   check?: CheckResult;
@@ -80,11 +78,8 @@ function resolveExitCode(run: {
   return 0;
 }
 
-/**
- * Generates the bundle and writes its output (or prints the one document,
- * with `toStdout`). With `check`, the committed snapshot is diffed first,
- * before `writeOutput` can overwrite it.
- */
+// With `check`, the committed snapshot is diffed first, since
+// `writeOutput` would overwrite it.
 export async function buildAndWrite(
   input: string,
   options: SveldRuntimeOptions,
@@ -99,12 +94,9 @@ export async function buildAndWrite(
   return { result, check };
 }
 
-/**
- * Maps a diagnostic's `component` (relative to the entry's directory) to a
- * path relative to the repository root, which is where GitHub places an
- * annotation. `GITHUB_WORKSPACE` is the root on a runner; elsewhere it's
- * the working directory.
- */
+// Relative to the repository root, since that's where GitHub places an
+// annotation. `GITHUB_WORKSPACE` is the root on a runner; elsewhere it's
+// the working directory.
 function githubFileResolver(input: string): (component: string) => string {
   // Resolved through symlinks on both sides, so a symlinked checkout (macOS
   // `/tmp`) can't turn the relative path into `../../...`.
@@ -113,13 +105,9 @@ function githubFileResolver(input: string): (component: string) => string {
   return (component) => normalizeSeparators(relative(workspace, resolve(rootDir, component)));
 }
 
-/**
- * Prints the run's diagnostics summary to stderr when `reportDiagnostics`
- * or `strict` asks for it, and resolves the exit code. Shared by the CLI
- * and `sveld()` so their reporting and exit codes can't drift apart.
- * `input` is the resolved entry, which `format: "github"` needs to
- * place annotations.
- */
+// Shared by the CLI and `sveld()` so their reporting and exit codes can't
+// drift apart. `input` is the resolved entry, which `format: "github"`
+// needs to place annotations.
 export function reportRun(
   result: GenerateBundleResult,
   check: CheckResult | undefined,

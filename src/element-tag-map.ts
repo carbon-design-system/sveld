@@ -1,7 +1,4 @@
-/**
- * HTML tag-to-DOM-type map from TypeScript's `lib.dom.d.ts`, deprecated
- * tags included.
- */
+// spec: TypeScript's `lib.dom.d.ts` map, deprecated tags included.
 const tag_map = {
   a: "HTMLAnchorElement",
   abbr: "HTMLElement",
@@ -134,7 +131,7 @@ const tag_map = {
   xmp: "HTMLPreElement",
 } satisfies Record<string, string>;
 
-/** SVG tag-to-DOM-type map from TypeScript's `lib.dom.d.ts`. */
+// spec: TypeScript's `lib.dom.d.ts` map.
 const svg_tag_map = {
   a: "SVGAElement",
   animate: "SVGAnimateElement",
@@ -201,10 +198,8 @@ const svg_tag_map = {
   view: "SVGViewElement",
 } satisfies Record<string, string>;
 
-/**
- * MathML tags from TypeScript's `lib.dom.d.ts`; each one's DOM type
- * is `MathMLElement`.
- */
+// spec: TypeScript's `lib.dom.d.ts` types each of these
+// as `MathMLElement`.
 const MATHML_TAGS = new Set([
   "a",
   "annotation",
@@ -249,13 +244,10 @@ function lookup(map: Record<string, string>, tag: string): string | undefined {
   return Object.hasOwn(map, tag) ? map[tag] : undefined;
 }
 
-/**
- * The DOM type of an element. A tag more than one namespace defines (`a`,
- * `title`) reads from `namespace`; an SVG- or MathML-only tag (`path`,
- * `mfrac`) keeps its namespace even outside `<svg>` or `<math>`, since
- * Svelte creates it there. HTML inside MathML (`<mtext><span>`) is
- * still HTML.
- */
+// A tag more than one namespace defines (`a`, `title`) reads from
+// `namespace`; an SVG- or MathML-only tag (`path`, `mfrac`) keeps its
+// namespace even outside `<svg>` or `<math>`, since Svelte creates it
+// there. HTML inside MathML (`<mtext><span>`) is still HTML.
 export function getElementByTag(element: string, namespace: ElementNamespace = "html"): string {
   if (namespace === "svg") return lookup(svg_tag_map, element) ?? "SVGElement";
   if (namespace === "mathml") {

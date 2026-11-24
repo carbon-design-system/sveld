@@ -1,6 +1,7 @@
 const MAX_SUGGESTION_DISTANCE = 3;
 
-/** Counts a swap of adjacent characters (`evnet`) as one edit. */
+// A swap of adjacent characters (`evnet`) counts as one edit, instead
+// of two.
 function levenshteinDistance(a: string, b: string): number {
   const rows = a.length + 1;
   const columns = b.length + 1;
@@ -26,10 +27,6 @@ function levenshteinDistance(a: string, b: string): number {
   return distances[rows - 1][columns - 1];
 }
 
-/**
- * Closest candidate to `input` by edit distance, or `undefined` if none is
- * within `maxDistance`.
- */
 export function closestMatch(
   input: string,
   candidates: Iterable<string>,
