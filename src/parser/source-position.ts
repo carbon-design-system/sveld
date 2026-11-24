@@ -4,7 +4,6 @@ import { isObject } from "../ast-guards";
 import type { SourcePosition, SourceRange } from "../model";
 import type { ParserContext } from "./context";
 
-/** Line breaks plus the indentation around them. */
 const LINE_BREAKS_WITH_INDENT_REGEX = /[^\S\r\n]*[\r\n]+\s*/g;
 
 function sourcePositionFromOffset(ctx: ParserContext, offset: number): SourcePosition | undefined {
@@ -40,10 +39,6 @@ export function sourceRangeFromNode(ctx: ParserContext, node: unknown) {
   return sourceRangeFromOffsets(ctx, start, end);
 }
 
-/**
- * A JSDoc tag's range, from its comment lines (each carrying its
- * absolute offset).
- */
 export function sourceRangeFromCommentTag(
   ctx: ParserContext,
   tagLines: Array<{ start: number; raw: string; tag?: string }> | undefined,
@@ -79,31 +74,18 @@ export function nodeSourceText(ctx: ParserContext, node: unknown) {
   return sourceAtPos(ctx, start, end);
 }
 
-/** A run of whitespace. */
 const WHITESPACE_RUN_REGEX = /\s+/g;
 
-/**
- * `nodeSourceText` on one line: each line break and its indentation become
- * one space.
- */
 export function sourceForExpression(ctx: ParserContext, node: unknown) {
   return nodeSourceText(ctx, node)?.replace(LINE_BREAKS_WITH_INDENT_REGEX, " ");
 }
 
-/** The spaces and tabs a line starts with. */
 const LEADING_INDENT_REGEX = /^[ \t]*/;
-/** A line break inside a template literal's text. */
 const TEMPLATE_LINE_BREAK_REGEX = /\r?\n/g;
 
-/**
- * `node`'s source as a default's text: comments dropped, laid out as
- * written (line breaks kept, indentation relative to the line it starts
- * on), other whitespace runs collapsed. String, template, and regex
- * literals stay as written, a template's line break as `\n`. Comments and
- * literals come from the AST, not a rescan of the text, so `/\/\//` or
- * `/"/` isn't misread as a comment or a string. Writers that need one line
- * fold the line breaks.
- */
+// Comments and literals come from the AST, not a rescan of the text,
+// so `/\/\//` or `/"/` isn't misread as a comment or a string. Line
+// breaks stay; writers that need one line fold them.
 export function defaultSourceText(ctx: ParserContext, node: unknown) {
   const { source } = ctx;
   const { start, end } = nodeOffsets(node);

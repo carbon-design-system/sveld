@@ -5,7 +5,6 @@ import { getPropTypeByLocalOrPublic } from "./context";
 import { findVariableTypeAndDescription } from "./variable-jsdoc";
 
 const WORD_CHAR_REGEX = /\w/;
-/** A member's `readonly` modifier. */
 const READONLY_MODIFIER_REGEX = /^readonly\s+/;
 
 export function extractPropertyType(typeStr: string, propName: string): string | undefined {

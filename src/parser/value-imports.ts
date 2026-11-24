@@ -3,18 +3,11 @@ import { isIdentifier, isMemberExpression } from "../ast-guards";
 import type { ComponentPropReExport } from "../model";
 import type { ParserContext } from "./context";
 
-/**
- * The export an `import { x as y }` specifier names: `x`, or
- * `"x-y"`'s string.
- */
 export function importSpecifierImportedName({ imported }: ImportSpecifier): string {
   return imported.type === "Identifier" ? imported.name : imported.value;
 }
 
-/**
- * Named value imports by local name, for cross-file
- * call-default resolution.
- */
+// Named imports only, for cross-file call-default resolution.
 export function collectValueImportBindings(ctx: ParserContext, node: ImportDeclaration): void {
   const source = node.source.value;
   if (typeof source !== "string" || node.importKind === "type") return;
@@ -30,22 +23,14 @@ export function collectValueImportBindings(ctx: ParserContext, node: ImportDecla
 
 type ImportedBinding = { source: string; importedName: string; members?: string[] };
 
-/**
- * The export an import names, read through
- * namespace exports: `keys.THEME`.
- */
 export function importPath(binding: { importedName: string; members?: string[] }): string {
   return [binding.importedName, ...(binding.members ?? [])].join(".");
 }
 
-/**
- * The import a callee names: a named import (`helper`), a default import
- * (read as `default`), or a namespace member (`h.helper`). Members past
- * the imported binding (`ns.helper` with `ns` a re-exported namespace)
- * come back as `members`, for the resolver to read through. Default and
- * namespace imports, which {@link collectValueImportBindings} doesn't
- * record, are found by searching the component's scripts.
- */
+// `collectValueImportBindings` doesn't record default and namespace
+// imports, so those are found by searching the component's scripts.
+// Members past the imported binding come back as `members` for the
+// resolver to read through.
 export function importedCalleeBinding(ctx: ParserContext, callee: unknown): ImportedBinding | undefined {
   // Only a chain of plain names resolves: `a.b.c` gives `a`, with
   // members `["b", "c"]`.
@@ -60,10 +45,6 @@ export function importedCalleeBinding(ctx: ParserContext, callee: unknown): Impo
   return importedBindingByName(ctx, node.name, members);
 }
 
-/**
- * The import `localName` names, with `members` read off it (`["b"]`
- * for `a.b`).
- */
 export function importedBindingByName(
   ctx: ParserContext,
   localName: string,
@@ -92,22 +73,15 @@ export function importedBindingByName(
   return undefined;
 }
 
-/**
- * The imported value a member expression reads (`keys.THEME`,
- * `C.timing.DELAY`), as {@link importedCalleeBinding} reads a callee.
- * `undefined` for anything else, including a plain identifier.
- */
+// Only a member expression, never a plain identifier.
 export function importedMemberBinding(ctx: ParserContext, node: unknown): ImportedBinding | undefined {
   if (!isMemberExpression(node)) return undefined;
   return importedCalleeBinding(ctx, node);
 }
 
-/**
- * Value imports of a `<script context="module">` by local name, so
- * `export { local }` can be written as
- * `export { imported as local } from "..."`. Unlike {@link
- * collectValueImportBindings}, default and namespace imports count too.
- */
+// So `export { local }` can be written as
+// `export { imported as local } from "..."`, default and namespace
+// imports count too, unlike in `collectValueImportBindings`.
 export function collectReExportableImports(script: AST.Script): Map<string, ComponentPropReExport> {
   const imports = new Map<string, ComponentPropReExport>();
 
@@ -129,11 +103,9 @@ export function collectReExportableImports(script: AST.Script): Map<string, Comp
   return imports;
 }
 
-/**
- * Imports and function declarations hoist, so collect them before prop
- * defaults run: `export let id = uniqueId()` must resolve when `uniqueId`
- * is declared later (carbon-components-svelte does this).
- */
+// Imports and function declarations hoist, so collect them before prop
+// defaults run: `export let id = uniqueId()` must resolve when
+// `uniqueId` is declared later (carbon-components-svelte does this).
 export function collectHoistedScriptBindings(ctx: ParserContext, script: AST.Script | undefined): void {
   // Top-level only: a nested function isn't in scope for a top-level prop
   // default (module code is strict).

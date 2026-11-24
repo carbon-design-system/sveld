@@ -1,11 +1,8 @@
 import type { BlockStatement, Expression } from "svelte-ast";
 import { SKIP, walk } from "svelte-ast/walk";
 
-/**
- * TS nodes whose entire subtree is type-level: annotations, type aliases,
- * interfaces, and type parameter lists. Nothing under them is a
- * value-level node (no calls, declarations, assignments, or scopes).
- */
+// invariant: nothing under these is value-level (no calls,
+// declarations, assignments, or scopes).
 export function isTypeOnlySubtree(type: string): boolean {
   return (
     type === "TSTypeAnnotation" ||
@@ -16,10 +13,8 @@ export function isTypeOnlySubtree(type: string): boolean {
   );
 }
 
-/**
- * `body`'s own `return` arguments, `null` for a bare `return;`. Nested
- * functions have their own returns, so the walk doesn't enter them.
- */
+// `null` for a bare `return;`. Nested functions have their own
+// returns, so the walk doesn't enter them.
 export function collectReturnArguments(body: BlockStatement): Array<Expression | null> {
   const returnArgs: Array<Expression | null> = [];
   walk(body, {

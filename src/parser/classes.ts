@@ -24,10 +24,7 @@ type ClassMemberNode = MethodDefinition | PropertyDefinition;
 
 type MemberJSDoc = ReturnType<typeof processNodeJSDoc>;
 
-/**
- * `name`, `"quoted-name"`, or `0`; unset for a computed
- * (`[Symbol.iterator]`) or `#private` key.
- */
+// A `#private` key is a PrivateIdentifier, so it gets no name either.
 function memberName(member: ClassMemberNode): string | undefined {
   if (member.computed) return undefined;
   if (member.key.type === "Identifier") return member.key.name;
@@ -49,25 +46,17 @@ function memberDocs(jsdoc: MemberJSDoc): Pick<ComponentClassMember, "description
   };
 }
 
-/** `<T extends U = V>` -> `T extends U = V`. */
 function stripAngleBrackets(typeParameters: string | undefined): string | undefined {
   return typeParameters?.slice(1, -1).trim() || undefined;
 }
 
-/**
- * The widened type of a param's literal default (`name = "store"`
- * is `string`).
- */
 function defaultValueType(rawParam: MethodDefinition["value"]["params"][number] | undefined): string | undefined {
   const param = rawParam?.type === "TSParameterProperty" ? rawParam.parameter : rawParam;
   return param?.type === "AssignmentPattern" ? literalType(param.right, "widen") : undefined;
 }
 
-/**
- * A method or constructor's params, return type, and own type parameters:
- * each from its TypeScript annotation, else its JSDoc tag, else its
- * literal default, else `any`.
- */
+// Each part comes from its TypeScript annotation, else its JSDoc tag,
+// else its literal default, else `any`.
 function readMethodSignature(
   ctx: ParserContext,
   fn: MethodDefinition["value"],
@@ -93,28 +82,19 @@ function readMethodSignature(
   };
 }
 
-/**
- * A module-script class's public members in source order: constructor,
- * methods, and properties (fields, constructor parameter properties,
- * getter/setter pairs, and in JS, `this.x = ...` in the constructor).
- * Leaves out `#x`, `private`, `protected`, computed-key, and
- * `@internal`/`@ignore` members; an overloaded method keeps its overload
- * signatures only.
- */
+// Only public members, in source order: never `#x`, `private`,
+// `protected`, computed-key, or `@internal`/`@ignore` ones. An
+// overloaded method keeps only its overload signatures.
 export function readClassDeclaration(
   ctx: ParserContext,
   classDecl: ClassDeclarationLike,
 ): { members: ComponentClassMember[]; typeParameters?: string; extends?: string; implements?: string[] } {
   const members: ComponentClassMember[] = [];
-  /**
-   * Getter/setter pairs, keyed `static name` or `name`, merged into
-   * one property.
-   */
+  // Keyed `static name` or `name`, so a getter and its setter merge into
+  // one property.
   const accessors = new Map<string, ComponentClassMember>();
-  /**
-   * Methods with (non-abstract) overload signatures, whose implementation is
-   * left out.
-   */
+  // Only the overload signatures of these methods ship, not the
+  // implementation behind them.
   const overloaded = new Set<string>();
   const instanceProperties = new Set<string>();
   let constructorBody: Statement[] | undefined;
@@ -237,10 +217,7 @@ export function readClassDeclaration(
   return { members, ...(typeParameters ? { typeParameters } : {}), ...heritage };
 }
 
-/**
- * `extends`/`implements` as source text; their names are tracked so
- * imported ones get an `import type`.
- */
+// Their names are tracked so imported ones get an `import type`.
 function readClassHeritage(
   ctx: ParserContext,
   classDecl: ClassDeclarationLike,
@@ -264,10 +241,6 @@ function readClassHeritage(
   return heritage;
 }
 
-/**
- * Tracks `typeName<typeArguments>` as a type dependency, as if written as
- * a type annotation.
- */
 function trackTypeReference(
   ctx: ParserContext,
   typeName: EntityName,
@@ -282,11 +255,8 @@ function trackTypeReference(
   });
 }
 
-/**
- * `this.x = value` statements in a JS class's constructor, which declare
- * property `x` (typed by a `@type` tag above the statement, else `any`),
- * unless a field already declares it.
- */
+// In JS, `this.x = value` in the constructor declares `x`, typed by a
+// `@type` above it, else `any`, unless a field already declares it.
 function readConstructorAssignments(
   ctx: ParserContext,
   body: Statement[],

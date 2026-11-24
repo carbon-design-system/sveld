@@ -39,14 +39,10 @@ import {
 import { importSpecifierImportedName } from "./value-imports";
 import { resolveLocalVarJSDoc } from "./variable-jsdoc";
 
-/** An identifier, matched at `lastIndex`. */
 const IDENTIFIER_AT_REGEX = /[A-Za-z_$][\w$]*/y;
 const IDENTIFIER_CHAR_REGEX = /[\w$]/;
-/** What follows a member or parameter name: an optional `?`, then `:`. */
 const NAME_COLON_REGEX = /^\s*\??\s*:/;
-/** What precedes a member or parameter name. */
 const BEFORE_NAME_REGEX = /(?:^|[{;,(\n]|\breadonly)\s*$/;
-/** An index or array suffix: `T[]`, `T["key"]`. */
 const INDEX_AFTER_REGEX = /^\s*\[/;
 const TYPE_OPERATOR_BEFORE_REGEX = /\b(?:keyof|readonly|unique)\s+$/;
 const INTERSECTION_BEFORE_REGEX = /&\s*$/;
@@ -56,11 +52,6 @@ const UNION_OR_EXTENDS_AFTER_REGEX = /^\s*(?:\||extends\b)/;
 const TYPE_OPERATOR_PREFIX_REGEX = /^(?:keyof|readonly|unique|typeof|infer)\s/;
 const CONSTRUCTOR_TYPE_REGEX = /^(?:abstract\s+)?new\b/;
 
-/**
- * How loosely `type` binds, from 0 (`Item`, `T[]`, `{ a: T }`) through a
- * type operator (`keyof T`), an intersection, and a union, to 4: a
- * function, constructor, or conditional type.
- */
 function typePrecedenceRank(type: string): number {
   const trimmed = type.trim();
   if (
@@ -75,10 +66,6 @@ function typePrecedenceRank(type: string): number {
   return TYPE_OPERATOR_PREFIX_REGEX.test(trimmed) ? 1 : 0;
 }
 
-/**
- * The loosest {@link typePrecedenceRank} a type can have to stand between
- * `before` and `after` without parens.
- */
 function loosestRankInPlace(before: string, after: string): number {
   if (INDEX_AFTER_REGEX.test(after)) return 0;
   if (TYPE_OPERATOR_BEFORE_REGEX.test(before)) return 1;
@@ -87,7 +74,6 @@ function loosestRankInPlace(before: string, after: string): number {
   return 4;
 }
 
-/** Index just past the string literal opening at `start`. */
 function endOfQuoted(text: string, start: number): number {
   for (let index = start + 1; index < text.length; index++) {
     if (text[index] === "\\") index++;
@@ -96,10 +82,6 @@ function endOfQuoted(text: string, start: number): number {
   return text.length;
 }
 
-/**
- * Index just past a template literal's text run from `start`: past its
- * closing `` ` ``, or past the `${` that ends it.
- */
 function endOfTemplateText(text: string, start: number): { end: number; opensExpression: boolean } {
   for (let index = start; index < text.length; index++) {
     if (text[index] === "\\") index++;
@@ -109,12 +91,9 @@ function endOfTemplateText(text: string, start: number): { end: number; opensExp
   return { end: text.length, opensExpression: false };
 }
 
-/**
- * `type` with each type parameter replaced by its type argument. String
- * literals, a template literal's text, member names, and `Ns.T` are left
- * alone; an argument that binds more loosely than where it lands is
- * parenthesized (`T[]` with `A | B` gives `(A | B)[]`).
- */
+// Never substitutes inside string literals, a template literal's text,
+// member names, or `Ns.T`; an argument that binds more loosely than
+// where it lands is parenthesized (`T[]` with `A | B` is `(A | B)[]`).
 function substituteTypeParameters(type: string, substitutions: Map<string, string>): string {
   if (substitutions.size === 0) return type;
 
@@ -174,11 +153,6 @@ function substituteTypeParameters(type: string, substitutions: Map<string, strin
   return result;
 }
 
-/**
- * Maps a referenced interface/type-alias's own type-parameter names
- * (`Props<T>`) to the concrete type-argument source text supplied at the
- * reference site (`Props<string>`).
- */
 function buildTypeParameterSubstitutions(
   ctx: ParserContext,
   declaration: TSNode,
@@ -204,10 +178,6 @@ function buildTypeParameterSubstitutions(
   return substitutions;
 }
 
-/**
- * Flatten a runes `$props()` type node into prop name -> metadata,
- * following local aliases and intersections.
- */
 function buildRunesPropTypeMetadataMap(
   ctx: ParserContext,
   typeNode: TSNode | undefined,
@@ -304,10 +274,6 @@ function localTypeDeclarationNodes(ctx: ParserContext): Map<string, TSNode> {
   return new Map(Array.from(ctx.localTypeDeclarationsByName, ([name, declaration]) => [name, declaration.node]));
 }
 
-/**
- * JSON-safe copy of the raw `customElement.props` config read
- * off `parsed.options`.
- */
 function buildCustomElementPropConfigs(
   props: Record<string, CustomElementPropConfig>,
 ): Record<string, CustomElementPropConfig> {
@@ -322,11 +288,6 @@ function buildCustomElementPropConfigs(
   return result;
 }
 
-/**
- * Records one top-level statement's type import or
- * `interface`/`type`/`enum` declaration. `exported` marks a module-script
- * `export`ed type, which the `.d.ts` exports too.
- */
 function collectScriptTypeDeclaration(
   ctx: ParserContext,
   statement: Program["body"][number] | Declaration,
@@ -364,14 +325,9 @@ function collectScriptTypeDeclaration(
   }
 }
 
-/**
- * Reads the script `lang`, `<svelte:options>`, type imports, local types,
- * explicit `export let` annotations, and `$props()` metadata off `parsed`
- * (the tree the caller then assigns to `ctx.parsed`), before any walk.
- * `localTypeDeclarationsByName` holds a live `node` from this tree, read
- * only during this call. After that, only the extracted `.code` string
- * is used.
- */
+// Runs before any walk. `localTypeDeclarationsByName` holds a live
+// `node` from this tree, read only during this call; after that, only
+// the extracted `.code` string is used.
 export function collectScriptTypeInfo(ctx: ParserContext, parsed: AST.Root) {
   ctx.runesPropsDeclarationMetadataByDeclaratorStart.clear();
   ctx.explicitVariableTypesByName.clear();
@@ -467,10 +423,6 @@ export function collectScriptTypeInfo(ctx: ParserContext, parsed: AST.Root) {
   }
 }
 
-/**
- * Members of the whole-object type a JSDoc `@type` puts on a `$props()`
- * declaration: a local object `@typedef` by name, or an inline `{ ... }`.
- */
 function getJsDocPropsMembers(
   ctx: ParserContext,
   typeText: string | undefined,
@@ -484,10 +436,7 @@ function getJsDocPropsMembers(
   return members ? new Map(members.map((member) => [member.name, member])) : undefined;
 }
 
-/**
- * Unwraps `$bindable(...)` so the default is documented as its
- * underlying value.
- */
+// Unwrapped so the default is documented as its underlying value.
 function unwrapBindableInitializer(init: unknown): { init?: unknown; bindable: boolean } {
   return isCallExpressionNamed(init, "$bindable")
     ? { init: init.arguments[0], bindable: true }
@@ -654,7 +603,6 @@ export function parseRunesPropsDeclaration(ctx: ParserContext, node: VariableDec
   }
 }
 
-/** The raw text of the generic argument in `EventDispatcher<...>`. */
 function extractEventDispatcherGenericText(typeText: string): string | undefined {
   const marker = "EventDispatcher";
   const markerIndex = typeText.indexOf(marker);
@@ -673,10 +621,7 @@ const OPTIONAL_MEMBER_NAME_SUFFIX_REGEX = /\?$/;
 const LEADING_BRACE_REGEX = /^\{/;
 const TRAILING_BRACE_REGEX = /\}$/;
 
-/**
- * Splits a `name: Type` (or `name?: Type`) member on its top-level `:`,
- * skipping a quoted name's own colons.
- */
+// Splits on the top-level `:`, never one inside a quoted name.
 function splitMemberNameAndType(member: string): { name: string; type: string } | undefined {
   const colonIndex = indexOfTopLevel(member, ":");
   if (colonIndex === -1) return undefined;
@@ -690,16 +635,10 @@ function splitMemberNameAndType(member: string): { name: string; type: string } 
   return { name, type };
 }
 
-/**
- * Reads `createEventDispatcher<{...}>()`'s type argument (a
- * `TSTypeLiteral`, or a reference to a local `type`/`interface`) and
- * registers each member as a dispatched event, so events declared in the
- * generic but never actually dispatched in the file still show up. Falls
- * back to the JSDoc
- * `/** @type {import('svelte').EventDispatcher<{...}>} *\/` cast form when
- * there's no TS generic. An `@event` JSDoc tag for the same name still
- * wins (`addDispatchedEvent` keeps its `detail`).
- */
+// Registers each member so events declared in the generic but never
+// dispatched still show up. Without a TS generic, it reads the
+// `/** @type {import('svelte').EventDispatcher<{...}>} */` cast
+// instead. An `@event` tag for the same name still wins.
 export function registerTypedDispatcherEvents(
   ctx: ParserContext,
   typeArgument: TSNode | undefined,
@@ -732,11 +671,8 @@ export function registerTypedDispatcherEvents(
   }
 }
 
-/**
- * Runes-only: fold phantom `@event` entries into matching `on<Event>`
- * callback props when nothing in the component actually dispatches
- * that event.
- */
+// Runes only: a phantom `@event` folds into a matching `on<Event>`
+// callback prop, but only when nothing in the component dispatches it.
 export function normalizeRunesCallbackProps(ctx: ParserContext, actuallyDispatchedEvents: Set<string>) {
   if (ctx.syntaxMode !== "runes") return;
 

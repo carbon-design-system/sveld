@@ -32,10 +32,7 @@ export function resolveScriptLanguage(parsed: {
   return hasPlainScript ? "js" : undefined;
 }
 
-/**
- * The instance script's `generics` attribute. svelte2tsx honors it in
- * plain JS scripts too.
- */
+// compat: read in JS scripts too, since svelte2tsx honors it there.
 export function resolveScriptGenericsAttribute(
   ctx: ParserContext,
   parsed: { instance?: AST.Script },

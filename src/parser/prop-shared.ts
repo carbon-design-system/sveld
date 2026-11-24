@@ -3,10 +3,7 @@ import { isFunctionType } from "../type-text";
 import type { ParserContext } from "./context";
 import { formatParamList } from "./utils";
 
-/**
- * A prop's type provenance, in the same precedence {@link
- * resolvePropTypeAndDocs} picks its type.
- */
+// Must follow the precedence `resolvePropTypeAndDocs` picks a type in.
 export function resolveTypeSource({
   hasTypeScriptType,
   hasJSDocType,
@@ -73,10 +70,6 @@ export interface ResolvedPropTypeAndDocs {
   typeParameters?: string;
 }
 
-/**
- * The type and docs decisions shared by module exports,
- * `export let`/`export function`, and `$props()`.
- */
 export function resolvePropTypeAndDocs(input: ResolvePropTypeAndDocsInput): ResolvedPropTypeAndDocs {
   let type = input.explicitType ?? input.jsdocType ?? input.resolvedType ?? input.typeSeed;
   const params = input.jsdocParams ?? input.resolvedParams;
@@ -123,21 +116,15 @@ export function resolvePropTypeAndDocs(input: ResolvePropTypeAndDocsInput): Reso
   return { type, typeSource, description, params, returnType, isFunction, typeParameters };
 }
 
-/**
- * A prop's own JSDoc with an explicit `@default` taken out of
- * its description: the prop shows it as its default (`value`) instead, and
- * no other file's constant replaces it.
- */
+// An explicit `@default` leaves the description to become the prop's
+// default instead, so no other file's constant replaces it.
 export function withExplicitDefault(ctx: ParserContext, propName: string, jsdoc: NodeJsDoc | undefined) {
   if (jsdoc?.explicitDefault === undefined) return jsdoc;
   ctx.explicitDefaultPropNames.add(propName);
   return { ...jsdoc, description: jsdoc.descriptionWithoutDefault };
 }
 
-/**
- * The fields a prop copies verbatim from its own JSDoc block, in prop
- * key order.
- */
+// The fields must stay in prop key order.
 export function propJsDocFields(jsdoc: NodeJsDoc | undefined) {
   return {
     binding: jsdoc?.binding,

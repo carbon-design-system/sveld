@@ -5,16 +5,10 @@ import { collectReferencedTypeDependencies } from "./type-resolution";
 
 const LEADING_IDENTIFIER_REGEX = /^[A-Za-z_$][\w$]*/;
 const IDENTIFIER_REGEX = /[A-Za-z_$][\w$]*/g;
-/** A type parameter's leading `const`/`in`/`out` modifiers. */
 const LEADING_TYPE_PARAM_MODIFIERS_REGEX = /^(?:(?:const|in|out)\s+)+/;
 
-/**
- * Parses the `generics` script attribute value (a TypeScript
- * type-parameter list, e.g.
- * `"Row extends DataTableRow = DataTableRow, Header"`) into the same
- * `[names, constraints]` tuple the `@generics`/`@template` JSDoc
- * tags produce.
- */
+// Must give the same `[names, constraints]` tuple the
+// `@generics`/`@template` tags produce.
 export function parseGenericsAttribute(value: string): ComponentGenerics {
   const constraints = splitTopLevel(value, ",")
     .map((part) => part.trim())
@@ -30,12 +24,9 @@ export function parseGenericsAttribute(value: string): ComponentGenerics {
   return [names.join(", "), constraints.join(", ")];
 }
 
-/**
- * Type names in the `generics` attribute (`DataTableRow` in
- * `Row extends DataTableRow`) exist only as raw text, not in any AST
- * {@link collectReferencedTypeDependencies} walks, so they're
- * matched here.
- */
+// Type names in the `generics` attribute exist only as raw text, not
+// in any AST `collectReferencedTypeDependencies` walks, so they're
+// matched here.
 export function collectGenericsAttributeTypeDependencies(
   ctx: ParserContext,
   referencedImportedTypes: Set<string>,
