@@ -2,7 +2,7 @@
 // its pruned CSS, so the first paint needs no second request.
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { extname, join } from "node:path";
 import { styleText } from "node:util";
 import { page } from "bun-plugin-page";
 import { optimizeCarbonBun } from "carbon-preprocess-svelte";
@@ -14,6 +14,7 @@ const dist = join(root, "dist");
 const HASH = /-[a-z0-9]{8}(?=\.)/;
 const STYLE = /<style[^>]*>([\s\S]*?)<\/style>/g;
 const KB = new Intl.NumberFormat("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const TYPE_COLOR: Record<string, "green" | "magenta" | "cyan"> = { ".html": "green", ".css": "magenta", ".js": "cyan" };
 
 async function render() {
   const outdir = await mkdtemp(join(tmpdir(), "sveld-playground-ssr-"));
@@ -60,7 +61,9 @@ await Bun.build({
   ],
 });
 
-console.log(`\n${await listDist()}\n✓ Built dist/ in ${Math.round(performance.now())} ms`);
+const ms = Math.round(performance.now());
+const time = ms < 1000 ? `${ms} ms` : `${(ms / 1000).toFixed(2)} s`;
+console.log(`\n${await listDist()}\n${styleText("green", "✓")} Built dist/ in ${time}`);
 
 /** dist/'s files, the page first, then largest first, with a total, in aligned columns. */
 async function listDist() {
@@ -77,7 +80,11 @@ async function listDist() {
   const files = await Promise.all(
     [...new Bun.Glob("**/*").scanSync(dist)].map(async (path) => {
       const slash = path.lastIndexOf("/") + 1;
-      const label = dim(path.slice(0, slash)) + path.slice(slash).replace(HASH, dim);
+      // Colored by type, as Vite lists its output.
+      const color = TYPE_COLOR[extname(path)];
+      const base = path.slice(slash).replace(HASH, dim);
+      const name = color ? styleText(color, base) : base;
+      const label = dim(path.slice(0, slash)) + name;
       return row(path, label, await Bun.file(join(dist, path)).bytes());
     }),
   );
