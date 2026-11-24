@@ -1,15 +1,11 @@
 import { BACKTICK_REGEX } from "./markdown-format-utils";
 
-/** Each run of characters GitHub drops from a heading slug. */
+// compat: GitHub drops these characters from a heading slug.
 const NON_SLUG_CHAR_REGEX = /[^\w\- ]+/g;
-/** Each whitespace run, which becomes a `-` in a heading slug. */
 const SLUG_SPACE_REGEX = /\s+/g;
 const TOC_PLACEHOLDER = "<!-- __TOC__ -->";
 
-/**
- * Mirrors GitHub's heading slugger, including `-1`, `-2`, ... suffixes
- * for duplicates.
- */
+// compat: must match GitHub's slugger, `-1`, `-2` duplicate suffixes too.
 function slugifyHeading(raw: string, seen: Map<string, number>): string {
   const slug = raw
     .toLowerCase()

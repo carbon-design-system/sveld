@@ -42,10 +42,8 @@ export interface WriteMarkdownOptions extends MarkdownOptions {
   entryExports?: EntryExports;
 }
 
-/**
- * Unlike the JSON writer, `moduleName` collisions aren't handled: this
- * only receives the exported component set, where `moduleName` is unique.
- */
+// Unlike the JSON writer, this doesn't handle `moduleName` collisions,
+// since it only gets the exported set, where `moduleName` is unique.
 async function writeMarkdownComponents(components: ComponentDocs, options: WriteMarkdownOptions, outDir: string) {
   const document = buildComponentApiDocument(components, { entryExports: options.entryExports });
   const writer = new Writer();

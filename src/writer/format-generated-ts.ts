@@ -9,10 +9,8 @@ const INLINE_WIDTH_BUDGET = 120;
 const INTERFACE_HEADER_REGEX = /\binterface\s+[A-Za-z_$][\w$]*(\s*<[^{};]*>)?\s*$/;
 const INTERFACE_HEADER_TAIL_LENGTH = 200;
 const WHITESPACE_CHAR_REGEX = /\s/;
-/**
- * Two whitespace characters in a row, or any but a space: text {@link
- * flattenToOneLine} changes.
- */
+// flattenToOneLine changes text only with two whitespace characters in a
+// row, or one that isn't a space.
 const NEEDS_FLATTEN_REGEX = /\s{2}|[^\S ]/;
 
 // Scanners jump between hits via `lastIndex` instead of testing every char
@@ -110,12 +108,9 @@ function popTrailingWhitespace(out: string[]): void {
   }
 }
 
-/**
- * Fast path for the `{...}` collapse decision: with no nested `{` (whose
- * collapse could change the outer decision), 2+ `;` outside quotes always
- * expands, so the speculative recursive expansion can be skipped. One `;`
- * may still collapse.
- */
+// perf: without a nested `{`, whose collapse could change the outer
+// decision, 2+ `;` outside quotes always expand, so this skips the
+// speculative recursive expansion. One `;` may still collapse.
 function hasMultipleFlatStatements(content: string): boolean {
   if (content.includes("{")) return false;
 
@@ -141,10 +136,7 @@ function hasMultipleFlatStatements(content: string): boolean {
   return false;
 }
 
-/**
- * Collapses whitespace runs outside quotes to a single space and trims
- * the end.
- */
+// Never inside quotes, so string literals keep their whitespace.
 function flattenToOneLine(content: string): string {
   if (!NEEDS_FLATTEN_REGEX.test(content)) return content.trimEnd();
 
@@ -191,10 +183,8 @@ function flattenToOneLine(content: string): string {
   return out.trimEnd();
 }
 
-/**
- * Index of the closing quote, or -1. Any quote preceded by a backslash
- * doesn't close, even after `\\`.
- */
+// Returns -1 when unclosed. A quote after a backslash never closes, even
+// when that backslash is itself escaped (`\\`).
 function findStringClose(raw: string, open: number): number {
   const quote = raw[open];
   let at = raw.indexOf(quote, open + 1);
@@ -204,20 +194,17 @@ function findStringClose(raw: string, open: number): number {
   return at;
 }
 
-/**
- * Index of the closing `/`, or -1. `/*` followed straight by `/`
- * closes immediately.
- */
+// Points at the closing `/`, or -1. `/*/` counts as closed, since the
+// `*` of `/*` is reused.
 function findBlockCommentClose(raw: string, open: number): number {
   const at = raw.indexOf("*/", open + 1);
   return at === -1 ? -1 : at + 1;
 }
 
-/**
- * Maps each `{` outside strings/block comments to its matching `}` in one
- * pass (a per-`{` scan re-walks nested blocks per level). A sparse Map
- * beats a `raw.length`-sized table that must be allocated on every call.
- */
+// Braces in strings and block comments never count.
+// perf: one pass, since a per-`{` scan re-walks nested blocks per
+// level; a sparse Map beats a `raw.length`-sized table that must be
+// allocated on every call.
 function computeBraceMatches(raw: string): Map<number, number> {
   const matches = new Map<number, number>();
   const stack: number[] = [];
@@ -252,7 +239,7 @@ function computeBraceMatches(raw: string): Map<number, number> {
   return matches;
 }
 
-/** `raw.slice(from, to).trim() === ""` without the copy. */
+// perf: same as `raw.slice(from, to).trim() === ""`, without the copy.
 function isBlankRange(raw: string, from: number, to: number): boolean {
   for (let i = from; i < to; i++) {
     if (!isTrimmedWhitespace(raw.charCodeAt(i))) return false;
@@ -260,7 +247,7 @@ function isBlankRange(raw: string, from: number, to: number): boolean {
   return true;
 }
 
-/** Whether `String.prototype.trim` would strip this code unit. */
+// Must match exactly what `String.prototype.trim` would strip.
 function isTrimmedWhitespace(code: number): boolean {
   if (code <= CH_SPACE) return code === CH_SPACE || (code >= CH_TAB && code <= CH_CR);
   if (code < 0xa0) return false;
@@ -277,13 +264,8 @@ function isTrimmedWhitespace(code: number): boolean {
   );
 }
 
-/**
- * Breaks template output onto statement lines (after `{`, before `}`,
- * after `;`) for the reindent pass, skipping string and comment contents.
- * Short `{...}` blocks collapse onto one line within
- * `INLINE_WIDTH_BUDGET`; interface bodies always expand. Works on
- * `raw[from, to)` so nested blocks recurse without slicing.
- */
+// Never breaks inside strings or comments.
+// perf: takes `raw[from, to)` so nested blocks recurse without slicing.
 function expandRange(raw: string, from: number, to: number, matches: Map<number, number>): string {
   const out: string[] = [];
   const scan = STATEMENT_SCAN_REGEX;
@@ -395,7 +377,7 @@ function expandRange(raw: string, from: number, to: number, matches: Map<number,
   return out.join("");
 }
 
-/** Collapses runs of spaces outside quotes to a single space. */
+// Never inside quotes, so string literals keep their spacing.
 function collapseSpaces(line: string): string {
   if (!line.includes("  ")) return line;
 
@@ -442,27 +424,19 @@ function containsDocClose(text: string, at: number, end: number): boolean {
   return found !== -1 && found + 2 <= end;
 }
 
-/**
- * A wrapped union/intersection member (`| "b"`, `& B`) or member access
- * (`.Foo`, not a `...` spread) from a multi-line JSDoc `{type}`; indented
- * one level deeper.
- */
+// A wrapped JSDoc `{type}` line continues only with `|`, `&`, or a `.`
+// that isn't a `...` spread.
 function continuesExpression(text: string, at: number, end: number): boolean {
   const c = text.charCodeAt(at);
   if (c === CH_PIPE || c === CH_AMPERSAND) return true;
   return c === CH_DOT && at + 1 < end && text.charCodeAt(at + 1) !== CH_DOT;
 }
 
-/**
- * Reindents by bracket depth, ignoring block comments (`{@link Foo}` must
- * not move the depth), and normalizes blank lines: runs collapse to one,
- * and blank lines after an opener, before a top-level closer, or at the
- * end are dropped.
- *
- * Indent and content stay in separate arrays until the final join:
- * concatenating per line left ropes that the next `charCodeAt` had to
- * flatten, costing more than the reindent itself.
- */
+// Block comments don't count toward depth, since `{@link Foo}` must not
+// move it.
+// perf: indent and content stay in separate arrays until the final
+// join, because concatenating per line left ropes that the next
+// `charCodeAt` had to flatten, costing more than the reindent itself.
 function reindentAndTidy(text: string): string {
   // Parallel arrays, one entry per emitted line, so a blank line is `""`
   // with indent 0.
@@ -551,10 +525,7 @@ function reindentAndTidy(text: string): string {
   return parts.join("");
 }
 
-/**
- * Structural reformat of generated `.d.ts` text (not a full printer: no
- * line wrapping).
- */
+// Not a full printer: it never wraps lines.
 export function formatGeneratedTypeScript(raw: string): string {
   return `${reindentAndTidy(expandRange(raw, 0, raw.length, computeBraceMatches(raw)))}\n`;
 }

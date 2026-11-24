@@ -52,10 +52,6 @@ export function renderComponentsToMarkdown(
   }
 }
 
-/**
- * The `markdownOptions.outDir` index page: links to each component's own
- * file, then Exports.
- */
 export function renderComponentIndexToMarkdown(
   document: MarkdownRenderTarget,
   components: ComponentDocApi[],
@@ -116,10 +112,8 @@ function renderSectionIfNotEmpty(document: MarkdownRenderTarget, items: readonly
   }
 }
 
-/**
- * One component's section, for both the combined document and `outDir`'s
- * per-component files.
- */
+// Shared by the combined document and `outDir`'s per-component files,
+// so both render a component the same way.
 export function renderComponentToMarkdown(document: MarkdownRenderTarget, component: ComponentDocApi) {
   document.append("h2", `\`${component.moduleName}\``);
 
