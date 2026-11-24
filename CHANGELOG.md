@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.40.6](https://github.com/carbon-design-system/sveld/releases/tag/v0.40.6) - 2026-11-24
+
+**Fixes**
+
+- a parse cache file whose versions match but that has no `entries` starts empty, instead of crashing the run with a `TypeError` (4cda0c5, #626)
+- with `--check-examples`, a `typescript` module that has no `API` export reports `unsupported-version`, instead of throwing a `TypeError` (4cda0c5, #626)
+
+**Performance**
+
+- match a deferred `@template` generic's name, and a code fence's closing line, with a string check instead of a regex built for each: 2.9× and 1.6× faster on 20,000 calls, though a whole build doesn't change measurably (a06d098, #627)
+
 ## [0.40.5](https://github.com/carbon-design-system/sveld/releases/tag/v0.40.5) - 2026-11-21
 
 **Features**
