@@ -90,7 +90,8 @@ export async function buildAndWrite(
     ? await runCheck(result.components, resolveCheckSnapshotFile(options), { entryExports: result.entryExports })
     : undefined;
 
-  await (toStdout ? writeStdout : writeOutput)(result, options, input);
+  if (toStdout) writeStdout(result, options, input);
+  else await writeOutput(result, options, input);
   return { result, check };
 }
 
@@ -169,7 +170,10 @@ export async function sveld(opts?: SveldOptions): Promise<SveldResult> {
   if (opts && "input" in opts) {
     throw new Error("sveld: the `input` option was renamed to `entry`.");
   }
-  if (typeof (opts as SveldRuntimeOptions | undefined)?.config === "string") {
+  // Read as `unknown`, since a JavaScript caller can pass any value,
+  // whatever the type says.
+  const config: unknown = opts?.config;
+  if (typeof config === "string") {
     throw new Error(
       "sveld: `config` takes `true` or `false`; import another config file and pass its options instead.",
     );

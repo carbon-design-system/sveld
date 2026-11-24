@@ -246,7 +246,7 @@ export async function writeOutput(result: GenerateBundleResult, opts: PluginSvel
 
 // The CLI ensures exactly one of `json` and `markdown` is set, so this
 // prints only that one.
-export async function writeStdout(result: GenerateBundleResult, opts: PluginSveldOptions, input: string) {
+export function writeStdout(result: GenerateBundleResult, opts: PluginSveldOptions, input: string) {
   if (opts.json) {
     const rendered = renderJsonDocument(result.components, {
       ...opts.jsonOptions,

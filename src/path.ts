@@ -1,5 +1,5 @@
 import path, { sep } from "node:path";
-import type { NormalizedPath } from "./brands";
+import { asNormalizedPath, type NormalizedPath } from "./brands";
 
 export const SVELTE_EXT_REGEX = /\.svelte$/;
 
@@ -33,7 +33,7 @@ export function hasSvelteExtension(filePath: string): boolean {
 }
 
 export function normalizeSeparators(filePath: string): NormalizedPath {
-  return (sep === "/" ? filePath : filePath.split(sep).join("/")) as NormalizedPath;
+  return asNormalizedPath(sep === "/" ? filePath : filePath.split(sep).join("/"));
 }
 
 export function normalizeComponentFilePath(filePath: string, inputDir: string): NormalizedPath {

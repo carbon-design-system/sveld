@@ -59,13 +59,12 @@ export function isNewExpressionNamed(node: unknown, calleeName: string): node is
 // Only a literal or a template without interpolation has a value; a number
 // is stringified (`1` gives `"1"`), but a `null` literal isn't.
 export function resolveStaticStringLiteral(node: unknown): string | null {
-  if (!isObject(node)) return null;
-  if (node.type === "Literal") return node.value == null ? null : String(node.value);
-  if (node.type === "TemplateLiteral") {
-    const quasis = node.quasis as Array<{ value?: { cooked?: string | null } }> | undefined;
-    if (quasis?.length === 1) return quasis[0]?.value?.cooked ?? null;
-  }
-  return null;
+  if (isLiteral(node)) return node.value == null ? null : String(node.value);
+  if (!isObject(node) || node.type !== "TemplateLiteral" || !Array.isArray(node.quasis)) return null;
+  if (node.quasis.length !== 1) return null;
+  const quasi: unknown = node.quasis[0];
+  if (!isObject(quasi) || !isObject(quasi.value)) return null;
+  return typeof quasi.value.cooked === "string" ? quasi.value.cooked : null;
 }
 
 export function getPropertyName(node: Property["key"]): string | undefined {

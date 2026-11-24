@@ -211,7 +211,12 @@ function primitiveLiteralOf(source: ModuleSource, init: Expression): PrimitiveLi
   const raw = textOf(source, init);
   const value = staticPrimitiveValue(init);
   if (raw === undefined || value === undefined) return undefined;
-  return { raw, value, type: typeof value as PrimitiveLiteral["type"] };
+  return { raw, value, type: primitiveType(value) };
+}
+
+function primitiveType(value: PrimitiveLiteral["value"]): PrimitiveLiteral["type"] {
+  if (typeof value === "string") return "string";
+  return typeof value === "number" ? "number" : "boolean";
 }
 
 // Read as `setContext` with a same-file key reads it: the static

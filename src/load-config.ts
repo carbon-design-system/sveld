@@ -97,7 +97,7 @@ export function resolveConfigPath(cwd: string = process.cwd()): string | null {
 // latest contents. Throws if the import fails or the default export isn't
 // an object.
 export async function loadConfigFrom(configPath: string): Promise<SveldConfig> {
-  let mod: { default?: unknown };
+  let mod: unknown;
 
   try {
     const href = `${pathToFileURL(configPath).href}?t=${Date.now()}`;
@@ -107,7 +107,9 @@ export async function loadConfigFrom(configPath: string): Promise<SveldConfig> {
     throw new Error(`sveld: failed to load config file "${configPath}".\n${message}`, { cause: error });
   }
 
-  const config = mod.default;
+  // The guard can't fail, since an imported module is always a
+  // namespace object.
+  const config = isObject(mod) ? mod.default : undefined;
 
   if (!isObject(config) || Array.isArray(config)) {
     throw new Error(
@@ -116,7 +118,7 @@ export async function loadConfigFrom(configPath: string): Promise<SveldConfig> {
     );
   }
 
-  return config as SveldConfig;
+  return config;
 }
 
 // A missing config file isn't an error: it gives `{}`.
@@ -146,21 +148,22 @@ export async function loadConfigOption(
 export function mergeConfig<T extends PluginSveldOptions = PluginSveldOptions>(
   ...sources: Array<Partial<T> | undefined>
 ): Partial<T> {
-  const merged: Record<string, unknown> = {};
+  const merged: Partial<T> = {};
 
   for (const source of sources) {
     if (!source) continue;
 
+    const nested: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(source)) {
-      const existing = merged[key];
-      merged[key] =
-        isObject(existing) && !Array.isArray(existing) && isObject(value) && !Array.isArray(value)
-          ? { ...existing, ...value }
-          : value;
+      const existing: unknown = Reflect.get(merged, key);
+      if (isObject(existing) && !Array.isArray(existing) && isObject(value) && !Array.isArray(value)) {
+        nested[key] = { ...existing, ...value };
+      }
     }
+    Object.assign(merged, source, nested);
   }
 
-  return merged as Partial<T>;
+  return merged;
 }
 
 const KNOWN_TOP_LEVEL_KEYS = [
@@ -212,7 +215,7 @@ export function validateOptions(options: Partial<PluginSveldOptions>): void {
   }
 
   for (const [optionsKey, knownKeys] of Object.entries(KNOWN_NESTED_KEYS)) {
-    const nested = (options as Record<string, unknown>)[optionsKey];
+    const nested: unknown = Reflect.get(options, optionsKey);
     if (!isObject(nested)) continue;
 
     for (const key of Object.keys(nested)) {
