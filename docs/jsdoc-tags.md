@@ -6,6 +6,30 @@ A JSDoc block documents the declaration below it. Blank lines and ordinary comme
 
 Examples show Svelte 5 runes syntax first, with the Svelte 3/4 (legacy) form in a collapsed block where it differs. Unless noted, both produce the same output.
 
+| Tag                                                                    | Use it to                                                 | Example                                        |
+| :--------------------------------------------------------------------- | :-------------------------------------------------------- | :--------------------------------------------- |
+| [`@type`](#type)                                     | Type a prop                                               | `@type {"sm" \| "md" \| "lg"}`                 |
+| [`@default`](#default)                               | Override the inferred default shown in docs               | `@default () => true`                          |
+| [`@typedef`](#typedef)                               | Declare a shared, exported type                           | `@typedef {{ id: string }} Item`               |
+| [`@property`](#property)                             | Document a field of a `@typedef {object}` or event detail | `@property {string} [label] - Label text`      |
+| [`@callback`](#callback)                             | Declare a function type                                   | `@callback OnChange` + `@param`/`@returns`     |
+| [`@slot` / `@snippet`](#slot--snippet)               | Type slot or snippet props                                | `@slot {{ item: Item }} row`                   |
+| [`@event`](#event)                                   | Type a dispatched event's detail                          | `@event {{ id: string }} save`                 |
+| [`@param` / `@returns`](#accessor-props)             | Type an exported function                                 | `@param {string} id`                           |
+| [`@restProps`](#restprops)                           | Name the element rest props are spread onto               | `@restProps {button \| a}`                     |
+| [`@extendProps`](#extendprops)                       | Extend another component's props                          | `@extendProps {"./Button.svelte"} ButtonProps` |
+| [`@template` / `@generics`](#template--generics)     | Declare generics in a JS component                        | `@template {Item} [T=Item]`                    |
+| [`@bindable`](#bindable)                             | Document a prop's `bind:` contract                        | `@bindable writable`                           |
+| [`@deprecated`](#deprecated)                         | Mark a prop, event, slot, or export deprecated            | `@deprecated Use "size" instead.`              |
+| [`@ignore` / `@internal`](#ignore--internal)         | Hide from every output                                    | `@internal`                                    |
+| [`@since` / `@see` / `@example`](#since-see-example) | Pass structured tags through to all outputs               | `@since 1.2.0`                                 |
+| [`{@link}`](#link)                                   | Link in a description                                     | `{@link https://example.com\|docs}`            |
+| [`@csspart` / `@cssprop`](#csspart--cssprop)         | Document shadow-DOM styling hooks                         | `@cssprop {Color} [--bg=white]`                |
+| [`@sveld-ignore`](ci.md#ignoring-diagnostics)                     | Suppress a diagnostic                                     | `@sveld-ignore sveld/prop-unknown-type`        |
+| [`<!-- @component -->`](#component-comments)         | Document the component itself                             | `<!-- @component Renders a button. -->`        |
+
+Context types come from `setContext` calls with no tag needed. See [Context](#context).
+
 - [How prop types are resolved](#how-prop-types-are-resolved)
 - [`@type`](#type)
 - [`@default`](#default)

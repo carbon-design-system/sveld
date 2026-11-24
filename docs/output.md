@@ -8,6 +8,151 @@ sveld writes up to three kinds of output from one parse:
 
 It also returns the JSON document from `sveld()`, so you can render [custom output](#custom-output). Options for each writer are in [Options](options.md).
 
+## When to use sveld
+
+If your library is built with SvelteKit's `svelte-package`, it already emits `.d.ts` files through `svelte2tsx`; start there.
+
+sveld is for:
+
+- **JavaScript-first libraries.** Components written in plain JavaScript with JSDoc, where you want full editor types without converting to `lang="ts"`.
+- **Docs from the same source as the types.** JSON and Markdown API docs, generated in the same run.
+- **API drift checks.** `--check` diffs the component API against a committed snapshot and fails CI on breaking changes.
+- **Richer types from JSDoc.** `@typedef`, `@callback`, `@slot`, `@event`, and context types that plain inference can't produce.
+
+`lang="ts"` components work too: sveld keeps their type annotations as written.
+
+## Example
+
+Given this component:
+
+```svelte
+<!-- Button.svelte -->
+<script>
+  export let type = "button";
+  export let primary = false;
+</script>
+
+<button {...$$restProps} {type} class:primary on:click>
+  <slot>Click me</slot>
+</button>
+```
+
+sveld infers prop types and defaults, the forwarded `click` event, the default slot, and the rest props spread onto `<button>`:
+
+```ts
+// types/Button.svelte.d.ts
+import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+type $RestProps = SvelteHTMLElements["button"];
+
+type $Props = {
+  /**
+   * @default "button"
+   */
+  type?: string;
+
+  /**
+   * @default false
+   */
+  primary?: boolean;
+
+  children?: (this: void) => void;
+
+  [key: `data-${string}`]: unknown;
+};
+
+export type ButtonProps = Omit<$RestProps, keyof $Props> & $Props;
+
+export default class Button extends SvelteComponentTyped<
+  ButtonProps,
+  { click: WindowEventMap["click"] },
+  { default: Record<string, never> }
+> {}
+```
+
+The default slot is also typed as a `children` snippet prop for Svelte 5 consumers, and the `data-*` index signature lets callers pass data attributes through `$$restProps`.
+
+Add JSDoc to tighten types and add descriptions:
+
+```svelte
+<script>
+  /** @type {"button" | "submit" | "reset"} */
+  export let type = "button";
+
+  /**
+   * Set to `true` to use the primary variant
+   */
+  export let primary = false;
+</script>
+```
+
+```ts
+type $Props = {
+  /**
+   * @default "button"
+   */
+  type?: "button" | "submit" | "reset";
+
+  /**
+   * Set to `true` to use the primary variant
+   * @default false
+   */
+  primary?: boolean;
+
+  children?: (this: void) => void;
+
+  [key: `data-${string}`]: unknown;
+};
+```
+
+The runes version (`let { type = "button", primary = false, children, ...rest } = $props()`, spreading `rest` and rendering `children`) produces the same `$Props`. It has no `click` event, since runes components take `onclick` as a prop through `rest`.
+
+The `.d.ts` extends `SvelteComponentTyped` by default, which works for consumers on Svelte 3, 4, and 5. Set `typesOptions.format: "component"` (`--types-format=component`) to emit the Svelte 5 `Component` type instead. See [Formats](#formats).
+
+### JSON and Markdown
+
+`npx sveld --markdown` documents the same component in `COMPONENT_INDEX.md`:
+
+```md
+## `Button`
+
+### Props
+
+| Prop name | Required | Kind | Reactive | Binding | Type | Default value | Description |
+| :- | :- | :- | :- | :- | :- | :- | :- |
+| type | No | <code>let</code> | No | -- | <code>"button" &#124; "submit" &#124; "reset"</code> | <code>"button"</code> | -- |
+| primary | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to use the primary variant |
+
+### Slots
+
+| Slot name | Default | Props | Fallback | Description |
+| :- | :- | :- | :- | :- |
+| -- | Yes | <code>Record&lt;string, never> </code> | <code>Click me</code> | -- |
+
+### Events
+
+| Event name | Type | Detail | Description |
+| :- | :- | :- | :- |
+| click | forwarded | -- | -- |
+```
+
+`npx sveld --json` writes the same data to `COMPONENT_API.json`, validated by a [JSON Schema](../schema/component-api.schema.json) that ships with the package. An excerpt of the prop entry:
+
+```json
+{
+  "name": "type",
+  "kind": "let",
+  "type": "\"button\" | \"submit\" | \"reset\"",
+  "typeSource": "jsdoc",
+  "value": "\"button\"",
+  "isRequired": false,
+  "reactive": false
+}
+```
+
+See [JSON output](#json-output) for the full shape.
+
 ## TypeScript definitions
 
 By default sveld writes to `types/` (set `typesOptions.outDir` to change it):

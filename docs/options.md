@@ -12,6 +12,7 @@ sveld runs from the CLI, as a Vite/Rollup plugin, or from Node with `sveld()`. A
 - [Vite plugin](#vite-plugin)
 - [Node API](#node-api)
 - [Browser](#browser)
+- [Requirements](#requirements)
 
 ## Option reference
 
@@ -292,3 +293,10 @@ A single-file parse can't read imported files, so it misses a `setContext` key i
 A `ComponentParser` can be reused for many components.
 
 The [`playground/`](../playground) directory is a working example, deployed at [sveld.onrender.com](https://sveld.onrender.com).
+
+## Requirements
+
+- Node 22 or later, or Bun. sveld is ESM-only.
+- A `sveld.config.ts` needs a runtime that strips TypeScript: Bun, or Node 22.18+ / 23.6+.
+- The optional [`checkExamples`](ci.md#checking-example-blocks) check for TS/JS examples needs `typescript` 7+ and a `tsconfig.json`. Nothing else loads TypeScript.
+- Your installed Svelte version doesn't affect parsing. sveld parses with [svelte-ast](https://github.com/metonym/svelte-ast), kept in parity with `svelte/compiler`.
