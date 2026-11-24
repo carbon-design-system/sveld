@@ -19,18 +19,16 @@ const TYPE_COLOR: Record<string, "green" | "magenta" | "cyan"> = { ".html": "gre
 async function render() {
   const outdir = await mkdtemp(join(tmpdir(), "sveld-playground-ssr-"));
   try {
-    // Silent: the client build reports the same rewrites.
+    // Silent: the client build reports the same rewrites. Fails if a file
+    // outside `content` renders Carbon.
     const carbon = optimizeCarbonBun({ root, optimizeComponents: { silent: true }, optimizeCss: false });
     const ssr = await Bun.build({
       entrypoints: [join(root, "src/ssr.ts")],
       outdir,
       target: "bun",
-      metafile: true,
       throw: true,
       plugins: [carbon, svelte({ root, production: true, side: "server", load: (path) => carbon.load(path) })],
     });
-    // Fails if a file outside `content` renders Carbon.
-    await carbon.pruneCss({}, ssr);
     const { head, body } = (await import(ssr.outputs[0].path)).default();
     return { head, body };
   } finally {
@@ -53,7 +51,7 @@ await Bun.build({
     carbon,
     svelte({ root, production: true, load: (path) => carbon.load(path) }),
     page({
-      inlineCss: { transform: (css, result) => carbon.pruneCss({ ...css }, result) },
+      inlineCss: true,
       preload: ["src/TabJson.svelte", "src/TabMarkdown.svelte"],
       prefetch: ["src/parser.ts"],
       prerender: () => rendered,
