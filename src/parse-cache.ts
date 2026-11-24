@@ -2,6 +2,7 @@ import { hash as cryptoHash } from "node:crypto";
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { version as sveldVersion } from "../package.json";
+import { isObject } from "./ast-guards";
 import { findUp } from "./fs-listing";
 import type {
   ComponentParseResult,
@@ -76,13 +77,21 @@ function emptyCacheFile(): ParseCacheFile {
   return { formatVersion: CACHE_FORMAT_VERSION, toolchainVersion: currentToolchainVersion(), entries: {} };
 }
 
+// Entries are trusted once the versions match, since this sveld
+// wrote them.
+function isCurrentCacheFile(value: unknown): value is ParseCacheFile {
+  return (
+    isObject(value) &&
+    value.formatVersion === CACHE_FORMAT_VERSION &&
+    value.toolchainVersion === currentToolchainVersion() &&
+    isObject(value.entries)
+  );
+}
+
 function readCacheFile(cacheFilePath: string): ParseCacheFile {
   try {
-    const parsed = JSON.parse(readFileSync(cacheFilePath, "utf-8")) as ParseCacheFile;
-    if (parsed.formatVersion !== CACHE_FORMAT_VERSION || parsed.toolchainVersion !== currentToolchainVersion()) {
-      return emptyCacheFile();
-    }
-    return parsed;
+    const parsed: unknown = JSON.parse(readFileSync(cacheFilePath, "utf-8"));
+    return isCurrentCacheFile(parsed) ? parsed : emptyCacheFile();
   } catch {
     return emptyCacheFile();
   }

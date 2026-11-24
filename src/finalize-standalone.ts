@@ -60,7 +60,7 @@ export function finalizeWithoutCrossFileResolution<T extends ParsedComponent>(
     return component;
   }
 
-  const ownFilePath = (component as { filePath?: unknown }).filePath;
+  const ownFilePath = "filePath" in component ? component.filePath : undefined;
   const filePath = options.filePath ?? (typeof ownFilePath === "string" ? ownFilePath : "");
   const added: SveldDiagnostic[] = [];
   const record = (name: string, message: string, source: SourceRange | undefined, ignored?: boolean) => {

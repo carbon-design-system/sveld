@@ -162,11 +162,17 @@ function parseCliFlag(
   return { result: parseCliFlagValue(flag, value, arg), consumedNext, flag };
 }
 
+// Enum-valued flags pass through unchecked here, since `cli()` checks them
+// once the config file is merged in, and reports a bad value as a
+// usage error.
+function unchecked<T extends string>(value: string | boolean): T {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- `cli()` validates the value after merging the config file.
+  return value as T;
+}
+
 function parseCliFlagValue(flag: string, value: string | boolean, arg: string): CliFlagResult {
   const option = (partial: Partial<SveldRuntimeOptions>): CliFlagResult => ({ kind: "option", option: partial });
   const isTrue = value === true || value === "true";
-  // Enum-valued flags are cast here only because `cli()` validates them, so
-  // a bad value is reported as a usage error.
   const stringValue = typeof value === "string" ? value : undefined;
 
   switch (flag) {
@@ -187,13 +193,13 @@ function parseCliFlagValue(flag: string, value: string | boolean, arg: string): 
     case "strict":
       if (isTrue) return option({ strict: true });
       if (value === "false") return option({ strict: false });
-      return option({ strict: value as "errors" });
+      return option({ strict: unchecked<"errors">(value) });
     case "report-diagnostics":
       return option({ reportDiagnostics: isTrue });
     case "check-examples":
       if (isTrue) return option({ checkExamples: true });
       if (value === "false") return option({ checkExamples: false });
-      return option({ checkExamples: value as "syntax" });
+      return option({ checkExamples: unchecked<"syntax">(value) });
     case "fail-fast":
       return option({ failFast: isTrue });
     case "entry":
@@ -208,14 +214,16 @@ function parseCliFlagValue(flag: string, value: string | boolean, arg: string): 
       return option({ check: stringValue ?? true });
     case "types-format":
       return option(
-        stringValue === undefined ? {} : { typesOptions: { format: stringValue as "class" | "component" } },
+        stringValue === undefined ? {} : { typesOptions: { format: unchecked<"class" | "component">(stringValue) } },
       );
     case "types-index-types":
       return option({ typesOptions: { indexTypes: isTrue } });
     case "format":
-      return option(stringValue === undefined ? {} : { format: stringValue as "text" | "json" | "github" });
+      return option(stringValue === undefined ? {} : { format: unchecked<"text" | "json" | "github">(stringValue) });
     case "check-level":
-      return option(stringValue === undefined ? {} : { checkLevel: stringValue as "major" | "minor" | "patch" });
+      return option(
+        stringValue === undefined ? {} : { checkLevel: unchecked<"major" | "minor" | "patch">(stringValue) },
+      );
     default:
       return { kind: "unknown", arg, suggestion: suggestFlag(flag) };
   }

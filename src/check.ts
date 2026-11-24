@@ -800,17 +800,27 @@ export function diffApiDocuments(previous: ComponentApiDocument, next: Component
   return changes;
 }
 
-async function readSnapshot(snapshotFile: string): Promise<ComponentApiDocument | null> {
+// A snapshot is trusted to have the document's shape once its
+// `schemaVersion` matches, since `runCheck` checks no other field before
+// it diffs.
+function isCurrentSnapshot(value: unknown): value is ComponentApiDocument {
+  return isObject(value) && value.schemaVersion === COMPONENT_API_SCHEMA_VERSION;
+}
+
+// `null` when there's no file, and also for a file holding JSON `null`, so
+// both read as missing.
+async function readSnapshot(snapshotFile: string): Promise<unknown> {
   let raw: string;
   try {
     raw = await readFile(path.resolve(snapshotFile), "utf-8");
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+    if (isObject(error) && error.code === "ENOENT") return null;
     throw error;
   }
 
   try {
-    return JSON.parse(raw) as ComponentApiDocument;
+    const parsed: unknown = JSON.parse(raw);
+    return parsed;
   } catch {
     throw new Error(`sveld: could not parse "${snapshotFile}" as JSON. Is it a sveld COMPONENT_API.json snapshot?`);
   }
@@ -851,7 +861,8 @@ export async function runCheck(
     return { snapshotExists: false, snapshotFile, changes: [], bump: "none" };
   }
 
-  if (previous.schemaVersion !== COMPONENT_API_SCHEMA_VERSION) {
+  if (!isCurrentSnapshot(previous)) {
+    const found = isObject(previous) ? previous.schemaVersion : undefined;
     return {
       snapshotExists: true,
       snapshotFile,
@@ -860,7 +871,7 @@ export async function runCheck(
           component: "*",
           kind: "schema",
           bump: "none",
-          message: `snapshot schemaVersion ${previous.schemaVersion} differs from ${COMPONENT_API_SCHEMA_VERSION}; regenerate the snapshot`,
+          message: `snapshot schemaVersion ${String(found)} differs from ${COMPONENT_API_SCHEMA_VERSION}; regenerate the snapshot`,
         },
       ],
       bump: "none",

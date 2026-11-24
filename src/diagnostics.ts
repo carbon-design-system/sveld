@@ -269,7 +269,22 @@ export function applyDiagnosticIgnores(
   );
 }
 
-const KIND_ORDER = Object.keys(DIAGNOSTIC_KINDS) as SveldDiagnosticKind[];
+function isDiagnosticKind(key: string): key is SveldDiagnosticKind {
+  return Object.hasOwn(DIAGNOSTIC_KINDS, key);
+}
+
+const KIND_ORDER = Object.keys(DIAGNOSTIC_KINDS).filter(isDiagnosticKind);
+
+const codesByKind: Record<string, string> = Object.fromEntries(KIND_ORDER.map((kind) => [kind, `sveld/${kind}`]));
+
+// Checked once, at load, since `Object.fromEntries` keys its result by
+// `string`, not by the kinds it was built from.
+function assertEveryKind(codes: Record<string, string>): asserts codes is Record<SveldDiagnosticKind, string> {
+  for (const kind of KIND_ORDER) {
+    if (!Object.hasOwn(codes, kind)) throw new Error(`sveld: no diagnostic code for "${kind}"`);
+  }
+}
+assertEveryKind(codesByKind);
 
 /**
  * Stable, namespaced identifier for a {@link SveldDiagnosticKind}, e.g.
@@ -277,10 +292,7 @@ const KIND_ORDER = Object.keys(DIAGNOSTIC_KINDS) as SveldDiagnosticKind[];
  * `ignore` matcher; `kind` is kept as the bare, un-namespaced form
  * for compatibility.
  */
-export const DIAGNOSTIC_CODES = Object.fromEntries(KIND_ORDER.map((kind) => [kind, `sveld/${kind}`])) as Record<
-  SveldDiagnosticKind,
-  string
->;
+export const DIAGNOSTIC_CODES: Record<SveldDiagnosticKind, string> = codesByKind;
 
 export function dedupeDiagnostics(diagnostics: SveldDiagnostic[]): SveldDiagnostic[] {
   const seen = new Set<string>();

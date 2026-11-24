@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
+import { isObject } from "./ast-guards";
 import type { ExampleCheckSource } from "./example-check";
 import { findUp } from "./fs-listing";
 import { normalizeSeparators } from "./path";
@@ -18,10 +19,48 @@ interface ExampleCheckDiagnostic {
   message: string;
 }
 
-// Structural types for TypeScript's async API so AST-only builds skip the
-// `typescript` package.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- native-preview API is loaded lazily and typed structurally.
-type TS = any;
+// Structural types for the parts of TypeScript's async API that sveld
+// reads, so AST-only builds skip the `typescript` package.
+interface TsDiagnostic {
+  pos?: number;
+  text?: string;
+}
+
+interface TsProject {
+  program: {
+    getSyntacticDiagnostics(file: string): Promise<TsDiagnostic[]>;
+    getSemanticDiagnostics(file: string): Promise<TsDiagnostic[]>;
+  };
+}
+
+interface TsSnapshot {
+  getDefaultProjectForFile(file: string): Promise<TsProject | undefined>;
+  dispose?(): Promise<void>;
+}
+
+// TypeScript 7.1 has only `createSnapshot`, and 7.0 only
+// `updateSnapshot`; `usesFileSystemLayer` picks the one to call.
+interface TsApi {
+  createSnapshot(params: {
+    openProjects: string[];
+    fileSystem: { kind: "layer"; files: Record<string, string> };
+  }): Promise<TsSnapshot>;
+  updateSnapshot(params: { openProject: string; fileChanges: { created: string[] } }): Promise<TsSnapshot>;
+  close?(): Promise<void>;
+}
+
+interface TsAsyncModule {
+  API: {
+    new (options: { cwd: string; fs?: unknown }): TsApi;
+    prototype?: { createSnapshot?: unknown };
+  };
+}
+
+// A module is read as the async API once, here; what `API` returns is
+// then taken on trust, as TypeScript's own declarations would be.
+function isTsAsyncModule(value: unknown): value is TsAsyncModule {
+  return isObject(value) && typeof value.API === "function";
+}
 
 const NON_FILENAME_CHAR_REGEX = /[^A-Za-z0-9_-]/g;
 const NON_IDENTIFIER_CHAR_REGEX = /[^A-Za-z0-9_$]/g;
@@ -36,7 +75,7 @@ const ASYNC_API_SPECIFIERS = ["typescript/async", "typescript/unstable/async"];
 interface TypeScriptLoadResult {
   installed: boolean;
   version?: string;
-  module?: TS;
+  module?: unknown;
 }
 
 type TypeResolverCreateResult =
@@ -46,6 +85,10 @@ type TypeResolverCreateResult =
 interface TypeResolverCreateOptions {
   /** Test seam: replaces the real `typescript` package lookup/import. */
   importTs?: (cwd: string) => Promise<TypeScriptLoadResult>;
+}
+
+function unsupportedVersionMessage(version: string | undefined): string {
+  return `requires ${REQUIREMENT_TEXT}; found \`typescript@${version ?? "unknown"}\` installed, which does not expose that module`;
 }
 
 function isSupportedVersion(version: string | undefined): boolean {
@@ -59,7 +102,8 @@ async function defaultImportTs(cwd: string): Promise<TypeScriptLoadResult> {
   try {
     const require = createRequire(path.join(cwd, "package.json"));
     const pkgPath = require.resolve("typescript/package.json");
-    version = (JSON.parse(readFileSync(pkgPath, "utf8")) as { version?: string }).version;
+    const pkg: unknown = JSON.parse(readFileSync(pkgPath, "utf8"));
+    if (isObject(pkg) && typeof pkg.version === "string") version = pkg.version;
   } catch {
     return { installed: false };
   }
@@ -69,7 +113,7 @@ async function defaultImportTs(cwd: string): Promise<TypeScriptLoadResult> {
   for (const specifier of ASYNC_API_SPECIFIERS) {
     try {
       // eslint-disable-next-line no-await-in-loop -- the first specifier that resolves wins.
-      const module = await import(specifier);
+      const module: unknown = await import(specifier);
       return { installed: true, version, module };
     } catch {}
   }
@@ -83,7 +127,7 @@ async function defaultImportTs(cwd: string): Promise<TypeScriptLoadResult> {
 export class TypeResolver {
   // Assigned in `create()`, after `createFileSystem()` can close
   // over `this`.
-  private api: TS = null;
+  private api: TsApi | null = null;
   private usesFileSystemLayer = false;
   private readonly tsconfigPath: string;
   private readonly overlay = new Map<string, string>();
@@ -114,7 +158,7 @@ export class TypeResolver {
       return {
         ok: false,
         reason: "unsupported-version",
-        message: `requires ${REQUIREMENT_TEXT}; found \`typescript@${loaded.version ?? "unknown"}\` installed, which does not expose that module`,
+        message: unsupportedVersionMessage(loaded.version),
       };
     }
 
@@ -127,13 +171,24 @@ export class TypeResolver {
       };
     }
 
+    const { module } = loaded;
+    // Real TypeScript always exports `API`; a module without one would
+    // otherwise fail below on `API.prototype`.
+    if (!isTsAsyncModule(module)) {
+      return {
+        ok: false,
+        reason: "unsupported-version",
+        message: unsupportedVersionMessage(loaded.version),
+      };
+    }
+
     const resolver = new TypeResolver(tsconfigPath);
     // TypeScript 7.1 takes the overlay as a per-snapshot filesystem layer;
     // 7.0 reads it through host filesystem callbacks.
-    resolver.usesFileSystemLayer = typeof loaded.module.API.prototype?.createSnapshot === "function";
+    resolver.usesFileSystemLayer = typeof module.API.prototype?.createSnapshot === "function";
     resolver.api = resolver.usesFileSystemLayer
-      ? new loaded.module.API({ cwd })
-      : new loaded.module.API({ cwd, fs: resolver.createFileSystem() });
+      ? new module.API({ cwd })
+      : new module.API({ cwd, fs: resolver.createFileSystem() });
     return { ok: true, resolver };
   }
 
@@ -155,14 +210,17 @@ export class TypeResolver {
       }
     }
 
-    if (examples.length === 0) return results;
+    // `create()` always sets `api`, so an empty batch is the only
+    // way out here.
+    const { api } = this;
+    if (examples.length === 0 || !api) return results;
 
     const snapshot = this.usesFileSystemLayer
-      ? await this.api.createSnapshot({
+      ? await api.createSnapshot({
           openProjects: [this.tsconfigPath],
           fileSystem: { kind: "layer", files: Object.fromEntries(this.overlay) },
         })
-      : await this.api.updateSnapshot({
+      : await api.updateSnapshot({
           openProject: this.tsconfigPath,
           fileChanges: { created: examples.map((example) => example.file) },
         });
@@ -173,7 +231,7 @@ export class TypeResolver {
 
       await Promise.all(
         examples.map(async ({ filePath, source, file }) => {
-          const [syntactic, semantic]: [TS[], TS[]] = await Promise.all([
+          const [syntactic, semantic] = await Promise.all([
             project.program.getSyntacticDiagnostics(file),
             project.program.getSemanticDiagnostics(file),
           ]);
@@ -258,8 +316,8 @@ function buildExampleModule(source: ExampleCheckSource): string {
   return `const ${binding} = null as unknown as (${source.type});\n${source.code}\n`;
 }
 
-function formatExampleDiagnostic(diagnostic: TS, content: string): { line: number; text: string } {
-  const pos: number = diagnostic.pos ?? 0;
+function formatExampleDiagnostic(diagnostic: TsDiagnostic, content: string): { line: number; text: string } {
+  const pos = diagnostic.pos ?? 0;
   const virtualLine = content.slice(0, pos).split("\n").length;
   const line = Math.max(1, virtualLine - EXAMPLE_CODE_START_LINE + 1);
   return { line, text: String(diagnostic.text ?? "").trim() };
