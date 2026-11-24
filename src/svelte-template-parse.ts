@@ -11,17 +11,15 @@ import { typescript } from "svelte-ast/typescript";
 let parseComponent: ReturnType<typeof createParser>["parse"] | undefined;
 let parseComponentSections: ReturnType<typeof createSectionsParser>["parseSections"] | undefined;
 
-/** `<style>` isn't parsed: sveld only reads its bounds. */
+// `<style>` isn't parsed, since sveld only reads its bounds.
 export function parse(source: string): AST.Root {
   parseComponent ??= createParser({ typescript }).parse;
   return parseComponent(source, { css: false });
 }
 
-/**
- * Parses only a component's top-level `<script>`s (and `<style>` and
- * `<svelte:options>` bounds): `fragment` is empty, so the markup is
- * skipped rather than parsed. Offsets are the same as {@link parse}'s.
- */
+// `fragment` is empty, so the markup is skipped rather than parsed;
+// `<style>` and `<svelte:options>` only get bounds. Offsets are the same
+// as `parse`'s.
 export function parseScripts(source: string): AST.Root {
   parseComponentSections ??= createSectionsParser({ typescript }).parseSections;
   return parseComponentSections(source, { css: false });

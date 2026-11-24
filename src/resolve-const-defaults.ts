@@ -14,10 +14,8 @@ interface ConstDefaultResolution {
   declaredType?: InternalExport["declaredType"];
 }
 
-/**
- * Only `export const` with a primitive literal counts; `let`/`var` exports
- * are live bindings.
- */
+// Only `export const` with a primitive literal counts, since `let`/`var`
+// exports are live bindings.
 function resolveConstDefaultCandidates(
   fromDir: string,
   candidates: PendingConstDefaultCandidate[],
@@ -34,11 +32,9 @@ function resolveConstDefaultCandidates(
   });
 }
 
-/**
- * Swaps the imported identifier for its literal, as for a same-file
- * `const`, and types the prop from the const's declared type, else the
- * literal, only when nothing more explicit won.
- */
+// Swaps the imported identifier for its literal, as for a same-file
+// `const`, and types the prop from the const's declared type, else the
+// literal, only when nothing more explicit won.
 function applyConstDefaultResolutions(component: ComponentDocApi, resolutions: ConstDefaultResolution[]): void {
   for (const { candidate, literal, declaredType } of resolutions) {
     if (!literal) continue;
@@ -55,7 +51,6 @@ function applyConstDefaultResolutions(component: ComponentDocApi, resolutions: C
   }
 }
 
-/** Writes an imported `export const` literal in as a prop's default. */
 export const constDefaultsPass: CrossFilePass<PendingConstDefaultCandidate, ConstDefaultResolution> = {
   collect: (pending) => pending.pendingConstDefaultCandidates ?? [],
   resolve: resolveConstDefaultCandidates,

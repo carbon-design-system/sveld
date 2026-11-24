@@ -17,10 +17,10 @@ import { normalizeSeparators } from "./path";
 import { UnresolvedModuleError } from "./resolve-alias";
 import { buildAndWrite, reportRun } from "./sveld";
 
-/** Used only when nothing configures an entry. */
+// Used only when nothing configures an entry.
 const FALLBACK_ENTRY = "src/index.js";
 
-/** When more than one applies in a single run, the lowest code wins. */
+// invariant: when more than one applies in a run, the lowest code wins.
 const EXIT_CODES = {
   SUCCESS: 0,
   USAGE_ERROR: 1,
@@ -75,7 +75,7 @@ type CliFlagResult =
   | { kind: "unknown"; arg: string; suggestion?: string }
   | { kind: "usage-error"; message: string };
 
-/** Suggestion candidates for a typo'd flag. */
+// Only for suggesting a fix for a typo'd flag.
 const KNOWN_FLAGS = [
   "help",
   "version",
@@ -105,10 +105,9 @@ const SHORT_FLAGS = new Map([
   ["-q", "--quiet"],
 ]);
 
-/** Each uppercase letter, for camelCase to kebab-case flag names. */
 const UPPERCASE_RE = /[A-Z]/g;
 
-/** Boolean flags that never consume a following argument as a value. */
+// These never consume the next argument as a value.
 const BOOLEAN_FLAGS = new Set([
   "glob",
   "types",
@@ -123,28 +122,18 @@ const BOOLEAN_FLAGS = new Set([
   "types-index-types",
 ]);
 
-/** Value-taking flags that also accept their value as the next argument. */
+// Only these also take their value as the next argument.
 const SPACE_SEPARATED_VALUE_FLAGS = new Set(["entry", "config", "cache", "check", "types-format"]);
 
-/**
- * Of those, the flags that error (rather than using a bare default) when
- * no value is given.
- */
+// These error without a value, instead of using a bare default.
 const REQUIRES_VALUE_FLAGS = new Set(["entry", "config", "types-format"]);
 
-/**
- * camelCase input is kebab-cased first, so `--failFast`
- * suggests `--fail-fast`.
- */
+// camelCase is kebab-cased first, so `--failFast` suggests `--fail-fast`.
 function suggestFlag(rawFlag: string): string | undefined {
   const kebab = rawFlag.replace(UPPERCASE_RE, (letter) => `-${letter.toLowerCase()}`);
   return closestMatch(kebab, KNOWN_FLAGS);
 }
 
-/**
- * Parses one `--flag` argument, consuming `rawNextArg` as its value when
- * the flag takes one.
- */
 function parseCliFlag(
   arg: string,
   rawNextArg: string | undefined,
@@ -264,7 +253,6 @@ export function parseCliOptions(argv: string[]): CliParseResult {
   return { kind: "options", options };
 }
 
-/** Returns `true` when `value` is set to something outside `allowed`. */
 function isInvalid(value: unknown, allowed: readonly unknown[]): boolean {
   return value !== undefined && !allowed.includes(value);
 }

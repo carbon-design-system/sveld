@@ -7,17 +7,14 @@ import { type ParsedExports, parseExports } from "./parse-exports";
 import { compareText } from "./parser/utils";
 import { hasSvelteExtension, normalizeSeparators } from "./path";
 
-/** Each hyphen; `my-button.svelte` names `mybutton`. */
 const HYPHEN_REGEX = /-/g;
 const INVALID_MODULE_NAME_CHAR_REGEX = /[^A-Za-z0-9_$]/g;
 const LEADING_DIGIT_REGEX = /^[0-9]/;
 
-/**
- * Makes a file-derived name a valid `.d.ts` identifier: strips invalid
- * characters (`my.component.svelte`) and prefixes `_` before a leading
- * digit (`3d-model.svelte`). Warns on rename, once per name when
- * given `warned`.
- */
+// A file-derived name must be a valid `.d.ts` identifier, so invalid
+// characters go (`my.component.svelte`) and a leading digit gets a `_`
+// (`3d-model.svelte`). A rename warns, only once per name when
+// given `warned`.
 function sanitizeModuleName(rawModuleName: string, warned?: Set<string>): string {
   const stripped = rawModuleName.replace(INVALID_MODULE_NAME_CHAR_REGEX, "");
   const sanitized = LEADING_DIGIT_REGEX.test(stripped) ? `_${stripped}` : stripped;
@@ -28,7 +25,6 @@ function sanitizeModuleName(rawModuleName: string, warned?: Set<string>): string
   return sanitized;
 }
 
-/** `my-button.svelte` -> `mybutton`. */
 function moduleNameFromFile(file: string, warned?: Set<string>): string {
   return sanitizeModuleName(parse(file).name.replace(HYPHEN_REGEX, ""), warned);
 }
@@ -53,11 +49,9 @@ interface GlobbedComponentSource {
   source: ReturnType<typeof asRelativeSourcePath>;
 }
 
-/**
- * Every `.svelte` file under `dir`, skipping dot-entries. Follows
- * symlinked directories, guarding against cycles by real path. A missing
- * `dir` yields no matches.
- */
+// Skips dot-entries. Follows symlinked directories, so cycles are guarded
+// against by real path. A missing `dir` yields no matches instead
+// of throwing.
 function findSvelteFiles(
   graph: ModuleGraph,
   dir: string,
@@ -94,7 +88,7 @@ function findSvelteFiles(
   return results;
 }
 
-/** Sorted by `source`, since `readdirSync` order varies by OS. */
+// Sorted by `source`, since `readdirSync` order varies by OS.
 function globComponentSources(graph: ModuleGraph, rootDir: string): GlobbedComponentSource[] {
   return findSvelteFiles(graph, rootDir)
     .map((file) => ({
@@ -104,18 +98,12 @@ function globComponentSources(graph: ModuleGraph, rootDir: string): GlobbedCompo
     .sort((a, b) => compareText(a.source, b.source));
 }
 
-/**
- * True when an export `source` still needs glob resolution,
- * like `export { X } from "./dir"`.
- */
+// A source without `.svelte` (`export { X } from "./dir"`) still needs
+// glob resolution.
 function isUnresolvedBarrelSource(source: string): boolean {
   return !hasSvelteExtension(source);
 }
 
-/**
- * Whether `candidateSource` is a file located under the directory
- * `dirSource` points at.
- */
 function isWithinSourceDir(dirSource: string, candidateSource: string): boolean {
   const dir = dirSource.endsWith("/") ? dirSource : `${dirSource}/`;
   return candidateSource.startsWith(dir);
@@ -144,13 +132,10 @@ export function createGlobMergeState(
   };
 }
 
-/**
- * Merges every `.svelte` file under `rootDir` into `exports` and
- * `allComponentEntries`. A barrel export still pointing at a directory
- * (`export { Button } from "./button"`) is matched to the same-basename
- * hit under it; every other unseen hit gets its own `allComponentEntries`
- * row. Idempotent for a given `state`.
- */
+// invariant: idempotent for a given `state`. A barrel export still
+// pointing at a directory (`export { Button } from "./button"`) matches
+// the same-basename hit under it; every other unseen hit gets its own
+// `allComponentEntries` row.
 export function mergeGlobbedComponents(
   graph: ModuleGraph,
   rootDir: string,
@@ -192,13 +177,9 @@ export function mergeGlobbedComponents(
   }
 }
 
-/**
- * Discovers component sources for an entry point without parsing them.
- *
- * @param documentExports - When `true`, warn instead of throwing if the
- *   component-export parse (which reads the entry as JavaScript) fails on
- *   TypeScript-only syntax.
- */
+// Sources only, without parsing them. With `documentExports`, a
+// component-export parse that fails on TypeScript-only syntax warns
+// instead of throwing, since it reads the entry as JavaScript.
 export function collectComponents(
   input: string,
   glob: boolean,
@@ -249,10 +230,8 @@ export function collectComponents(
   return { exports, allComponentEntries, rootDir, resolveComponentFilePath };
 }
 
-/**
- * The export name, except a lone `default` entry is named after its file,
- * like a `--glob` component.
- */
+// A lone `default` entry is named after its file instead, like a
+// `--glob` component.
 export function componentModuleName(
   exportName: string,
   source: string,

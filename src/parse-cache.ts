@@ -12,13 +12,11 @@ import type {
 import { PARSED_COMPONENT_PROP_IGNORES, PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "./parsed-component-metadata";
 import { VERSION as svelteVersion } from "./svelte-version";
 
-/**
- * Bumped whenever the on-disk cache shape changes in a way old caches
- * can't read.
- */
+// Bump whenever the on-disk cache shape changes in a way old caches
+// can't read.
 const CACHE_FORMAT_VERSION = 11;
 
-/** Relative to the project root. */
+// invariant: relative to the project root.
 export const DEFAULT_CACHE_FILE = join("node_modules", ".cache", "sveld", "parse-cache.json");
 
 interface ParseCacheEntry {
@@ -43,30 +41,25 @@ interface ParseCacheFile {
   entries: Record<string, ParseCacheEntry>;
 }
 
-/**
- * Replaced at build time (`scripts/build.ts`) with a fingerprint
- * of `src/`.
- */
+// Replaced at build time (`scripts/build.ts`) with a fingerprint of
+// `src/`, so a rebuilt sveld doesn't read an old cache.
 declare const __SVELD_BUILD_ID__: string | undefined;
 
-/** Unset when running from source, where tests use fresh caches anyway. */
+// Unset when running from source, which needs no ID since tests use fresh
+// caches anyway.
 const BUILD_ID = typeof __SVELD_BUILD_ID__ === "string" ? __SVELD_BUILD_ID__ : "source";
 
 function currentToolchainVersion(): string {
   return `${sveldVersion}+${BUILD_ID}+svelte@${svelteVersion}`;
 }
 
-/**
- * The nearest `package.json` directory at or above `dir`, else `dir`. The
- * input is often `src/`, and the cache belongs in the
- * project's `node_modules`.
- */
+// Needed since the input is often `src/`, and the cache belongs in the
+// project's `node_modules`. Falls back to `dir` without a `package.json`.
 function findProjectRoot(dir: string): string {
   const packageJson = findUp(dir, ["package.json"]);
   return packageJson === null ? resolve(dir) : dirname(packageJson);
 }
 
-/** A relative `cache` path resolves against the project root. */
 export function resolveCacheFilePath(rootDir: string, cache: boolean | string): string {
   const projectRoot = findProjectRoot(rootDir);
   if (typeof cache === "string") {

@@ -12,10 +12,8 @@ interface ContextKeyResolution {
   key?: string;
 }
 
-/**
- * Only `export const` with a string literal or static template counts;
- * `let`/`var` are live bindings.
- */
+// Only `export const` with a string literal or static template counts,
+// since `let`/`var` are live bindings.
 function resolveContextKeyCandidates(
   fromDir: string,
   candidates: PendingContextKeyCandidate[],
@@ -32,11 +30,9 @@ function resolveContextKeyCandidates(
   });
 }
 
-/**
- * Unresolved and duplicate keys get the same diagnostics
- * `parseSetContextCall` records for a local call; the first call in source
- * order keeps its shape.
- */
+// Must match a local call: unresolved and duplicate keys get the
+// diagnostics `parseSetContextCall` records, and the first call in source
+// order keeps its shape.
 function applyContextKeyResolutions(component: ComponentDocApi, resolutions: ContextKeyResolution[]): void {
   for (const { candidate, key } of resolutions) {
     if (!key) {
@@ -95,7 +91,6 @@ function startsAfter(range: SourceRange | undefined, other: SourceRange | undefi
   return line > other.start.line || (line === other.start.line && column > other.start.column);
 }
 
-/** Adds a context whose `setContext` key is imported. */
 export const contextKeysPass: CrossFilePass<PendingContextKeyCandidate, ContextKeyResolution> = {
   collect: (pending) => pending.pendingContextKeyCandidates ?? [],
   resolve: resolveContextKeyCandidates,

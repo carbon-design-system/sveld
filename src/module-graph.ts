@@ -10,10 +10,8 @@ import { PathAliases } from "./resolve-alias";
 
 const JS_FAMILY_EXTENSION_REGEX = /\.[mc]?jsx?$/;
 
-/**
- * What each `.js`-family extension maps to under TypeScript's module
- * resolution, in the order `tsc` tries them.
- */
+// spec: in the order `tsc` tries them under TypeScript's
+// module resolution.
 const TYPESCRIPT_COUNTERPART_EXTENSIONS: Record<string, string[]> = {
   ".js": [".ts", ".tsx", ".d.ts"],
   ".jsx": [".tsx", ".d.ts"],
@@ -36,7 +34,6 @@ export interface ModuleSource {
  */
 type ParsedModule = { source: ModuleSource; body: Program["body"] } | null;
 
-/** As opposed to a bare package specifier. */
 function isPathSpecifier(specifier: string): boolean {
   return (
     specifier === "." ||
@@ -168,10 +165,9 @@ export class ModuleGraph {
   }
 }
 
-/**
- * TypeScript on (`.js` is valid input too). A `.svelte` file yields its
- * module script, the only place a component declares non-default exports.
- */
+// TypeScript on, since `.js` is valid input too. A `.svelte` file yields
+// only its module script, the one place a component declares
+// non-default exports.
 function parseModule(filePath: string): ParsedModule {
   let text: string;
   try {

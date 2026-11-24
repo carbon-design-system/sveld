@@ -1,10 +1,6 @@
 import { type Dirent, existsSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 
-/**
- * The path of the first of `names` in `dir` or its nearest ancestor that
- * has one; `null` when none does.
- */
 export function findUp(dir: string, names: readonly string[]): string | null {
   for (let current = resolve(dir); ; current = dirname(current)) {
     for (const name of names) {

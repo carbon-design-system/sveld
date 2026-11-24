@@ -22,11 +22,8 @@ function siblingDeclarationFile(resolvedFile: string, graph: ModuleGraph): strin
   return graph.exists(dtsPath) ? dtsPath : null;
 }
 
-/**
- * Reads each callee's return type from its declaring module, falling back
- * to a sibling `.d.ts`. Outside `ComponentParser` because the browser
- * build can't use `node:fs`.
- */
+// Falls back to a sibling `.d.ts`. Outside `ComponentParser` because the
+// browser build can't use `node:fs`.
 function resolveCallDefaultCandidates(
   fromDir: string,
   candidates: PendingCallDefaultCandidate[],
@@ -66,10 +63,8 @@ function describeCallDefaultFailure(candidate: PendingCallDefaultCandidate, reas
   }
 }
 
-/**
- * Drops or rewrites the parse-time `prop-unknown-type`. An explicit
- * `@type` keeps winning.
- */
+// Drops or rewrites the parse-time `prop-unknown-type`, but never
+// overrides an explicit `@type`.
 function applyCallDefaultResolutions(component: ComponentDocApi, resolutions: CallDefaultResolution[]): void {
   for (const { candidate, type, failureReason } of resolutions) {
     const prop = findCandidateProp(component, candidate);
@@ -91,10 +86,6 @@ function applyCallDefaultResolutions(component: ComponentDocApi, resolutions: Ca
   }
 }
 
-/**
- * Types a prop from the return type of the imported function its
- * default calls.
- */
 export const callDefaultsPass: CrossFilePass<PendingCallDefaultCandidate, CallDefaultResolution> = {
   // A default calling a local function was settled at parse time.
   collect: (pending) =>

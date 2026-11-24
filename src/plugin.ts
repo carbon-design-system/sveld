@@ -97,20 +97,15 @@ interface SveldPlugin {
   watchChange?(id: string): void;
 }
 
-/**
- * `sveld.config` keys that only the CLI and `sveld()` act on: the plugin
- * neither reports diagnostics nor diffs a snapshot, so a config shared
- * with the CLI would otherwise look like it applies here too.
- */
+// Only the CLI and `sveld()` act on these: the plugin neither reports
+// diagnostics nor diffs a snapshot, so a config shared with the CLI would
+// otherwise look like it applies here too.
 const RUNTIME_ONLY_KEYS = ["reportDiagnostics", "strict", "check", "checkLevel", "stdout", "format"];
 
 const WATCH_DEBOUNCE_MS = 50;
 
-/**
- * Serializes calls to `run`: a call made while one is in flight queues
- * behind it. Watch-mode flushes mutate a shared `SveldBundle` and would
- * otherwise race.
- */
+// A call made while one is in flight queues behind it, since watch-mode
+// flushes mutate a shared `SveldBundle` and would otherwise race.
 export function createSerialQueue(run: () => Promise<void>): () => void {
   let pending: Promise<void> = Promise.resolve();
   return () => {
@@ -209,11 +204,10 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
   };
 }
 
-/**
- * `.d.ts` covers every discovered component; JSON and Markdown only the
- * exported ones. Then saves the parse cache: `generateBundle` saved parses
- * only, and this adds the `.d.ts` text the types writer cached.
- */
+// `.d.ts` covers every discovered component, JSON and Markdown only the
+// exported ones. The parse cache is saved again, since `generateBundle`
+// saved parses only and this adds the `.d.ts` text the types
+// writer cached.
 export async function writeOutput(result: GenerateBundleResult, opts: PluginSveldOptions, input: string) {
   const inputDir = dirname(input);
 
@@ -250,10 +244,8 @@ export async function writeOutput(result: GenerateBundleResult, opts: PluginSvel
   result.cache?.save();
 }
 
-/**
- * Prints the `json` or `markdown` document to stdout. The CLI ensures
- * exactly one is set.
- */
+// The CLI ensures exactly one of `json` and `markdown` is set, so this
+// prints only that one.
 export async function writeStdout(result: GenerateBundleResult, opts: PluginSveldOptions, input: string) {
   if (opts.json) {
     const rendered = renderJsonDocument(result.components, {

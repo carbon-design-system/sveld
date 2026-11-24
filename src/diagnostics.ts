@@ -121,11 +121,9 @@ export type SveldDiagnosticKind =
  */
 export type SveldDiagnosticSeverity = "error" | "warning";
 
-/**
- * Each kind's severity and its heading in the text summary, in summary
- * order. Errors: sveld emitted broken, unverified, or unmodeled output.
- * Warnings: it fell back to a guess.
- */
+// invariant: in summary order. A kind is an error only when sveld emitted
+// broken, unverified, or unmodeled output, and a warning when it fell back
+// to a guess.
 const DIAGNOSTIC_KINDS: Record<SveldDiagnosticKind, { severity: SveldDiagnosticSeverity; label: string }> = {
   "prop-unknown-type": { severity: "warning", label: "Props without inferred types" },
   "context-any-type": { severity: "warning", label: "Context values typed as `any`" },
@@ -213,13 +211,10 @@ export function createDiagnostic(input: SveldDiagnosticInput): SveldDiagnostic {
   };
 }
 
-/**
- * `jsdoc-unknown-tag` is speculative: a misspelled tag (`@depreacted`) and
- * an intentional custom tag look identical to the parser, so it's noisier
- * than the rest of the codes. Surface it only when the caller opted into
- * diagnostics via `--strict`/`--report-diagnostics`; a plain run stays
- * quiet about tags sveld already passes through unchanged.
- */
+// `jsdoc-unknown-tag` is speculative, since a misspelled tag
+// (`@depreacted`) and an intentional custom one look identical to the
+// parser, so it surfaces only with `--strict`/`--report-diagnostics`. A
+// plain run stays quiet about tags sveld already passes through unchanged.
 export function filterSpeculativeDiagnostics(
   diagnostics: SveldDiagnostic[],
   shouldReport: boolean | "errors" | undefined,
@@ -228,13 +223,9 @@ export function filterSpeculativeDiagnostics(
   return diagnostics.filter((diagnostic) => diagnostic.kind !== "jsdoc-unknown-tag");
 }
 
-/**
- * Diagnostics that should fail `--strict` (`strict: true`) or
- * `--strict=errors` (`strict: "errors"`): never an `ignored` one, and only
- * `severity: "error"` ones under `"errors"`. Shared by the CLI and the
- * programmatic `sveld()` API so their exit-code contracts can't
- * drift apart.
- */
+// Never an `ignored` one, and only `severity: "error"` ones under
+// `"errors"`. Shared by the CLI and `sveld()` so their exit-code contracts
+// can't drift apart.
 export function failingDiagnostics(
   diagnostics: SveldDiagnostic[],
   strict: boolean | "errors" | undefined,
@@ -263,11 +254,8 @@ function matchesIgnoreMatcher(diagnostic: SveldDiagnostic, matcher: DiagnosticIg
   return true;
 }
 
-/**
- * Marks every diagnostic matching at least one `diagnostics.ignore`
- * matcher as `ignored`, on top of whatever inline `@sveld-ignore` tags
- * already set. Never un-ignores a diagnostic; only ever adds the flag.
- */
+// Never un-ignores a diagnostic: it only adds the flag, on top of whatever
+// inline `@sveld-ignore` tags already set.
 export function applyDiagnosticIgnores(
   diagnostics: SveldDiagnostic[],
   matchers: DiagnosticIgnoreMatcher[] | undefined,
@@ -294,7 +282,6 @@ export const DIAGNOSTIC_CODES = Object.fromEntries(KIND_ORDER.map((kind) => [kin
   string
 >;
 
-/** Keeps the first diagnostic per component, kind, and name. */
 export function dedupeDiagnostics(diagnostics: SveldDiagnostic[]): SveldDiagnostic[] {
   const seen = new Set<string>();
   const result: SveldDiagnostic[] = [];
@@ -309,7 +296,6 @@ export function dedupeDiagnostics(diagnostics: SveldDiagnostic[]): SveldDiagnost
   return result;
 }
 
-/** Groups diagnostics by kind and component for CLI output. */
 export function formatDiagnosticsSummary(diagnostics: SveldDiagnostic[]): string {
   const active = diagnostics.filter((diagnostic) => !diagnostic.ignored);
   const ignoredCount = diagnostics.length - active.length;
@@ -355,21 +341,21 @@ export function formatDiagnosticsSummary(diagnostics: SveldDiagnostic[]): string
   return lines.join("\n");
 }
 
-/** GitHub Actions workflow-command escaping: `%`, CR, and LF everywhere. */
+// spec: GitHub Actions workflow commands escape `%`, CR, and
+// LF everywhere.
 function escapeCommandData(value: string): string {
   return value.replaceAll("%", "%25").replaceAll("\r", "%0D").replaceAll("\n", "%0A");
 }
 
-/** A property value also escapes the `:` and `,` that delimit properties. */
+// spec: a property value also escapes the `:` and `,` that
+// delimit properties.
 function escapeCommandProperty(value: string): string {
   return escapeCommandData(value).replaceAll(":", "%3A").replaceAll(",", "%2C");
 }
 
-/**
- * One GitHub Actions workflow command (`::warning file=...::message`),
- * which the runner turns into an annotation on the PR's diff and the run
- * summary. Properties with no value are left out.
- */
+// spec: the runner turns a workflow command
+// (`::warning file=...::message`) into an annotation on the PR's diff and
+// the run summary. A property with no value is left out.
 function formatGithubAnnotation(annotation: {
   severity: "error" | "warning";
   title: string;
@@ -395,17 +381,12 @@ function formatGithubAnnotation(annotation: {
   return `::${annotation.severity} ${rendered}::${escapeCommandData(annotation.message)}`;
 }
 
-/**
- * One annotation per active diagnostic, errors first: GitHub shows only
- * the first 10 errors and 10 warnings of a step, so a flood of warnings
- * must not hide an error. `resolveFile` maps a diagnostic's `component` to
- * the path GitHub should place it at, relative to the repository root.
- *
- * A diagnostic with no `source` still annotates its file, without a line.
- * `col` is 1-based on GitHub, unlike {@link SourcePosition}'s `column`,
- * and GitHub rejects columns on a range that spans lines, so those are
- * left out.
- */
+// Errors first, since GitHub shows only the first 10 errors and 10
+// warnings of a step, and a flood of warnings must not hide an error. A
+// diagnostic with no `source` still annotates its file, without a line.
+// `col` is 1-based on GitHub, unlike `SourcePosition`'s `column`, and
+// GitHub rejects columns on a range that spans lines, so those are
+// left out.
 export function formatDiagnosticsGithub(
   diagnostics: SveldDiagnostic[],
   resolveFile: (component: string) => string,
@@ -449,19 +430,12 @@ export interface DiagnosticsJson {
   diagnostics: SveldDiagnostic[];
 }
 
-/**
- * Serializes deduped diagnostics as JSON, for
- * `--format=json --report-diagnostics` / `--strict`.
- */
 export function formatDiagnosticsSummaryJson(diagnostics: SveldDiagnostic[]): string {
   const document: DiagnosticsJson = { kind: "diagnostics", schemaVersion: DIAGNOSTICS_SCHEMA_VERSION, diagnostics };
   return `${JSON.stringify(document, null, 2)}\n`;
 }
 
-/**
- * Adds `diagnostics` to `component`'s own, as a new array (the old one may
- * be shared).
- */
+// A new array, since the old one may be shared.
 export function appendDiagnostics(component: ParsedComponent, diagnostics: SveldDiagnostic[]): void {
   if (diagnostics.length === 0) return;
   component.diagnostics = [...(component.diagnostics ?? []), ...diagnostics];

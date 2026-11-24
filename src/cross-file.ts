@@ -26,18 +26,13 @@ function bind<Candidate, Resolution>(
   };
 }
 
-/**
- * In the order they run: each sees the component as the previous one
- * left it.
- */
+// invariant: in the order they run; each sees the component as the
+// previous one left it.
 const PASSES = [bind(callDefaultsPass), bind(constDefaultsPass), bind(contextKeysPass), bind(dispatchEscapesPass)];
 
-/**
- * Resolves each component's cross-file candidates in place. AST/JSDoc only
- * (no tsc). Each component gets its own resolve context, so its result
- * doesn't depend on run order, and the files that context read are its
- * cross-file dependencies: returned keyed by `filePath`.
- */
+// AST and JSDoc only, no tsc. Each component gets its own resolve context,
+// so its result doesn't depend on run order, and the files that context
+// read are its cross-file dependencies, returned keyed by `filePath`.
 export async function resolveCrossFileCandidates(
   scope: Iterable<ComponentDocApi>,
   resolveComponentFilePath: ResolveComponentFilePath,

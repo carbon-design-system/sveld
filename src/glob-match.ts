@@ -1,10 +1,7 @@
 const REGEXP_SPECIAL_CHARS = ".+^$()[]{}|\\";
 
-/**
- * For `diagnostics.ignore[].component`: `*` matches within a path segment,
- * `**` across segments, `?` one character. Hand-rolled
- * since sveld ships no runtime dependencies.
- */
+// `*` matches within a path segment, `**` across segments, `?` one
+// character. Hand-rolled since sveld ships no runtime dependencies.
 function globToRegExpSource(pattern: string): string {
   let source = "";
 

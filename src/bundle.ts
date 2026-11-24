@@ -122,12 +122,9 @@ export function toGenerateBundleOptions(opts?: GenerateBundleOptions): GenerateB
 /** Resolves a (possibly relative) component path to an absolute path. */
 export type ResolveComponentFilePath = (filePath: string) => string;
 
-/**
- * Parses the entry's exported components (for JSON/Markdown) and, with
- * `glob`, every `.svelte` file beside it (for TypeScript definitions). A
- * component that fails to parse lands in `errors` unless `failFast`
- * is set.
- */
+// With `glob`, the `.svelte` files beside the entry feed only the
+// TypeScript definitions. A component that fails to parse lands in
+// `errors` unless `failFast` is set.
 export async function generateBundle(
   input: string,
   glob: boolean,

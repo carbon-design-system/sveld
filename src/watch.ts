@@ -15,11 +15,8 @@ export interface SveldBundle {
   update(changedFilePaths: string[]): Promise<ProjectUpdate>;
 }
 
-/**
- * Runs the initial full parse. Never `failFast`: a component that fails to
- * parse is reported and skipped, so fixing it in a later edit picks it
- * back up.
- */
+// Never `failFast`: a component that fails to parse is reported and
+// skipped, so fixing it in a later edit picks it back up.
 export async function createSveldBundle(
   input: string,
   glob: boolean,

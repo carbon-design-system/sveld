@@ -60,7 +60,7 @@ export interface SveldRuntimeOptions extends PluginSveldOptions {
  */
 export type SveldConfig = SveldRuntimeOptions;
 
-/** First existing file wins. */
+// invariant: the first existing file wins.
 const CONFIG_FILE_NAMES = ["sveld.config.js", "sveld.config.mjs", "sveld.config.ts"] as const;
 
 /**
@@ -93,11 +93,9 @@ export function resolveConfigPath(cwd: string = process.cwd()): string | null {
   return null;
 }
 
-/**
- * The cache-busting query makes repeated loads (tests, watch runs) see the
- * latest contents. Throws if the import fails or the default export isn't
- * an object.
- */
+// A cache-busting query, so repeated loads (tests, watch runs) see the
+// latest contents. Throws if the import fails or the default export isn't
+// an object.
 export async function loadConfigFrom(configPath: string): Promise<SveldConfig> {
   let mod: { default?: unknown };
 
@@ -121,17 +119,14 @@ export async function loadConfigFrom(configPath: string): Promise<SveldConfig> {
   return config as SveldConfig;
 }
 
-/** `{}` when `cwd` has no config file. */
+// A missing config file isn't an error: it gives `{}`.
 export async function loadConfig(cwd: string = process.cwd()): Promise<SveldConfig> {
   const configPath = resolveConfigPath(cwd);
   return configPath === null ? {} : loadConfigFrom(configPath);
 }
 
-/**
- * The config a `config` option asks for: a path (relative to `cwd`) loads
- * that file and must exist, `true` discovers one in `cwd`, `false` loads
- * none, and unset does `discover`.
- */
+// A path (relative to `cwd`) must exist; `true` discovers one in `cwd`,
+// `false` loads none, and unset does `discover`.
 export async function loadConfigOption(
   config: boolean | string | undefined,
   cwd: string,
@@ -145,11 +140,9 @@ export async function loadConfigOption(
   return (config ?? discover) ? loadConfig(cwd) : {};
 }
 
-/**
- * Later sources win. Plain-object values (`typesOptions`, ...) merge one
- * level deep so a later source's nested key doesn't drop earlier siblings;
- * arrays and functions replace.
- */
+// Later sources win. Plain-object values (`typesOptions`, ...) merge one
+// level deep so a later source's nested key doesn't drop earlier siblings;
+// arrays and functions replace.
 export function mergeConfig<T extends PluginSveldOptions = PluginSveldOptions>(
   ...sources: Array<Partial<T> | undefined>
 ): Partial<T> {
@@ -210,7 +203,7 @@ function warnUnknownKey(prefix: string | null, key: string, candidates: string[]
   console.warn(`sveld: unknown option "${path}".${suggestionPath ? ` Did you mean "${suggestionPath}"?` : ""}`);
 }
 
-/** Warns about unknown option keys, top-level and nested. Never throws. */
+// Only warns, top-level and nested; never throws.
 export function validateOptions(options: Partial<PluginSveldOptions>): void {
   for (const key of Object.keys(options)) {
     if (!KNOWN_TOP_LEVEL_KEYS.includes(key)) {

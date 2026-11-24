@@ -2,11 +2,9 @@ import { isValidType } from "svelte-ast";
 
 const typeTextValidity = new Map<string, boolean>();
 
-/**
- * Whether `typeText` parses as a single TypeScript type. `inline` because
- * sveld embeds types mid-line (`CustomEvent<${type}>`), where a trailing
- * `//` comment would swallow the rest of the line.
- */
+// Parsed `inline` because sveld embeds types mid-line
+// (`CustomEvent<${type}>`), where a trailing `//` comment would swallow
+// the rest of the line.
 export function isValidTypeText(typeText: string): boolean {
   const cached = typeTextValidity.get(typeText);
   if (cached !== undefined) return cached;

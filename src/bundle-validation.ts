@@ -11,16 +11,11 @@ import { getParsedComponentPropIgnores } from "./parsed-component-metadata";
 import { MODULE_EXTENSIONS } from "./path";
 import { exportsTypeName, extendsTypeName, propsTypeName } from "./writer/writer-ts-definitions-core";
 
-/**
- * An import's extensions, and a component's: `"./Base"` may
- * name `Base.svelte`.
- */
+// `.svelte` too, since `"./Base"` may name `Base.svelte`.
 const EXTENDS_TARGET_EXTENSIONS = [...MODULE_EXTENSIONS, ".svelte"];
 
-/**
- * `@extends`/`@extendProps` import specifiers are stored with
- * their quotes.
- */
+// Needed since `@extends`/`@extendProps` import specifiers are stored with
+// their quotes.
 function stripQuotes(text: string): string | undefined {
   const trimmed = text.trim();
   if (trimmed.length < 2) return undefined;
@@ -32,12 +27,10 @@ function stripQuotes(text: string): string | undefined {
   return undefined;
 }
 
-/**
- * Flags a module-script re-export named like the component's generated
- * `<Name>Props`/`<Name>Exports` type. The `.d.ts` only breaks if the
- * re-exported binding also carries a type, which isn't knowable without
- * resolving the source, so this is a warning.
- */
+// A module-script re-export named like the generated
+// `<Name>Props`/`<Name>Exports` is only a warning: the `.d.ts` breaks only
+// if the binding also carries a type, which isn't knowable without
+// resolving its source.
 export function validateModuleReExportNames(component: ComponentDocApi): SveldDiagnostic[] {
   const diagnostics: SveldDiagnostic[] = [];
   const reExports = component.moduleExports.filter((moduleExport) => moduleExport.kind === "re-export");
@@ -59,13 +52,9 @@ export function validateModuleReExportNames(component: ComponentDocApi): SveldDi
   return diagnostics;
 }
 
-/**
- * Checks a component's `@extends`/`@extendProps` target: the file must
- * exist, and when it's a bundled `.svelte` file, the named interface must
- * match its generated `<Name>Props`. Also flags an own prop whose type
- * differs from the target's same-named prop, since `Base & $Props`
- * collapses it to `never`. Bare/package specifiers are skipped.
- */
+// An own prop whose type differs from the target's same-named prop is
+// flagged, since `Base & $Props` collapses it to `never`. Bare (package)
+// specifiers are skipped.
 export function createExtendsTargetValidator(
   components: ComponentDocs,
   resolveComponentFilePath: ResolveComponentFilePath,

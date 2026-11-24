@@ -59,10 +59,8 @@ export interface ProjectUpdate {
   reparsed: string[];
 }
 
-/**
- * A failed read is logged and recorded as `null`, so one unreadable file
- * doesn't abort the bundle.
- */
+// A failed read is logged and recorded as `null`, so one unreadable file
+// doesn't abort the bundle.
 async function readFileMap(filePaths: Iterable<string>): Promise<Map<string, string | null>> {
   const entries = await Promise.all(
     Array.from(filePaths, async (filePath): Promise<[string, string | null]> => {

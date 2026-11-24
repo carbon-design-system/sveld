@@ -22,7 +22,6 @@ import { getParserStack } from "./parser-stack";
 import { returnTypeOfFunctionType } from "./type-text";
 
 const NEWLINE_REGEX = /\r?\n/;
-/** The leading `*` of a JSDoc block's line. */
 const JSDOC_LINE_PREFIX_REGEX = /^\s*\*+/;
 
 export type ExportedFunction =
@@ -104,10 +103,8 @@ function identifierName(node: Node | null | undefined): string | undefined {
   return node?.type === "Identifier" ? node.name : undefined;
 }
 
-/**
- * `text` without the comments that may sit between a JSDoc block and its
- * declaration: whole `//` lines and `/* *\/` blocks that aren't JSDoc.
- */
+// Only whole `//` lines and `/* */` blocks that aren't JSDoc go, since
+// those may sit between a JSDoc block and its declaration.
 function withoutTrailingComments(text: string): string {
   let rest = text.trimEnd();
   for (;;) {
@@ -125,10 +122,7 @@ function withoutTrailingComments(text: string): string {
   }
 }
 
-/**
- * The `/** ... *\/` block directly before `start`, with only whitespace or
- * other comments between.
- */
+// Only whitespace or other comments may sit between the block and `start`.
 function leadingJsDocBlock(text: string, start: number): string | undefined {
   const before = withoutTrailingComments(text.slice(0, start));
   if (!before.endsWith("*/")) return undefined;
@@ -140,10 +134,7 @@ function leadingJsDocBlock(text: string, start: number): string | undefined {
   return before.slice(open, close + 2);
 }
 
-/**
- * A JSDoc block's description: its text up to the first tag, joined into
- * one line.
- */
+// Only the text up to the first tag, joined into one line.
 function jsDocDescription(block: string): string | undefined {
   const description: string[] = [];
   for (const line of block.slice(3, -2).split(NEWLINE_REGEX)) {
@@ -168,10 +159,8 @@ function functionReturnAnnotationText(source: ModuleSource, fn: FunctionLike): s
   return textOf(source, fn.returnType?.typeAnnotation);
 }
 
-/**
- * `fn`'s type: its params as written, returning its annotated type, else
- * `returnType`, else `any`.
- */
+// Params stay as written; the annotated return type wins, else
+// `returnType`, else `any`.
 function buildSignature(source: ModuleSource, fn: FunctionLike, returnType?: string): string {
   const params = fn.params.map((param) => textOf(source, param) ?? "").join(", ");
   return `(${params}) => ${functionReturnAnnotationText(source, fn) ?? returnType ?? "any"}`;
@@ -203,7 +192,7 @@ const PRIMITIVE_CONVERSIONS: Record<string, string | undefined> = {
   Boolean: "boolean",
 };
 
-/** `300`, `-1`, `"a"`, `true`, or a template with no expressions. */
+// Only `300`, `-1`, `"a"`, `true`, or a template with no expressions.
 function staticPrimitiveValue(node: Expression): PrimitiveLiteral["value"] | undefined {
   if (node.type === "Literal") {
     const value = node.value;
@@ -225,11 +214,8 @@ function primitiveLiteralOf(source: ModuleSource, init: Expression): PrimitiveLi
   return { raw, value, type: typeof value as PrimitiveLiteral["type"] };
 }
 
-/**
- * The context key a `Symbol("theme")` / `Symbol.for("theme")` initializer
- * stands for, as `setContext` with a same-file key reads it: its static
- * description, or the binding name when it has none.
- */
+// Read as `setContext` with a same-file key reads it: the static
+// description, else the binding name.
 function symbolKeyDescription(init: Expression, bindingName: string): string | undefined {
   if (init.type !== "CallExpression" && init.type !== "NewExpression") return undefined;
   const callee = init.callee;
@@ -248,7 +234,7 @@ function symbolKeyDescription(init: Expression, bindingName: string): string | u
   return description || bindingName;
 }
 
-/** Type keywords that mean the same in any file. */
+// Only keywords that mean the same in any file.
 const PORTABLE_TYPE_KEYWORDS = new Set([
   "any",
   "bigint",
@@ -266,17 +252,14 @@ const PORTABLE_TYPE_KEYWORDS = new Set([
   "unknown",
   "void",
 ]);
-/** A quoted string in type text, whose contents aren't type names. */
+// Blanked first, since a quoted string's contents aren't type names.
 const TYPE_STRING_LITERAL_REGEX = /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/g;
-/** An identifier in type text that isn't an object type's property key. */
+// Skips an object type's property keys, since those aren't type names.
 const TYPE_NAME_REGEX = /(?<![\w$.])[A-Za-z_$][\w$]*(?![\w$]|\s*\??:)/g;
 
-/**
- * A `const`'s declared type (TypeScript annotation first, then JSDoc
- * `@type`), when it only uses literals and type keywords. A type naming
- * anything else (`Size`, `import("./t").Size`) would be out of scope in
- * the component's `.d.ts`.
- */
+// TypeScript annotation first, then JSDoc `@type`, and only when it uses
+// literals and type keywords: a type naming anything else (`Size`,
+// `import("./t").Size`) would be out of scope in the component's `.d.ts`.
 function portableDeclaredType(
   annotation: string | undefined,
   rawJsDoc: string | undefined,
@@ -292,11 +275,8 @@ function portableDeclaredType(
   return names.every((name) => PORTABLE_TYPE_KEYWORDS.has(name)) ? declared : undefined;
 }
 
-/**
- * Literal-only return inference for a function/arrow (same idea as
- * `inferReturnTypeFromNode` in props.ts). Literals, templates, and
- * `String()`/`Number()`/`Boolean()` calls only.
- */
+// Literals, templates, and `String()`/`Number()`/`Boolean()` calls only,
+// the same idea as `inferReturnTypeFromNode` in props.ts.
 function inferAstLiteralReturnType(fn: FunctionLike): string | undefined {
   if (fn.async || fn.generator || fn.type === "TSDeclareFunction") return undefined;
 
@@ -315,20 +295,16 @@ function inferAstLiteralReturnType(fn: FunctionLike): string | undefined {
   return inferred;
 }
 
-/**
- * A string or (possibly negative) number literal; a template counts
- * as computed.
- */
+// A template counts as computed, so only a string or (possibly negative)
+// number literal has a value.
 function enumMemberLiteralValue(initializer: Expression): string | number | undefined {
   if (initializer.type === "TemplateLiteral") return undefined;
   const value = staticPrimitiveValue(initializer);
   return typeof value === "boolean" ? undefined : value;
 }
 
-/**
- * The literal union an enum's members widen to (`"A" | "B"`, `0 | 1`), or
- * `undefined` when a member is computed (`1 << 2`).
- */
+// Only literal members widen to a union (`"A" | "B"`, `0 | 1`); a computed
+// one (`1 << 2`) gives `undefined`.
 function enumMemberUnionType(declaration: TSEnumDeclaration): string | undefined {
   const members = declaration.members;
   if (members.length === 0) return undefined;
@@ -352,11 +328,8 @@ function enumMemberUnionType(declaration: TSEnumDeclaration): string | undefined
   return literals.join(" | ");
 }
 
-/**
- * The entries a declaration contributes, with JSDoc read from before
- * `jsdocStart`. `anonymousName` names a function or class declared without
- * one (`export default class {}`).
- */
+// JSDoc is read from before `jsdocStart`. `anonymousName` names a function
+// or class declared without one (`export default class {}`).
 function describeDeclaration(
   source: ModuleSource,
   declaration: DeclarationLike,
@@ -468,11 +441,9 @@ function describeDeclaration(
   return [];
 }
 
-/**
- * The entry a module's `export default` contributes, named `default`: a
- * function or class declared in place (with its JSDoc), a function
- * expression, or the local binding it names (`export default helper`).
- */
+// Named `default`. Only a function or class declared in place (with its
+// JSDoc), a function expression, or the local binding it names
+// (`export default helper`) contributes.
 function describeDefaultExport(
   source: ModuleSource,
   node: ExportDefaultDeclaration,
@@ -505,10 +476,8 @@ function describeDefaultExport(
   return resolved ? { ...resolved, name: "default" } : undefined;
 }
 
-/**
- * The import that binds `name`: `importedName` is the export it reads,
- * `default` for a default import, or `*` for a namespace import.
- */
+// invariant: `importedName` is the export it reads, `default` for a
+// default import, or `*` for a namespace import.
 function findImportSource(
   body: Program["body"],
   name: string,
@@ -537,23 +506,15 @@ function findImportSource(
   return null;
 }
 
-/**
- * The entry for the namespace object of `namespaceFile`, exported
- * as `name`.
- */
 function namespaceExport(name: string, namespaceFile: string, isTypeOnly: boolean): InternalExport {
   return { name, kind: "const", declFile: namespaceFile, namespaceFile, isTypeOnly };
 }
 
-/**
- * Collects every named export declared or re-exported by a module.
- *
- * Walks `export ... from` and `export *` chains. Skips `.svelte`
- * re-exports. A default export that's a function, a class, or a local
- * binding is listed as `default` (see {@link describeDefaultExport}). A
- * namespace export (`export * as ns from "./x"`) is the one entry `ns`,
- * with `namespaceFile` set; the names `x` exports aren't this module's.
- */
+// Walks `export ... from` and `export *` chains, skipping `.svelte`
+// re-exports. A default export that's a function, a class, or a local
+// binding is listed as `default`. A namespace export
+// (`export * as ns from "./x"`) is the one entry `ns`, with
+// `namespaceFile` set, since the names `x` exports aren't this module's.
 export function collectModuleExports(filePath: string, ctx: ResolveContext): InternalExport[] {
   const cached = ctx.cache.get(filePath);
   if (cached) return cached;
@@ -580,12 +541,9 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
     }
   }
 
-  /**
-   * A component a module re-exports
-   * (`export { default as X } from "./X.svelte"`). Recorded so a barrel that
-   * re-exports it again knows it's a component, which the entry docs leave
-   * out, rather than an unknown `const`.
-   */
+  // A component re-export (`export { default as X } from "./X.svelte"`) is
+  // recorded so a barrel that re-exports it again knows it's a component,
+  // which the entry docs leave out, rather than an unknown `const`.
   const componentExport = (name: string, specifier: string): InternalExport => ({
     name,
     kind: "const",
@@ -593,7 +551,7 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
     isTypeOnly: false,
   });
 
-  /** Resolves a name within `filePath`, following one level of import. */
+  // Follows only one level of import.
   const resolveLocal = (name: string): InternalExport | null => {
     const local = localDeclarations.get(name);
     if (local) return local;
@@ -609,10 +567,8 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
     return findModuleExport(target, imported.importedName, ctx) ?? null;
   };
 
-  /**
-   * Entries each `export *` brings in, by name; merged after the explicit
-   * exports below.
-   */
+  // Merged only after the explicit exports below, since an explicit export
+  // shadows a star one.
   const starExports = new Map<string, InternalExport[]>();
 
   for (const node of body) {
@@ -714,24 +670,18 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
   return results;
 }
 
-/**
- * The entry for `name` among `filePath`'s exports, or `undefined`.
- *
- * `findLast`, not `find`: overloaded declarations
- * (`export function f(...): A;` / `export function f(...): B;` /
- * `export function f(...) { ... }`) all describe to the same name, in
- * source order, with the implementation last. Any other name appears at
- * most once (see {@link collectModuleExports}).
- */
+// `findLast`, not `find`, since overloaded declarations
+// (`export function f(...): A;` / `export function f(...): B;` /
+// `export function f(...) { ... }`) all describe to the same name, in
+// source order, with the implementation last. Any other name appears at
+// most once.
 export function findModuleExport(filePath: string, name: string, ctx: ResolveContext): InternalExport | undefined {
   return collectModuleExports(filePath, ctx).findLast((entry) => entry.name === name);
 }
 
-/**
- * The export an import of `filePath` reads: `importedName`, then each of
- * `members` through the namespace export before it (`members: ["helper"]`
- * for `ns.helper`, with `export * as ns from "./x"`).
- */
+// invariant: each of `members` reads through the namespace export before
+// it (`members: ["helper"]` for `ns.helper`,
+// with `export * as ns from "./x"`).
 export function findImportedExport(
   filePath: string,
   { importedName, members = [] }: { importedName: string; members?: readonly string[] },

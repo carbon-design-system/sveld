@@ -33,13 +33,13 @@ export interface ExampleCheckSource {
   source?: SourceRange;
 }
 
-/** A whole fenced code block, capturing its language and body. */
 const FENCE_REGEX = /^```([\w-]*)\r?\n([\s\S]*?)\r?\n?```$/;
 
 const COMPILE_FENCE_LANGS = new Set(["", "js", "jsx", "ts", "tsx", "javascript", "typescript"]);
 const SYNTAX_FENCE_LANGS = new Set(["svelte", "html"]);
 
-/** `null` for another fenced language, or bare unfenced markup. */
+// Only another fenced language or bare unfenced markup gives `null`; other
+// unfenced code compiles.
 function extractCheckableCode(body: string): Pick<ExampleCheckSource, "kind" | "code"> | null {
   const trimmed = body.trim();
   if (trimmed === "") return null;
@@ -59,10 +59,6 @@ function extractCheckableCode(body: string): Pick<ExampleCheckSource, "kind" | "
   return { kind: "compile", code: trimmed };
 }
 
-/**
- * The type sveld declares the documented symbol as before running
- * its examples.
- */
 function typeForProp(prop: ComponentProp): string {
   if (!prop.isFunction) return "any";
   const params = (prop.params ?? []).map((param) => `${param.name}${param.optional ? "?" : ""}: any`).join(", ");
@@ -94,10 +90,6 @@ function sourcesFromTags(
   });
 }
 
-/**
- * The checkable `@example` blocks on a component's props, module exports,
- * slots, and events.
- */
 export function collectExampleSources(component: ParsedComponent): ExampleCheckSource[] {
   const sources: ExampleCheckSource[] = [];
 
@@ -134,7 +126,6 @@ interface CheckExamplesCandidate {
   sources: ExampleCheckSource[];
 }
 
-/** Drops candidates left with no sources of `kind`. */
 function candidatesForKind(candidates: CheckExamplesCandidate[], kind: ExampleCheckKind): CheckExamplesCandidate[] {
   return candidates.flatMap(({ component, sources }) => {
     const matching = sources.filter((source) => source.kind === kind);
@@ -209,10 +200,8 @@ async function compileExamples(
   return found;
 }
 
-/**
- * Each component's `example-syntax-error` diagnostics, then its
- * `example-compile-error` ones.
- */
+// invariant: each component's `example-syntax-error` diagnostics come
+// before its `example-compile-error` ones.
 export async function checkComponentExamples(
   components: Iterable<ComponentDocApi>,
   mode: true | "syntax",
