@@ -87,7 +87,7 @@ export function markReactivePropsFromMutationTarget(
   }
 }
 
-type ScopeOwnerNode =
+export type ScopeOwnerNode =
   | BlockStatement
   | FunctionDeclaration
   | FunctionExpression
@@ -208,6 +208,38 @@ function declareStatement(
     case "FunctionDeclaration":
     case "ClassDeclaration":
       declareLocals(lexicalScope, statement.id);
+      break;
+    case "BlockStatement":
+    case "BreakStatement":
+    case "ContinueStatement":
+    case "DebuggerStatement":
+    case "DoWhileStatement":
+    case "EmptyStatement":
+    case "ExportAllDeclaration":
+    case "ExportDefaultDeclaration":
+    case "ExportNamedDeclaration":
+    case "ExpressionStatement":
+    case "ForInStatement":
+    case "ForOfStatement":
+    case "ForStatement":
+    case "IfStatement":
+    case "ImportDeclaration":
+    case "LabeledStatement":
+    case "ReturnStatement":
+    case "StaticBlock":
+    case "SwitchStatement":
+    case "ThrowStatement":
+    case "TryStatement":
+    case "TSDeclareFunction":
+    case "TSEnumDeclaration":
+    case "TSExportAssignment":
+    case "TSImportEqualsDeclaration":
+    case "TSInterfaceDeclaration":
+    case "TSModuleDeclaration":
+    case "TSNamespaceExportDeclaration":
+    case "TSTypeAliasDeclaration":
+    case "WhileStatement":
+    case "WithStatement":
       break;
   }
 }

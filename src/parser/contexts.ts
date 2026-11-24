@@ -5,10 +5,12 @@ import type {
   Node,
   ObjectExpression,
   SimpleCallExpression,
+  SpreadElement,
 } from "svelte-ast";
 import {
   getPropertyName,
   isIdentifier,
+  isObject,
   isLiteral,
   isObjectExpression,
   resolveStaticStringLiteral,
@@ -105,8 +107,8 @@ function annotationText(
   owner: unknown,
   field: "returnType" | "typeAnnotation",
 ): string | undefined {
-  if (!owner || typeof owner !== "object" || !(field in owner)) return undefined;
-  const annotation = (owner as Record<string, unknown>)[field];
+  if (!isObject(owner) || !(field in owner)) return undefined;
+  const annotation = owner[field];
   if (!annotation || typeof annotation !== "object" || !("typeAnnotation" in annotation)) return undefined;
   return sourceForExpression(ctx, annotation.typeAnnotation);
 }
@@ -196,7 +198,8 @@ function parseContextObjectProperties(
     // `get x() {}` / `set x(v) {}` describe one property, typed by the
     // getter; a setter alone is typed by its parameter.
     if (prop.kind === "set" && hasGetter(objExpr, propName)) continue;
-    const accessor = prop.kind === "get" || prop.kind === "set" ? (prop.value as FunctionExpression) : undefined;
+    const accessor =
+      (prop.kind === "get" || prop.kind === "set") && prop.value.type === "FunctionExpression" ? prop.value : undefined;
     const jsdoc = processNodeJSDoc(ctx, prop);
     const fn =
       !accessor && (prop.value.type === "ArrowFunctionExpression" || prop.value.type === "FunctionExpression")
@@ -339,9 +342,12 @@ function pendingContextKey(binding: { source: string; importedName: string; memb
 // A `Symbol()` with no description takes the binding name. An imported
 // key (`keys.THEME` included) is `pending`, so `generateBundle` can
 // read the other file; `const` chains stop at depth 5.
-function resolveContextKey(ctx: ParserContext, keyArg: unknown, depth = 0): ContextKeyResolution {
-  if (!keyArg || typeof keyArg !== "object" || !("type" in keyArg)) return { kind: "unresolved" };
-  const node = keyArg as Expression;
+function resolveContextKey(
+  ctx: ParserContext,
+  node: Expression | SpreadElement | undefined,
+  depth = 0,
+): ContextKeyResolution {
+  if (!node) return { kind: "unresolved" };
 
   if (node.type === "Literal" || node.type === "TemplateLiteral") {
     const value = resolveStaticStringLiteral(node);
@@ -357,9 +363,8 @@ function resolveContextKey(ctx: ParserContext, keyArg: unknown, depth = 0): Cont
     // Same const-chain depth cap as @default.
     if (depth >= 5) return { kind: "unresolved" };
 
-    const resolvedInit = resolveConstInitializer(ctx, node.name);
-    if (resolvedInit && typeof resolvedInit === "object" && "type" in resolvedInit) {
-      const init = resolvedInit as Expression;
+    const init = resolveConstInitializer(ctx, node.name);
+    if (init) {
       // `const KEY = Symbol()` has no description, so the binding name is
       // the key.
       if (

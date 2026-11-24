@@ -4,6 +4,7 @@
  * are props).
  */
 import type {
+  AssignmentExpression,
   ClassDeclaration,
   ExportNamedDeclaration,
   ExportSpecifier,
@@ -85,6 +86,12 @@ function findTopLevelBinding(
   return undefined;
 }
 
+// Only a pattern is declarable: `$: (x as T) = value` assigns through a TS
+// cast, which no `let` can declare.
+function isDeclarablePattern(target: AssignmentExpression["left"]): target is Pattern {
+  return !target.type.startsWith("TS");
+}
+
 // With no other declaration, `$: localName = value` declares it, so an
 // export of it is a `let` prop initialized to `value`.
 function findReactiveDeclaration(
@@ -96,13 +103,12 @@ function findReactiveDeclaration(
     if (node.body.type !== "ExpressionStatement") continue;
     const assignment = node.body.expression;
     if (assignment.type !== "AssignmentExpression" || assignment.operator !== "=") continue;
-    // `$: (x as T) = value` assigns through a TS cast, which no `let`
-    // can declare.
-    if (assignment.left.type.startsWith("TS")) continue;
-    if (!collectPatternIdentifiers(assignment.left).has(localName)) continue;
+    const { left } = assignment;
+    if (!isDeclarablePattern(left)) continue;
+    if (!collectPatternIdentifiers(left).has(localName)) continue;
     const declarator: VariableDeclarator = {
       type: "VariableDeclarator",
-      id: assignment.left as Pattern,
+      id: left,
       init: assignment.right,
       start: assignment.start,
       end: assignment.end,

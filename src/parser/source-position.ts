@@ -86,7 +86,7 @@ const TEMPLATE_LINE_BREAK_REGEX = /\r?\n/g;
 // Comments and literals come from the AST, not a rescan of the text,
 // so `/\/\//` or `/"/` isn't misread as a comment or a string. Line
 // breaks stay; writers that need one line fold them.
-export function defaultSourceText(ctx: ParserContext, node: unknown) {
+export function defaultSourceText(ctx: ParserContext, node: AST.SvelteNode) {
   const { source } = ctx;
   const { start, end } = nodeOffsets(node);
   if (source === undefined || start === undefined || end === undefined) return undefined;
@@ -96,7 +96,7 @@ export function defaultSourceText(ctx: ParserContext, node: unknown) {
   for (const comment of ctx.parsed?.comments ?? []) {
     if (comment.start >= start && comment.end <= end) segments.push({ start: comment.start, end: comment.end });
   }
-  walk(node as AST.SvelteNode, {
+  walk(node, {
     enter(child) {
       if (child.type === "TemplateElement") {
         const text = source.slice(child.start, child.end).replace(TEMPLATE_LINE_BREAK_REGEX, "\\n");

@@ -7,7 +7,7 @@ import type {
   Literal,
   MemberExpression,
 } from "svelte-ast";
-import { getPropertyName, isIdentifier } from "../ast-guards";
+import { getPropertyName, isIdentifier, isObject } from "../ast-guards";
 import type {
   ComponentProp,
   ComponentPropDefaultValue,
@@ -96,8 +96,14 @@ function jsdocCastType(ctx: ParserContext, init: object): string | undefined {
   return extractJsDocType(cast.value);
 }
 
+// Only the `type` is checked, so a `switch` on the result still needs a
+// fallback after it for a node outside the `Expression` union.
+function isExpressionLike(node: unknown): node is Expression {
+  return isObject(node) && "type" in node;
+}
+
 function asExpression(node: unknown): Expression | undefined {
-  return node && typeof node === "object" && "type" in node ? (node as Expression) : undefined;
+  return isExpressionLike(node) ? node : undefined;
 }
 
 function processInitializerWithoutAssertion(ctx: ParserContext, init: unknown, depth: number): ProcessedInitializer {
@@ -191,9 +197,24 @@ function processInitializerWithoutAssertion(ctx: ParserContext, init: unknown, d
       return result(nodeSourceText(ctx, node), "string");
     case "Literal":
       return typeof node.raw === "string" ? result(node.raw, literalValueType(node)) : result(undefined);
-    default:
-      return result(undefined);
+    case "AssignmentExpression":
+    case "AwaitExpression":
+    case "ChainExpression":
+    case "ClassExpression":
+    case "ImportExpression":
+    case "MetaProperty":
+    case "TaggedTemplateExpression":
+    case "ThisExpression":
+    case "TSAsExpression":
+    case "TSInstantiationExpression":
+    case "TSNonNullExpression":
+    case "TSSatisfiesExpression":
+    case "TSTypeAssertion":
+    case "UpdateExpression":
+    case "YieldExpression":
+      break;
   }
+  return result(undefined);
 }
 
 function withPendingConstDefault(
@@ -311,12 +332,35 @@ function inferExpressionType(ctx: ParserContext, node: unknown, depth: number): 
       if (depth >= 5) return undefined;
       return inferExpressionType(ctx, resolveLocalVarInitializer(ctx, name), depth + 1);
     }
-    default: {
-      if (depth >= 5) return undefined;
-      const result = processInitializer(ctx, expr, depth + 1);
-      return result.type ?? result.resolvedType;
-    }
+    case "ArrayExpression":
+    case "ArrowFunctionExpression":
+    case "AssignmentExpression":
+    case "AwaitExpression":
+    case "CallExpression":
+    case "ChainExpression":
+    case "ClassExpression":
+    case "FunctionExpression":
+    case "ImportExpression":
+    case "Literal":
+    case "MemberExpression":
+    case "MetaProperty":
+    case "NewExpression":
+    case "ObjectExpression":
+    case "TaggedTemplateExpression":
+    case "TemplateLiteral":
+    case "ThisExpression":
+    case "TSAsExpression":
+    case "TSInstantiationExpression":
+    case "TSNonNullExpression":
+    case "TSSatisfiesExpression":
+    case "TSTypeAssertion":
+    case "UpdateExpression":
+    case "YieldExpression":
+      break;
   }
+  if (depth >= 5) return undefined;
+  const result = processInitializer(ctx, expr, depth + 1);
+  return result.type ?? result.resolvedType;
 }
 
 function unionOfBranchTypes(types: Array<string | undefined>): string | undefined {
@@ -398,9 +442,34 @@ export function literalType(node: unknown, mode: LiteralTypeMode): string | unde
       const readonly = mode === "const" ? "readonly " : "";
       return `{ ${[...members].map(([key, type]) => `${readonly}${key}: ${type}`).join("; ")} }`;
     }
-    default:
-      return undefined;
+    case "ArrowFunctionExpression":
+    case "AssignmentExpression":
+    case "AwaitExpression":
+    case "BinaryExpression":
+    case "CallExpression":
+    case "ChainExpression":
+    case "ClassExpression":
+    case "ConditionalExpression":
+    case "FunctionExpression":
+    case "ImportExpression":
+    case "LogicalExpression":
+    case "MemberExpression":
+    case "MetaProperty":
+    case "NewExpression":
+    case "SequenceExpression":
+    case "TaggedTemplateExpression":
+    case "ThisExpression":
+    case "TSAsExpression":
+    case "TSInstantiationExpression":
+    case "TSNonNullExpression":
+    case "TSSatisfiesExpression":
+    case "TSTypeAssertion":
+    case "UpdateExpression":
+    case "YieldExpression":
+    case undefined:
+      break;
   }
+  return undefined;
 }
 
 /**
@@ -704,9 +773,37 @@ function inferReturnPrimitive(node: unknown): "string" | "number" | "boolean" | 
       if (callee.name === "Boolean") return "boolean";
       return null;
     }
-    default:
-      return null;
+    case "ArrayExpression":
+    case "ArrowFunctionExpression":
+    case "AssignmentExpression":
+    case "AwaitExpression":
+    case "BinaryExpression":
+    case "ChainExpression":
+    case "ClassExpression":
+    case "ConditionalExpression":
+    case "FunctionExpression":
+    case "Identifier":
+    case "ImportExpression":
+    case "LogicalExpression":
+    case "MemberExpression":
+    case "MetaProperty":
+    case "NewExpression":
+    case "ObjectExpression":
+    case "SequenceExpression":
+    case "TaggedTemplateExpression":
+    case "ThisExpression":
+    case "TSAsExpression":
+    case "TSInstantiationExpression":
+    case "TSNonNullExpression":
+    case "TSSatisfiesExpression":
+    case "TSTypeAssertion":
+    case "UnaryExpression":
+    case "UpdateExpression":
+    case "YieldExpression":
+    case undefined:
+      break;
   }
+  return null;
 }
 
 // Verbatim, since a value default needs only the names;
@@ -762,9 +859,32 @@ function defaultValueKind(node: Expression | FunctionDeclaration): ComponentProp
     case "FunctionExpression":
     case "FunctionDeclaration":
       return "function";
-    default:
-      return "expression";
+    case "AssignmentExpression":
+    case "AwaitExpression":
+    case "BinaryExpression":
+    case "CallExpression":
+    case "ChainExpression":
+    case "ClassExpression":
+    case "ConditionalExpression":
+    case "Identifier":
+    case "ImportExpression":
+    case "LogicalExpression":
+    case "MemberExpression":
+    case "MetaProperty":
+    case "NewExpression":
+    case "SequenceExpression":
+    case "TaggedTemplateExpression":
+    case "ThisExpression":
+    case "TSAsExpression":
+    case "TSInstantiationExpression":
+    case "TSNonNullExpression":
+    case "TSSatisfiesExpression":
+    case "TSTypeAssertion":
+    case "UpdateExpression":
+    case "YieldExpression":
+      break;
   }
+  return "expression";
 }
 
 function classifyDefaultValue(
@@ -826,9 +946,35 @@ function jsonSafeValueFromExpression(node: unknown): { ok: true; value: unknown 
       }
       return { ok: true, value };
     }
-    default:
-      return { ok: false };
+    case "ArrowFunctionExpression":
+    case "AssignmentExpression":
+    case "AwaitExpression":
+    case "BinaryExpression":
+    case "CallExpression":
+    case "ChainExpression":
+    case "ClassExpression":
+    case "ConditionalExpression":
+    case "FunctionExpression":
+    case "Identifier":
+    case "ImportExpression":
+    case "LogicalExpression":
+    case "MemberExpression":
+    case "MetaProperty":
+    case "NewExpression":
+    case "SequenceExpression":
+    case "TaggedTemplateExpression":
+    case "ThisExpression":
+    case "TSAsExpression":
+    case "TSInstantiationExpression":
+    case "TSNonNullExpression":
+    case "TSSatisfiesExpression":
+    case "TSTypeAssertion":
+    case "UpdateExpression":
+    case "YieldExpression":
+    case undefined:
+      break;
   }
+  return { ok: false };
 }
 
 const NUMBER_CONSTANTS = new Set([

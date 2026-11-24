@@ -31,9 +31,38 @@ export function slotPropValueFromExpression(ctx: ParserContext, expression: Prop
     case "ObjectExpression":
     case "TemplateLiteral":
       return { value: sourceAtPos(ctx, expression.start, expression.end), replace: false };
-    default:
-      return { value: undefined, replace: false };
+    case "ArrayExpression":
+    case "ArrayPattern":
+    case "ArrowFunctionExpression":
+    case "AssignmentExpression":
+    case "AssignmentPattern":
+    case "AwaitExpression":
+    case "BinaryExpression":
+    case "CallExpression":
+    case "ChainExpression":
+    case "ClassExpression":
+    case "ConditionalExpression":
+    case "FunctionExpression":
+    case "ImportExpression":
+    case "LogicalExpression":
+    case "MetaProperty":
+    case "NewExpression":
+    case "ObjectPattern":
+    case "RestElement":
+    case "SequenceExpression":
+    case "TaggedTemplateExpression":
+    case "ThisExpression":
+    case "TSAsExpression":
+    case "TSInstantiationExpression":
+    case "TSNonNullExpression":
+    case "TSSatisfiesExpression":
+    case "TSTypeAssertion":
+    case "UnaryExpression":
+    case "UpdateExpression":
+    case "YieldExpression":
+      break;
   }
+  return { value: undefined, replace: false };
 }
 
 // `null` when neither the object literal nor an object-type annotation
