@@ -103,8 +103,7 @@ function splitCodeFences(text: string): CellPart[] {
     if (proseLines.length > 1) parts.push(prose(proseLines));
 
     const codeLines: string[] = [];
-    const closeRegex = new RegExp(`^[ \\t]*${fence[0]}{${fence.length},}[ \\t]*$`);
-    for (index++; index < lines.length && !closeRegex.test(lines[index]); index++) {
+    for (index++; index < lines.length && !closesFence(lines[index], fence); index++) {
       const line = lines[index];
       let strip = 0;
       while (strip < indent.length && (line[strip] === " " || line[strip] === "\t")) strip++;
@@ -116,6 +115,20 @@ function splitCodeFences(text: string): CellPart[] {
 
   if (proseLines.length > 1 || parts.length === 0) parts.push(prose(proseLines));
   return parts;
+}
+
+// Matches what `^[ \t]*${fence[0]}{${fence.length},}[ \t]*$` does,
+// without building a regex for each fence: a run of at least as many of
+// the fence's character, with only spaces and tabs around it.
+export function closesFence(line: string, fence: string): boolean {
+  const char = fence[0];
+  let start = 0;
+  let end = line.length;
+  while (start < end && (line[start] === " " || line[start] === "\t")) start++;
+  while (end > start && (line[end - 1] === " " || line[end - 1] === "\t")) end--;
+  if (char === undefined || end - start < fence.length) return false;
+  for (let at = start; at < end; at++) if (line[at] !== char) return false;
+  return true;
 }
 
 // A fence becomes a `<pre><code>` block, so its bordering line breaks
