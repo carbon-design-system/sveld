@@ -50,7 +50,9 @@ test("infers the tag from `tag`, so its attributes follow it", () => {
   expect(check(options('{ tag: "a", href: "/docs" }')).errors).toEqual([]);
   expect(check(`declare const tag: "div" | "section";\n${options('{ tag, id: "x" }')}`).errors).toEqual([]);
   expect(check(options('{ tag: "div", href: "/docs" }')).errors).toEqual([expect.stringMatching(EXCESS_PROPERTY)]);
-});
+  // Four TypeScript programs: about 0.7 s alone, over 5 s under the
+  // parallel suite on a CI runner.
+}, 60_000);
 
 test("builds each element type only as a use needs it", () => {
   // As a conditional on `Tag`, every tag's type was built: ~6.7K types for
