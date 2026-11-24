@@ -18,7 +18,8 @@ interface ExampleCheckDiagnostic {
   message: string;
 }
 
-// Structural types for TypeScript's async API so AST-only builds skip the `typescript` package.
+// Structural types for TypeScript's async API so AST-only builds skip the
+// `typescript` package.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- native-preview API is loaded lazily and typed structurally.
 type TS = any;
 
@@ -28,7 +29,8 @@ const LEADING_DIGIT_REGEX = /^[0-9]/;
 const EXAMPLE_CODE_START_LINE = 2;
 const MIN_SUPPORTED_TS_MAJOR = 7;
 const REQUIREMENT_TEXT = `TypeScript ${MIN_SUPPORTED_TS_MAJOR} or later, which provides \`typescript/async\` (\`typescript/unstable/async\` in 7.0)`;
-// TypeScript 7.1 moved the async API from `typescript/unstable/async` to `typescript/async`.
+// TypeScript 7.1 moved the async API from `typescript/unstable/async` to
+// `typescript/async`.
 const ASYNC_API_SPECIFIERS = ["typescript/async", "typescript/unstable/async"];
 
 interface TypeScriptLoadResult {
@@ -79,7 +81,8 @@ async function defaultImportTs(cwd: string): Promise<TypeScriptLoadResult> {
  * Loaded only when `checkExamples` has plain TS/JS examples to check.
  */
 export class TypeResolver {
-  // Assigned in `create()`, after `createFileSystem()` can close over `this`.
+  // Assigned in `create()`, after `createFileSystem()` can close over
+  // `this`.
   private api: TS = null;
   private usesFileSystemLayer = false;
   private readonly tsconfigPath: string;
@@ -89,7 +92,10 @@ export class TypeResolver {
     this.tsconfigPath = tsconfigPath;
   }
 
-  /** Loads `typescript` and the nearest `tsconfig.json`; the caller decides whether a failure is fatal. */
+  /**
+   * Loads `typescript` and the nearest `tsconfig.json`; the caller decides
+   * whether a failure is fatal.
+   */
   static async create(
     cwd: string = process.cwd(),
     { importTs = defaultImportTs }: TypeResolverCreateOptions = {},
@@ -198,7 +204,10 @@ export class TypeResolver {
     await this.api?.close?.();
   }
 
-  /** TypeScript 7.0 only: falls back to the real filesystem wherever a callback returns `undefined`. */
+  /**
+   * TypeScript 7.0 only: falls back to the real filesystem wherever a
+   * callback returns `undefined`.
+   */
   private createFileSystem() {
     return {
       readFile: (fileName: string) => this.overlay.get(normalizeSeparators(fileName)),

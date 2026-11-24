@@ -1,6 +1,6 @@
 /**
- * The parsed-component model: what `ComponentParser` produces, and what the
- * cross-file pass, the writers, and the parse cache read.
+ * The parsed-component model: what `ComponentParser` produces, and what
+ * the cross-file pass, the writers, and the parse cache read.
  */
 import type { TSNode } from "svelte-ast";
 import type { SveldDiagnostic } from "./diagnostics";
@@ -13,7 +13,10 @@ export interface JsDocPassthroughTag {
   body: string;
 }
 
-/** From `@deprecated` JSDoc: a message string, or `true` when the tag has no message. */
+/**
+ * From `@deprecated` JSDoc: a message string, or `true` when the tag has
+ * no message.
+ */
 export type DeprecatedValue = string | true;
 
 export interface SourcePosition {
@@ -32,7 +35,10 @@ export interface RunesPropTypeMetadata {
   optional: boolean;
   source?: SourceRange;
   type: string;
-  /** JSDoc on the type's member (`interface Props { /** ... *\/ label: string }`). */
+  /**
+   * JSDoc on the type's member
+   * (`interface Props { /** ... *\/ label: string }`).
+   */
   jsdoc?: NodeJsDoc;
 }
 
@@ -45,13 +51,25 @@ export interface NodeJsDoc {
   binding?: ComponentPropBinding;
   deprecated?: DeprecatedValue;
   tags?: JsDocPassthroughTag[];
-  /** `@sveld-ignore <code>` codes from this comment; `""` means "ignore anything for this symbol". */
+  /**
+   * `@sveld-ignore <code>` codes from this comment; `""` means "ignore
+   * anything for this symbol".
+   */
   sveldIgnore?: string[];
-  /** True when `@ignore` or `@internal` is present; excludes this prop from every output. */
+  /**
+   * True when `@ignore` or `@internal` is present; excludes this prop from
+   * every output.
+   */
   internal: boolean;
-  /** `@template` tags of a comment documenting a function, as its type parameter list (`T extends Foo, U`). */
+  /**
+   * `@template` tags of a comment documenting a function, as its type
+   * parameter list (`T extends Foo, U`).
+   */
   typeParameters?: string;
-  /** An explicit `@default` tag's text; a prop shows it as its default instead of the initializer. */
+  /**
+   * An explicit `@default` tag's text; a prop shows it as its default
+   * instead of the initializer.
+   */
   explicitDefault?: string;
   /** `description` without the `@default` line, set with `explicitDefault`. */
   descriptionWithoutDefault?: string;
@@ -71,7 +89,10 @@ export interface TypeImportBinding {
   specifierType: "default" | "named" | "namespace";
 }
 
-/** Named value import (`import { x } from "..."`) keyed for cross-file call-default lookup. */
+/**
+ * Named value import (`import { x } from "..."`) keyed for cross-file
+ * call-default lookup.
+ */
 export interface ValueImportBinding {
   localName: string;
   importedName: string;
@@ -79,10 +100,11 @@ export interface ValueImportBinding {
 }
 
 /**
- * Prop default is a `CallExpression` whose return type we could not resolve in-parser
- * (`export let id = uniqueId()`). With `importSource`, `resolve-call-defaults.ts` (from
- * `generateBundle`) can still read the target module. Without it, keep the candidate so
- * the diagnostic can name the callee.
+ * Prop default is a `CallExpression` whose return type we could not
+ * resolve in-parser (`export let id = uniqueId()`). With `importSource`,
+ * `resolve-call-defaults.ts` (from `generateBundle`) can still read the
+ * target module. Without it, keep the candidate so the diagnostic can name
+ * the callee.
  */
 export interface PendingCallDefaultCandidate {
   propName: string;
@@ -94,29 +116,35 @@ export interface PendingCallDefaultCandidate {
 
 /**
  * Prop default is a named value import (`export let delay = DELAY_MS`), or
- * a member of a namespace import (`C.DELAY_MS`).
- * `generateBundle` reads the other file via `resolve-const-defaults.ts` and,
- * for an `export const` primitive literal, writes the literal as the default.
+ * a member of a namespace import (`C.DELAY_MS`). `generateBundle` reads
+ * the other file via `resolve-const-defaults.ts` and, for an
+ * `export const` primitive literal, writes the literal as the default.
  */
 export interface PendingConstDefaultCandidate {
   propName: string;
   location: "props" | "moduleExports";
   importSource: string;
   importedName: string;
-  /** Members read off the import, through namespace exports: `["DELAY"]` for `C.timing.DELAY`. */
+  /**
+   * Members read off the import, through namespace exports: `["DELAY"]` for
+   * `C.timing.DELAY`.
+   */
   members?: string[];
 }
 
 /**
- * Imported `setContext` key (`import { KEY } from "./mod.js"`, or `keys.KEY`
- * off a namespace import). `generateBundle` reads the other file via
- * `resolve-context-keys.ts`. Properties and description are already filled
- * in from the value argument.
+ * Imported `setContext` key (`import { KEY } from "./mod.js"`, or
+ * `keys.KEY` off a namespace import). `generateBundle` reads the other
+ * file via `resolve-context-keys.ts`. Properties and description are
+ * already filled in from the value argument.
  */
 export interface PendingContextKeyCandidate {
   importSource: string;
   importedName: string;
-  /** Members read off the import, through namespace exports: `["THEME"]` for `ns.keys.THEME`. */
+  /**
+   * Members read off the import, through namespace exports: `["THEME"]` for
+   * `ns.keys.THEME`.
+   */
   members?: string[];
   /** See {@link ComponentContext.type}. */
   type?: string;
@@ -138,7 +166,10 @@ export interface PendingContextKeyCandidate {
 export interface PendingDispatchEscapeCandidate {
   importSource: string;
   importedName: string;
-  /** Members read off the import, through namespace exports: `["helper"]` for `ns.helper`. */
+  /**
+   * Members read off the import, through namespace exports: `["helper"]` for
+   * `ns.helper`.
+   */
   members?: string[];
   /** Callee as written, for messages. */
   calleeText: string;
@@ -146,7 +177,10 @@ export interface PendingDispatchEscapeCandidate {
   dispatcherName: string;
   /** Argument position the dispatcher is passed at. */
   argumentIndex: number;
-  /** Set when passed as an object literal property (`{ dispatch }`): that property's key. */
+  /**
+   * Set when passed as an object literal property (`{ dispatch }`): that
+   * property's key.
+   */
   property?: string;
   /** Source range of the call, when available. */
   source?: SourceRange;
@@ -174,7 +208,8 @@ export interface PendingCrossFileCandidates {
   pendingDispatchEscapeCandidates?: PendingDispatchEscapeCandidate[];
   /**
    * `event-no-source` diagnostics held back while the dispatcher escapes to
-   * imported functions: the cross-file pass keeps those the functions don't dispatch.
+   * imported functions: the cross-file pass keeps those the functions don't
+   * dispatch.
    */
   deferredEventNoSourceDiagnostics?: SveldDiagnostic[];
   /**
@@ -186,14 +221,17 @@ export interface PendingCrossFileCandidates {
 
 /**
  * Writer-only metadata on a parsed component. `parseSvelteComponent` also
- * folds the {@link PendingCrossFileCandidates} in here; {@link ComponentParser.parse}
- * returns them separately instead.
+ * folds the {@link PendingCrossFileCandidates} in here; {@link
+ * ComponentParser.parse} returns them separately instead.
  */
 export interface ParsedComponentTypeScriptMetadata extends PendingCrossFileCandidates {
   canonicalPropsType?: string;
   canonicalPropNames: string[];
   localTypeDeclarations: string[];
-  /** Types the module script exports (`export interface Item`), emitted with `export`. */
+  /**
+   * Types the module script exports (`export interface Item`), emitted with
+   * `export`.
+   */
   moduleTypeDeclarations?: string[];
   typeImportStatements: string[];
 }
@@ -235,7 +273,10 @@ export interface ProcessedInitializer {
    * onto {@link ParserContext.pendingCallDefaultCandidates}.
    */
   pendingCallDefault?: Omit<PendingCallDefaultCandidate, "propName" | "location">;
-  /** Identifier default bound to a named value import ({@link PendingConstDefaultCandidate}). */
+  /**
+   * Identifier default bound to a named value import ({@link
+   * PendingConstDefaultCandidate}).
+   */
   pendingConstDefault?: Omit<PendingConstDefaultCandidate, "propName" | "location">;
 }
 
@@ -253,7 +294,10 @@ export interface ComponentPropParam {
 export interface ComponentPropReExport {
   /** Module specifier as written in the source (e.g. `"./utils.js"`). */
   from: string;
-  /** Name `from` exports: `"default"` for a default import, `"*"` for `export *` or a namespace import. */
+  /**
+   * Name `from` exports: `"default"` for a default import, `"*"` for
+   * `export *` or a namespace import.
+   */
   imported: string;
 }
 
@@ -264,19 +308,32 @@ export interface ComponentPropReExport {
  */
 export interface ComponentClassMember {
   /**
-   * `"property"` covers fields, constructor parameter properties, and getter/setter pairs;
-   * `"index"` is an index signature (`[key: string]: unknown`).
+   * `"property"` covers fields, constructor parameter properties, and
+   * getter/setter pairs; `"index"` is an index signature
+   * (`[key: string]: unknown`).
    */
   kind: "constructor" | "method" | "property" | "index";
-  /** Member name; `"constructor"` for the constructor, the bracketed key (`[key: string]`) for an index signature. */
+  /**
+   * Member name; `"constructor"` for the constructor, the bracketed key
+   * (`[key: string]`) for an index signature.
+   */
   name: string;
   /** Property type text; `"any"` when neither TypeScript nor JSDoc types it. */
   type?: string;
-  /** Method or constructor parameters, typed from TypeScript or JSDoc `@param`, else `"any"`. A rest parameter's name starts with `...`. */
+  /**
+   * Method or constructor parameters, typed from TypeScript or JSDoc
+   * `@param`, else `"any"`. A rest parameter's name starts with `...`.
+   */
   params?: ComponentPropParam[];
-  /** Method return type from TypeScript or JSDoc `@returns`; unset when neither gives one. */
+  /**
+   * Method return type from TypeScript or JSDoc `@returns`; unset when
+   * neither gives one.
+   */
   returnType?: string;
-  /** A method's own type parameter list (`U extends object`), without the angle brackets. */
+  /**
+   * A method's own type parameter list (`U extends object`), without the
+   * angle brackets.
+   */
   typeParameters?: string;
   static?: true;
   /** A `readonly` field, or a getter with no setter. */
@@ -317,15 +374,27 @@ export interface ComponentProp {
   /** True when declared with `const`. */
   constant: boolean;
   type?: string;
-  /** Conservative provenance for the prop type. See the precedence rule on {@link ComponentProp}. */
+  /**
+   * Conservative provenance for the prop type. See the precedence rule on
+   * {@link ComponentProp}.
+   */
   typeSource?: ComponentPropTypeSource;
   /** Local binding when it differs from the public name. */
   localName?: string;
-  /** Default value as source text; unset when the prop has no initializer/default. */
+  /**
+   * Default value as source text; unset when the prop has no
+   * initializer/default.
+   */
   value?: string;
-  /** Structured default value metadata for docs UIs; set alongside `value` from the same initializer. */
+  /**
+   * Structured default value metadata for docs UIs; set alongside `value`
+   * from the same initializer.
+   */
   defaultValue?: ComponentPropDefaultValue;
-  /** From JSDoc, or a matching `@typedef`'s own description (legacy only; see {@link ComponentProp}). */
+  /**
+   * From JSDoc, or a matching `@typedef`'s own description (legacy only; see
+   * {@link ComponentProp}).
+   */
   description?: string;
   /** From JSDoc `@param` on function props. */
   params?: ComponentPropParam[];
@@ -334,17 +403,23 @@ export interface ComponentProp {
   /**
    * A function's own type parameter list from its `@template` tags (e.g.
    * `T extends { id: string }`), without the angle brackets. Also prefixed
-   * onto `type` when that signature is built from `@param`/`@returns`.
-   * For a `"class"`, the class's type parameters, from TypeScript or `@template`.
+   * onto `type` when that signature is built from `@param`/`@returns`. For a
+   * `"class"`, the class's type parameters, from TypeScript or `@template`.
    */
   typeParameters?: string;
-  /** Set when `kind` is `"class"`: its public constructor, methods, and properties, in source order. */
+  /**
+   * Set when `kind` is `"class"`: its public constructor, methods, and
+   * properties, in source order.
+   */
   members?: ComponentClassMember[];
   /** Set when `kind` is `"class"` and the class is `abstract`. */
   abstract?: true;
   /** Set when `kind` is `"class"` and it extends a base class: `Base<T>`. */
   extends?: string;
-  /** Set when `kind` is `"class"` and it implements interfaces: `["Disposable"]`. */
+  /**
+   * Set when `kind` is `"class"` and it implements interfaces:
+   * `["Disposable"]`.
+   */
   implements?: string[];
   /**
    * True for arrow/function-expression initializers and bare `function`
@@ -368,7 +443,10 @@ export interface ComponentProp {
   deprecated?: DeprecatedValue;
   /** `@since` / `@example` tags in source order. */
   tags?: JsDocPassthroughTag[];
-  /** True from `@ignore`/`@internal` JSDoc; excluded from every output by `buildComponentApiDocument`. */
+  /**
+   * True from `@ignore`/`@internal` JSDoc; excluded from every output by
+   * `buildComponentApiDocument`.
+   */
   internal?: boolean;
   /** Set when `kind` is `"re-export"`. */
   reExport?: ComponentPropReExport;
@@ -387,9 +465,15 @@ export interface ComponentSlot {
   description?: string;
   /** From `@deprecated` JSDoc. */
   deprecated?: DeprecatedValue;
-  /** Tags between the description and `@slot`/`@snippet` (e.g. `@example`), in source order. */
+  /**
+   * Tags between the description and `@slot`/`@snippet` (e.g. `@example`),
+   * in source order.
+   */
   tags?: JsDocPassthroughTag[];
-  /** True from `@ignore`/`@internal` JSDoc; excluded from every output by `buildComponentApiDocument`. */
+  /**
+   * True from `@ignore`/`@internal` JSDoc; excluded from every output by
+   * `buildComponentApiDocument`.
+   */
   internal?: boolean;
   source?: SourceRange;
 }
@@ -404,13 +488,18 @@ export interface SlotPropValue {
 export type SlotProps = Record<string, SlotPropValue>;
 
 /**
- * {@link ComponentSlot} while parsing. `slot_props` is raw type text from a
- * `@slot`/`@snippet` tag, or a {@link SlotProps} map from the template that's
- * formatted once at the end of the parse (avoids a JSON round-trip per slot).
+ * {@link ComponentSlot} while parsing. `slot_props` is raw type text from
+ * a `@slot`/`@snippet` tag, or a {@link SlotProps} map from the template
+ * that's formatted once at the end of the parse (avoids a JSON round-trip
+ * per slot).
  */
 export type InternalComponentSlot = Omit<ComponentSlot, "slot_props"> & {
   slot_props?: string | SlotProps;
-  /** True when a `{...spread}` in the slot's props object couldn't be resolved; folded into `slot_props` text as `& Record<string, any>` before output. */
+  /**
+   * True when a `{...spread}` in the slot's props object couldn't be
+   * resolved; folded into `slot_props` text as `& Record<string, any>`
+   * before output.
+   */
   slot_props_unresolved_spread?: boolean;
 };
 
@@ -420,7 +509,10 @@ export interface ForwardedEvent extends Omit<SerializedForwardedEvent, "element"
   element: ComponentInlineElement | ComponentElement;
 }
 
-/** Event from `createEventDispatcher()`, `dispatch()`, or `$host().dispatchEvent()`. */
+/**
+ * Event from `createEventDispatcher()`, `dispatch()`, or
+ * `$host().dispatchEvent()`.
+ */
 export interface DispatchedEvent {
   type: "dispatched";
   name: string;
@@ -431,7 +523,10 @@ export interface DispatchedEvent {
   deprecated?: DeprecatedValue;
   /** `@since` / `@example` tags in source order. */
   tags?: JsDocPassthroughTag[];
-  /** True from `@ignore`/`@internal` JSDoc; excluded from every output by `buildComponentApiDocument`. */
+  /**
+   * True from `@ignore`/`@internal` JSDoc; excluded from every output by
+   * `buildComponentApiDocument`.
+   */
   internal?: boolean;
   source?: SourceRange;
 }
@@ -439,7 +534,8 @@ export interface DispatchedEvent {
 export type ComponentEvent = ForwardedEvent | DispatchedEvent;
 
 /**
- * Serialized {@link ForwardedEvent} for JSON output. `element` is a string, not an object.
+ * Serialized {@link ForwardedEvent} for JSON output. `element` is a
+ * string, not an object.
  *
  * @example
  * ```ts
@@ -463,7 +559,10 @@ interface SerializedForwardedEvent {
   detail?: string;
   /** `@since` / `@example` tags in source order. */
   tags?: JsDocPassthroughTag[];
-  /** True from `@ignore`/`@internal` JSDoc; excluded from every output by `buildComponentApiDocument`. */
+  /**
+   * True from `@ignore`/`@internal` JSDoc; excluded from every output by
+   * `buildComponentApiDocument`.
+   */
   internal?: boolean;
   source?: SourceRange;
 }
@@ -478,9 +577,15 @@ export interface TypeDef {
   description?: string;
   /** Full `type` alias declaration text. */
   ts: string;
-  /** Tags in the same block (e.g. `@since`, `@example`, `@see`), in source order. */
+  /**
+   * Tags in the same block (e.g. `@since`, `@example`, `@see`), in source
+   * order.
+   */
   tags?: JsDocPassthroughTag[];
-  /** True from `@ignore`/`@internal` JSDoc; excluded from every output by `buildComponentApiDocument`. */
+  /**
+   * True from `@ignore`/`@internal` JSDoc; excluded from every output by
+   * `buildComponentApiDocument`.
+   */
   internal?: boolean;
   /** Source range of the `@typedef`/`@callback` tag, when available. */
   source?: SourceRange;
@@ -497,7 +602,8 @@ export interface ComponentElement {
   type: "Element";
   name: string;
   /**
-   * Static tag for `svelte:element this="div"`. Undefined when `this` is dynamic.
+   * Static tag for `svelte:element this="div"`. Undefined when `this` is
+   * dynamic.
    *
    * @example
    * ```svelte
@@ -523,8 +629,9 @@ export interface ComponentElement {
 export type RestProps = undefined | ComponentInlineElement | ComponentElement;
 
 /**
- * JSDoc `@extends` target. `interface` is the text after the specifier, type
- * arguments included (`ChartProps<T>`); the import takes the bare name.
+ * JSDoc `@extends` target. `interface` is the text after the specifier,
+ * type arguments included (`ChartProps<T>`); the import takes the bare
+ * name.
  */
 export interface Extends {
   /** Interface name (e.g. `"ButtonProps"`). */
@@ -533,22 +640,32 @@ export interface Extends {
   import: string;
 }
 
-/** `customElement.props.<name>.type` in `<svelte:options customElement={{ ... }} />`. */
+/**
+ * `customElement.props.<name>.type` in
+ * `<svelte:options customElement={{ ... }} />`.
+ */
 type CustomElementPropType = "String" | "Boolean" | "Number" | "Array" | "Object";
 
-/** `customElement.props.<name>` config in `<svelte:options customElement={{ ... }} />`. */
+/**
+ * `customElement.props.<name>` config in
+ * `<svelte:options customElement={{ ... }} />`.
+ */
 export interface CustomElementPropConfig {
-  /** Explicit attribute name. Svelte itself always observes every prop as an attribute; sveld's own output omits the attribute entirely when this is `false`. */
+  /**
+   * Explicit attribute name. Svelte itself always observes every prop as an
+   * attribute; sveld's own output omits the attribute entirely when this is
+   * `false`.
+   */
   attribute?: string | false;
   reflect?: boolean;
   type?: CustomElementPropType;
 }
 
 /**
- * Parsed `<svelte:options customElement="tag" />` (shorthand, `tag` only) or
- * `<svelte:options customElement={{ tag, shadow, props, extend }} />` (object
- * form). `extend`'s callback expression isn't serializable, so only its
- * presence is recorded.
+ * Parsed `<svelte:options customElement="tag" />` (shorthand, `tag` only)
+ * or `<svelte:options customElement={{ tag, shadow, props, extend }} />`
+ * (object form). `extend`'s callback expression isn't serializable, so
+ * only its presence is recorded.
  */
 export interface CustomElementOptions {
   tag?: string;
@@ -573,7 +690,10 @@ export interface ComponentCssProperty {
 }
 
 export interface ComponentPropBindings {
-  /** `tagLocal` is the local a `<svelte:element this={tag}>` names as its tag. */
+  /**
+   * `tagLocal` is the local a `<svelte:element this={tag}>` names as its
+   * tag.
+   */
   elements: Array<{ tag: string; namespace: ElementNamespace; tagLocal?: string }>;
   /** Local names of imported components the prop is bound to. */
   components: string[];
@@ -589,7 +709,10 @@ export interface ComponentContextProp {
   type: string;
   description?: string;
   optional: boolean;
-  /** True from `@ignore`/`@internal` JSDoc; excluded from every output by `buildComponentApiDocument`. */
+  /**
+   * True from `@ignore`/`@internal` JSDoc; excluded from every output by
+   * `buildComponentApiDocument`.
+   */
   internal?: boolean;
 }
 
@@ -599,24 +722,31 @@ export interface ComponentContext {
   /** Generated type name (e.g. `"ModalContext"`). */
   typeName: string;
   /**
-   * The context's whole type, when the `setContext` value is a variable whose
-   * type isn't an object type literal (`ModalAPI`, `Writable<number>`, or `any`
-   * when untyped). `properties` is empty then.
+   * The context's whole type, when the `setContext` value is a variable
+   * whose type isn't an object type literal (`ModalAPI`, `Writable<number>`,
+   * or `any` when untyped). `properties` is empty then.
    */
   type?: string;
   description?: string;
   /** Empty when {@link ComponentContext.type} is set. */
   properties: ComponentContextProp[];
-  /** True when a `{...spread}` in the context's object literal couldn't be resolved; the generated type intersects with `Record<string, any>`. */
+  /**
+   * True when a `{...spread}` in the context's object literal couldn't be
+   * resolved; the generated type intersects with `Record<string, any>`.
+   */
   hasUnresolvedSpread?: boolean;
-  /** True from `@ignore`/`@internal` JSDoc on the `setContext` call; excluded from every output by `buildComponentApiDocument`. */
+  /**
+   * True from `@ignore`/`@internal` JSDoc on the `setContext` call; excluded
+   * from every output by `buildComponentApiDocument`.
+   */
   internal?: boolean;
   /** Source range of the `setContext(...)` call, when available. */
   source?: SourceRange;
 }
 
 /**
- * Complete parsed component metadata from {@link ComponentParser.parseSvelteComponent}.
+ * Complete parsed component metadata from {@link
+ * ComponentParser.parseSvelteComponent}.
  *
  * @example
  * ```ts
@@ -637,9 +767,16 @@ export interface ParsedComponent {
   source?: SourceRange;
   syntaxMode: SyntaxMode;
   scriptLanguage?: ScriptLanguage;
-  /** Instance-level props (`export let`/`export function`, or runes `$props()`). See {@link ComponentProp} for the shared IR these are built from. */
+  /**
+   * Instance-level props (`export let`/`export function`, or runes
+   * `$props()`). See {@link ComponentProp} for the shared IR these are built
+   * from.
+   */
   props: ComponentProp[];
-  /** Exports from `<script context="module">`. Same {@link ComponentProp} shape as `props`, resolved through the same shared decisions. */
+  /**
+   * Exports from `<script context="module">`. Same {@link ComponentProp}
+   * shape as `props`, resolved through the same shared decisions.
+   */
   moduleExports: ComponentProp[];
   slots: ComponentSlot[];
   /** Serialized events for JSON/API output. */
@@ -653,13 +790,19 @@ export interface ParsedComponent {
   componentCommentSource?: SourceRange;
   contexts?: ComponentContext[];
   customElementTag?: string;
-  /** Full `<svelte:options customElement=... />` config (shorthand or object form), when present. */
+  /**
+   * Full `<svelte:options customElement=... />` config (shorthand or object
+   * form), when present.
+   */
   customElement?: CustomElementOptions;
   /** From component-level `@csspart` JSDoc tags. */
   cssParts?: ComponentCssPart[];
   /** From component-level `@cssprop`/`@cssproperty` JSDoc tags. */
   cssProperties?: ComponentCssProperty[];
-  /** Type guesses from this parse (unknown props, `any` contexts, orphan `@event` tags). */
+  /**
+   * Type guesses from this parse (unknown props, `any` contexts, orphan
+   * `@event` tags).
+   */
   diagnostics?: SveldDiagnostic[];
   /** Writer-only TypeScript metadata. Not serialized to JSON. */
   [PARSED_COMPONENT_TYPE_SCRIPT_METADATA]?: ParsedComponentTypeScriptMetadata;

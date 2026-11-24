@@ -1,7 +1,10 @@
 import type { ParsedExports } from "./parse-exports";
 import { SVELTE_EXT_REGEX } from "./path";
 
-/** `{ Button: { source: "./Button.svelte", default: true } }` gives `export { default as Button } from "./Button.svelte";`. */
+/**
+ * `{ Button: { source: "./Button.svelte", default: true } }` gives
+ * `export { default as Button } from "./Button.svelte";`.
+ */
 export function createExports(parsed_exports: ParsedExports): string {
   const groupedBySource = new Map<string, Array<{ id: string; exportee: ParsedExports[string] }>>();
   const exportStatements: string[] = [];
@@ -74,7 +77,10 @@ export interface TypeExportEntry {
   names: string[];
 }
 
-/** `export type { ... } from "..."` per entry, for `typesOptions.indexTypes`. */
+/**
+ * `export type { ... } from "..."` per entry, for
+ * `typesOptions.indexTypes`.
+ */
 export function createTypeExports(entries: TypeExportEntry[]): string {
   return entries
     .filter((entry) => entry.names.length > 0)

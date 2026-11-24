@@ -1,17 +1,24 @@
 import type { GenerateBundleOptions, GenerateBundleResult } from "./bundle";
 import { Project, type ProjectUpdate } from "./project";
 
-/** The plugin's watch-mode bundle: `update` re-parses only the components a change affects. */
+/**
+ * The plugin's watch-mode bundle: `update` re-parses only the components a
+ * change affects.
+ */
 export interface SveldBundle {
   /** The latest result: the initial build's, then each update's. */
   readonly result: Promise<GenerateBundleResult>;
-  /** Re-parse the changed files and the components that read them, and return the updated bundle. */
+  /**
+   * Re-parse the changed files and the components that read them, and return
+   * the updated bundle.
+   */
   update(changedFilePaths: string[]): Promise<ProjectUpdate>;
 }
 
 /**
  * Runs the initial full parse. Never `failFast`: a component that fails to
- * parse is reported and skipped, so fixing it in a later edit picks it back up.
+ * parse is reported and skipped, so fixing it in a later edit picks it
+ * back up.
  */
 export async function createSveldBundle(
   input: string,

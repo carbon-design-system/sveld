@@ -6,9 +6,10 @@ import { closestMatch } from "./levenshtein";
 import type { PluginSveldOptions } from "./plugin";
 
 /**
- * Options shared by the config file, the CLI, and the programmatic `sveld()`
- * API. Superset of `PluginSveldOptions` with the CLI-oriented flags that only
- * make sense as part of a full `sveld` run (not the Vite/Rollup plugin).
+ * Options shared by the config file, the CLI, and the programmatic
+ * `sveld()` API. Superset of `PluginSveldOptions` with the CLI-oriented
+ * flags that only make sense as part of a full `sveld` run (not the
+ * Vite/Rollup plugin).
  */
 export interface SveldRuntimeOptions extends PluginSveldOptions {
   /** Print unresolved-type diagnostics to stderr. */
@@ -46,15 +47,16 @@ export interface SveldRuntimeOptions extends PluginSveldOptions {
    *
    * `"github"` prints the text report and summary, preceded by one GitHub
    * Actions annotation per diagnostic (`::warning file=...::message`), so
-   * findings appear on the pull request's diff. Annotation paths are relative
-   * to `GITHUB_WORKSPACE`, or the working directory when it isn't set.
+   * findings appear on the pull request's diff. Annotation paths are
+   * relative to `GITHUB_WORKSPACE`, or the working directory when it isn't
+   * set.
    */
   format?: "text" | "json" | "github";
 }
 
 /**
- * Public shape of a `sveld.config.{js,ts,mjs}` file. Identical to the options
- * accepted by the CLI and the programmatic `sveld()` API.
+ * Public shape of a `sveld.config.{js,ts,mjs}` file. Identical to the
+ * options accepted by the CLI and the programmatic `sveld()` API.
  */
 export type SveldConfig = SveldRuntimeOptions;
 
@@ -93,7 +95,8 @@ export function resolveConfigPath(cwd: string = process.cwd()): string | null {
 
 /**
  * The cache-busting query makes repeated loads (tests, watch runs) see the
- * latest contents. Throws if the import fails or the default export isn't an object.
+ * latest contents. Throws if the import fails or the default export isn't
+ * an object.
  */
 export async function loadConfigFrom(configPath: string): Promise<SveldConfig> {
   let mod: { default?: unknown };
@@ -125,8 +128,9 @@ export async function loadConfig(cwd: string = process.cwd()): Promise<SveldConf
 }
 
 /**
- * The config a `config` option asks for: a path (relative to `cwd`) loads that file and
- * must exist, `true` discovers one in `cwd`, `false` loads none, and unset does `discover`.
+ * The config a `config` option asks for: a path (relative to `cwd`) loads
+ * that file and must exist, `true` discovers one in `cwd`, `false` loads
+ * none, and unset does `discover`.
  */
 export async function loadConfigOption(
   config: boolean | string | undefined,

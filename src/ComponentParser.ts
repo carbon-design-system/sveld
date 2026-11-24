@@ -2,7 +2,8 @@
  * The component parser's public face. A parse runs in four phases over one
  * {@link ParserContext}: `prepareComponent` (parser/prepare.ts),
  * `walkModuleScript` (parser/module-script.ts), `walkComponent`
- * (parser/component-walk.ts), and `finalizeComponent` (parser/finalize.ts).
+ * (parser/component-walk.ts), and `finalizeComponent`
+ * (parser/finalize.ts).
  */
 import type { ComponentParseResult, ParsedComponent } from "./model";
 import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "./parsed-component-metadata";

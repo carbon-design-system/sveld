@@ -12,7 +12,10 @@ interface ContextKeyResolution {
   key?: string;
 }
 
-/** Only `export const` with a string literal or static template counts; `let`/`var` are live bindings. */
+/**
+ * Only `export const` with a string literal or static template counts;
+ * `let`/`var` are live bindings.
+ */
 function resolveContextKeyCandidates(
   fromDir: string,
   candidates: PendingContextKeyCandidate[],
@@ -30,8 +33,9 @@ function resolveContextKeyCandidates(
 }
 
 /**
- * Unresolved and duplicate keys get the same diagnostics `parseSetContextCall`
- * records for a local call; the first call in source order keeps its shape.
+ * Unresolved and duplicate keys get the same diagnostics
+ * `parseSetContextCall` records for a local call; the first call in source
+ * order keeps its shape.
  */
 function applyContextKeyResolutions(component: ComponentDocApi, resolutions: ContextKeyResolution[]): void {
   for (const { candidate, key } of resolutions) {
@@ -68,7 +72,8 @@ function applyContextKeyResolutions(component: ComponentDocApi, resolutions: Con
       contexts.splice(duplicateIndex, 1);
     }
 
-    // Keep source order, as a same-file key would: go before the first later `setContext`.
+    // Keep source order, as a same-file key would: go before the first later
+    // `setContext`.
     const laterIndex = contexts.findIndex((existing) => startsAfter(existing.source, candidate.source));
     contexts.splice(laterIndex === -1 ? contexts.length : laterIndex, 0, {
       key,

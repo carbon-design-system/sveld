@@ -2,7 +2,10 @@ import { createDiagnostic, DIAGNOSTIC_CODES, type SveldDiagnosticKind } from "..
 import type { SourceRange } from "../model";
 import type { ParserContext } from "./context";
 
-/** Records a diagnostic, marked `ignored` when {@link recordSveldIgnore} saw a matching `@sveld-ignore`. */
+/**
+ * Records a diagnostic, marked `ignored` when {@link recordSveldIgnore}
+ * saw a matching `@sveld-ignore`.
+ */
 export function recordDiagnostic(
   ctx: ParserContext,
   kind: SveldDiagnosticKind,
@@ -13,7 +16,10 @@ export function recordDiagnostic(
   ctx.diagnosticRecords.push(buildDiagnostic(ctx, kind, name, message, source));
 }
 
-/** The diagnostic {@link recordDiagnostic} would record, for callers that hold it back. */
+/**
+ * The diagnostic {@link recordDiagnostic} would record, for callers that
+ * hold it back.
+ */
 export function buildDiagnostic(
   ctx: ParserContext,
   kind: SveldDiagnosticKind,
@@ -38,8 +44,8 @@ function ignoreKey(kind: SveldDiagnosticKind, name: string): string {
 
 /**
  * Registers a symbol's `@sveld-ignore <code>` codes (`""` for a bare one:
- * ignore everything). Must run before {@link recordDiagnostic} for the same
- * `kind`/`name`.
+ * ignore everything). Must run before {@link recordDiagnostic} for the
+ * same `kind`/`name`.
  */
 export function recordSveldIgnore(
   ctx: ParserContext,
@@ -54,7 +60,10 @@ export function recordSveldIgnore(
   ctx.sveldIgnoreDirectives.set(key, existing);
 }
 
-/** A prop's `@sveld-ignore` codes, for {@link recordSveldIgnore} and diagnostics reported after parsing. */
+/**
+ * A prop's `@sveld-ignore` codes, for {@link recordSveldIgnore} and
+ * diagnostics reported after parsing.
+ */
 export function recordPropSveldIgnore(ctx: ParserContext, propName: string, codes: string[] | undefined) {
   recordSveldIgnore(ctx, "prop-unknown-type", propName, codes);
   recordSveldIgnore(ctx, "bind-this-type-mismatch", propName, codes);

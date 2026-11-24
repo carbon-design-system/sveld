@@ -29,14 +29,18 @@ interface DispatchEscapeResolution {
   failureReason?: DispatchEscapeFailureReason;
 }
 
-/** How the helper refers to the dispatcher: a parameter, or a property of one (`options.dispatch`). */
+/**
+ * How the helper refers to the dispatcher: a parameter, or a property of
+ * one (`options.dispatch`).
+ */
 type DispatcherBinding = { name: string } | { object: string; property: string };
 
 /**
- * Collects the events each candidate's helper dispatches. Every call through
- * the receiving parameter must name its event with a string literal (or a
- * conditional between them); a dispatcher passed on, or a runtime-computed
- * name, leaves the candidate unresolved. AST only, no `tsc`.
+ * Collects the events each candidate's helper dispatches. Every call
+ * through the receiving parameter must name its event with a string
+ * literal (or a conditional between them); a dispatcher passed on, or a
+ * runtime-computed name, leaves the candidate unresolved. AST only, no
+ * `tsc`.
  */
 function resolveDispatchEscapeCandidates(
   fromDir: string,
@@ -83,7 +87,10 @@ function dispatcherBinding(
   return undefined;
 }
 
-/** Event names a `dispatch(...)` first argument can take, or `null` when one isn't static. */
+/**
+ * Event names a `dispatch(...)` first argument can take, or `null` when
+ * one isn't static.
+ */
 function staticEventNames(node: Expression | SpreadElement | undefined): string[] | null {
   if (!node) return null;
   if (node.type === "ConditionalExpression") {
@@ -95,12 +102,18 @@ function staticEventNames(node: Expression | SpreadElement | undefined): string[
   return name ? [name] : null;
 }
 
-/** Literal detail inference inside a helper: its locals aren't typed, so an identifier member is `any`. */
+/**
+ * Literal detail inference inside a helper: its locals aren't typed, so an
+ * identifier member is `any`.
+ */
 const helperDetailTypeSource: DetailTypeSource = {
   variableType: () => undefined,
 };
 
-/** Inferred like a same-file dispatch's detail: literals structurally, anything else `any`. */
+/**
+ * Inferred like a same-file dispatch's detail: literals structurally,
+ * anything else `any`.
+ */
 function detailType(node: Expression | SpreadElement | undefined): string {
   if (!node) return "null";
   const { deriveLiteralDetailType, literalDetailToTypeText } = getParserStack();
@@ -156,9 +169,11 @@ function collectDispatchedEvents(
       if (isCallee) return;
       // `options.anything`: `options.dispatch` itself was checked above.
       if (!("name" in binding) && parent?.type === "MemberExpression" && prop === "object") return;
-      // `x.dispatch`, `{ dispatch: ... }` or a `dispatch:` label names something else.
+      // `x.dispatch`, `{ dispatch: ... }` or a `dispatch:` label names something
+      // else.
       if (!isReference(node, parent)) return;
-      // Any other use (an argument, a stored reference) may dispatch out of sight.
+      // Any other use (an argument, a stored reference) may dispatch out of
+      // sight.
       failureReason = "passed-on";
       return STOP;
     },
@@ -260,7 +275,8 @@ function applyDispatchEscapeResolutions(
     else if (!forwardedByName.has(event.name)) forwardedByName.set(event.name, event);
   }
 
-  // An untyped `@event`'s `null` detail is only a fallback, as for a same-file dispatch.
+  // An untyped `@event`'s `null` detail is only a fallback, as for a
+  // same-file dispatch.
   const untypedNames = new Set(untypedEventNames);
   const detailByUntypedName = new Map<string, string>();
   const added: DispatchedEvent[] = [];

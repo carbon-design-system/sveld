@@ -12,17 +12,20 @@ import type { ResolveContext } from "./module-exports";
 export interface CrossFilePass<Candidate, Resolution> {
   /** This pass's candidates out of what the parse left pending. */
   collect(pending: PendingCrossFileCandidates): Candidate[];
-  /** Reads the other files, resolving imports from `fromDir`, the component's directory. AST/JSDoc only (no tsc). */
+  /**
+   * Reads the other files, resolving imports from `fromDir`, the component's
+   * directory. AST/JSDoc only (no tsc).
+   */
   resolve(fromDir: string, candidates: Candidate[], ctx: ResolveContext): Resolution[];
   /** Writes the resolutions onto the component, in place. */
   apply(component: ComponentDocApi, resolutions: Resolution[], pending: PendingCrossFileCandidates): void;
 }
 
 /**
- * Sets a field a cross-file pass resolved. A fresh parse can hold the field
- * as `undefined` where one read back from the cache file has no key, so an
- * undefined field is re-added last, as it would be when missing, and the
- * output's key order doesn't depend on cache state.
+ * Sets a field a cross-file pass resolved. A fresh parse can hold the
+ * field as `undefined` where one read back from the cache file has no key,
+ * so an undefined field is re-added last, as it would be when missing, and
+ * the output's key order doesn't depend on cache state.
  */
 export function setResolvedField<K extends keyof ComponentProp>(
   prop: ComponentProp,
@@ -40,7 +43,10 @@ export function findCandidateProp(component: ComponentDocApi, candidate: PropDef
   return list.find((entry) => entry.name === candidate.propName);
 }
 
-/** The parse-time `prop-unknown-type` no longer applies once the default's type is known. */
+/**
+ * The parse-time `prop-unknown-type` no longer applies once the default's
+ * type is known.
+ */
 export function dropUnknownTypeDiagnostic(component: ComponentDocApi, candidate: PropDefaultCandidate): void {
   if (candidate.location !== "props") return;
   component.diagnostics = (component.diagnostics ?? []).filter(

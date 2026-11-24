@@ -10,7 +10,10 @@ import { PathAliases } from "./resolve-alias";
 
 const JS_FAMILY_EXTENSION_REGEX = /\.[mc]?jsx?$/;
 
-/** What each `.js`-family extension maps to under TypeScript's module resolution, in the order `tsc` tries them. */
+/**
+ * What each `.js`-family extension maps to under TypeScript's module
+ * resolution, in the order `tsc` tries them.
+ */
 const TYPESCRIPT_COUNTERPART_EXTENSIONS: Record<string, string[]> = {
   ".js": [".ts", ".tsx", ".d.ts"],
   ".jsx": [".tsx", ".d.ts"],
@@ -27,7 +30,10 @@ export interface ModuleSource {
   dir: string;
 }
 
-/** A module's text and top-level statements, or `null` when it can't be read or parsed. */
+/**
+ * A module's text and top-level statements, or `null` when it can't be
+ * read or parsed.
+ */
 type ParsedModule = { source: ModuleSource; body: Program["body"] } | null;
 
 /** As opposed to a bare package specifier. */
@@ -45,14 +51,18 @@ function isPathSpecifier(specifier: string): boolean {
  * The files one project reads besides its components: specifier resolution
  * and parses, cached for one build or watch session so nothing leaks into
  * the next. Export lookups (`module-exports.ts`) are cached per lookup
- * instead, since an import cycle leaves one lookup's view of a module incomplete.
+ * instead, since an import cycle leaves one lookup's view of a module
+ * incomplete.
  */
 export class ModuleGraph {
   readonly aliases = new PathAliases();
   private readonly listings = new DirectoryListings();
   /** From the TypeScript-aware parser. */
   private readonly modules = new Map<string, ParsedModule>();
-  /** The last plain-JavaScript AST per file, reused while its source is unchanged. */
+  /**
+   * The last plain-JavaScript AST per file, reused while its source is
+   * unchanged.
+   */
   private readonly programs = new Map<string, { source: string; ast: Program }>();
 
   listDirectory(dir: string): Dirent[] | null {
@@ -109,7 +119,10 @@ export class ModuleGraph {
     return parsed;
   }
 
-  /** Plain JavaScript, as a component barrel is read (TypeScript syntax throws). */
+  /**
+   * Plain JavaScript, as a component barrel is read (TypeScript syntax
+   * throws).
+   */
   parseJavaScript(filePath: string, source: string): Program {
     const cached = this.programs.get(filePath);
     if (cached?.source === source) return cached.ast;
@@ -123,7 +136,10 @@ export class ModuleGraph {
     return ast;
   }
 
-  /** Also forgets every directory listing: an edit can add or remove files anywhere. */
+  /**
+   * Also forgets every directory listing: an edit can add or remove files
+   * anywhere.
+   */
   invalidate(...filePaths: string[]): void {
     this.listings.clear();
     for (const filePath of filePaths) {
@@ -133,9 +149,10 @@ export class ModuleGraph {
   }
 
   /**
-   * The TypeScript file a `.js`-family path names when only that file exists:
-   * TypeScript projects import `./util.ts` as `./util.js` (and a Svelte 5
-   * `x.svelte.ts` module as `./x.svelte.js`), since that's the emitted name.
+   * The TypeScript file a `.js`-family path names when only that
+   * file exists: TypeScript projects import `./util.ts` as `./util.js` (and
+   * a Svelte 5 `x.svelte.ts` module as `./x.svelte.js`), since that's the
+   * emitted name.
    */
   private typeScriptCounterpart(filePath: string): string | undefined {
     const extension = JS_FAMILY_EXTENSION_REGEX.exec(filePath)?.[0];

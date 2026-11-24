@@ -41,7 +41,10 @@ export interface WriteJsonOptions extends JsonOptions {
   entryExports?: EntryExports;
 }
 
-/** `EntryExport.source` is a module path string, not a range, so it fails this check. */
+/**
+ * `EntryExport.source` is a module path string, not a range, so it fails
+ * this check.
+ */
 function isSourceRange(value: unknown): value is { start: unknown; end: unknown } {
   return isObject(value) && !Array.isArray(value) && "start" in value && "end" in value;
 }
@@ -63,8 +66,9 @@ function stripSourceRanges<T>(value: T): T {
 }
 
 /**
- * `--glob` can find two components with one `moduleName` (`Menu/Menu.svelte`,
- * `icons/Menu.svelte`); on collision, name the file from the source path instead.
+ * `--glob` can find two components with one `moduleName`
+ * (`Menu/Menu.svelte`, `icons/Menu.svelte`); on collision, name the file
+ * from the source path instead.
  */
 function jsonFileName(component: ComponentDocApi, hasCollision: boolean, warnedModuleNames: Set<string>): string {
   if (!hasCollision) return `${component.moduleName}.api.json`;
@@ -102,8 +106,9 @@ async function writeJsonComponents(components: ComponentDocs, options: WriteJson
 }
 
 /**
- * The combined document as written to `COMPONENT_API.json`. Shared by the file
- * writer, the CLI's `--stdout` mode, and `sveld()`'s `document` so they can't drift.
+ * The combined document as written to `COMPONENT_API.json`. Shared by the
+ * file writer, the CLI's `--stdout` mode, and `sveld()`'s `document` so
+ * they can't drift.
  */
 export function buildJsonDocument(
   components: ComponentDocs,
@@ -112,7 +117,8 @@ export function buildJsonDocument(
   const document = buildComponentApiDocument(components, { entryExports: options.entryExports });
   const output: ComponentApiDocument = {
     ...document,
-    // Resolvable from `cwd`. JSON-only: the other writers need the relative `filePath`.
+    // Resolvable from `cwd`. JSON-only: the other writers need the relative
+    // `filePath`.
     components: document.components.map((component) => ({
       ...component,
       filePath: normalizeComponentFilePath(component.filePath, options.inputDir),

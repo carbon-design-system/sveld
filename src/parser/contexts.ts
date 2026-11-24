@@ -34,12 +34,16 @@ import { sourceForExpression, sourceRangeFromNode } from "./source-position";
 import { importedMemberBinding, importPath } from "./value-imports";
 import { findTrackedVariableType, findVariableJsDoc, resolveLocalVarJSDoc } from "./variable-jsdoc";
 
-/** `inferred` when sveld read the type off the code rather than an annotation. */
+/**
+ * `inferred` when sveld read the type off the code rather than an
+ * annotation.
+ */
 type VariableTypeInfo = NonNullable<ReturnType<typeof findTrackedVariableType>> & { inferred?: boolean };
 
 /**
- * {@link findTrackedVariableType}, else with `inferFromInitializer` typed from
- * its initializer (`let count = $state(0)` is a `number`), as a prop default is.
+ * {@link findTrackedVariableType}, else with `inferFromInitializer` typed
+ * from its initializer (`let count = $state(0)` is a `number`), as a prop
+ * default is.
  */
 function findContextVariableType(
   ctx: ParserContext,
@@ -59,9 +63,10 @@ function findContextVariableType(
 const ANY_REGEX = /\bany\b/;
 
 /**
- * `context-any-type` for a type sveld inferred with `any` inside it, such as
- * `Writable<any>` from `writable(undefined)` or `(id: any) => void` from an
- * unannotated param. A bare `any` is reported where it's defaulted.
+ * `context-any-type` for a type sveld inferred with `any` inside it, such
+ * as `Writable<any>` from `writable(undefined)` or `(id: any) => void`
+ * from an unannotated param. A bare `any` is reported where it's
+ * defaulted.
  */
 function reportInferredAny(
   ctx: ParserContext,
@@ -82,10 +87,10 @@ function reportInferredAny(
 }
 
 /**
- * `{...identifier}` in a `setContext` object literal: the properties of the
- * `const` object literal it's bound to (recursively), else the members of its
- * object-type annotation. `null` when neither resolves, so the caller widens
- * to `Record<string, any>`.
+ * `{...identifier}` in a `setContext` object literal: the properties of
+ * the `const` object literal it's bound to (recursively), else the members
+ * of its object-type annotation. `null` when neither resolves, so the
+ * caller widens to `Record<string, any>`.
  */
 function resolveSpreadShape(ctx: ParserContext, argument: unknown, key: string): ComponentContextProp[] | null {
   if (!isIdentifier(argument)) return null;
@@ -105,7 +110,10 @@ function hasGetter(objExpr: ObjectExpression, name: string): boolean {
   );
 }
 
-/** Source text of a TS annotation (`owner[field]`, e.g. a function's `returnType`), without the colon. */
+/**
+ * Source text of a TS annotation (`owner[field]`, e.g. a function's
+ * `returnType`), without the colon.
+ */
 function annotationText(
   ctx: ParserContext,
   owner: unknown,
@@ -162,7 +170,8 @@ function describeContextValue(
   if (value === undefined) return { type: "any" };
   const storeType = value.type === "CallExpression" ? svelteStoreType(ctx, value) : undefined;
   if (storeType) return { type: storeType, inferred: true };
-  // Anything else types the way a prop default would (`a ?? b`, `cond ? x : y`, a call's `@returns`).
+  // Anything else types the way a prop default would (`a ?? b`,
+  // `cond ? x : y`, a call's `@returns`).
   const processed = processInitializer(ctx, value);
   const type = processed.type ?? processed.resolvedType;
   return type ? { type, inferred: true } : untyped();
@@ -257,7 +266,8 @@ function parseContextValue(ctx: ParserContext, node: Node, key: string): Compone
   if (isObjectExpression(node)) return objectLiteralContext(ctx, node, key);
   const typeName = generateContextTypeName(key);
   const typed = (type: string) => ({ key, typeName, type, properties: [] });
-  // A store passed as the whole value, or `null`/`undefined` to clear a parent's context.
+  // A store passed as the whole value, or `null`/`undefined` to clear a
+  // parent's context.
   if (node.type === "CallExpression") {
     const storeType = svelteStoreType(ctx, node);
     if (storeType) reportInferredAny(ctx, key, key, "value", storeType, node);
@@ -272,7 +282,8 @@ function parseContextValue(ctx: ParserContext, node: Node, key: string): Compone
   const varName = node.name;
   const annotated = findContextVariableType(ctx, varName, false);
 
-  // An untyped `const` object literal describes itself, as it does when spread.
+  // An untyped `const` object literal describes itself, as it does when
+  // spread.
   const initializer = annotated ? undefined : resolveConstInitializer(ctx, varName);
   if (isObjectExpression(initializer)) {
     const { internal } = findVariableJsDoc(ctx, varName);
@@ -303,7 +314,10 @@ function parseContextValue(ctx: ParserContext, node: Node, key: string): Compone
   return typed("any");
 }
 
-/** Static description from `Symbol()` / `Symbol.for()`, or `""` when unknown. Returns `null` for other calls. */
+/**
+ * Static description from `Symbol()` / `Symbol.for()`, or `""` when
+ * unknown. Returns `null` for other calls.
+ */
 function resolveSymbolKeyDescription(node: CallExpression): string | null {
   const callee = node.callee;
   const isSymbolCall = callee.type === "Identifier" && callee.name === "Symbol";
@@ -341,8 +355,8 @@ function pendingContextKey(binding: { source: string; importedName: string; memb
 /**
  * Resolve a `setContext` key. Literals, static templates, local `const`
  * chains (depth 5), and `Symbol()` become `{ kind: "resolved" }`. A
- * `Symbol()` with no description uses the binding name. A named import,
- * or a member of a namespace import (`keys.THEME`), is `{ kind: "pending" }`
+ * `Symbol()` with no description uses the binding name. A named import, or
+ * a member of a namespace import (`keys.THEME`), is `{ kind: "pending" }`
  * so `generateBundle` can read the other file.
  */
 function resolveContextKey(ctx: ParserContext, keyArg: unknown, depth = 0): ContextKeyResolution {
@@ -366,7 +380,8 @@ function resolveContextKey(ctx: ParserContext, keyArg: unknown, depth = 0): Cont
     const resolvedInit = resolveConstInitializer(ctx, node.name);
     if (resolvedInit && typeof resolvedInit === "object" && "type" in resolvedInit) {
       const init = resolvedInit as Expression;
-      // `const KEY = Symbol()` has no description, so the binding name is the key.
+      // `const KEY = Symbol()` has no description, so the binding name is the
+      // key.
       if (
         (init.type === "CallExpression" || init.type === "NewExpression") &&
         resolveSymbolKeyDescription(init) === ""
@@ -385,7 +400,8 @@ function resolveContextKey(ctx: ParserContext, keyArg: unknown, depth = 0): Cont
   }
 
   if (node.type === "MemberExpression") {
-    // As for an identifier: a parameter or nested declaration named like the import hides it.
+    // As for an identifier: a parameter or nested declaration named like the
+    // import hides it.
     const importBinding =
       depth === 0 && isCalleeBoundInNestedScope(ctx, node) ? undefined : importedMemberBinding(ctx, node);
     if (importBinding) return pendingContextKey(importBinding);
@@ -394,7 +410,10 @@ function resolveContextKey(ctx: ParserContext, keyArg: unknown, depth = 0): Cont
   return { kind: "unresolved" };
 }
 
-/** A value other than an object literal or a variable (`writable(0)`, `new Map()`) has no shape to describe. */
+/**
+ * A value other than an object literal or a variable (`writable(0)`,
+ * `new Map()`) has no shape to describe.
+ */
 function recordContextValueUnresolved(
   ctx: ParserContext,
   key: string,
@@ -413,9 +432,9 @@ function recordContextValueUnresolved(
 }
 
 /**
- * Parse `setContext(key, value)`. Imported keys go to `pendingContextKeyCandidates`.
- * `statement` is the call's own expression statement, whose `@internal`/`@ignore`
- * JSDoc hides the context.
+ * Parse `setContext(key, value)`. Imported keys go to
+ * `pendingContextKeyCandidates`. `statement` is the call's own expression
+ * statement, whose `@internal`/`@ignore` JSDoc hides the context.
  */
 export function parseSetContextCall(
   ctx: ParserContext,

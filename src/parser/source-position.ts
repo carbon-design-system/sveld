@@ -40,14 +40,18 @@ export function sourceRangeFromNode(ctx: ParserContext, node: unknown) {
   return sourceRangeFromOffsets(ctx, start, end);
 }
 
-/** A JSDoc tag's range, from its comment lines (each carrying its absolute offset). */
+/**
+ * A JSDoc tag's range, from its comment lines (each carrying its absolute
+ * offset).
+ */
 export function sourceRangeFromCommentTag(
   ctx: ParserContext,
   tagLines: Array<{ start: number; raw: string; tag?: string }> | undefined,
 ): SourceRange | undefined {
   if (!tagLines || tagLines.length === 0) return undefined;
 
-  // A trailing line that's just the block's closing `*/` isn't part of the tag.
+  // A trailing line that's just the block's closing `*/` isn't part of the
+  // tag.
   const relevantLines = [...tagLines];
   while (relevantLines.length > 1) {
     const lastLine = relevantLines[relevantLines.length - 1];
@@ -78,7 +82,10 @@ export function nodeSourceText(ctx: ParserContext, node: unknown) {
 /** A run of whitespace. */
 const WHITESPACE_RUN_REGEX = /\s+/g;
 
-/** `nodeSourceText` on one line: each line break and its indentation become one space. */
+/**
+ * `nodeSourceText` on one line: each line break and its indentation become
+ * one space.
+ */
 export function sourceForExpression(ctx: ParserContext, node: unknown) {
   return nodeSourceText(ctx, node)?.replace(LINE_BREAKS_WITH_INDENT_REGEX, " ");
 }
@@ -89,12 +96,13 @@ const LEADING_INDENT_REGEX = /^[ \t]*/;
 const TEMPLATE_LINE_BREAK_REGEX = /\r?\n/g;
 
 /**
- * `node`'s source as a default's text: comments dropped, laid out as written
- * (line breaks kept, indentation relative to the line it starts on), other
- * whitespace runs collapsed. String, template, and regex literals stay as
- * written, a template's line break as `\n`. Comments and literals come from
- * the AST, not a rescan of the text, so `/\/\//` or `/"/` isn't misread as a
- * comment or a string. Writers that need one line fold the line breaks.
+ * `node`'s source as a default's text: comments dropped, laid out as
+ * written (line breaks kept, indentation relative to the line it starts
+ * on), other whitespace runs collapsed. String, template, and regex
+ * literals stay as written, a template's line break as `\n`. Comments and
+ * literals come from the AST, not a rescan of the text, so `/\/\//` or
+ * `/"/` isn't misread as a comment or a string. Writers that need one line
+ * fold the line breaks.
  */
 export function defaultSourceText(ctx: ParserContext, node: unknown) {
   const { source } = ctx;
@@ -118,7 +126,8 @@ export function defaultSourceText(ctx: ParserContext, node: unknown) {
   });
   segments.sort((a, b) => a.start - b.start);
 
-  // A whitespace run with a line break keeps the break and the next line's indentation.
+  // A whitespace run with a line break keeps the break and the next line's
+  // indentation.
   const layOut = (text: string) =>
     text.replace(WHITESPACE_RUN_REGEX, (run) => (run.includes("\n") ? run.slice(run.lastIndexOf("\n")) : " "));
 

@@ -19,7 +19,10 @@ export function createMarkdownDocument(
   });
 }
 
-/** The combined document, shared by `writeMarkdown`, the CLI's `--stdout` mode, and `writeMarkdownCore`. */
+/**
+ * The combined document, shared by `writeMarkdown`, the CLI's `--stdout`
+ * mode, and `writeMarkdownCore`.
+ */
 export function renderMarkdownDocument(
   components: ComponentDocs,
   options: WriteMarkdownCoreOptions & { entryExports?: EntryExports },

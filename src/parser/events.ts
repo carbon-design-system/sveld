@@ -12,9 +12,9 @@ const NEWLINES_REGEX = /\n/g;
 const IDENTIFIER_REGEX = /^[A-Za-z_$][\w$]*$/;
 
 /**
- * How {@link deriveLiteralDetailType} types identifiers: via the component's
- * parse ({@link componentDetailTypeSource}), or a stand-in for a module read
- * without one (an imported dispatch helper).
+ * How {@link deriveLiteralDetailType} types identifiers: via the
+ * component's parse ({@link componentDetailTypeSource}), or a stand-in for
+ * a module read without one (an imported dispatch helper).
  */
 export type DetailTypeSource = {
   variableType(name: string): string | undefined;
@@ -37,9 +37,10 @@ export function componentDetailTypeSource(
 }
 
 /**
- * Names in a detail argument (`count`, `{ count }`, `[count]`) shadowed by a
- * nested scope at the dispatch. Must run during the walk, while those scopes
- * are live. `undefined` when there are none, which is almost always.
+ * Names in a detail argument (`count`, `{ count }`, `[count]`) shadowed by
+ * a nested scope at the dispatch. Must run during the walk, while those
+ * scopes are live. `undefined` when there are none, which is almost
+ * always.
  */
 export function detailNamesBoundInNestedScope(
   ctx: ParserContext,
@@ -67,9 +68,10 @@ export function detailNamesBoundInNestedScope(
 }
 
 /**
- * Detail type of a same-file dispatch argument that isn't a scalar literal:
- * an object or array literal structurally, a variable by its type. `undefined`
- * for anything else, so callers keep their scalar-literal narrowing.
+ * Detail type of a same-file dispatch argument that isn't a
+ * scalar literal: an object or array literal structurally, a variable by
+ * its type. `undefined` for anything else, so callers keep their
+ * scalar-literal narrowing.
  */
 function deriveDetailType(source: DetailTypeSource, node: unknown): string | undefined {
   if (isIdentifier(node)) return source.variableType(node.name);
@@ -94,11 +96,13 @@ function inferLiteralMemberType(source: DetailTypeSource, node: unknown): string
 }
 
 /**
- * Detail type text of a dispatch's detail argument: {@link deriveDetailType},
- * else `null` or a scalar literal's type, else `""` (typed by `addDispatchedEvent`).
+ * Detail type text of a dispatch's detail argument: {@link
+ * deriveDetailType}, else `null` or a scalar literal's type, else `""`
+ * (typed by `addDispatchedEvent`).
  */
 export function dispatchDetailText(source: DetailTypeSource, detail: unknown): string {
-  // A `null` value is also how a regex/bigint literal the runtime can't build looks, so check `raw`.
+  // A `null` value is also how a regex/bigint literal the runtime can't
+  // build looks, so check `raw`.
   if (isLiteral(detail) && detail.raw === "null") return "null";
   const typed = deriveDetailType(source, detail);
   if (typed !== undefined) return typed;
@@ -107,9 +111,10 @@ export function dispatchDetailText(source: DetailTypeSource, detail: unknown): s
 }
 
 /**
- * `{}` types as `Record<string, never>` (never `null`, and not the banned bare `{}`). A spread or
- * computed key adds members sveld can't name, so it becomes a `[key: string]: any` index
- * signature alongside the known members, or `Record<string, any>` when there are none.
+ * `{}` types as `Record<string, never>` (never `null`, and not the banned
+ * bare `{}`). A spread or computed key adds members sveld can't name, so
+ * it becomes a `[key: string]: any` index signature alongside the known
+ * members, or `Record<string, any>` when there are none.
  */
 function buildObjectLiteralDetailType(source: DetailTypeSource, node: ObjectExpression): string {
   if (node.properties.length === 0) return "Record<string, never>";
@@ -141,9 +146,10 @@ function buildArrayLiteralDetailType(source: DetailTypeSource, node: ArrayExpres
 }
 
 /**
- * Where `call` hands the dispatcher itself to another function: as an argument
- * (`helper(dispatch)`) or an object literal property (`helper({ dispatch })`).
- * Events dispatched in there are out of the component's own script.
+ * Where `call` hands the dispatcher itself to another function: as an
+ * argument (`helper(dispatch)`) or an object literal property
+ * (`helper({ dispatch })`). Events dispatched in there are out of the
+ * component's own script.
  */
 export function findDispatcherArgument(
   call: CallExpression,
@@ -155,7 +161,8 @@ export function findDispatcherArgument(
     for (const property of argument.properties) {
       if (property.type !== "Property" || !isIdentifier(property.value)) continue;
       if (property.value.name !== dispatcherName) continue;
-      // A computed key can't be matched to the helper's parameter, so it stays unnamed.
+      // A computed key can't be matched to the helper's parameter, so it stays
+      // unnamed.
       const key = !property.computed && isIdentifier(property.key) ? property.key.name : undefined;
       return { argumentIndex, property: key ?? "" };
     }
@@ -167,7 +174,10 @@ export function literalDetailToTypeText(value: unknown): string {
   return typeof value === "string" ? JSON.stringify(value) : String(value);
 }
 
-/** Merge or add a dispatched event. Detail defaults to `null` when the dispatch has no argument and no `@event` detail. */
+/**
+ * Merge or add a dispatched event. Detail defaults to `null` when the
+ * dispatch has no argument and no `@event` detail.
+ */
 export function addDispatchedEvent(
   ctx: ParserContext,
   {
@@ -188,7 +198,8 @@ export function addDispatchedEvent(
   const existing_event = ctx.events.get(name);
   if (existing_event?.type === "forwarded") {
     // Dispatched beats forwarded regardless of detection order (forwards are
-    // seen mid-walk, dispatches resolve after it); the forward's metadata is a fallback.
+    // seen mid-walk, dispatches resolve after it); the forward's metadata is a
+    // fallback.
     ctx.events.set(name, {
       type: "dispatched",
       name,
@@ -200,7 +211,8 @@ export function addDispatchedEvent(
       source: source || existing_event.source,
     });
   } else if (existing_event) {
-    // An untyped `@event`'s `null` detail is only a fallback: the first dispatch replaces it.
+    // An untyped `@event`'s `null` detail is only a fallback: the first
+    // dispatch replaces it.
     const replacesUntypedDetail = ctx.untypedJsDocEventNames.delete(name);
     ctx.events.set(name, {
       ...existing_event,
@@ -225,7 +237,10 @@ export function addDispatchedEvent(
   }
 }
 
-/** A `$host().dispatchEvent(...)` call read during the walk, recorded by {@link addHostDispatchedEvent}. */
+/**
+ * A `$host().dispatchEvent(...)` call read during the walk, recorded by
+ * {@link addHostDispatchedEvent}.
+ */
 export interface HostDispatch {
   name: string;
   detail: unknown;
@@ -235,8 +250,9 @@ export interface HostDispatch {
 }
 
 /**
- * Detect `$host().dispatchEvent(new CustomEvent("name", { detail }))` (or `new Event(...)`).
- * Recorded after the walk by {@link addHostDispatchedEvent}, once every variable is known.
+ * Detect `$host().dispatchEvent(new CustomEvent("name", { detail }))` (or
+ * `new Event(...)`). Recorded after the walk by {@link
+ * addHostDispatchedEvent}, once every variable is known.
  */
 export function parseHostDispatchEventCall(
   ctx: ParserContext,
@@ -272,7 +288,10 @@ export function parseHostDispatchEventCall(
   };
 }
 
-/** Records a {@link parseHostDispatchEventCall} event, its detail typed as a `dispatch()` detail is. */
+/**
+ * Records a {@link parseHostDispatchEventCall} event, its detail typed as
+ * a `dispatch()` detail is.
+ */
 export function addHostDispatchedEvent(ctx: ParserContext, dispatch: HostDispatch) {
   addDispatchedEvent(ctx, {
     name: dispatch.name,
@@ -291,7 +310,8 @@ export function buildEventDetailFromProperties(
   const props = properties
     .map(({ name, type, description, optional, default: defaultValue }) => {
       const optionalMarker = optional ? "?" : "";
-      // `"a-b"` needs its quotes back; `[key: string]` is an index signature, not a key.
+      // `"a-b"` needs its quotes back; `[key: string]` is an index signature,
+      // not a key.
       const key = IDENTIFIER_REGEX.test(name) || name.startsWith("[") ? name : JSON.stringify(name);
       const defaultTag = defaultValue ? `@default ${defaultValue}` : "";
       const comment = escapeCommentText(
@@ -300,8 +320,9 @@ export function buildEventDetailFromProperties(
 
       if (comment) {
         if (multiline) {
-          // A multi-line `@property` description (continuation lines) gets a block comment; a
-          // blank line (paragraph break) gets a bare `*`, with no trailing space.
+          // A multi-line `@property` description (continuation lines) gets a block
+          // comment; a blank line (paragraph break) gets a bare `*`, with no
+          // trailing space.
           const docComment = comment.includes("\n")
             ? `/**\n${comment
                 .split("\n")

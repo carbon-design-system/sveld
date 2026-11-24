@@ -1,7 +1,10 @@
 import type { SerializedComponentEvent } from "../model";
 import { compareText } from "./utils";
 
-/** Event order in every output: by name, then dispatched before forwarded, then by element and detail. */
+/**
+ * Event order in every output: by name, then dispatched before forwarded,
+ * then by element and detail.
+ */
 export function compareSerializedEvents(a: SerializedComponentEvent, b: SerializedComponentEvent): number {
   const nameCompare = compareText(a.name, b.name);
   if (nameCompare !== 0) return nameCompare;

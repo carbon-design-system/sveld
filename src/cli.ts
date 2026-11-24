@@ -126,16 +126,25 @@ const BOOLEAN_FLAGS = new Set([
 /** Value-taking flags that also accept their value as the next argument. */
 const SPACE_SEPARATED_VALUE_FLAGS = new Set(["entry", "config", "cache", "check", "types-format"]);
 
-/** Of those, the flags that error (rather than using a bare default) when no value is given. */
+/**
+ * Of those, the flags that error (rather than using a bare default) when
+ * no value is given.
+ */
 const REQUIRES_VALUE_FLAGS = new Set(["entry", "config", "types-format"]);
 
-/** camelCase input is kebab-cased first, so `--failFast` suggests `--fail-fast`. */
+/**
+ * camelCase input is kebab-cased first, so `--failFast` suggests
+ * `--fail-fast`.
+ */
 function suggestFlag(rawFlag: string): string | undefined {
   const kebab = rawFlag.replace(UPPERCASE_RE, (letter) => `-${letter.toLowerCase()}`);
   return closestMatch(kebab, KNOWN_FLAGS);
 }
 
-/** Parses one `--flag` argument, consuming `rawNextArg` as its value when the flag takes one. */
+/**
+ * Parses one `--flag` argument, consuming `rawNextArg` as its value when
+ * the flag takes one.
+ */
 function parseCliFlag(
   arg: string,
   rawNextArg: string | undefined,
@@ -293,7 +302,8 @@ export async function cli(process: NodeJS.Process) {
   try {
     fileConfig = await loadConfigOption(cliOptions.config, process.cwd(), true);
   } catch (error) {
-    // The user's to fix, not a crash: print the reason, not sveld's (minified) stack.
+    // The user's to fix, not a crash: print the reason, not sveld's (minified)
+    // stack.
     return usageError(error instanceof Error ? error.message : String(error));
   }
   const options = mergeConfig<SveldRuntimeOptions>(fileConfig, cliOptions);
@@ -336,8 +346,9 @@ export async function cli(process: NodeJS.Process) {
   if (resolution.entry !== null) {
     input = resolution.entry;
   } else if (!resolution.configured && existsSync(join(process.cwd(), FALLBACK_ENTRY))) {
-    // Only when nothing named an entry: a mistyped --entry or package.json#svelte
-    // must fail rather than quietly document a different file.
+    // Only when nothing named an entry: a mistyped --entry or
+    // package.json#svelte must fail rather than quietly document a different
+    // file.
     console.error(
       `sveld: no entry point configured; using "${FALLBACK_ENTRY}". Set package.json#svelte (or pass --entry) to silence this.`,
     );

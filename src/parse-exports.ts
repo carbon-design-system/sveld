@@ -14,7 +14,8 @@ export type ParsedExports = Record<
     mixed?: boolean;
     /**
      * The export's name in `source` when it differs from its key, as in
-     * `export { add as addTab } from "./model.js"`. Absent for a default export.
+     * `export { add as addTab } from "./model.js"`. Absent for a default
+     * export.
      */
     imported?: string;
     /**
@@ -33,9 +34,10 @@ function moduleExportName(node: Identifier | StringLiteral): string {
 
 /**
  * Parses the exports of the module a non-`.svelte` re-export
- * (`export { X } from "./barrel"`) resolves to. `null` when it resolves to no
- * file, so callers warn. Empty (callers record the literal specifier) on an
- * import cycle or when the module isn't plain JS, e.g. TypeScript-only.
+ * (`export { X } from "./barrel"`) resolves to. `null` when it resolves to
+ * no file, so callers warn. Empty (callers record the literal specifier)
+ * on an import cycle or when the module isn't plain JS, e.g.
+ * TypeScript-only.
  */
 function resolveBarrelExports(
   graph: ModuleGraph,
@@ -62,9 +64,11 @@ function resolveBarrelExports(
 /**
  * Parses an entry file's exports, resolving aliases against `dir`.
  *
- * @param resolving - Absolute paths not to follow `export *` into, e.g. the
+ * @param resolving - Absolute paths not to follow `export *` into, e.g.
+ *   the
  *   entry itself so a self-re-exporting barrel stops there.
- * @param fromFile - The entry file, named when an `export *` can't be resolved.
+ * @param fromFile - The entry file, named when an `export *` can't be
+ *   resolved.
  */
 export function parseExports(
   source: string,
@@ -77,7 +81,8 @@ export function parseExports(
 }
 
 /**
- * @param resolving - Paths on the current call stack, breaking `export *` cycles.
+ * @param resolving - Paths on the current call stack, breaking `export *`
+ *   cycles.
  * @param fromFile - Named in a thrown {@link UnresolvedModuleError}.
  */
 function readExports(

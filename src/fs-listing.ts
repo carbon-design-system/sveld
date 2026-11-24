@@ -1,7 +1,10 @@
 import { type Dirent, existsSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 
-/** The path of the first of `names` in `dir` or its nearest ancestor that has one; `null` when none does. */
+/**
+ * The path of the first of `names` in `dir` or its nearest ancestor that
+ * has one; `null` when none does.
+ */
 export function findUp(dir: string, names: readonly string[]): string | null {
   for (let current = resolve(dir); ; current = dirname(current)) {
     for (const name of names) {
@@ -17,7 +20,10 @@ interface DirectoryListing {
   names: Set<string>;
   /** On-disk name -> entry; built on first use. */
   byName?: Map<string, Dirent>;
-  /** Case-folded, NFC-normalized name -> on-disk name; built on first fuzzy lookup. */
+  /**
+   * Case-folded, NFC-normalized name -> on-disk name; built on first fuzzy
+   * lookup.
+   */
   folded?: Map<string, string>;
 }
 
@@ -27,9 +33,9 @@ function foldName(name: string): string {
 
 /**
  * One `readdirSync` per directory, shared by the glob walk and module
- * resolution, instead of an `existsSync` per candidate extension. Unreadable
- * directories are remembered as such. {@link clear} before any pass that
- * must see files created since the last one.
+ * resolution, instead of an `existsSync` per candidate extension.
+ * Unreadable directories are remembered as such. {@link clear} before any
+ * pass that must see files created since the last one.
  */
 export class DirectoryListings {
   private readonly listings = new Map<string, DirectoryListing | null>();

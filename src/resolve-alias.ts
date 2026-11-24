@@ -10,7 +10,10 @@ const CONFIG_FILE_NAMES = ["tsconfig.json", "jsconfig.json"];
 
 const pathPatternRegexCache = new Map<string, RegExp>();
 
-/** A block or line comment, stripped before parsing a tsconfig/jsconfig as JSON. */
+/**
+ * A block or line comment, stripped before parsing a tsconfig/jsconfig as
+ * JSON.
+ */
 const COMMENT_PATTERN = /\/\*[\s\S]*?\*\/|\/\/.*/g;
 
 const ALIAS_CANDIDATE_EXTENSIONS = [".svelte", ...MODULE_EXTENSIONS];
@@ -86,9 +89,15 @@ function parseConfig(configPath: string, configCache: Map<string, ParsedTsConfig
 }
 
 interface AliasLookup {
-  /** Absolute path when resolved via an alias mapping; `importPath` unchanged otherwise. */
+  /**
+   * Absolute path when resolved via an alias mapping; `importPath` unchanged
+   * otherwise.
+   */
   resolved: string;
-  /** True when `importPath` is a non-relative specifier that no `paths` entry matched. */
+  /**
+   * True when `importPath` is a non-relative specifier that no `paths` entry
+   * matched.
+   */
   unresolved: boolean;
   /** What was searched, for error messages. */
   searched: string;
@@ -105,14 +114,17 @@ function getPatternRegex(pattern: string): RegExp {
   return regex;
 }
 
-/** Resolves tsconfig/jsconfig `paths` aliases, reading each config file once per instance. */
+/**
+ * Resolves tsconfig/jsconfig `paths` aliases, reading each config file
+ * once per instance.
+ */
 export class PathAliases {
   private readonly configs = new Map<string, ParsedTsConfig | null>();
 
   /**
-   * Patterns are tried longest literal prefix first (like `tsc`), not in JSON
-   * key order. Within the matched pattern the first mapping that exists on
-   * disk wins; if none does, the first mapping is a best-effort guess.
+   * Patterns are tried longest literal prefix first (like `tsc`), not in
+   * JSON key order. Within the matched pattern the first mapping that exists
+   * on disk wins; if none does, the first mapping is a best-effort guess.
    */
   lookup(importPath: string, fromDir: string): AliasLookup {
     if (importPath.startsWith(".") || isAbsolute(importPath)) {
@@ -158,7 +170,10 @@ export class PathAliases {
     return this.lookup(importPath, fromDir).resolved;
   }
 
-  /** Like {@link absolute}, but relative to `fromDir` (`./lib/utils`), for generated exports. */
+  /**
+   * Like {@link absolute}, but relative to `fromDir` (`./lib/utils`), for
+   * generated exports.
+   */
   relative(importPath: string, fromDir: string): string {
     const absolutePath = this.absolute(importPath, fromDir);
     if (absolutePath === importPath) return importPath;

@@ -10,7 +10,10 @@ import { constDefaultsPass } from "./resolve-const-defaults";
 import { contextKeysPass } from "./resolve-context-keys";
 import { dispatchEscapesPass } from "./resolve-dispatch-escapes";
 
-/** A pass bound to one component's candidates, run once they're known to be non-empty. */
+/**
+ * A pass bound to one component's candidates, run once they're known to be
+ * non-empty.
+ */
 type BoundPass = (component: ComponentDocApi, fromDir: string, ctx: ResolveContext) => void;
 
 function bind<Candidate, Resolution>(
@@ -23,7 +26,10 @@ function bind<Candidate, Resolution>(
   };
 }
 
-/** In the order they run: each sees the component as the previous one left it. */
+/**
+ * In the order they run: each sees the component as the previous one left
+ * it.
+ */
 const PASSES = [bind(callDefaultsPass), bind(constDefaultsPass), bind(contextKeysPass), bind(dispatchEscapesPass)];
 
 /**
@@ -49,7 +55,8 @@ export async function resolveCrossFileCandidates(
   const readsByFilePath = new Map<string, string[]>();
   if (work.length === 0) return readsByFilePath;
 
-  // Warm-cache runs skip the parser stack, but sibling modules still need it.
+  // Warm-cache runs skip the parser stack, but sibling modules still need
+  // it.
   await loadParserStack();
 
   for (const { component, passes } of work) {

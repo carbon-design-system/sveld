@@ -23,9 +23,15 @@ export interface ComponentParseError {
 
 export interface GenerateBundleResult {
   exports: ParsedExports;
-  /** Entry-barrel exports other than components. Empty when `documentExports` is off. */
+  /**
+   * Entry-barrel exports other than components. Empty when `documentExports`
+   * is off.
+   */
   entryExports: EntryExports;
-  /** Keyed by `moduleName`, unique here because it comes from the entry barrel's export names. */
+  /**
+   * Keyed by `moduleName`, unique here because it comes from the entry
+   * barrel's export names.
+   */
   components: ComponentDocs;
   /**
    * Every `--glob`-discovered `.svelte` file, keyed by resolved `filePath`
@@ -39,7 +45,10 @@ export interface GenerateBundleResult {
    * one or more components threw during parsing.
    */
   errors: ComponentParseError[];
-  /** Unknown props, `any` contexts, and orphan `@event` tags across the bundle. */
+  /**
+   * Unknown props, `any` contexts, and orphan `@event` tags across the
+   * bundle.
+   */
   diagnostics: SveldDiagnostic[];
   /**
    * @internal Undefined when caching is off. Exposed so the write phase can
@@ -50,7 +59,8 @@ export interface GenerateBundleResult {
    * @internal filePath -> resolved source path (the `cache` entry key), so
    * the write phase skips path-alias resolution. Keyed by filePath since
    * moduleName isn't unique. Undefined when caching is off. Omits components
-   * resolved from another file's contents; see `crossFileResolvedPathByFilePath`.
+   * resolved from another file's contents; see
+   * `crossFileResolvedPathByFilePath`.
    */
   resolvedPathByFilePath?: Map<string, string>;
   /**
@@ -67,13 +77,16 @@ export interface GenerateBundleOptions {
    * the failure and continuing with the remaining components.
    */
   failFast?: boolean;
-  /** Record consts, functions, and types from the entry barrel. Off by default. */
+  /**
+   * Record consts, functions, and types from the entry barrel. Off by
+   * default.
+   */
   documentExports?: boolean;
   /**
-   * Cache parsed component output to disk. Unchanged files skip re-parsing on
-   * later runs. On by default, writing to
-   * `node_modules/.cache/sveld/parse-cache.json`; a string sets a custom path.
-   * Pass `false` to disable.
+   * Cache parsed component output to disk. Unchanged files skip re-parsing
+   * on later runs. On by default, writing to
+   * `node_modules/.cache/sveld/parse-cache.json`; a string sets a custom
+   * path. Pass `false` to disable.
    */
   cache?: boolean | string;
   /**
@@ -87,11 +100,11 @@ export interface GenerateBundleOptions {
    */
   checkExamples?: boolean | "syntax";
   /**
-   * `ignore`: diagnostics matching at least one `{ code?, component?, name? }`
-   * matcher are marked `ignored` (an omitted field matches anything;
-   * `component` is a glob). Ignored diagnostics still appear in
-   * `SveldResult.diagnostics` and are counted in the text summary, but never
-   * fail `--strict` / `--strict=errors`.
+   * `ignore`: diagnostics matching at least one
+   * `{ code?, component?, name? }` matcher are marked `ignored` (an omitted
+   * field matches anything; `component` is a glob). Ignored diagnostics
+   * still appear in `SveldResult.diagnostics` and are counted in the text
+   * summary, but never fail `--strict` / `--strict=errors`.
    */
   diagnostics?: { ignore?: DiagnosticIgnoreMatcher[] };
 }
@@ -112,7 +125,8 @@ export type ResolveComponentFilePath = (filePath: string) => string;
 /**
  * Parses the entry's exported components (for JSON/Markdown) and, with
  * `glob`, every `.svelte` file beside it (for TypeScript definitions). A
- * component that fails to parse lands in `errors` unless `failFast` is set.
+ * component that fails to parse lands in `errors` unless `failFast` is
+ * set.
  */
 export async function generateBundle(
   input: string,

@@ -31,9 +31,15 @@ import { hasSvelteExtension, normalizeSeparators, SVELTE_EXT_REGEX } from "./pat
 
 /** One component file's output, shared by every entry that points at it. */
 interface ComponentRecord {
-  /** Examples checked and cross-file candidates resolved; bundle-wide checks run per result instead. */
+  /**
+   * Examples checked and cross-file candidates resolved; bundle-wide checks
+   * run per result instead.
+   */
   component: ParsedComponent;
-  /** Modules the cross-file pass read for it; undefined when it had nothing to resolve. */
+  /**
+   * Modules the cross-file pass read for it; undefined when it had nothing
+   * to resolve.
+   */
   crossFileReads?: string[];
 }
 
@@ -53,7 +59,10 @@ export interface ProjectUpdate {
   reparsed: string[];
 }
 
-/** A failed read is logged and recorded as `null`, so one unreadable file doesn't abort the bundle. */
+/**
+ * A failed read is logged and recorded as `null`, so one unreadable file
+ * doesn't abort the bundle.
+ */
 async function readFileMap(filePaths: Iterable<string>): Promise<Map<string, string | null>> {
   const entries = await Promise.all(
     Array.from(filePaths, async (filePath): Promise<[string, string | null]> => {
@@ -78,9 +87,10 @@ function reportParseErrors(errors: ComponentParseError[]): void {
 
 /**
  * The components under one entry point, one record per component file that
- * both of a result's maps are views of. {@link update} re-parses only what a
- * set of changed files affects (watch mode). Each call returns fresh maps and
- * component objects, so a caller holding an older result never sees it change.
+ * both of a result's maps are views of. {@link update} re-parses only what
+ * a set of changed files affects (watch mode). Each call returns fresh
+ * maps and component objects, so a caller holding an older result never
+ * sees it change.
  */
 export class Project {
   private readonly input: string;
@@ -101,7 +111,10 @@ export class Project {
   /** Keyed by resolved file path. */
   private readonly parseErrors = new Map<string, ComponentParseError>();
   private canonicalEntries = new Map<string, CanonicalEntry>();
-  /** Module names already warned about, so a rebuild doesn't repeat the warning. */
+  /**
+   * Module names already warned about, so a rebuild doesn't repeat the
+   * warning.
+   */
   private readonly warnedModuleNames = new Set<string>();
 
   constructor(input: string, glob: boolean, options: GenerateBundleOptions = {}) {
@@ -237,7 +250,10 @@ export class Project {
     }
   }
 
-  /** The `moduleName` and `filePath` the component `entry` points at is documented under. */
+  /**
+   * The `moduleName` and `filePath` the component `entry` points at is
+   * documented under.
+   */
   private entryIdentity(entries: ComponentEntry[], [exportName, { source }]: ComponentEntry): CanonicalEntry {
     return {
       moduleName: componentModuleName(exportName, source, entries.length, this.warnedModuleNames),

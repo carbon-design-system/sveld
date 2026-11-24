@@ -7,11 +7,17 @@ interface ConstDefaultResolution {
   candidate: PendingConstDefaultCandidate;
   /** Present on success. */
   literal?: PrimitiveLiteral;
-  /** The const's own type annotation or JSDoc `@type`, when it can be copied into another file. */
+  /**
+   * The const's own type annotation or JSDoc `@type`, when it can be copied
+   * into another file.
+   */
   declaredType?: InternalExport["declaredType"];
 }
 
-/** Only `export const` with a primitive literal counts; `let`/`var` exports are live bindings. */
+/**
+ * Only `export const` with a primitive literal counts; `let`/`var` exports
+ * are live bindings.
+ */
 function resolveConstDefaultCandidates(
   fromDir: string,
   candidates: PendingConstDefaultCandidate[],
@@ -29,9 +35,9 @@ function resolveConstDefaultCandidates(
 }
 
 /**
- * Swaps the imported identifier for its literal, as for a same-file `const`,
- * and types the prop from the const's declared type, else the literal, only
- * when nothing more explicit won.
+ * Swaps the imported identifier for its literal, as for a same-file
+ * `const`, and types the prop from the const's declared type, else the
+ * literal, only when nothing more explicit won.
  */
 function applyConstDefaultResolutions(component: ComponentDocApi, resolutions: ConstDefaultResolution[]): void {
   for (const { candidate, literal, declaredType } of resolutions) {

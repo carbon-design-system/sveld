@@ -40,7 +40,10 @@ export interface PluginSveldOptions extends Pick<GenerateBundleOptions, "cache" 
   glob?: boolean;
   /** Suppress writer progress logs (`created "..."` / `unchanged "..."`). */
   quiet?: boolean;
-  /** Record consts, functions, and types from the entry barrel. Off by default. */
+  /**
+   * Record consts, functions, and types from the entry barrel. Off by
+   * default.
+   */
   documentExports?: boolean;
   types?: boolean;
   typesOptions?: TypesOptions;
@@ -96,16 +99,17 @@ interface SveldPlugin {
 
 /**
  * `sveld.config` keys that only the CLI and `sveld()` act on: the plugin
- * neither reports diagnostics nor diffs a snapshot, so a config shared with
- * the CLI would otherwise look like it applies here too.
+ * neither reports diagnostics nor diffs a snapshot, so a config shared
+ * with the CLI would otherwise look like it applies here too.
  */
 const RUNTIME_ONLY_KEYS = ["reportDiagnostics", "strict", "check", "checkLevel", "stdout", "format"];
 
 const WATCH_DEBOUNCE_MS = 50;
 
 /**
- * Serializes calls to `run`: a call made while one is in flight queues behind
- * it. Watch-mode flushes mutate a shared `SveldBundle` and would otherwise race.
+ * Serializes calls to `run`: a call made while one is in flight queues
+ * behind it. Watch-mode flushes mutate a shared `SveldBundle` and would
+ * otherwise race.
  */
 export function createSerialQueue(run: () => Promise<void>): () => void {
   let pending: Promise<void> = Promise.resolve();
@@ -118,7 +122,8 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
   const watch = opts?.watch === true;
   let result: GenerateBundleResult;
   let input: string | null;
-  // Hooks read this, not `opts`, so a config file loaded in `buildStart` applies.
+  // Hooks read this, not `opts`, so a config file loaded in `buildStart`
+  // applies.
   let mergedOpts: PluginSveldOptions = opts ?? {};
   let root: string | undefined;
 
@@ -245,7 +250,10 @@ export async function writeOutput(result: GenerateBundleResult, opts: PluginSvel
   result.cache?.save();
 }
 
-/** Prints the `json` or `markdown` document to stdout. The CLI ensures exactly one is set. */
+/**
+ * Prints the `json` or `markdown` document to stdout. The CLI ensures
+ * exactly one is set.
+ */
 export async function writeStdout(result: GenerateBundleResult, opts: PluginSveldOptions, input: string) {
   if (opts.json) {
     const rendered = renderJsonDocument(result.components, {

@@ -6,7 +6,10 @@ const NON_SLUG_CHAR_REGEX = /[^\w\- ]+/g;
 const SLUG_SPACE_REGEX = /\s+/g;
 const TOC_PLACEHOLDER = "<!-- __TOC__ -->";
 
-/** Mirrors GitHub's heading slugger, including `-1`, `-2`, ... suffixes for duplicates. */
+/**
+ * Mirrors GitHub's heading slugger, including `-1`, `-2`, ... suffixes for
+ * duplicates.
+ */
 function slugifyHeading(raw: string, seen: Map<string, number>): string {
   const slug = raw
     .toLowerCase()
@@ -22,7 +25,10 @@ function slugifyHeading(raw: string, seen: Map<string, number>): string {
 export type AppendType = "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "quote" | "p" | "divider" | "raw";
 
 export interface TocLine {
-  /** Leading space count; 0 for the top-level (`h2`) entries the TOC currently lists. */
+  /**
+   * Leading space count; 0 for the top-level (`h2`) entries the TOC
+   * currently lists.
+   */
   indent: number;
   raw: string;
 }
@@ -38,9 +44,9 @@ export interface MarkdownDocumentOptions {
 }
 
 /**
- * Builds one Markdown document in memory. Has no file-system dependency, so
- * the Node writer and the browser entry share it; writing to disk is left to
- * `Writer`.
+ * Builds one Markdown document in memory. Has no file-system dependency,
+ * so the Node writer and the browser entry share it; writing to disk is
+ * left to `Writer`.
  *
  * @example
  * ```ts
@@ -123,13 +129,20 @@ export class MarkdownDocument {
     const toc = this.toc
       .map(({ indent, raw }) => `${" ".repeat(indent)}- [${raw}](#${slugifyHeading(raw, seenAnchors)})`)
       .join("\n");
-    // Not `String#replace`: a heading containing `$&` must be inserted verbatim.
+    // Not `String#replace`: a heading containing `$&` must be inserted
+    // verbatim.
     return source.slice(0, at) + toc + source.slice(at + TOC_PLACEHOLDER.length);
   }
 }
 
-/** `MarkdownDocument`'s class name in `sveld/browser` before the Markdown writers merged. */
+/**
+ * `MarkdownDocument`'s class name in `sveld/browser` before the Markdown
+ * writers merged.
+ */
 export class BrowserWriterMarkdown extends MarkdownDocument {}
 
-/** `MarkdownDocument`'s interface name in `sveld/browser` before the Markdown writers merged. */
+/**
+ * `MarkdownDocument`'s interface name in `sveld/browser` before the
+ * Markdown writers merged.
+ */
 export type MarkdownWriterBase = MarkdownDocument;

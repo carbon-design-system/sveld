@@ -23,11 +23,17 @@ import {
 import { computeEventTypeString, isAccessorProp } from "./writer/writer-ts-definitions-core";
 
 const PARAM_NAME_SPLIT_REGEX = /[:=]/;
-/** An `HTMLElement` subtype: `HTMLDivElement`, or `HTMLElementTagNameMap[Tag]` for a generic tag. */
+/**
+ * An `HTMLElement` subtype: `HTMLDivElement`, or
+ * `HTMLElementTagNameMap[Tag]` for a generic tag.
+ */
 const HTML_ELEMENT_SUBTYPE_REGEX = /^HTML\w+Element$|^HTMLElementTagNameMap\[[\w$]+\]$/;
 /** An `SVGElement` subtype: `SVGCircleElement`. */
 const SVG_ELEMENT_SUBTYPE_REGEX = /^SVG\w+Element$/;
-/** Runs of word characters: the same boundary a typedef name needs in a type. */
+/**
+ * Runs of word characters: the same boundary a typedef name needs in a
+ * type.
+ */
 const IDENTIFIER_REGEX = /[\w$]+/g;
 
 const CUSTOM_EVENT_DETAIL_REGEX = /^CustomEvent<([\s\S]*)>$/;
@@ -46,12 +52,21 @@ export type CheckLevel = "major" | "minor" | "patch";
 
 /** One API diff between the committed snapshot and the current parse. */
 export interface ApiChange {
-  /** Component `moduleName` this change belongs to, or `"*"` for document-wide notices. */
+  /**
+   * Component `moduleName` this change belongs to, or `"*"` for
+   * document-wide notices.
+   */
   component: string;
   kind: "component" | "prop" | "moduleExport" | "event" | "slot" | "context" | "typedef" | "shape" | "schema";
-  /** Prop, event, slot, context key, typedef, or shape-field name, when applicable. */
+  /**
+   * Prop, event, slot, context key, typedef, or shape-field name, when
+   * applicable.
+   */
   name?: string;
-  /** For `kind: "context"`, the context property the change is about. Absent when it's the context as a whole. */
+  /**
+   * For `kind: "context"`, the context property the change is about. Absent
+   * when it's the context as a whole.
+   */
   property?: string;
   bump: SemverBump;
   message: string;
@@ -78,7 +93,10 @@ function highestBump(changes: ApiChange[]): SemverBump {
   return changes.reduce<SemverBump>((bump, change) => maxBump(bump, change.bump), "none");
 }
 
-/** True when `bump` is at or above `level` on the `none < patch < minor < major` scale. */
+/**
+ * True when `bump` is at or above `level` on the
+ * `none < patch < minor < major` scale.
+ */
 export function bumpMeetsLevel(bump: SemverBump, level: CheckLevel): boolean {
   return BUMP_RANK[bump] >= BUMP_RANK[level];
 }
@@ -94,7 +112,10 @@ function splitUnionMembers(type: string): Set<string> {
   );
 }
 
-/** Compares two function types or two object-type literals; `undefined` for any other pair. */
+/**
+ * Compares two function types or two object-type literals; `undefined` for
+ * any other pair.
+ */
 function classifyCoreChange(oldCore: string, newCore: string, readOnly: boolean): SemverBump | undefined {
   const oldFn = parseFunctionType(oldCore);
   const newFn = parseFunctionType(newCore);
@@ -104,7 +125,10 @@ function classifyCoreChange(oldCore: string, newCore: string, readOnly: boolean)
   return classifyObjectChange(oldCore, newCore, readOnly);
 }
 
-/** True when the DOM element type `narrower` extends `wider`: `HTMLTableElement` and `HTMLElement`. */
+/**
+ * True when the DOM element type `narrower` extends `wider`:
+ * `HTMLTableElement` and `HTMLElement`.
+ */
 function isDomElementSubtype(narrower: string, wider: string): boolean {
   if (narrower === wider) return false;
   if (wider === "HTMLElement") return HTML_ELEMENT_SUBTYPE_REGEX.test(narrower);
@@ -121,7 +145,10 @@ function isDomElementSubtype(narrower: string, wider: string): boolean {
   return false;
 }
 
-/** True when a member of `members` is a DOM element type that `member` extends, so it already admits `member`. */
+/**
+ * True when a member of `members` is a DOM element type that `member`
+ * extends, so it already admits `member`.
+ */
 function isCoveredBy(member: string, members: Iterable<string>): boolean {
   for (const other of members) {
     if (isDomElementSubtype(member, other)) return true;
@@ -134,7 +161,10 @@ interface ParsedFunctionType {
   returnType: string;
 }
 
-/** Textually splits `(a: string) => void` into params and return type; `undefined` if not shaped like one. */
+/**
+ * Textually splits `(a: string) => void` into params and return type;
+ * `undefined` if not shaped like one.
+ */
 function parseFunctionType(type: string): ParsedFunctionType | undefined {
   const arrowIndex = indexOfTopLevelArrow(type);
   if (arrowIndex === -1) return undefined;
@@ -157,8 +187,8 @@ function isOptionalParam(param: string): boolean {
 
 /**
  * A param's type, with `| undefined` when it's optional, so a param that
- * becomes optional compares like a union that gains `undefined`. `undefined`
- * for a rest param or one without a type.
+ * becomes optional compares like a union that gains `undefined`.
+ * `undefined` for a rest param or one without a type.
  */
 function paramType(param: string): string | undefined {
   if (param.startsWith("...")) return undefined;
@@ -169,12 +199,13 @@ function paramType(param: string): string | undefined {
 }
 
 /**
- * Compares two function types. Param names don't count. `readOnly` means the
- * consumer calls the function (an export, or a slot or event value): it
- * writes the params and reads the return. Otherwise the consumer writes the
- * function (a callback prop): it reads the params and writes the return.
- * Removing a param is breaking either way. A new param is additive for a
- * callback, which can ignore it, and for a call only when it's optional.
+ * Compares two function types. Param names don't count. `readOnly` means
+ * the consumer calls the function (an export, or a slot or event value):
+ * it writes the params and reads the return. Otherwise the consumer writes
+ * the function (a callback prop): it reads the params and writes the
+ * return. Removing a param is breaking either way. A new param is additive
+ * for a callback, which can ignore it, and for a call only when it's
+ * optional.
  */
 function classifyFunctionTypeChange(
   oldFn: ParsedFunctionType,
@@ -242,7 +273,8 @@ function parseArrayType(type: string): ParsedArrayType | undefined {
     return { readonly: isReadonly, elements, tuple: true };
   }
 
-  // `A | B[]` is `A | (B[])`, so the element can't have a top-level space or operator.
+  // `A | B[]` is `A | (B[])`, so the element can't have a top-level space or
+  // operator.
   if (!text.endsWith("[]")) return undefined;
   const element = text.slice(0, -2);
   if (element === "" || indexOfTopLevel(element, " |&") !== -1) return undefined;
@@ -273,13 +305,13 @@ function classifyArrayChange(
 }
 
 /**
- * Compares two object-type literals. A removed member is breaking either way.
- * Where the consumer writes the type (a prop), a new optional member or one
- * that became optional is additive, and a new required member is breaking.
- * With `readOnly`, where the consumer only reads it, any new member is
- * additive, and one that became optional or `readonly` is breaking.
- * `undefined` when either side isn't an object-type literal sveld can split
- * into members.
+ * Compares two object-type literals. A removed member is breaking either
+ * way. Where the consumer writes the type (a prop), a new optional member
+ * or one that became optional is additive, and a new required member is
+ * breaking. With `readOnly`, where the consumer only reads it, any new
+ * member is additive, and one that became optional or `readonly` is
+ * breaking. `undefined` when either side isn't an object-type literal
+ * sveld can split into members.
  */
 function classifyObjectChange(oldType: string, newType: string, readOnly: boolean): SemverBump | undefined {
   const oldMembers = parseObjectTypeLiteralMembers(oldType, { withReadonly: true });
@@ -296,7 +328,8 @@ function classifyObjectChange(oldType: string, newType: string, readOnly: boolea
       bump = maxBump(bump, newMember.optional === readOnly ? "major" : "minor");
     }
     // Code that assigns to a member it read breaks when the member becomes
-    // readonly. Assignability ignores `readonly`, so a written type doesn't care.
+    // readonly. Assignability ignores `readonly`, so a written type doesn't
+    // care.
     if (readOnly && oldMember.readonly !== newMember.readonly) {
       bump = maxBump(bump, newMember.readonly ? "major" : "minor");
     }
@@ -307,17 +340,17 @@ function classifyObjectChange(oldType: string, newType: string, readOnly: boolea
 
 /**
  * Classifies a type-string change as additive, breaking, or unchanged.
- * Layout and comments don't count. A function type or object-type literal is
- * compared by its parts, also when it's the one member that changed in a
- * union. Otherwise only top-level union members count, and a DOM element type counts as covered by
- * its supertype in the other union. For a type the consumer writes (a prop),
- * a union that gains a member is additive and one that loses a member is
- * breaking. With `readOnly`, for a type the consumer only reads (an event's
- * `detail`, a slot's props), the rule flips: code that handles every old
- * member breaks on a new one. An object type gaining a member is additive
- * there too.
- * Other structural changes (generics, object shape, function signature) are
- * breaking, same as cargo-semver-checks' "when in doubt, call it major".
+ * Layout and comments don't count. A function type or object-type literal
+ * is compared by its parts, also when it's the one member that changed in
+ * a union. Otherwise only top-level union members count, and a DOM element
+ * type counts as covered by its supertype in the other union. For a type
+ * the consumer writes (a prop), a union that gains a member is additive
+ * and one that loses a member is breaking. With `readOnly`, for a type the
+ * consumer only reads (an event's `detail`, a slot's props), the
+ * rule flips: code that handles every old member breaks on a new one. An
+ * object type gaining a member is additive there too. Other structural
+ * changes (generics, object shape, function signature) are breaking, same
+ * as cargo-semver-checks' "when in doubt, call it major".
  */
 function classifyTypeChange(
   oldType: string | undefined,
@@ -333,19 +366,22 @@ function classifyTypeChange(
   if (wholeBump !== undefined) return wholeBump;
 
   // A DOM element subtype next to its supertype adds nothing, so dropping
-  // `HTMLTableElement` from `HTMLElement | HTMLTableElement` isn't a narrowing.
+  // `HTMLTableElement` from `HTMLElement | HTMLTableElement` isn't a
+  // narrowing.
   return classifyMemberSetChange(splitUnionMembers(oldType), splitUnionMembers(newType), readOnly);
 }
 
 /**
- * A union that gains a member is additive where the consumer writes the type,
- * and breaking where the consumer reads it. A lost member is the reverse.
+ * A union that gains a member is additive where the consumer writes the
+ * type, and breaking where the consumer reads it. A lost member is the
+ * reverse.
  */
 function classifyMemberSetChange(oldMembers: Set<string>, newMembers: Set<string>, readOnly: boolean): SemverBump {
   const gained = [...newMembers].filter((member) => !oldMembers.has(member) && !isCoveredBy(member, oldMembers));
   const lost = [...oldMembers].filter((member) => !newMembers.has(member) && !isCoveredBy(member, newMembers));
 
-  // One member changed in place, such as the object in `boolean | { a?: number }`.
+  // One member changed in place, such as the object in
+  // `boolean | { a?: number }`.
   if (gained.length === 1 && lost.length === 1) {
     const pairBump = classifyCoreChange(lost[0], gained[0], readOnly);
     if (pairBump !== undefined) return pairBump;
@@ -359,17 +395,26 @@ function classifyMemberSetChange(oldMembers: Set<string>, newMembers: Set<string
   return widened ? "minor" : "none";
 }
 
-/** True for a prop or export the consumer can only read: a module export, or an `export const`/`export function` accessor. */
+/**
+ * True for a prop or export the consumer can only read: a module export,
+ * or an `export const`/`export function` accessor.
+ */
 function isReadOnlyMember(kind: "prop" | "moduleExport", prop: Prop): boolean {
   return kind === "moduleExport" || isAccessorProp(prop);
 }
 
-/** True when `bind:<name>` works: declared with runes `$bindable()` or legacy `@bindable writable`. */
+/**
+ * True when `bind:<name>` works: declared with runes `$bindable()` or
+ * legacy `@bindable writable`.
+ */
 function isWritableBinding(prop: Prop): boolean {
   return prop.bindable === true || prop.binding === "writable";
 }
 
-/** Items only in `newItems`, keys only in `oldItems`, and pairs present in both (in `oldItems` order). */
+/**
+ * Items only in `newItems`, keys only in `oldItems`, and pairs present in
+ * both (in `oldItems` order).
+ */
 function matchByKey<T>(oldItems: T[], newItems: T[], key: (item: T) => string) {
   const oldByKey = new Map(oldItems.map((item) => [key(item), item]));
   const newByKey = new Map(newItems.map((item) => [key(item), item]));
@@ -383,7 +428,10 @@ function matchByKey<T>(oldItems: T[], newItems: T[], key: (item: T) => string) {
   return { added, removed, common };
 }
 
-/** Records a change to one named item of `component`, as `` `${label} "${name}" ${change}` ``. */
+/**
+ * Records a change to one named item of `component`, as
+ * `` `${label} "${name}" ${change}` ``.
+ */
 function changeRecorder(changes: ApiChange[], component: string, kind: ApiChange["kind"], label: string) {
   return (name: string, bump: SemverBump, change: string) =>
     changes.push({ component, kind, name, bump, message: `${label} "${name}" ${change}` });
@@ -442,7 +490,8 @@ function diffPropList(
       push(name, newDeprecated ? "minor" : "patch", newDeprecated ? "marked as deprecated" : "no longer deprecated");
     }
 
-    // On a prop, `constant` is `kind === "const"`, so the accessor check above covers a flip.
+    // On a prop, `constant` is `kind === "const"`, so the accessor check above
+    // covers a flip.
     if (kind === "moduleExport" && oldProp.constant !== newProp.constant) {
       push(name, "minor", newProp.constant ? "became constant" : "became mutable");
     }
@@ -455,13 +504,19 @@ function diffPropList(
   return changes;
 }
 
-/** `T` from `CustomEvent<T>`; `undefined` for any other type, a union of events included. */
+/**
+ * `T` from `CustomEvent<T>`; `undefined` for any other type, a union of
+ * events included.
+ */
 function customEventDetail(type: string): string | undefined {
   if (splitTopLevel(type, "|").length > 1) return undefined;
   return CUSTOM_EVENT_DETAIL_REGEX.exec(type)?.[1];
 }
 
-/** Compares two listener event types: the details when both are `CustomEvent<…>`, else any change is breaking. */
+/**
+ * Compares two listener event types: the details when both are
+ * `CustomEvent<…>`, else any change is breaking.
+ */
 function classifyEventTypeChange(oldType: string, newType: string): SemverBump {
   const oldDetail = customEventDetail(oldType);
   const newDetail = customEventDetail(newType);
@@ -520,15 +575,19 @@ function diffSlots(component: string, oldSlots: Slot[], newSlots: Slot[]): ApiCh
   return changes;
 }
 
-/** A context's type for messages: the whole `type` when it has one, else its property object. */
+/**
+ * A context's type for messages: the whole `type` when it has one, else
+ * its property object.
+ */
 function describeContextType(context: Context): string {
   return context.type === undefined ? "an object of properties" : `\`${context.type}\``;
 }
 
 /**
- * A context is read by `getContext`, so removing a property or changing its
- * type is breaking and adding one is not. A type change is classified the
- * same way as an event's `detail`: a union that gains a member is breaking.
+ * A context is read by `getContext`, so removing a property or changing
+ * its type is breaking and adding one is not. A type change is classified
+ * the same way as an event's `detail`: a union that gains a member is
+ * breaking.
  */
 function diffContexts(component: string, oldContexts: Context[] = [], newContexts: Context[] = []): ApiChange[] {
   const changes: ApiChange[] = [];
@@ -611,8 +670,10 @@ function stripNonSemanticFields(value: unknown): unknown {
 }
 
 /**
- * Fields not covered by `diffPropList`/`diffEvents`/`diffSlots`/`diffContexts`/`diffTypedefs`.
- * Any change is breaking, except new `rest_props` on a component that had none.
+ * Fields not covered by
+ * `diffPropList`/`diffEvents`/`diffSlots`/`diffContexts`/`diffTypedefs`.
+ * Any change is breaking, except new `rest_props` on a component that had
+ * none.
  */
 const SHAPE_FIELDS = ["generics", "rest_props", "extends"] as const;
 
@@ -623,7 +684,8 @@ function diffShape(component: string, oldComponent: ComponentDocApi, newComponen
     const oldJson = JSON.stringify(stripNonSemanticFields(oldComponent[field]));
     const newJson = JSON.stringify(stripNonSemanticFields(newComponent[field]));
     if (oldJson === newJson) continue;
-    // Rest props only add attributes a caller may pass; own props keep their types.
+    // Rest props only add attributes a caller may pass; own props keep their
+    // types.
     if (field === "rest_props" && oldComponent.rest_props === undefined) {
       changes.push({ component, kind: "shape", name: field, bump: "minor", message: `"${field}" added` });
       continue;
@@ -636,7 +698,10 @@ function diffShape(component: string, oldComponent: ComponentDocApi, newComponen
 
 type TypeDef = ComponentDocApi["typedefs"][number];
 
-/** Where a consumer meets a typedef: in values they pass in, values they read, or both. */
+/**
+ * Where a consumer meets a typedef: in values they pass in, values they
+ * read, or both.
+ */
 interface TypedefUse {
   write: boolean;
   read: boolean;
@@ -653,13 +718,14 @@ function identifiers(type: string | undefined): Set<string> {
 }
 
 /**
- * Finds how each typedef reaches the consumer, across every component given:
- * another component can reference it through `import("./A.svelte").Name`. A
- * prop is written, or both when it's bindable. Events and slots are read.
- * Contexts, module exports, and typedefs nothing references count as both.
- * A type that holds a callback counts as both wherever it sits, since the
- * consumer reads what it writes and the reverse. A typedef inherits the uses
- * of every typedef that mentions it.
+ * Finds how each typedef reaches the consumer, across every
+ * component given: another component can reference it through
+ * `import("./A.svelte").Name`. A prop is written, or both when it's
+ * bindable. Events and slots are read. Contexts, module exports, and
+ * typedefs nothing references count as both. A type that holds a callback
+ * counts as both wherever it sits, since the consumer reads what it writes
+ * and the reverse. A typedef inherits the uses of every typedef that
+ * mentions it.
  */
 function typedefUses(components: ComponentDocApi[], names: string[]): Map<string, TypedefUse> {
   const uses = new Map(names.map((name) => [name, { write: false, read: false }]));
@@ -723,8 +789,8 @@ function typedefUses(components: ComponentDocApi[], names: string[]): Map<string
 /**
  * Diffs typedefs by name. A new typedef is additive and a removed one is
  * breaking. A changed one is judged by where the consumer meets it (see
- * {@link typedefUses}), taking the stricter result when it's met both ways.
- * Doc comments and layout inside the type don't count as a change.
+ * {@link typedefUses}), taking the stricter result when it's met both
+ * ways. Doc comments and layout inside the type don't count as a change.
  */
 function diffTypedefs(
   component: string,
@@ -780,7 +846,10 @@ function diffComponent(
   ];
 }
 
-/** Diffs two `COMPONENT_API.json` documents and assigns a semver bump to each change. */
+/**
+ * Diffs two `COMPONENT_API.json` documents and assigns a semver bump to
+ * each change.
+ */
 export function diffApiDocuments(previous: ComponentApiDocument, next: ComponentApiDocument): ApiChange[] {
   const changes: ApiChange[] = [];
   const { added, removed, common } = matchByKey(
@@ -833,8 +902,9 @@ export interface RunCheckOptions {
 }
 
 /**
- * Resolves the snapshot path for `check`: an explicit string wins, otherwise
- * it falls back to the `json` writer's `outFile`, or `COMPONENT_API.json`.
+ * Resolves the snapshot path for `check`: an explicit string wins,
+ * otherwise it falls back to the `json` writer's `outFile`, or
+ * `COMPONENT_API.json`.
  */
 export function resolveCheckSnapshotFile(options: Pick<SveldRuntimeOptions, "check" | "jsonOptions">): string {
   if (typeof options.check === "string") return options.check;
@@ -842,9 +912,9 @@ export function resolveCheckSnapshotFile(options: Pick<SveldRuntimeOptions, "che
 }
 
 /**
- * Whether this run's `json` writer writes the `--check` snapshot itself, as
- * `sveld --json --check` does. Only then is a missing snapshot the first run
- * rather than a misconfigured path.
+ * Whether this run's `json` writer writes the `--check` snapshot itself,
+ * as `sveld --json --check` does. Only then is a missing snapshot the
+ * first run rather than a misconfigured path.
  */
 export function writesCheckSnapshot(
   options: Pick<SveldRuntimeOptions, "json" | "jsonOptions" | "stdout">,
@@ -936,10 +1006,16 @@ export function formatCheckReport(result: CheckResult): string {
   return lines.join("\n");
 }
 
-/** Envelope schema version for {@link CheckReportJson}. Bump when the shape of `CheckResult` changes incompatibly. */
+/**
+ * Envelope schema version for {@link CheckReportJson}. Bump when the shape
+ * of `CheckResult` changes incompatibly.
+ */
 export const CHECK_REPORT_SCHEMA_VERSION = 1;
 
-/** `CheckResult`, serialized for stream consumers with a `kind` discriminator. */
+/**
+ * `CheckResult`, serialized for stream consumers with a `kind`
+ * discriminator.
+ */
 export type CheckReportJson = CheckResult & { kind: "check-report"; schemaVersion: typeof CHECK_REPORT_SCHEMA_VERSION };
 
 /** Serializes a `CheckResult` as JSON, for `--format=json --check`. */

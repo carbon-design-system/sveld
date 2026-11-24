@@ -17,9 +17,10 @@ import {
 } from "./writer-ts-definitions-core";
 
 /**
- * `typesOptions.indexTypes` entries in barrel order. Deduped by source, not export
- * id: `export { default } from` and `export { default as Button } from` name the
- * same component and would otherwise emit its type names twice.
+ * `typesOptions.indexTypes` entries in barrel order. Deduped by source,
+ * not export
+ * id: `export { default } from` and `export { default as Button } from`
+ * name the same component and would otherwise emit its type names twice.
  */
 function collectIndexTypeExports(
   document: ComponentApiDocument,
@@ -49,11 +50,17 @@ function collectIndexTypeExports(
   return entries;
 }
 
-/** The context `typesOptions.transform` receives alongside the generated text. */
+/**
+ * The context `typesOptions.transform` receives alongside the generated
+ * text.
+ */
 export type TransformContext =
   { kind: "component"; component: ComponentDocApi; filePath: string } | { kind: "index"; filePath: string };
 
-/** Runs after the generated-text cache lookup, so a changed transform never serves stale output. */
+/**
+ * Runs after the generated-text cache lookup, so a changed transform never
+ * serves stale output.
+ */
 async function applyTransform(
   transform: WriteTsDefinitionsOptions["transform"],
   text: string,

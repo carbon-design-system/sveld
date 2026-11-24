@@ -24,7 +24,10 @@ import { sourceRangeFromNode } from "./source-position";
 import { readFunctionDeclarationParts, trackAdditionalTypeDependencyNode } from "./type-resolution";
 import { collectReExportableImports, collectValueImportBindings } from "./value-imports";
 
-/** The bare base-class name in an `extends` clause: `Base` in `Base<T>`; none for `mixin(Base)` or `ns.Base`. */
+/**
+ * The bare base-class name in an `extends` clause: `Base` in `Base<T>`;
+ * none for `mixin(Base)` or `ns.Base`.
+ */
 const CLASS_BASE_NAME_REGEX = /^[A-Za-z_$][\w$]*(?=\s*(?:<|$))/;
 
 function addModuleExport(ctx: ParserContext, prop_name: string, data: ComponentProp) {
@@ -33,10 +36,14 @@ function addModuleExport(ctx: ParserContext, prop_name: string, data: ComponentP
   ctx.moduleExports.set(prop_name, existing ? { ...existing, ...data } : data);
 }
 
-/** Records an `export ... from` (or `export { imported }`) as-is; the `.d.ts` writer emits it verbatim. */
+/**
+ * Records an `export ... from` (or `export { imported }`) as-is; the
+ * `.d.ts` writer emits it verbatim.
+ */
 function addModuleReExport(ctx: ParserContext, node: Node, name: string, reExport: ComponentPropReExport) {
   const jsdocInfo = processNodeJSDoc(ctx, node);
-  // Each `export * from` shares the name "*", so key those by source instead.
+  // Each `export * from` shares the name "*", so key those by source
+  // instead.
   addModuleExport(ctx, name === "*" ? `* from ${reExport.from}` : name, {
     name,
     kind: "re-export",
@@ -54,7 +61,10 @@ function addModuleReExport(ctx: ParserContext, node: Node, name: string, reExpor
   });
 }
 
-/** `export { x as default }` / `export * as default from "..."` collide with the component itself. */
+/**
+ * `export { x as default }` / `export * as default from "..."` collide
+ * with the component itself.
+ */
 function recordDefaultExportConflict(ctx: ParserContext, node: Node) {
   recordDiagnostic(
     ctx,
@@ -106,7 +116,10 @@ function addModuleClassExport(
   });
 }
 
-/** The exports a module-script `export` declaration (or one specifier of an `export { ... }`) declares. */
+/**
+ * The exports a module-script `export` declaration (or one specifier of an
+ * `export { ... }`) declares.
+ */
 function addModuleDeclarationExports(
   ctx: ParserContext,
   node: ExportNamedDeclaration,
@@ -152,7 +165,10 @@ function addModuleDeclarationExports(
   }
 }
 
-/** The top-level `{#snippet name(...)}`, the only kind a module script can export. */
+/**
+ * The top-level `{#snippet name(...)}`, the only kind a module script can
+ * export.
+ */
 function findTopLevelSnippet(ctx: ParserContext, name: string): AST.SnippetBlock | undefined {
   return ctx.parsed?.fragment.nodes.find(
     (node): node is AST.SnippetBlock => node.type === "SnippetBlock" && node.expression.name === name,
@@ -193,7 +209,8 @@ function addModuleSnippetExport(
 ) {
   const annotated = readFunctionDeclarationParts(ctx, { params: snippet.parameters }).params;
   const params = annotated.map((param, index) => {
-    // An unannotated `index = 0` is typed by its default, widened as TypeScript would.
+    // An unannotated `index = 0` is typed by its default, widened as
+    // TypeScript would.
     const pattern = snippet.parameters[index];
     if (param.type || pattern?.type !== "AssignmentPattern") return param;
     return { ...param, type: literalType(pattern.right, "widen") };

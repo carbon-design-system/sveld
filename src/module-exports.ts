@@ -38,11 +38,15 @@ type DeclarationLike =
 export interface InternalExport extends Omit<EntryExport, "source"> {
   declFile: string;
   returnType?: string;
-  /** String from a literal or static-template initializer, for imported `setContext` keys. */
+  /**
+   * String from a literal or static-template initializer, for imported
+   * `setContext` keys.
+   */
   literalValue?: string;
   /**
    * `export const` primitive literal (string, number, boolean, or a static
-   * template). `resolve-const-defaults.ts` writes it as an imported prop default.
+   * template). `resolve-const-defaults.ts` writes it as an imported prop
+   * default.
    */
   primitiveLiteral?: PrimitiveLiteral;
   /**
@@ -121,7 +125,10 @@ function withoutTrailingComments(text: string): string {
   }
 }
 
-/** The `/** ... *\/` block directly before `start`, with only whitespace or other comments between. */
+/**
+ * The `/** ... *\/` block directly before `start`, with only whitespace or
+ * other comments between.
+ */
 function leadingJsDocBlock(text: string, start: number): string | undefined {
   const before = withoutTrailingComments(text.slice(0, start));
   if (!before.endsWith("*/")) return undefined;
@@ -133,7 +140,10 @@ function leadingJsDocBlock(text: string, start: number): string | undefined {
   return before.slice(open, close + 2);
 }
 
-/** A JSDoc block's description: its text up to the first tag, joined into one line. */
+/**
+ * A JSDoc block's description: its text up to the first tag, joined into
+ * one line.
+ */
 function jsDocDescription(block: string): string | undefined {
   const description: string[] = [];
   for (const line of block.slice(3, -2).split(NEWLINE_REGEX)) {
@@ -158,7 +168,10 @@ function functionReturnAnnotationText(source: ModuleSource, fn: FunctionLike): s
   return textOf(source, fn.returnType?.typeAnnotation);
 }
 
-/** `fn`'s type: its params as written, returning its annotated type, else `returnType`, else `any`. */
+/**
+ * `fn`'s type: its params as written, returning its annotated type, else
+ * `returnType`, else `any`.
+ */
 function buildSignature(source: ModuleSource, fn: FunctionLike, returnType?: string): string {
   const params = fn.params.map((param) => textOf(source, param) ?? "").join(", ");
   return `(${params}) => ${functionReturnAnnotationText(source, fn) ?? returnType ?? "any"}`;
@@ -172,7 +185,8 @@ function inferLiteralType(init: Expression): string | undefined {
     if (typeof value === "boolean") return "boolean";
   }
   if (init.type === "TemplateLiteral") return "string";
-  // Negative numeric literals parse as `UnaryExpression` (`-1`), not `Literal`.
+  // Negative numeric literals parse as `UnaryExpression` (`-1`), not
+  // `Literal`.
   if (init.type === "UnaryExpression" && (init.operator === "-" || init.operator === "+")) {
     return init.argument.type === "Literal" && typeof init.argument.value === "number" ? "number" : undefined;
   }
@@ -195,7 +209,8 @@ function staticPrimitiveValue(node: Expression): PrimitiveLiteral["value"] | und
     const value = node.value;
     return typeof value === "string" || typeof value === "number" || typeof value === "boolean" ? value : undefined;
   }
-  // Negative numeric literals parse as `UnaryExpression` (`-1`), not `Literal`.
+  // Negative numeric literals parse as `UnaryExpression` (`-1`), not
+  // `Literal`.
   if (node.type === "UnaryExpression" && node.operator === "-") {
     const argument = node.argument;
     return argument.type === "Literal" && typeof argument.value === "number" ? -argument.value : undefined;
@@ -225,7 +240,8 @@ function symbolKeyDescription(init: Expression, bindingName: string): string | u
       identifierName(callee.object) === "Symbol" &&
       identifierName(callee.property) === "for");
   if (!isSymbol) return undefined;
-  // Only a string description counts, as for a same-file key: `Symbol(1)` is named by its binding.
+  // Only a string description counts, as for a same-file key: `Symbol(1)` is
+  // named by its binding.
   const [argument] = init.arguments;
   const description =
     argument?.type === "Literal" && typeof argument.value !== "string" ? null : resolveStaticStringLiteral(argument);
@@ -278,7 +294,8 @@ function portableDeclaredType(
 
 /**
  * Literal-only return inference for a function/arrow (same idea as
- * `inferReturnTypeFromNode` in props.ts). Literals, templates, and `String()`/`Number()`/`Boolean()` calls only.
+ * `inferReturnTypeFromNode` in props.ts). Literals, templates, and
+ * `String()`/`Number()`/`Boolean()` calls only.
  */
 function inferAstLiteralReturnType(fn: FunctionLike): string | undefined {
   if (fn.async || fn.generator || fn.type === "TSDeclareFunction") return undefined;
@@ -298,7 +315,10 @@ function inferAstLiteralReturnType(fn: FunctionLike): string | undefined {
   return inferred;
 }
 
-/** A string or (possibly negative) number literal; a template counts as computed. */
+/**
+ * A string or (possibly negative) number literal; a template counts as
+ * computed.
+ */
 function enumMemberLiteralValue(initializer: Expression): string | number | undefined {
   if (initializer.type === "TemplateLiteral") return undefined;
   const value = staticPrimitiveValue(initializer);
@@ -349,7 +369,8 @@ function describeDeclaration(
   const { deprecated, tags, internal } = rawJsDoc
     ? getParserStack().extractJsDocDeprecatedAndTags(rawJsDoc)
     : { deprecated: undefined, tags: undefined, internal: false };
-  // Spread after each entry's own fields: key order is the entry-exports JSON order.
+  // Spread after each entry's own fields: key order is the entry-exports
+  // JSON order.
   const shared = {
     description,
     deprecated,
@@ -409,7 +430,8 @@ function describeDeclaration(
     });
   }
 
-  // Ambient signature in a `.d.ts`: `export function uniqueId(prefix?: string): string;`
+  // Ambient signature in a `.d.ts`:
+  // `export function uniqueId(prefix?: string): string;`
   if (declaration.type === "FunctionDeclaration" || declaration.type === "TSDeclareFunction") {
     const returnType = returnTypeOf(declaration);
     return entry(identifierName(declaration.id) ?? anonymousName, {
@@ -514,7 +536,10 @@ function findImportSource(
   return null;
 }
 
-/** The entry for the namespace object of `namespaceFile`, exported as `name`. */
+/**
+ * The entry for the namespace object of `namespaceFile`, exported as
+ * `name`.
+ */
 function namespaceExport(name: string, namespaceFile: string, isTypeOnly: boolean): InternalExport {
   return { name, kind: "const", declFile: namespaceFile, namespaceFile, isTypeOnly };
 }
@@ -522,11 +547,11 @@ function namespaceExport(name: string, namespaceFile: string, isTypeOnly: boolea
 /**
  * Collects every named export declared or re-exported by a module.
  *
- * Walks `export ... from` and `export *` chains. Skips `.svelte` re-exports.
- * A default export that's a function, a class, or a local binding is listed as
- * `default` (see {@link describeDefaultExport}). A namespace export
- * (`export * as ns from "./x"`) is the one entry `ns`, with `namespaceFile`
- * set; the names `x` exports aren't this module's.
+ * Walks `export ... from` and `export *` chains. Skips `.svelte`
+ * re-exports. A default export that's a function, a class, or a local
+ * binding is listed as `default` (see {@link describeDefaultExport}). A
+ * namespace export (`export * as ns from "./x"`) is the one entry `ns`,
+ * with `namespaceFile` set; the names `x` exports aren't this module's.
  */
 export function collectModuleExports(filePath: string, ctx: ResolveContext): InternalExport[] {
   const cached = ctx.cache.get(filePath);
@@ -555,9 +580,10 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
   }
 
   /**
-   * A component a module re-exports (`export { default as X } from "./X.svelte"`).
-   * Recorded so a barrel that re-exports it again knows it's a component,
-   * which the entry docs leave out, rather than an unknown `const`.
+   * A component a module re-exports
+   * (`export { default as X } from "./X.svelte"`). Recorded so a barrel that
+   * re-exports it again knows it's a component, which the entry docs leave
+   * out, rather than an unknown `const`.
    */
   const componentExport = (name: string, specifier: string): InternalExport => ({
     name,
@@ -582,7 +608,10 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
     return findModuleExport(target, imported.importedName, ctx) ?? null;
   };
 
-  /** Entries each `export *` brings in, by name; merged after the explicit exports below. */
+  /**
+   * Entries each `export *` brings in, by name; merged after the explicit
+   * exports below.
+   */
   const starExports = new Map<string, InternalExport[]>();
 
   for (const node of body) {
@@ -592,7 +621,8 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
       const target = ctx.graph.resolve(specifierValue, source.dir);
       if (!target) continue;
       const isTypeOnly = node.exportKind === "type";
-      // `export * as ns from "./x"` exports the one name `ns`, like an explicit export.
+      // `export * as ns from "./x"` exports the one name `ns`, like an explicit
+      // export.
       const namespaceName = identifierName(node.exported);
       if (namespaceName) {
         results.push(namespaceExport(namespaceName, target, isTypeOnly));
@@ -686,10 +716,11 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
 /**
  * The entry for `name` among `filePath`'s exports, or `undefined`.
  *
- * `findLast`, not `find`: overloaded declarations (`export function f(...): A;` /
- * `export function f(...): B;` / `export function f(...) { ... }`) all describe
- * to the same name, in source order, with the implementation last. Any other
- * name appears at most once (see {@link collectModuleExports}).
+ * `findLast`, not `find`: overloaded declarations
+ * (`export function f(...): A;` / `export function f(...): B;` /
+ * `export function f(...) { ... }`) all describe to the same name, in
+ * source order, with the implementation last. Any other name appears at
+ * most once (see {@link collectModuleExports}).
  */
 export function findModuleExport(filePath: string, name: string, ctx: ResolveContext): InternalExport | undefined {
   return collectModuleExports(filePath, ctx).findLast((entry) => entry.name === name);

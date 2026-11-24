@@ -32,7 +32,10 @@ export interface MarkdownOptions {
   onAppend?: (type: AppendType, document: MarkdownDocument, components: ComponentDocs) => void;
 }
 
-/** `MarkdownOptions` plus the fields the caller (`plugin.ts`) always injects. */
+/**
+ * `MarkdownOptions` plus the fields the caller (`plugin.ts`) always
+ * injects.
+ */
 export interface WriteMarkdownOptions extends MarkdownOptions {
   outFile: string;
   /** Entry-barrel exports when `documentExports` is on. */
@@ -40,8 +43,8 @@ export interface WriteMarkdownOptions extends MarkdownOptions {
 }
 
 /**
- * Unlike the JSON writer, `moduleName` collisions aren't handled: this only
- * receives the exported component set, where `moduleName` is unique.
+ * Unlike the JSON writer, `moduleName` collisions aren't handled: this
+ * only receives the exported component set, where `moduleName` is unique.
  */
 async function writeMarkdownComponents(components: ComponentDocs, options: WriteMarkdownOptions, outDir: string) {
   const document = buildComponentApiDocument(components, { entryExports: options.entryExports });

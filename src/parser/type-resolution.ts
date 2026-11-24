@@ -23,7 +23,10 @@ export function getTypeReferenceName(typeName: EntityName): string {
   return typeName.type === "Identifier" ? typeName.name : typeName.right.name;
 }
 
-/** The leftmost name, which is what's imported or declared (`ns` in `ns.Type`). */
+/**
+ * The leftmost name, which is what's imported or declared (`ns` in
+ * `ns.Type`).
+ */
 function getTypeDependencyName(typeName: EntityName): string {
   return typeName.type === "Identifier" ? typeName.name : getTypeDependencyName(typeName.left);
 }
@@ -59,7 +62,8 @@ export function collectReferencedTypeDependencies(
   const collect = (node: TSNode | undefined) =>
     collectReferencedTypeDependencies(ctx, node, referencedImportedTypes, referencedLocalTypes, visitedLocalTypes);
 
-  // Cases pick the parts of a node that name types; other nodes are walked as-is.
+  // Cases pick the parts of a node that name types; other nodes are walked
+  // as-is.
   walk(typeNode, {
     enter(node) {
       switch (node.type) {
@@ -153,7 +157,10 @@ function buildTypeImportStatements(ctx: ParserContext, referencedImportedTypes: 
     });
 }
 
-/** A type reference's dependencies: `Name<Args>`, or an interface's `extends Name<Args>`. */
+/**
+ * A type reference's dependencies: `Name<Args>`, or an interface's
+ * `extends Name<Args>`.
+ */
 function collectTypeReferenceDependencies(
   ctx: ParserContext,
   typeName: EntityName,
@@ -196,8 +203,8 @@ function collectMemberDependencies(members: TypeElement[], collect: (node: TSNod
 
 /**
  * Records a type node outside the whole-object `$props()` path (legacy and
- * per-prop annotations, accessor signatures) so {@link buildTypeScriptMetadata}
- * pulls its dependencies into the `.d.ts`.
+ * per-prop annotations, accessor signatures) so {@link
+ * buildTypeScriptMetadata} pulls its dependencies into the `.d.ts`.
  */
 export function trackAdditionalTypeDependencyNode(ctx: ParserContext, typeNode: TSNode | undefined) {
   if (typeNode) ctx.additionalTypeDependencyNodes.push(typeNode);
@@ -205,7 +212,8 @@ export function trackAdditionalTypeDependencyNode(ctx: ParserContext, typeNode: 
 
 /**
  * Many bundlers reject `const enum` under `isolatedModules`, so one whose
- * members all have literal initializers is emitted as a literal union instead.
+ * members all have literal initializers is emitted as a literal union
+ * instead.
  */
 function buildConstEnumUnionTypeCode(enumStatement: TSEnumDeclaration): string | undefined {
   if (!enumStatement.const) return undefined;
@@ -233,7 +241,8 @@ export function buildEnumLocalTypeDeclarationCode(
   if (unionCode) return unionCode;
 
   const verbatim = sourceAtPos(ctx, enumStatement.start, enumStatement.end)?.trim();
-  // A bare `enum` in a module `.d.ts` is TS1046: it emits a value, so it needs `declare`.
+  // A bare `enum` in a module `.d.ts` is TS1046: it emits a value, so it
+  // needs `declare`.
   return verbatim ? `declare ${verbatim}` : undefined;
 }
 
@@ -246,7 +255,10 @@ interface FunctionDeclarationParam {
   rest: boolean;
 }
 
-/** A function's own TS annotations, as text; unset fields had no annotation. */
+/**
+ * A function's own TS annotations, as text; unset fields had no
+ * annotation.
+ */
 export interface FunctionDeclarationParts {
   params: FunctionDeclarationParam[];
   returnType?: string;
@@ -254,10 +266,16 @@ export interface FunctionDeclarationParts {
   typeParameters?: string;
 }
 
-/** A `/** @type {T} *\/` comment right before a param, as `(/** @type {string} *\/ id) => ...` types it. */
+/**
+ * A `/** @type {T} *\/` comment right before a param, as
+ * `(/** @type {string} *\/ id) => ...` types it.
+ */
 const INLINE_JSDOC_REGEX = /\/\*\*((?:(?!\*\/)[\s\S])*)\*\/\s*$/;
 
-/** The type an inline JSDoc comment between `from` and a param at `to` gives that param. */
+/**
+ * The type an inline JSDoc comment between `from` and a param at `to`
+ * gives that param.
+ */
 function inlineJsDocType(ctx: ParserContext, from: number | undefined, to: number): string | undefined {
   if (from === undefined) return undefined;
   const between = sourceAtPos(ctx, from, to);
@@ -273,7 +291,8 @@ export function readFunctionDeclarationParts(
   const params: FunctionDeclarationParam[] = [];
   let previousEnd = "start" in funcDecl && typeof funcDecl.start === "number" ? funcDecl.start : undefined;
 
-  // A destructured param has no name of its own; numbered when there are others, so no two share one.
+  // A destructured param has no name of its own; numbered when there are
+  // others, so no two share one.
   const unnamed = (index: number) => (funcDecl.params.length === 1 ? "arg" : `arg${index}`);
 
   for (const [index, rawParam] of funcDecl.params.entries()) {
@@ -319,9 +338,10 @@ export function readFunctionDeclarationParts(
 }
 
 /**
- * `<T>(params) => ReturnType` for an `export function` accessor in a `lang="ts"` component,
- * with `any` for untyped positions. `hasAnnotations: false` when nothing was annotated, so the
- * caller can prefer a JSDoc-derived signature.
+ * `<T>(params) => ReturnType` for an `export function` accessor in a
+ * `lang="ts"` component, with `any` for untyped positions.
+ * `hasAnnotations: false` when nothing was annotated, so the caller can
+ * prefer a JSDoc-derived signature.
  */
 export function buildFunctionDeclarationSignature(
   ctx: ParserContext,
@@ -345,7 +365,10 @@ function copyIfAny<T>(items: T[]): T[] | undefined {
   return items.length > 0 ? items.slice() : undefined;
 }
 
-/** What the parse leaves for the cross-file pass, or `undefined` when it depends on no other file. */
+/**
+ * What the parse leaves for the cross-file pass, or `undefined` when it
+ * depends on no other file.
+ */
 export function buildPendingCrossFileCandidates(ctx: ParserContext): PendingCrossFileCandidates | undefined {
   const pendingCallDefaultCandidates = copyIfAny(ctx.pendingCallDefaultCandidates);
   const pendingConstDefaultCandidates = copyIfAny(
