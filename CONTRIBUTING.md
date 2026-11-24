@@ -231,7 +231,7 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 
 - Common types: `fix`, `feat`, `docs`, `chore`, `test`, `refactor`.
 - Scope is the area touched: `writer`, `parser`, `playground`, `deps-dev`, or a feature like `template`.
-- Use `chore(playground)` for playground changes, even bug fixes. The playground doesn't ship in the package, and `fix` and `feat` commits go in the [changelog](#changelog-curation).
+- Use `chore(playground)` for playground changes, even bug fixes. The playground doesn't ship in the package, and `fix` and `feat` commits go in the [release notes](#release-note-curation).
 - Append `!` after the scope for breaking changes.
 - Imperative mood, one concise line; move detail to the body, referencing issues with `Fixes #N`.
 
@@ -280,14 +280,15 @@ The following applies only to maintainers.
    git log v0.35.1..HEAD --format="%h %s" --no-merges
    ```
 
-3. Curate changelog entries (see below).
+3. Curate the release notes (see below).
 4. Bump [`package.json`](package.json) — `"version": "X.Y.Z"`.
-5. Add a new `## [X.Y.Z](https://github.com/carbon-design-system/sveld/releases/tag/vX.Y.Z) - YYYY-MM-DD` section at the top of [`CHANGELOG.md`](CHANGELOG.md).
-6. Run `bun run build && bun test` on the release commit.
-7. Commit, tag, and push (see [Publish](#publish)).
-8. Once the publish workflow passes, create the GitHub release (see [Release notes](#release-notes)).
+5. Run `bun run build && bun test` on the release commit.
+6. Commit, tag, and push (see [Publish](#publish)).
+7. Once the publish workflow passes, create the GitHub release (see [Release notes](#release-notes)).
 
-#### Changelog curation
+The GitHub release is the only record of a release's changes. Releases before 0.41.0 are in [`docs/archive/CHANGELOG.md`](docs/archive/CHANGELOG.md), which isn't updated.
+
+#### Release-note curation
 
 **Include** user-facing commits:
 
@@ -302,7 +303,7 @@ The following applies only to maintainers.
 - Dev-only script or bench tweaks
 - E2e fixture modernization and snapshot harness refactors
 
-**Section order** in [`CHANGELOG.md`](CHANGELOG.md):
+**Section order** in the release notes:
 
 1. **Breaking Changes** (omit the section when none)
 2. **Features** (performance items go here, not a separate section)
@@ -311,8 +312,6 @@ The following applies only to maintainers.
 **Bullet format** — lowercase lead-in, backtick code identifiers, one line per commit:
 
 ```markdown
-## [0.34.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.34.0) - 2026-06-30
-
 **Features**
 
 - add persistent cross-run parse cache (`cache` option) (c258eae, #320)
@@ -327,7 +326,7 @@ Combine commits only when the same PR was split across multiple commits.
 
 #### Release notes
 
-Write the GitHub release body directly; there's no notes file in the repo. Start with the same bullets as the changelog entry, then a `---` divider and narrative `##` sections for notable themes (new diagnostics, breaking changes, performance, new surfaces). Leave the release title empty and mark it Latest: `gh release create vX.Y.Z --notes-file <file> --latest`, with no `--title`.
+Write the GitHub release body directly; there's no notes file in the repo. Start with the curated bullets, then a `---` divider and narrative `##` sections for notable themes (new diagnostics, breaking changes, performance, new surfaces). Leave the release title empty and mark it Latest: `gh release create vX.Y.Z --notes-file <file> --latest`, with no `--title`.
 
 Group by theme rather than by commit. Call out breaking changes and performance gains with concrete numbers when the commits provide them. End with **Upgrade notes** (migration steps and `npm i -D sveld@X.Y.Z`). Keep prose short; use paragraphs and bullet lists; no emoji.
 
