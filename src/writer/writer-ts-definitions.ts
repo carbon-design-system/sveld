@@ -16,12 +16,9 @@ import {
   writeTsDefinition,
 } from "./writer-ts-definitions-core";
 
-/**
- * `typesOptions.indexTypes` entries in barrel order. Deduped by source,
- * not export
- * id: `export { default } from` and `export { default as Button } from`
- * name the same component and would otherwise emit its type names twice.
- */
+// Deduped by source, not export id, since `export { default } from` and
+// `export { default as Button } from` name the same component and would
+// otherwise emit its type names twice.
 function collectIndexTypeExports(
   document: ComponentApiDocument,
   options: WriteTsDefinitionsOptions,
@@ -57,10 +54,8 @@ function collectIndexTypeExports(
 export type TransformContext =
   { kind: "component"; component: ComponentDocApi; filePath: string } | { kind: "index"; filePath: string };
 
-/**
- * Runs after the generated-text cache lookup, so a changed transform never
- * serves stale output.
- */
+// Runs after the generated-text cache lookup, so a changed transform
+// never serves stale output.
 async function applyTransform(
   transform: WriteTsDefinitionsOptions["transform"],
   text: string,
@@ -132,11 +127,8 @@ export interface WriteTsDefinitionsOptions extends TypesOptions {
   crossFileResolvedPathByFilePath?: Map<string, string>;
 }
 
-/**
- * Key for a component's cached `.d.ts` text: the emit options, plus its
- * name, which comes from the entry barrel rather than its source, so
- * renaming an export (`as Foo` to `as Bar`) misses.
- */
+// Includes the name because it comes from the entry barrel, not the
+// source, so renaming an export (`as Foo` to `as Bar`) misses.
 export function generatedTextCacheKey(moduleName: string, emitOptions: WriteTsDefinitionOptions): string {
   return `${moduleName}\n${serializeEmitOptions(emitOptions)}`;
 }

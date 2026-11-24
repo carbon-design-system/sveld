@@ -34,10 +34,8 @@ function excludeInternal<T extends { internal?: boolean }>(items: T[]): T[] {
   return items.some((item) => item.internal) ? items.filter((item) => !item.internal) : items;
 }
 
-/**
- * Done once here so no writer filters independently; `sveld --check` still
- * sees the raw `ParsedComponent`.
- */
+// Done once here so no writer filters on its own; `sveld --check` still
+// sees the raw `ParsedComponent`.
 function excludeInternalMembers(component: ComponentDocApi): ComponentDocApi {
   return {
     ...component,

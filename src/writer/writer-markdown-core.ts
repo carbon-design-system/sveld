@@ -7,7 +7,6 @@ export interface WriteMarkdownCoreOptions {
   onAppend?: (type: AppendType, document: MarkdownDocument, components: ComponentDocs) => void;
 }
 
-/** A document whose `onAppend` also receives `components`. */
 export function createMarkdownDocument(
   components: ComponentDocs,
   options: WriteMarkdownCoreOptions | undefined,
@@ -19,10 +18,8 @@ export function createMarkdownDocument(
   });
 }
 
-/**
- * The combined document, shared by `writeMarkdown`, the CLI's `--stdout`
- * mode, and `writeMarkdownCore`.
- */
+// Shared by `writeMarkdown`, the CLI's `--stdout` mode, and
+// `writeMarkdownCore`, so they can't drift.
 export function renderMarkdownDocument(
   components: ComponentDocs,
   options: WriteMarkdownCoreOptions & { entryExports?: EntryExports },

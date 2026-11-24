@@ -7,60 +7,38 @@ import { formatGeneratedTypeScript } from "./format-generated-ts";
 
 const ANY_TYPE = "any";
 
-/** Svelte 4 rejects `{}`; use `Record<string, any>` for empty events. */
+// compat: Svelte 4 rejects `{}` for empty events.
 const EMPTY_EVENTS = "Record<string, any>";
 
-/** Avoids banned `{}` type; use `Record<string, never>` for empty objects. */
+// The `{}` type is banned, so empty objects use this instead.
 const EMPTY_OBJECT = "Record<string, never>";
 
 const IDENTIFIER_REGEX = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 const CUSTOM_EVENT_REGEX = /CustomEvent/;
-/** A capitalized name: a component rather than an HTML element. */
+// spec: a capitalized name is a component, not an HTML element.
 const COMPONENT_NAME_REGEX = /^[A-Z]/;
 const NEWLINE_REGEX = /\n/;
 const FUNCTION_TYPE_REGEX = /=>/;
-/**
- * A type that can open a function type: its parameter list or
- * type parameters.
- */
 const FUNCTION_TYPE_START_REGEX = /^\s*[(<]/;
-/** An `@default` tag line in a description. */
 const DESCRIPTION_DEFAULT_TAG_REGEX = /(?:^|\n)@default\b/;
-/**
- * A comment line of only `*` plus trailing spaces, capturing all but
- * the spaces.
- */
 const BLANK_COMMENT_LINE_REGEX = /^([ \t]*\*) +$/gm;
-/**
- * A line break plus the indentation around it, folded to one space so
- * `@default` stays on one line.
- */
+// Folded to one space, so `@default` stays on one line.
 const LINE_BREAK_WITH_INDENT_REGEX = /[^\S\r\n]*[\r\n]\s*/g;
-/**
- * A reference to the `Snippet` type, not as a member (`x.Snippet`) or part
- * of a longer name.
- */
+// Never matches a member (`x.Snippet`) or part of a longer name.
 const SNIPPET_TYPE_REFERENCE_REGEX = /(^|[^.\w])Snippet(?:\s*<|\b)/;
-/** A preserved `import type { Snippet } from "svelte"`. */
 const PRESERVED_SNIPPET_IMPORT_REGEX = /import\s+type\s+[^;]*\bSnippet\b[^;]*from\s+"svelte";/;
 const LEADING_CONST_MODIFIER_REGEX = /^const\s+/;
 const LEADING_EXPORT_REGEX = /^export /;
 const NON_IDENTIFIER_CHAR_REGEX = /[^\w$]/g;
 
-/**
- * `const` type parameters are legal on classes, functions, and methods but
- * not on `type` aliases (TS1277), so only alias declarations strip it.
- */
+// `const` type parameters are legal on classes, functions, and methods
+// but not on `type` aliases (TS1277), so only aliases drop the modifier.
 function stripConstModifierForTypeAlias(constraint: string): string {
   return constraint.replace(LEADING_CONST_MODIFIER_REGEX, "");
 }
 
 type JsDocTags = Array<{ name: string; body: string }> | undefined;
 
-/**
- * A `/** ... *\/` block with one ` * ` line per entry, or `""`
- * without lines.
- */
 function formatJsDocBlock(lines: string[]): string {
   if (lines.length === 0) return "";
   return `/**\n * ${escapeCommentText(lines.join("\n * "))}\n */`;
@@ -85,10 +63,6 @@ function expandJsDocTagLines(tags: JsDocTags): string[] {
   return lines;
 }
 
-/**
- * JSDoc lines for a prop, accessor, module export, or class member:
- * `@deprecated` precedes the other tags.
- */
 function memberJsDocLines(description: string | undefined, deprecated: DeprecatedValue | undefined, tags: JsDocTags) {
   return [...descriptionLines(description), ...deprecatedLines(deprecated), ...expandJsDocTagLines(tags)];
 }
@@ -104,10 +78,8 @@ function formatComment(description: string | undefined): string {
     : formatSingleLineComment(description);
 }
 
-/**
- * JSDoc for a slot or event (and the snippet/callback prop standing in for
- * one): `@deprecated` follows the other tags.
- */
+// Also for the snippet or callback prop standing in for a slot or
+// event, so both document alike; `@deprecated` follows the other tags.
 function formatSlotJsDoc(description: string | undefined, tags: JsDocTags, deprecated: DeprecatedValue | undefined) {
   const tagLines = [...expandJsDocTagLines(tags), ...deprecatedLines(deprecated)];
   if (tagLines.length === 0) return formatComment(description);
@@ -137,7 +109,7 @@ export function getTypeDefs(def: Pick<ComponentDocApi, "typedefs">) {
 
 const referencesGenericRegexCache = new Map<string, RegExp>();
 
-/** Word-boundary match, so `Value` doesn't match `ValueType`. */
+// Word-boundary match, so `Value` doesn't match `ValueType`.
 function referencesGeneric(propType: string, name: string): boolean {
   let regex = referencesGenericRegexCache.get(name);
   if (regex === undefined) {
@@ -147,10 +119,8 @@ function referencesGeneric(propType: string, name: string): boolean {
   return regex.test(propType);
 }
 
-/**
- * Several sites split the same `generics[1]` per component; a last-input
- * memo avoids re-splitting.
- */
+// perf: several sites split the same `generics[1]` per component, so a
+// last-input memo avoids re-splitting.
 let lastSplitTopLevelCommasInput: string | undefined;
 let lastSplitTopLevelCommasResult: string[] = [];
 function splitTopLevelCommasMemo(input: string): string[] {
@@ -161,11 +131,8 @@ function splitTopLevelCommasMemo(input: string): string[] {
   return lastSplitTopLevelCommasResult;
 }
 
-/**
- * Pairs each generic name with its constraint (`Row extends Foo = Foo`).
- * Names drive the pairing; constraints split only at top-level
- * commas (`Record<string, any>`).
- */
+// Constraints split only at top-level commas, so `Record<string, any>`
+// stays whole; names drive the pairing.
 function getGenericParams(generics: ComponentDocApi["generics"]): Array<{ name: string; constraint: string }> {
   if (generics === null) return [];
   return generics[0].split(",").map((name, index) => ({
@@ -174,11 +141,7 @@ function getGenericParams(generics: ComponentDocApi["generics"]): Array<{ name: 
   }));
 }
 
-/**
- * Only the generics `text` references, in declaration order: `declSuffix`
- * with constraints (`<Row extends Foo = Bar>`), `refSuffix` names
- * only (`<Row>`).
- */
+// Keeps only the generics `text` references, in declaration order.
 function computeReferencedGenerics(generics: ComponentDocApi["generics"], text: string) {
   const referenced = getGenericParams(generics).filter(({ name }) => referencesGeneric(text, name));
 
@@ -238,19 +201,15 @@ export function getContextDefs(def: Pick<ComponentDocApi, "contexts" | "generics
     .join("\n\n");
 }
 
-/**
- * A member key or export specifier name: bare when a valid identifier,
- * else JSON-quoted (`"data-foo"`, `export { "a-b" as x }`).
- */
+// Serves member keys and export specifier names alike, since both are
+// bare only when a valid identifier (`export { "a-b" as x }`).
 function formatKey(key: string): string {
   return IDENTIFIER_REGEX.test(key) ? key : JSON.stringify(key);
 }
 
-/**
- * Svelte 5 type-checks slot content through snippet props. Slot props are
- * the snippet's one argument; a tuple (`@snippet {[A, B]}`) is its
- * parameter list.
- */
+// Needed because Svelte 5 type-checks slot content through snippet
+// props. Slot props are the snippet's one argument, unless a tuple
+// (`@snippet {[A, B]}`) gives its parameter list.
 function genSnippetProp(key: string, slot: ComponentDocApi["slots"][number]): string {
   const comment = formatSlotJsDoc(slot.description, slot.tags, slot.deprecated);
   const description = comment ? `${comment}\n      ` : "";
@@ -260,18 +219,6 @@ function genSnippetProp(key: string, slot: ComponentDocApi["slots"][number]): st
       ${description}${key}?: ${snippetType};`;
 }
 
-/**
- * Generates the `$Props` type for a component.
- *
- * @example
- * ```ts
- * // type $Props<T extends string = "default"> = {
- * //   count?: number;
- * //   header?: (this: void, ...args: [{ title: string }]) => void;
- * //   children?: (this: void) => void;
- * // };
- * ```
- */
 function genPropDef(
   def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleName" | "extends" | "generics" | "slots"> & {
     canonicalPropNames?: Set<string>;
@@ -292,11 +239,10 @@ function genPropDef(
     const defaultValue =
       typeof prop.value === "string" ? prop.value.replace(LINE_BREAK_WITH_INDENT_REGEX, " ") : prop.value;
 
-    /**
-     * Function props only carry a `value` when a concise default was inferred
-     * (see `conciseFunctionDefaultText`, #203). An explicit `@default` in the
-     * description wins, and `= undefined` is already implied by `?`.
-     */
+    // Function props carry a `value` only when a concise default was
+    // inferred (`conciseFunctionDefaultText`, #203). An explicit
+    // `@default` in the description wins, and `= undefined` would only
+    // repeat what `?` says.
     const suppressDefault =
       DESCRIPTION_DEFAULT_TAG_REGEX.test(prop.description ?? "") ||
       prop.value === undefined ||
@@ -406,17 +352,12 @@ function genPropDef(
   };
 }
 
-/**
- * The attributes a component whose tag follows a type parameter takes for
- * each tag, without the names its own props replace: `$Elements[Tag]`.
- * Omitting from a union of element types (`tag: "div" | "section"`) is too
- * complex for TypeScript, so each element type omits on its own. As a
- * property of a mapped type rather than a conditional on `Tag`, it's built
- * only for the tags a use needs: a conditional builds every tag's each
- * time TypeScript compares the component's props, as for a union of two
- * such components, many times over once `tag` infers `Tag`. `undefined`
- * when the type parameter's constraint isn't found.
- */
+// Omitting from a union of element types (`tag: "div" | "section"`) is
+// too complex for TypeScript, so each element type omits on its own.
+// perf: a mapped type builds only the tags a use needs, where a
+// conditional on `Tag` would build every tag's each time TypeScript
+// compares the props, as for a union of two such components, and many
+// times over once `tag` infers `Tag`.
 function elementsByTag(
   thisType: string,
   generics: [string, string] | null | undefined,
@@ -450,10 +391,8 @@ function snippetArgs(slot_props: string) {
   return isTupleType(slot_props) ? slot_props : `[${slot_props}]`;
 }
 
-/**
- * Legacy slots take one props object, so a snippet with positional
- * parameters has no slot form.
- */
+// Legacy slots take one props object, so a snippet with positional
+// parameters has no slot form.
 function genSlotDef(def: Pick<ComponentDocApi, "slots">) {
   const slots = def.slots.filter((slot) => !isTupleType(slot.slot_props ?? ""));
   if (slots.length === 0) return EMPTY_OBJECT;
@@ -560,19 +499,13 @@ const STANDARD_DOM_EVENTS = new Set([
   "compositionend",
 ] satisfies readonly string[]);
 
-/**
- * `CustomEvent<detail>`, leaving a detail that already names `CustomEvent`
- * (`@event {CustomEvent<null>}`) unwrapped.
- */
+// A detail that already names `CustomEvent` stays as is, so
+// `@event {CustomEvent<null>}` isn't wrapped twice.
 function createDispatchedEventType(detail: string = ANY_TYPE) {
   if (CUSTOM_EVENT_REGEX.test(detail)) return detail;
   return `CustomEvent<${detail}>`;
 }
 
-/**
- * The event type a consumer's listener receives, as written to
- * the `.d.ts`.
- */
 export function computeEventTypeString(event: ComponentDocApi["events"][number]): string {
   switch (event.type) {
     case "dispatched":
@@ -618,10 +551,6 @@ function genEventDef(def: Pick<ComponentDocApi, "events">) {
   return def.events.length === 1 ? `{${events_map}}` : `{\n${events_map}}`;
 }
 
-/**
- * Priority: a `@type` function type, then `@param`/`@returns`,
- * then `prop.type`.
- */
 function generateFunctionType(prop: {
   type?: string;
   params?: Array<{ name: string; type: string; optional?: boolean }>;
@@ -637,10 +566,8 @@ function generateFunctionType(prop: {
   return prop.type || ANY_TYPE;
 }
 
-/**
- * `export function` / `export const` in the instance script: a class
- * member or `Exports` entry, not a prop.
- */
+// An instance-script `export function` or `export const` is a class
+// member or `Exports` entry, never a prop.
 export function isAccessorProp(prop: ComponentProp): boolean {
   return prop.isFunctionDeclaration === true || prop.kind === "const";
 }
@@ -656,11 +583,8 @@ function genAccessors(def: Pick<ComponentDocApi, "props">) {
     .join("\n");
 }
 
-/**
- * `"component"` format's `Exports` type: the accessors `"class"` format
- * renders as class members, parameterized with only the generics
- * they reference.
- */
+// Holds the same accessors `"class"` format renders as class members,
+// with only the generics they reference.
 function genExportsDef(def: Pick<ComponentDocApi, "props" | "moduleName" | "generics">) {
   const exports_name = exportsTypeName(def.moduleName);
   const accessors = genAccessors({ props: def.props });
@@ -680,10 +604,6 @@ function genExportsDef(def: Pick<ComponentDocApi, "props" | "moduleName" | "gene
   };
 }
 
-/**
- * `"component"` format's `Bindings` union: `$bindable(...)` or
- * `@bindable writable` prop names, else `""`.
- */
 function genBindingsUnion(def: Pick<ComponentDocApi, "props">): string {
   const names = def.props
     .filter((prop) => prop.bindable === true || prop.binding === "writable")
@@ -691,10 +611,8 @@ function genBindingsUnion(def: Pick<ComponentDocApi, "props">): string {
   return names.length > 0 ? names.join(" | ") : '""';
 }
 
-/**
- * An anonymous default export (`moduleName` "default") still needs a
- * declaration name.
- */
+// An anonymous default export (`moduleName` "default") still needs a
+// declaration name.
 function componentIdentifier(moduleName: string): string {
   return moduleName === "default" ? "$$Component" : moduleName;
 }
@@ -710,15 +628,12 @@ function genComponentDeclaration(def: { moduleName: string; propsRef: string; ex
     export default ${identifier};`;
 }
 
-/**
- * `"component"` format for generic components or ones with events, as an
- * interface instead of `Component<...>`: a `declare const` can't carry a
- * type parameter, and `Component` has no events slot (the language server
- * checks `on:event` usage against the typed `$on`). The `new` signature
- * is required: the template checker infers generics for
- * `<Comp prop={...} />` through it, not the call signature
- * (`@sveltejs/package` emits both).
- */
+// An interface instead of `Component<...>`, since a `declare const`
+// can't carry a type parameter and `Component` has no events slot (the
+// language server checks `on:event` usage against the typed `$on`).
+// The `new` signature must stay: the template checker infers generics
+// for `<Comp prop={...} />` through it, not the call signature
+// (`@sveltejs/package` emits both).
 function genComponentInterfaceDeclaration(def: {
   moduleName: string;
   generic: string;
@@ -759,10 +674,6 @@ function genImports(def: Pick<ComponentDocApi, "extends">) {
   return `import type { ${extendsTypeName(def.extends.interface)} } from ${def.extends.import};`;
 }
 
-/**
- * The identifier of an `@extends` interface, without its type arguments:
- * `ChartProps<T>` → `ChartProps`.
- */
 export function extendsTypeName(reference: string) {
   const open = reference.indexOf("<");
   return (open === -1 ? reference : reference.slice(0, open)).trim();
@@ -779,12 +690,9 @@ function genComponentComment(def: Pick<ComponentDocApi, "componentComment">) {
     .join("\n")}\n*/`;
 }
 
-/**
- * Module-script re-exports, written as-is with their original specifier so
- * TypeScript resolves each name through that module's own types. Named
- * re-exports from one source (with the same doc comment) share
- * one statement.
- */
+// Written as-is with their original specifier, so TypeScript resolves
+// each name through that module's own types. Named re-exports share a
+// statement only with the same source and doc comment.
 function genModuleReExports(def: Pick<ComponentDocApi, "moduleExports">) {
   const statements: string[] = [];
   const namedGroups = new Map<string, { comment: string; from: string; specifiers: string[] }>();
@@ -820,12 +728,8 @@ function genModuleReExports(def: Pick<ComponentDocApi, "moduleExports">) {
     .join("\n\n");
 }
 
-/**
- * One class member as a declaration signature, without the trailing `;`:
- * `static create<U>(value: U): Store<U>`, `readonly size: number`,
- * `constructor(initial: T)`. Shared by the `.d.ts` class body and the
- * Markdown members table.
- */
+// Without the trailing `;`, since both the `.d.ts` class body and the
+// Markdown members table use it.
 export function formatClassMemberSignature(member: ComponentClassMember): string {
   const modifiers = [
     member.static ? "static " : "",
@@ -841,13 +745,10 @@ export function formatClassMemberSignature(member: ComponentClassMember): string
   return `${modifiers}${formatKey(member.name)}${optional}${typeParameters}(${params}): ${member.returnType ?? ANY_TYPE}`;
 }
 
-/**
- * A module-script class as `export declare class`. A class exported under
- * another name (`export { Store as Alias }`, or a string name) is declared
- * under its own name, which its members may refer to, then exported by the
- * public one; `declared` keeps a class exported twice from being
- * declared twice.
- */
+// A class exported under another name (`export { Store as Alias }`, or
+// a string name) is declared under its own name, since its members may
+// refer to it, then exported by the public one; `declared` keeps a class
+// exported twice from being declared twice.
 function genModuleClassExport(prop: ComponentProp, declared: Set<string>): string {
   const localName = prop.localName ?? prop.name;
   const renamed = localName !== prop.name;
@@ -921,10 +822,6 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
   return [reExports, declarations].filter(Boolean).join("\n\n");
 }
 
-/**
- * A module-private identifier for a string-named export (`"some-name"`
- * -> `__export_some_name`).
- */
 function privateExportName(name: string): string {
   return `__export_${name.replace(NON_IDENTIFIER_CHAR_REGEX, "_")}`;
 }
@@ -996,19 +893,13 @@ export function pickEmitOptions(options: WriteTsDefinitionOptions): WriteTsDefin
   };
 }
 
-/**
- * Defaults for `pickEmitOptions` fields. `serializeEmitOptions` iterates
- * the picked object rather than re-listing names, so the cache key can't
- * silently miss a field.
- */
+// `serializeEmitOptions` iterates the picked object instead of
+// re-listing names, so the cache key can't silently miss a field.
 const EMIT_OPTION_DEFAULTS: Record<string, unknown> = {
   format: "class",
 };
 
-/**
- * Generated-text cache key; defaults applied so `{}` and
- * `{ format: "class" }` match.
- */
+// Applies defaults, so `{}` and `{ format: "class" }` share a cache key.
 export function serializeEmitOptions(options: WriteTsDefinitionOptions | undefined): string {
   const picked = pickEmitOptions(options ?? {});
   const withDefaults: Record<string, unknown> = {};
