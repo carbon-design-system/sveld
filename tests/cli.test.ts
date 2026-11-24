@@ -4,6 +4,8 @@ import { join } from "node:path";
 import { cli, parseCliOptions } from "../src/cli";
 import { setQuiet } from "../src/logger";
 
+const EXIT_PAST_2_REGEX = /\b(?:code|exit) [3-9]\b/i;
+
 const DIAGNOSTICS_SUMMARY_REGEX = /^sveld: \d+ diagnostics? \(/;
 
 describe("parseCliOptions", () => {
@@ -169,8 +171,10 @@ describe("parseCliOptions", () => {
     expect(parseCliOptions(["--format=github"])).toEqual({ kind: "options", options: { format: "github" } });
   });
 
-  test("a bare --format is ignored", () => {
-    expect(parseCliOptions(["--format"])).toEqual({ kind: "options", options: {} });
+  test("a bare --format is a usage error, and --format takes its value either way", () => {
+    expect(parseCliOptions(["--format"])).toMatchObject({ kind: "usage-error" });
+    expect(parseCliOptions(["--format", "json"])).toEqual(parseCliOptions(["--format=json"]));
+    expect(parseCliOptions(["--check-level", "minor"])).toEqual(parseCliOptions(["--check-level=minor"]));
   });
 
   test("unknown flag surfaces as an unknown result with a typo suggestion", () => {
@@ -356,10 +360,10 @@ describe("cli() entry resolution failures", () => {
     jest.restoreAllMocks();
   });
 
-  test("sets exitCode 1 and writes nothing when no entry and no src/index.js fallback exist", async () => {
+  test("sets exitCode 2 and writes nothing when no entry and no src/index.js fallback exist", async () => {
     await cli(process);
 
-    expect(process.exitCode).toBe(1);
+    expect(process.exitCode).toBe(2);
     expect(existsSync(join(dir, "types"))).toBe(false);
     expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(false);
   });
@@ -374,26 +378,26 @@ describe("cli() entry resolution failures", () => {
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('using "src/index.js"'));
   });
 
-  test("a mistyped --entry exits 1 instead of falling back to src/index.js", async () => {
+  test("a mistyped --entry exits 2 instead of falling back to src/index.js", async () => {
     mkdirSync(join(dir, "src"), { recursive: true });
     writeFileSync(join(dir, "src", "index.js"), "export {};\n");
     process.argv = ["bun", "cli.js", "--entry=src/indx.js"];
 
     await cli(process);
 
-    expect(process.exitCode).toBe(1);
+    expect(process.exitCode).toBe(2);
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Invalid entry point"));
     expect(errorSpy).not.toHaveBeenCalledWith(expect.stringContaining('using "src/index.js"'));
   });
 
-  test("a package.json#svelte path that doesn't exist exits 1 and names the field", async () => {
+  test("a package.json#svelte path that doesn't exist exits 2 and names the field", async () => {
     mkdirSync(join(dir, "src"), { recursive: true });
     writeFileSync(join(dir, "src", "index.js"), "export {};\n");
     writeFileSync(join(dir, "package.json"), JSON.stringify({ svelte: "./src/missing.js" }));
 
     await cli(process);
 
-    expect(process.exitCode).toBe(1);
+    expect(process.exitCode).toBe(2);
     expect(errorSpy).toHaveBeenCalledWith(
       expect.stringContaining('The "svelte" field in package.json points to "./src/missing.js"'),
     );
@@ -422,13 +426,13 @@ describe("cli() config file errors", () => {
     jest.restoreAllMocks();
   });
 
-  test("a config file with a syntax error exits 1 with its message, not a stack trace", async () => {
+  test("a config file with a syntax error exits 2 with its message, not a stack trace", async () => {
     writeFileSync(join(dir, "sveld.config.js"), "export default { json: true,, };\n");
     const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
 
     await cli(process);
 
-    expect(process.exitCode).toBe(1);
+    expect(process.exitCode).toBe(2);
     // Other test files log concurrently under --parallel, so find this call by content.
     const printed = errorSpy.mock.calls
       .map((call: unknown[]) => String(call[0]))
@@ -480,12 +484,12 @@ describe("cli() --config", () => {
     expect(existsSync(join(dir, "root.json"))).toBe(false);
   });
 
-  test("a path that does not exist exits 1 without generating anything", async () => {
+  test("a path that does not exist exits 2 without generating anything", async () => {
     process.argv = ["bun", "cli.js", "--entry=src/index.js", "--config=configs/missing.config.js"];
 
     await cli(process);
 
-    expect(process.exitCode).toBe(1);
+    expect(process.exitCode).toBe(2);
     expect(errorSpy).toHaveBeenCalledWith('sveld: config file "configs/missing.config.js" does not exist.');
     expect(existsSync(join(dir, "types"))).toBe(false);
   });
@@ -514,12 +518,12 @@ describe("cli() unknown flag", () => {
     jest.restoreAllMocks();
   });
 
-  test("sets exitCode 1 and writes no output files for an unknown flag", async () => {
+  test("sets exitCode 2 and writes no output files for an unknown flag", async () => {
     process.argv = ["bun", "cli.js", "--markdwon"];
 
     await cli(process);
 
-    expect(process.exitCode).toBe(1);
+    expect(process.exitCode).toBe(2);
     expect(errorSpy).toHaveBeenCalledWith('sveld: unknown flag "--markdwon". Did you mean "--markdown"?');
     expect(existsSync(join(dir, "types"))).toBe(false);
     expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(false);
@@ -601,12 +605,12 @@ describe("cli() --entry followed by another flag", () => {
     jest.restoreAllMocks();
   });
 
-  test("sets exitCode 1 and reports a usage error naming --entry", async () => {
+  test("sets exitCode 2 and reports a usage error naming --entry", async () => {
     process.argv = ["bun", "cli.js", "--entry", "--json"];
 
     await cli(process);
 
-    expect(process.exitCode).toBe(1);
+    expect(process.exitCode).toBe(2);
     expect(errorSpy).toHaveBeenCalledWith("sveld: --entry requires a value (pass --entry=<value> or --entry <value>).");
     expect(existsSync(join(dir, "types"))).toBe(false);
     expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(false);
@@ -643,7 +647,7 @@ describe("cli() generation errors", () => {
     jest.restoreAllMocks();
   });
 
-  test("without --fail-fast, a parse error still exits 2 after writing the other components", async () => {
+  test("without --fail-fast, a parse error still exits 1 after writing the other components", async () => {
     writeFileSync(
       join(dir, "src", "Broken.svelte"),
       "<script>\n  export let label = ;\n</script>\n<button>{label}</button>\n",
@@ -656,17 +660,17 @@ describe("cli() generation errors", () => {
 
     await cli(process);
 
-    expect(process.exitCode).toBe(2);
+    expect(process.exitCode).toBe(1);
     expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(true);
   });
 
-  test("an unresolved re-export alias prints one clear line and exits 1, not a raw stack trace", async () => {
+  test("an unresolved re-export alias prints one clear line and exits 2, not a raw stack trace", async () => {
     writeFileSync(join(dir, "src", "index.js"), 'export { default as Button } from "$components/Button.svelte";\n');
     process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--json"];
 
     await cli(process);
 
-    expect(process.exitCode).toBe(1);
+    expect(process.exitCode).toBe(2);
     expect(errorSpy).toHaveBeenCalledTimes(1);
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('cannot resolve "$components/Button.svelte"'));
     expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(false);
@@ -811,7 +815,7 @@ describe("cli() --types-* usage errors", () => {
 
     await cli(process);
 
-    expect(process.exitCode).toBe(1);
+    expect(process.exitCode).toBe(2);
     expect(errorSpy).toHaveBeenCalledWith(
       expect.stringContaining('--types-format must be "class" or "component"; got "oops"'),
     );
@@ -880,7 +884,7 @@ describe("cli() --stdout", () => {
 
     await cli(process);
 
-    expect(process.exitCode).toBe(1);
+    expect(process.exitCode).toBe(2);
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("--stdout requires exactly one of"));
     expect(stdoutSpy).not.toHaveBeenCalled();
     expect(existsSync(join(dir, "types"))).toBe(false);
@@ -891,7 +895,7 @@ describe("cli() --stdout", () => {
 
     await cli(process);
 
-    expect(process.exitCode).toBe(1);
+    expect(process.exitCode).toBe(2);
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("--stdout requires exactly one of"));
     expect(stdoutSpy).not.toHaveBeenCalled();
     expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(false);
@@ -903,7 +907,7 @@ describe("cli() --stdout", () => {
 
     await cli(process);
 
-    expect(process.exitCode).toBe(1);
+    expect(process.exitCode).toBe(2);
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("--stdout cannot be combined with --types"));
     expect(stdoutSpy).not.toHaveBeenCalled();
     expect(existsSync(join(dir, "types"))).toBe(false);
@@ -914,7 +918,7 @@ describe("cli() --stdout", () => {
 
     await cli(process);
 
-    expect(process.exitCode).toBe(1);
+    expect(process.exitCode).toBe(2);
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("--stdout cannot be combined with --check"));
     expect(stdoutSpy).not.toHaveBeenCalled();
     expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(false);
@@ -925,7 +929,7 @@ describe("cli() --stdout", () => {
 
     await cli(process);
 
-    expect(process.exitCode).toBe(1);
+    expect(process.exitCode).toBe(2);
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("--stdout does not take a value"));
     expect(stdoutSpy).not.toHaveBeenCalled();
   });
@@ -962,12 +966,66 @@ describe("cli() --format usage error", () => {
 
     await cli(process);
 
-    expect(process.exitCode).toBe(1);
+    expect(process.exitCode).toBe(2);
     expect(errorSpy).toHaveBeenCalledWith(
       expect.stringContaining('--format must be "text", "json", or "github"; got "yaml"'),
     );
     expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(false);
     expect(existsSync(join(dir, "types"))).toBe(false);
+  });
+});
+describe("cli() errors under --format=json", () => {
+  let dir: string;
+  let previousCwd: string;
+  let previousArgv: string[];
+  let errorSpy: ReturnType<typeof jest.spyOn>;
+  let written: string[];
+
+  beforeEach(() => {
+    previousCwd = process.cwd();
+    previousArgv = process.argv;
+    process.exitCode = 0;
+    dir = mkdtempSync(join(tmpdir(), "sveld-cli-json-error-"));
+    process.chdir(dir);
+    errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    written = [];
+    jest.spyOn(process.stdout, "write").mockImplementation((chunk: string | Uint8Array) => {
+      written.push(String(chunk));
+      return true;
+    });
+  });
+
+  afterEach(() => {
+    process.chdir(previousCwd);
+    process.argv = previousArgv;
+    process.exitCode = 0;
+    rmSync(dir, { recursive: true, force: true });
+    jest.restoreAllMocks();
+  });
+
+  const printed = () => JSON.parse(written.join("")) as unknown;
+
+  test("an unknown flag prints one error object on stdout and exits 2", async () => {
+    process.argv = ["bun", "cli.js", "--format", "json", "--markdwon"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(2);
+    expect(printed()).toEqual({
+      schemaVersion: 1,
+      ok: false,
+      error: { kind: "usage", message: expect.stringContaining('unknown flag "--markdwon"') },
+    });
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+
+  test("a missing entry is kind entry", async () => {
+    process.argv = ["bun", "cli.js", "--format=json", "--entry=src/missing.js"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(2);
+    expect(printed()).toMatchObject({ ok: false, error: { kind: "entry" } });
   });
 });
 
@@ -1016,7 +1074,7 @@ describe("cli() --format with --check", () => {
 
     await cli(process);
 
-    expect(process.exitCode).toBe(3);
+    expect(process.exitCode).toBe(1);
     expect(logSpy).not.toHaveBeenCalled();
     expect(stdoutSpy).toHaveBeenCalledTimes(1);
     const printed = JSON.parse(stdoutSpy.mock.calls[0][0] as string);
@@ -1032,7 +1090,7 @@ describe("cli() --format with --check", () => {
 
     await cli(process);
 
-    expect(process.exitCode).toBe(3);
+    expect(process.exitCode).toBe(1);
     expect(stdoutSpy).not.toHaveBeenCalled();
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('[BREAKING] prop "label" added (required)'));
   });
@@ -1042,7 +1100,7 @@ describe("cli() --format with --check", () => {
 
     await cli(process);
 
-    expect(process.exitCode).toBe(3);
+    expect(process.exitCode).toBe(1);
     expect(stdoutSpy).not.toHaveBeenCalled();
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("Suggested semver bump: major."));
   });
@@ -1075,12 +1133,12 @@ describe("cli() --check with no snapshot", () => {
     jest.restoreAllMocks();
   });
 
-  test("exits 1 when the snapshot is missing, so a mistyped path can't pass CI", async () => {
+  test("exits 2 when the snapshot is missing, so a mistyped path can't pass CI", async () => {
     process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--check=snapshots/api.json"];
 
     await cli(process);
 
-    expect(process.exitCode).toBe(1);
+    expect(process.exitCode).toBe(2);
     expect(logSpy).toHaveBeenCalledWith(
       expect.stringContaining('Generate it with `sveld --json` with `jsonOptions.outFile: "snapshots/api.json"`'),
     );
@@ -1149,7 +1207,7 @@ describe("cli() --check-level", () => {
 
     await cli(process);
 
-    expect(process.exitCode).toBe(3);
+    expect(process.exitCode).toBe(1);
   });
 
   test("--check-level=patch fails the run on a minor change", async () => {
@@ -1157,7 +1215,7 @@ describe("cli() --check-level", () => {
 
     await cli(process);
 
-    expect(process.exitCode).toBe(3);
+    expect(process.exitCode).toBe(1);
   });
 
   test("rejects an invalid --check-level value", async () => {
@@ -1166,7 +1224,7 @@ describe("cli() --check-level", () => {
 
     await cli(process);
 
-    expect(process.exitCode).toBe(1);
+    expect(process.exitCode).toBe(2);
     expect(errorSpy).toHaveBeenCalledWith(
       expect.stringContaining('--check-level must be "major", "minor", or "patch"'),
     );
@@ -1292,7 +1350,7 @@ describe("cli() exit codes", () => {
     expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(false);
   });
 
-  test("sets exitCode 4 when diagnostics exist under --strict without --check", async () => {
+  test("sets exitCode 1 when diagnostics exist under --strict without --check", async () => {
     writeFileSync(
       join(dir, "src", "Phantom.svelte"),
       "<script>\n  /** @event {CustomEvent<null>} phantom */\n  export let label;\n</script>\n<button>{label}</button>\n",
@@ -1302,7 +1360,7 @@ describe("cli() exit codes", () => {
 
     await cli(process);
 
-    expect(process.exitCode).toBe(4);
+    expect(process.exitCode).toBe(1);
   });
 
   test("--strict=errors keeps exitCode 0 when only warning-severity diagnostics exist", async () => {
@@ -1318,7 +1376,7 @@ describe("cli() exit codes", () => {
     expect(process.exitCode).toBe(0);
   });
 
-  test("--strict=errors sets exitCode 4 when an error-severity diagnostic exists", async () => {
+  test("--strict=errors sets exitCode 1 when an error-severity diagnostic exists", async () => {
     writeFileSync(
       join(dir, "src", "Broken.svelte"),
       '<script>\n  /**\n   * @internal\n   * @typedef {{ id: string }} Secret\n   */\n  /** @type {Secret} */\n  export let value = { id: "a" };\n</script>\n',
@@ -1328,7 +1386,7 @@ describe("cli() exit codes", () => {
 
     await cli(process);
 
-    expect(process.exitCode).toBe(4);
+    expect(process.exitCode).toBe(1);
   });
 
   test("--strict=oops is a usage error", async () => {
@@ -1336,11 +1394,11 @@ describe("cli() exit codes", () => {
 
     await cli(process);
 
-    expect(process.exitCode).toBe(1);
+    expect(process.exitCode).toBe(2);
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('--strict must be "errors"'));
   });
 
-  test("exits 3 (not 4) when a --check breaking change and --strict diagnostics both apply in one run", async () => {
+  test("exits 1 when a --check breaking change and --strict diagnostics both apply in one run", async () => {
     writeFileSync(join(dir, "src", "Button.svelte"), "<script></script>\n<button>Click</button>\n");
     writeFileSync(
       join(dir, "src", "Phantom.svelte"),
@@ -1366,7 +1424,7 @@ describe("cli() exit codes", () => {
 
     await cli(process);
 
-    expect(process.exitCode).toBe(3);
+    expect(process.exitCode).toBe(1);
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("Suggested semver bump: major."));
     expect(errorSpy).toHaveBeenCalledWith(expect.stringMatching(DIAGNOSTICS_SUMMARY_REGEX));
   });
@@ -1421,15 +1479,14 @@ describe("cli() --help", () => {
     jest.restoreAllMocks();
   });
 
-  test("documents the real exit codes for --strict and --check, not the stale code 1", async () => {
+  test("documents the exit codes for --strict and --check as 1, and no code past 2", async () => {
     process.argv = ["bun", "cli.js", "--help"];
 
     await cli(process);
 
     const help = logSpy.mock.calls.map((call: unknown[]) => call[0]).join("\n");
-    expect(help).toContain("Exit with code 4");
-    expect(help).toContain("exit 3 on a breaking change");
-    expect(help).not.toContain("Exit with code 1 when diagnostics exist");
-    expect(help).not.toContain("exit 1 on a breaking change");
+    expect(help).toContain("Exit with code 1 when diagnostics exist");
+    expect(help).toContain("exit 1 on a breaking change");
+    expect(help).not.toMatch(EXIT_PAST_2_REGEX);
   });
 });

@@ -4,7 +4,7 @@
 
 **Consumers don't get the generated types.** Check that the types folder is in both `exports` and `files` in `package.json`. See [Publishing to npm](output.md#publishing-to-npm).
 
-**`sveld: cannot resolve "..." from ...`.** An `export *` or named re-export points at a module or path alias that doesn't resolve to a file. Fix the specifier, or the `paths` entry it should match. This exits `1`.
+**`sveld: cannot resolve "..." from ...`.** An `export *` or named re-export points at a module or path alias that doesn't resolve to a file. Fix the specifier, or the `paths` entry it should match. This exits `2`.
 
 **A path alias (`$lib`, `@components`, ...) isn't picked up.** sveld reads aliases only from `compilerOptions.paths` in the nearest `tsconfig.json` or `jsconfig.json`, walking up from the importing file. It doesn't read `vite.config.*` or `svelte.config.*`, so add the same aliases to `paths`. When a pattern has several targets, sveld uses the first that exists on disk (or the first, if none do). Among matching patterns, the longest prefix before the `*` wins, as in `tsc`.
 

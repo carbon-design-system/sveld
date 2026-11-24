@@ -223,8 +223,8 @@ See [Output](docs/output.md#json-output) for the full shape.
 Commit `COMPONENT_API.json`, then gate pull requests on API changes and inference gaps:
 
 ```sh
-npx sveld --check    # exit 3 on a breaking API change against the snapshot
-npx sveld --strict   # exit 4 when a prop fell back to `any`, a tag was dropped, ...
+npx sveld --check    # exit 1 on a breaking API change against the snapshot
+npx sveld --strict   # exit 1 when a prop fell back to `any`, a tag was dropped, ...
 ```
 
 ```
@@ -237,6 +237,8 @@ Suggested semver bump: major.
 ```
 
 See [CI](docs/ci.md) for exit codes, the change classification table, diagnostic codes, and how to ignore a diagnostic.
+
+For an agent or a script: pass `--format=json` and read stdout. The `--check` report is one object (`kind: "check-report"`, `schemaVersion`, `bump`, `changes`), and an exit `2` prints `{ schemaVersion, ok: false, error: { kind, message } }`. Exit `0` is done, `1` is problems found, `2` is called wrong or couldn't finish ([Exit codes](docs/ci.md#exit-codes)).
 
 ## JSDoc tags
 

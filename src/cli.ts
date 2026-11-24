@@ -20,14 +20,25 @@ import { buildAndWrite, reportRun } from "./sveld";
 // Used only when nothing configures an entry.
 const FALLBACK_ENTRY = "src/index.js";
 
-// invariant: when more than one applies in a run, the lowest code wins.
+// invariant: 1 means the run finished and found problems; 2 means it
+// couldn't do what it was asked, which wins over 1.
 const EXIT_CODES = {
   SUCCESS: 0,
-  USAGE_ERROR: 1,
-  GENERATION_FAILURE: 2,
-  BREAKING_CHANGE: 3,
-  DIAGNOSTICS: 4,
+  PROBLEMS: 1,
+  USAGE_OR_FAILURE: 2,
 } as const;
+
+// Named in `--format=json`'s `error.kind`, since exit 2 alone doesn't
+// say which way the run was called wrong or failed.
+type ErrorKind = "usage" | "config" | "entry" | "unresolved-module" | "failure";
+
+const ERROR_SCHEMA_VERSION = 1;
+
+// Only set by `--format=json`, so a usage error can be JSON before the
+// options parse.
+function argvWantsJson(argv: readonly string[]): boolean {
+  return argv.some((arg, i) => arg === "--format=json" || (arg === "--format" && argv[i + 1] === "json"));
+}
 
 const HELP_TEXT = `Usage: sveld [options]
 
@@ -35,8 +46,9 @@ Generate TypeScript definitions and component documentation for a Svelte
 library. With no flags, only TypeScript definitions are generated for the
 entry resolved from package.json#svelte.
 
---entry, --config, --cache, --check, and --types-format accept their
-value as --flag=value or as a separate --flag value argument.
+--entry, --config, --cache, --check, --types-format, --format, and
+--check-level accept their value as --flag=value or as a separate --flag
+value argument.
 
 Options:
   --entry=<path>        Entry point to uncompiled Svelte source (default: package.json "svelte" field)
@@ -51,21 +63,31 @@ Options:
   --cache[=<path>]      Persist parsed output and skip re-parsing unchanged files (on by default, default path: node_modules/.cache/sveld/parse-cache.json; pass --cache=false to disable)
   --check-examples[=syntax]  Check @example blocks: TS/JS against the TypeScript program, svelte/html markup against svelte-ast; --check-examples=syntax runs only the markup path and never loads TypeScript
   --report-diagnostics  Print unresolved-type diagnostics to stderr
-  --strict[=errors]     Exit with code 4 when diagnostics exist (implies --report-diagnostics); --strict=errors only fails on error-severity diagnostics
+  --strict[=errors]     Exit with code 1 when diagnostics exist (implies --report-diagnostics); --strict=errors only fails on error-severity diagnostics
   --types-format=<format>  ".d.ts" output format: "class" (default) or "component" (Svelte 5 Component<...>)
   --types-index-types    Sets typesOptions.indexTypes; also re-exports generated types from index.d.ts (pass --types-index-types=false to disable)
-  --check[=<path>]      Diff the parsed API against a committed snapshot; exit 3 on a breaking change (default path: COMPONENT_API.json)
+  --check[=<path>]      Diff the parsed API against a committed snapshot; exit 1 on a breaking change (default path: COMPONENT_API.json)
   --check-level=<major|minor|patch>  Minimum bump --check fails the run on (default: major)
   --format=<text|json|github>  Output format for the --check report and the diagnostics summary (default: text); github also prints each diagnostic as a GitHub Actions annotation
   -h, --help            Print this help message and exit
   -v, --version         Print the installed sveld version and exit
 
 Exit codes:
-  0  success
-  1  usage or configuration error
-  2  generation failure
-  3  breaking API change detected by --check
-  4  diagnostics present under --strict
+  0  done
+  1  problems found: a component that failed to parse, a breaking API
+     change under --check, diagnostics under --strict, or a --check
+     snapshot from another schemaVersion
+  2  called wrong, or couldn't finish: an unknown flag or bad value, a
+     missing entry, config file or --check snapshot, an unresolvable
+     re-export or path alias, or an unrecoverable error
+
+For agents and scripts:
+  Run with --format=json and read stdout. --check prints its report as
+  one object ({ kind: "check-report", schemaVersion, bump, changes });
+  --report-diagnostics and --strict print { kind: "diagnostics",
+  schemaVersion, diagnostics } on stderr. An exit 2 prints
+  { schemaVersion, ok: false, error: { kind, message } } on stdout, where
+  kind is usage, config, entry, unresolved-module or failure.
 `;
 
 type CliFlagResult =
@@ -123,10 +145,18 @@ const BOOLEAN_FLAGS = new Set([
 ]);
 
 // Only these also take their value as the next argument.
-const SPACE_SEPARATED_VALUE_FLAGS = new Set(["entry", "config", "cache", "check", "types-format"]);
+const SPACE_SEPARATED_VALUE_FLAGS = new Set([
+  "entry",
+  "config",
+  "cache",
+  "check",
+  "types-format",
+  "format",
+  "check-level",
+]);
 
 // These error without a value, instead of using a bare default.
-const REQUIRES_VALUE_FLAGS = new Set(["entry", "config", "types-format"]);
+const REQUIRES_VALUE_FLAGS = new Set(["entry", "config", "types-format", "format", "check-level"]);
 
 // camelCase is kebab-cased first, so `--failFast` suggests `--fail-fast`.
 function suggestFlag(rawFlag: string): string | undefined {
@@ -266,12 +296,17 @@ function isInvalid(value: unknown, allowed: readonly unknown[]): boolean {
 }
 
 export async function cli(process: NodeJS.Process) {
-  const usageError = (message: string) => {
-    console.error(message);
-    process.exitCode = EXIT_CODES.USAGE_ERROR;
+  const argv = process.argv.slice(2);
+  let json = argvWantsJson(argv);
+  const usageError = (message: string, kind: ErrorKind = "usage") => {
+    if (json) {
+      const error = { schemaVersion: ERROR_SCHEMA_VERSION, ok: false, error: { kind, message } };
+      process.stdout.write(`${JSON.stringify(error, null, 2)}\n`);
+    } else console.error(message);
+    process.exitCode = EXIT_CODES.USAGE_OR_FAILURE;
   };
 
-  const parsed = parseCliOptions(process.argv.slice(2));
+  const parsed = parseCliOptions(argv);
 
   if (parsed.kind === "help") {
     console.log(HELP_TEXT);
@@ -289,8 +324,10 @@ export async function cli(process: NodeJS.Process) {
     let message = `sveld: unknown flag "${parsed.arg}".`;
     if (parsed.suggestion) message += ` Did you mean "--${parsed.suggestion}"?`;
     if (parsed.positionalHint) message += " Values are passed as --flag=value or --flag value.";
+    const hint = "Run sveld --help for a list of available flags.";
+    if (json) return usageError(`${message} ${hint}`);
     console.error(message);
-    return usageError("Run sveld --help for a list of available flags.");
+    return usageError(hint);
   }
 
   const cliOptions = parsed.options;
@@ -300,9 +337,10 @@ export async function cli(process: NodeJS.Process) {
   } catch (error) {
     // The user's to fix, not a crash: print the reason, not sveld's
     // (minified) stack.
-    return usageError(error instanceof Error ? error.message : String(error));
+    return usageError(error instanceof Error ? error.message : String(error), "config");
   }
   const options = mergeConfig<SveldRuntimeOptions>(fileConfig, cliOptions);
+  json = options.format === "json";
   validateOptions(options);
 
   if (options.stdout) {
@@ -350,17 +388,15 @@ export async function cli(process: NodeJS.Process) {
     );
     input = asSvelteEntryPoint(normalizeSeparators(FALLBACK_ENTRY));
   } else {
-    return usageError(`sveld: ${resolution.message}`);
+    return usageError(`sveld: ${resolution.message}`, "entry");
   }
 
   let run: Awaited<ReturnType<typeof buildAndWrite>>;
   try {
     run = await buildAndWrite(input, options, options.stdout === true);
   } catch (error) {
-    if (error instanceof UnresolvedModuleError) return usageError(`sveld: ${error.message}`);
-    console.error(error instanceof Error ? error.message : String(error));
-    process.exitCode = EXIT_CODES.GENERATION_FAILURE;
-    return;
+    if (error instanceof UnresolvedModuleError) return usageError(`sveld: ${error.message}`, "unresolved-module");
+    return usageError(error instanceof Error ? error.message : String(error), "failure");
   }
 
   const { result, check } = run;
@@ -374,6 +410,6 @@ export async function cli(process: NodeJS.Process) {
     }
   }
 
-  // Every failure is reported above; the lowest applicable code wins.
+  // Every failure is reported above.
   if (exitCode !== EXIT_CODES.SUCCESS) process.exitCode = exitCode;
 }

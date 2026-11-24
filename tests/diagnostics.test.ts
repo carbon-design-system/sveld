@@ -1394,12 +1394,12 @@ describe("sveld() strict mode", () => {
     expect(summaryCalls(errorSpy).length).toBeGreaterThan(0);
   });
 
-  test("strict: true returns exitCode 4 without touching process.exitCode", async () => {
+  test("strict: true returns exitCode 1 without touching process.exitCode", async () => {
     const exitCodeBefore = process.exitCode;
     const { diagnostics, exitCode } = await sveld({ entry: relativeDir, glob: true, types: false, strict: true });
 
     expect(diagnostics.length).toBeGreaterThan(0);
-    expect(exitCode).toBe(4);
+    expect(exitCode).toBe(1);
     expect(process.exitCode).toBe(exitCodeBefore);
     expect(summaryCalls(errorSpy).length).toBeGreaterThan(0);
   });
@@ -1450,7 +1450,7 @@ describe("sveld() strict mode", () => {
       diagnostics: { ignore: [{ name: "not-phantom" }] },
     });
 
-    expect(exitCode).toBe(4);
+    expect(exitCode).toBe(1);
   });
 });
 
@@ -1561,7 +1561,7 @@ describe("sveld() reports an ambiguous `export *` in the entry barrel", () => {
   test("fails strict: true", async () => {
     const { exitCode } = await run({ strict: true });
 
-    expect(exitCode).toBe(4);
+    expect(exitCode).toBe(1);
   });
 
   test("diagnostics.ignore by code clears strict: true", async () => {
