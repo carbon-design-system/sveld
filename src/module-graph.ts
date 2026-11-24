@@ -88,8 +88,8 @@ export class ModuleGraph {
     const exists = this.listings.has(parentDir, baseName);
     let stat: Dirent | Stats | undefined;
     if (exists) {
-      // The listing knows the entry's type, except for a symlink's target or a
-      // name matched by case/normalization variant.
+      // The listing knows the entry's type, unless it's a symlink's target or a
+      // name matched by case or normalization variant.
       const entry = this.listings.entry(parentDir, baseName);
       stat = entry && !entry.isSymbolicLink() ? entry : statSync(base, { throwIfNoEntry: false });
       if (stat?.isFile()) return base;

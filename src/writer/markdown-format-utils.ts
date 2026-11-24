@@ -24,8 +24,9 @@ const GT_REGEX = />/g;
 const NEWLINE_REGEX = /\n/g;
 const IDENTIFIER_REGEX = /^[A-Za-z_$][\w$]*$/;
 const LINE_BREAK_REGEX = /\s*\n\s*/g;
-// An entity-like `&`, a tag-opening `<`, `|`, a backtick, `*`, a backslash
-// escape, or a word-edge `_`.
+// Only what Markdown would read as markup: an entity-like `&`, a
+// tag-opening `<`, `|`, a backtick, `*`, a backslash escape, or a
+// word-edge `_`.
 const CODE_ESCAPE_REGEX = /&(?=#?\w+;)|<(?=[A-Za-z/!?])|[|`*]|\\(?=[!-/:-@[-`{-~])|(?<![A-Za-z0-9])_|_(?![A-Za-z0-9])/g;
 /**
  * Any character {@link CODE_ESCAPE_REGEX} may encode, for a fast no-op

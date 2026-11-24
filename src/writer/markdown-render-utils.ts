@@ -79,7 +79,8 @@ function renderExports(document: MarkdownRenderTarget, entryExports: EntryExport
   document.append("raw", EXPORT_TABLE_HEADER);
 
   for (const entry of entryExports) {
-    // Keeps multi-line types (e.g. interface bodies) on one table row.
+    // Whitespace collapses, so multi-line types (e.g. interface bodies) stay
+    // on one table row.
     const type = (entry.type ?? entry.value)?.replace(WHITESPACE_REGEX, " ").trim();
     document.append(
       "raw",

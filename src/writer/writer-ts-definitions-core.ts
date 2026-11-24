@@ -328,8 +328,8 @@ function genPropDef(
   const props = members.join("\n");
   const props_name = propsTypeName(def.moduleName);
 
-  // Declaration form (`type $Props<T extends Foo = Bar>`) vs reference form
-  // (`$Props<T>`).
+  // Both forms, since the declaration (`type $Props<T extends Foo = Bar>`)
+  // needs the constraints and a reference (`$Props<T>`) only the names.
   const genericsName = def.generics
     ? `<${splitTopLevelCommasMemo(def.generics[1])
         .map((constraint) => stripConstModifierForTypeAlias(constraint.trim()))
@@ -432,7 +432,7 @@ function elementsByTag(
   if (index === -1 || !declaration?.startsWith(`${thisType} extends `)) return;
   const constraint = splitTopLevel(declaration.slice(`${thisType} extends `.length), "=")[0]?.trim();
   if (!constraint) return;
-  // The component's other type parameters, which the props can use too.
+  // The component's other type parameters, since the props can use them too.
   const otherNames = names.filter((_, i) => i !== index);
   const otherDeclarations = declarations.filter((_, i) => i !== index);
   const params = otherDeclarations.length > 0 ? `<${otherDeclarations.join(", ")}>` : "";
@@ -582,8 +582,8 @@ export function computeEventTypeString(event: ComponentDocApi["events"][number])
       const isComponent = elementName && COMPONENT_NAME_REGEX.test(elementName);
       const isStandardEvent = !isComponent || STANDARD_DOM_EVENTS.has(event.name);
 
-      // On an element, a `null` detail is the native event's; a component's
-      // `@event {null}` is its own.
+      // Only a component's `@event {null}` is its own; on an element, a `null`
+      // detail is the native event's.
       const hasExplicitDetail =
         event.detail !== undefined &&
         event.detail !== "undefined" &&
@@ -879,8 +879,9 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
     .filter((prop) => prop.kind !== "re-export")
     .map((exported) => {
       if (exported.kind === "class") return genModuleClassExport(exported, declaredClasses);
-      // `export { a as "some-name" }`: declare under a private identifier, then
-      // export it by the string name.
+      // A quoted export name isn't an identifier, so
+      // `export { a as "some-name" }` declares under a private identifier, then
+      // exports it by the string name.
       const quoted = !IDENTIFIER_REGEX.test(exported.name);
       const prop = quoted ? { ...exported, name: privateExportName(exported.name) } : exported;
       let type_def: string;
@@ -899,8 +900,8 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
       } else if (prop.returnType) {
         type_def = `export declare function ${prop.name}${typeParameters}(): ${prop.returnType};`;
       } else if (prop.type && arrowIndex !== -1) {
-        // A function type expression (e.g. from `@type`) rewritten as a function
-        // declaration.
+        // Rewritten as a function declaration, since a function type expression
+        // (e.g. from `@type`) can't be one as written.
         const signature = prop.type.slice(0, arrowIndex).trimEnd();
         const returnType = prop.type.slice(arrowIndex + 2).trim();
         type_def = `export declare function ${prop.name}${signature}: ${returnType};`;
@@ -1069,8 +1070,8 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
     : { exports_ref: "", exports_def: "" };
   const bindings = useComponentFormat ? genBindingsUnion({ props }) : "";
 
-  // A tag typed by a type parameter (`<svelte:element this={tag}>`,
-  // `tag: Tag`).
+  // Only a tag typed by a type parameter (`<svelte:element this={tag}>`,
+  // `tag: Tag`) has its own constructor.
   const ownConstructor = rest_props?.type === "Element" && rest_props.thisType !== undefined;
   const snippetImportNeeded =
     !PRESERVED_SNIPPET_IMPORT_REGEX.test(preservedTypeImports) &&

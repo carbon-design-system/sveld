@@ -1,10 +1,11 @@
 import { scanTypeText } from "../type-text";
 
 const INDENT_UNIT = "  ";
-// Conservative width for collapsing `{...}` onto one line; ignores
-// surrounding indent.
+// A conservative width for collapsing `{...}` onto one line, since it
+// ignores the surrounding indent.
 const INLINE_WIDTH_BUDGET = 120;
-// `interface` bodies always expand, unlike plain `{...}` type literals.
+// Matched so `interface` bodies always expand, unlike plain `{...}` type
+// literals.
 const INTERFACE_HEADER_REGEX = /\binterface\s+[A-Za-z_$][\w$]*(\s*<[^{};]*>)?\s*$/;
 const INTERFACE_HEADER_TAIL_LENGTH = 200;
 const WHITESPACE_CHAR_REGEX = /\s/;
@@ -58,8 +59,8 @@ function indentString(depth: number): string {
   return indent;
 }
 
-// Avoids joining the whole (potentially huge) buffer just to read its
-// tail.
+// Reads only the tail, so it never joins the whole (potentially huge)
+// buffer.
 function tailString(out: string[], maxLen: number): string {
   let result = "";
   for (let i = out.length - 1; i >= 0 && result.length < maxLen; i--) {
@@ -463,8 +464,8 @@ function continuesExpression(text: string, at: number, end: number): boolean {
  * flatten, costing more than the reindent itself.
  */
 function reindentAndTidy(text: string): string {
-  // Parallel arrays: one entry per emitted line. A blank line is `""` with
-  // indent 0.
+  // Parallel arrays, one entry per emitted line, so a blank line is `""`
+  // with indent 0.
   const outIndent: number[] = [];
   const outContent: string[] = [];
   const length = text.length;

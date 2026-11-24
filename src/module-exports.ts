@@ -369,7 +369,7 @@ function describeDeclaration(
   const { deprecated, tags, internal } = rawJsDoc
     ? getParserStack().extractJsDocDeprecatedAndTags(rawJsDoc)
     : { deprecated: undefined, tags: undefined, internal: false };
-  // Spread after each entry's own fields: key order is the entry-exports
+  // Spread after each entry's own fields, so key order is the entry-exports
   // JSON order.
   const shared = {
     description,
@@ -416,7 +416,8 @@ function describeDeclaration(
         } else {
           value = textOf(source, init);
           if (!type) type = inferLiteralType(init);
-          // `"k" as const` and `"k" satisfies string` hold the same value as `"k"`.
+          // Unwrapped, since `"k" as const` and `"k" satisfies string` hold the same
+          // value as `"k"`.
           const inner = unwrapTypeCastExpression(init);
           literalValue = resolveStaticStringLiteral(inner) ?? symbolKeyDescription(inner, name);
           if (kind === "const") {
@@ -621,8 +622,8 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
       const target = ctx.graph.resolve(specifierValue, source.dir);
       if (!target) continue;
       const isTypeOnly = node.exportKind === "type";
-      // `export * as ns from "./x"` exports the one name `ns`, like an explicit
-      // export.
+      // `export * as ns from "./x"` exports only the one name `ns`, so it's read
+      // like an explicit export.
       const namespaceName = identifierName(node.exported);
       if (namespaceName) {
         results.push(namespaceExport(namespaceName, target, isTypeOnly));

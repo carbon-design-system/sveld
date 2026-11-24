@@ -126,8 +126,8 @@ export function defaultSourceText(ctx: ParserContext, node: unknown) {
   });
   segments.sort((a, b) => a.start - b.start);
 
-  // A whitespace run with a line break keeps the break and the next line's
-  // indentation.
+  // A whitespace run with a line break keeps only the break and the next
+  // line's indentation.
   const layOut = (text: string) =>
     text.replace(WHITESPACE_RUN_REGEX, (run) => (run.includes("\n") ? run.slice(run.lastIndexOf("\n")) : " "));
 

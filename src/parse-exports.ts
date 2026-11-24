@@ -196,7 +196,8 @@ function readExports(
         }
       }
     } else if (node.type === "ImportDeclaration") {
-      // `import "./styles.css"` binds nothing.
+      // Only the first specifier is read, since `import "./styles.css"` binds
+      // nothing.
       const first = node.specifiers[0];
       if (!first) continue;
       const id = first.local.name;

@@ -167,8 +167,8 @@ function processInitializerWithoutAssertion(ctx: ParserContext, init: unknown, d
           };
         }
 
-        // `function defaultX() {}` has no initializer. Read JSDoc off the
-        // declaration.
+        // JSDoc is read off the declaration, since `function defaultX() {}` has no
+        // initializer.
         const funcNode = ctx.funcDecls.get(name);
         if (funcNode) {
           const resolvedJSDoc = resolveLocalVarJSDoc(ctx, name);
@@ -411,7 +411,7 @@ export function literalType(node: unknown, mode: LiteralTypeMode): string | unde
       return members.size === 1 ? `${element}[]` : `(${element})[]`;
     }
     case "ObjectExpression": {
-      // A repeated key keeps its last value, as at runtime.
+      // A Map, so a repeated key keeps its last value, as at runtime.
       const members = new Map<string, string>();
       for (const property of expr.properties) {
         if (
@@ -476,7 +476,8 @@ export function inferVariableInitializerType(ctx: ParserContext, name: string, e
     }
   }
 
-  // A call's declared return type (`@returns`) lands in `resolvedType`.
+  // Processed so a call's declared return type (`@returns`) lands in
+  // `resolvedType`.
   const processed = processInitializer(ctx, init);
   return processed.type ?? processed.resolvedType;
 }
@@ -528,7 +529,8 @@ export function svelteStoreType(ctx: ParserContext, call: CallExpression): strin
     trackAdditionalTypeDependencyNode(ctx, typeArgument);
     valueType = sourceForExpression(ctx, typeArgument);
   } else if (binding?.importedName === "readonly") {
-    // `readonly(store)` reads the value type off the store it wraps.
+    // Only the wrapped store is read, since `readonly(store)` has its value
+    // type.
     const [wrapped] = call.arguments;
     const wrappedType = isIdentifier(wrapped)
       ? (findTrackedVariableType(ctx, wrapped.name)?.type ?? inferVariableInitializerType(ctx, wrapped.name))
@@ -537,8 +539,8 @@ export function svelteStoreType(ctx: ParserContext, call: CallExpression): strin
         : undefined;
     valueType = wrappedType?.trim().match(STORE_VALUE_TYPE_REGEX)?.[1];
   } else if (isDerived) {
-    // A callback that takes `set` reports its value through it, not its
-    // return.
+    // Only the callback's `set` is read, since a callback that takes `set`
+    // reports its value through it, not its return.
     const callback = call.arguments[1];
     const isFunction = callback?.type === "ArrowFunctionExpression" || callback?.type === "FunctionExpression";
     valueType = isFunction && callback.params.length < 2 ? inferReturnTypeFromNode(callback) : undefined;
@@ -669,8 +671,8 @@ function buildFunctionTypeFromParts(
  */
 function inferFunctionTypeFromNode(ctx: ParserContext, node: FunctionNode): string {
   const returnType = inferReturnTypeFromNode(node);
-  // TypeScript annotations on the function (`(value: string) => ...`) say
-  // more than its body.
+  // TypeScript annotations on the function (`(value: string) => ...`) win,
+  // since they say more than its body.
   const annotated = buildFunctionDeclarationSignature(ctx, node, returnType);
   if (annotated.hasAnnotations) return annotated.signature;
   return `(${inferParamsFromNode(node)}) => ${returnType}`;
@@ -707,7 +709,7 @@ export function inferFunctionValueType(ctx: ParserContext, node: FunctionNode): 
  * `any[]` when rest.
  */
 function untypedParamList(node: FunctionNode): string {
-  // A destructured param has no name of its own.
+  // Named by position, since a destructured param has no name of its own.
   const unnamed = (index: number) => (node.params.length === 1 ? "arg" : `arg${index}`);
   const params = node.params.map((param, index) => {
     if (param.type === "RestElement") {

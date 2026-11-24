@@ -267,7 +267,8 @@ function applyDispatchEscapeResolutions(
   if (helperEvents.size === 0) return;
 
   // As with a same-file dispatch (`addDispatchedEvent`), the forwarded
-  // entry's `@event` metadata, detail included, carries over.
+  // entry's `@event` metadata, detail included, carries over, so it's kept
+  // by name.
   const forwardedByName = new Map<string, SerializedComponentEvent>();
   const dispatchedNames = new Set<string>();
   for (const event of component.events) {

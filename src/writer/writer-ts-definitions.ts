@@ -157,7 +157,8 @@ export default async function writeTsDefinitions(components: ComponentDocs, opti
     const crossFilePath = ownPath ? undefined : options.crossFileResolvedPathByFilePath?.get(component.filePath);
     const resolvedPath = ownPath ?? crossFilePath;
     // A cross-file component's source is fixed by its cache entry, but not
-    // what it read from other files, which lands in its serialized content.
+    // what it read from other files, so the key includes its serialized
+    // content.
     const optionsKey = generatedTextCacheKey(component.moduleName, emitOptions);
     const cacheKey = crossFilePath ? `${optionsKey}\n${hashSource(JSON.stringify(component))}` : optionsKey;
     let text = resolvedPath ? options.cache?.getGeneratedText(resolvedPath, cacheKey) : undefined;

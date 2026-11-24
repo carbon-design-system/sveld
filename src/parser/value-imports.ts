@@ -47,7 +47,8 @@ export function importPath(binding: { importedName: string; members?: string[] }
  * record, are found by searching the component's scripts.
  */
 export function importedCalleeBinding(ctx: ParserContext, callee: unknown): ImportedBinding | undefined {
-  // `a.b.c` -> `a`, with members `["b", "c"]`.
+  // Only a chain of plain names resolves: `a.b.c` gives `a`, with members
+  // `["b", "c"]`.
   const members: string[] = [];
   let node = callee;
   while (isMemberExpression(node)) {

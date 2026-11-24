@@ -317,8 +317,8 @@ export function collectExportDeclarators(
       kind === "const" &&
       (init?.type === "ObjectExpression" || init?.type === "ArrayExpression") &&
       !ctx.typeCasts.constAssertions.has(init);
-    // A `const` function is the value consumers call, like an
-    // `export function`, not a default.
+    // A `const` function counts as the value consumers call, like an
+    // `export function`, so it isn't a default.
     const constFunction =
       kind === "const" && (init?.type === "ArrowFunctionExpression" || init?.type === "FunctionExpression")
         ? inferFunctionValueType(ctx, init)

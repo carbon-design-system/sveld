@@ -399,7 +399,7 @@ export class Project {
       return { component, record };
     };
 
-    // Keyed by filePath: two globbed files can share a moduleName.
+    // Keyed by filePath, since two globbed files can share a moduleName.
     const allComponentsForTypes: ComponentDocs = new Map();
     // filePath -> resolved source path for the write-phase text cache.
     // Components that also read other files go in the cross-file map: the
@@ -426,7 +426,8 @@ export class Project {
       appendDiagnostics(component, [...validateExtendsTarget(component), ...validateModuleReExportNames(component)]);
     }
 
-    // Keyed by moduleName, unique here: it's the barrel's export name.
+    // Keyed by moduleName, which is unique here since it's the barrel's export
+    // name.
     const components: ComponentDocs = new Map();
     const exportEntries = Object.entries(exports);
     for (const entry of exportEntries) {

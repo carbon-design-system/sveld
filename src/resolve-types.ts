@@ -29,8 +29,8 @@ const LEADING_DIGIT_REGEX = /^[0-9]/;
 const EXAMPLE_CODE_START_LINE = 2;
 const MIN_SUPPORTED_TS_MAJOR = 7;
 const REQUIREMENT_TEXT = `TypeScript ${MIN_SUPPORTED_TS_MAJOR} or later, which provides \`typescript/async\` (\`typescript/unstable/async\` in 7.0)`;
-// TypeScript 7.1 moved the async API from `typescript/unstable/async` to
-// `typescript/async`.
+// compat: TypeScript 7.1 moved the async API from
+// `typescript/unstable/async` to `typescript/async`.
 const ASYNC_API_SPECIFIERS = ["typescript/async", "typescript/unstable/async"];
 
 interface TypeScriptLoadResult {

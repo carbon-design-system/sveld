@@ -214,7 +214,8 @@ function classifyFunctionTypeChange(
 ): SemverBump {
   if (newFn.params.length < oldFn.params.length) return "major";
 
-  // A callback typed to return `void` may return anything.
+  // A callback typed to return `void` may return anything, so a new `void`
+  // return never breaks a caller.
   let bump =
     !readOnly && newFn.returnType === "void"
       ? "none"

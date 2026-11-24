@@ -326,8 +326,8 @@ export function functionDocCommentStarts(ctx: ParserContext): Set<number> {
   };
   for (const funcDecl of ctx.funcDecls.values()) addDocumented(funcDecl);
 
-  // An exported declaration's doc comment sits on the `export` statement,
-  // not the declaration.
+  // Read from the `export` statement too, since an exported declaration's
+  // doc comment sits there, not on the declaration.
   const scripts = [
     { root: ctx.parsed?.module, isModule: true },
     { root: ctx.parsed?.instance, isModule: false },
@@ -407,8 +407,8 @@ export function templateTagParameters(tag: JSDocTag, type: string): Array<{ name
   const firstName = tag.optional ? tag.name : TEMPLATE_FIRST_NAME_REGEX.exec(tag.name)?.[0];
   if (!firstName) return [];
   const parameters = [{ name: firstName, constraint: templateTagConstraint(firstName, type, tag.default) }];
-  // Past the first name: the rest of an unspaced `T,U` name token, then the
-  // description.
+  // Past the first name, only the rest of an unspaced `T,U` name token comes
+  // before the description.
   let rest = `${tag.optional ? "" : tag.name.slice(firstName.length)} ${tag.description}`;
   for (let match = TEMPLATE_NEXT_NAME_REGEX.exec(rest); match; match = TEMPLATE_NEXT_NAME_REGEX.exec(rest)) {
     parameters.push({ name: match[1], constraint: match[1] });
@@ -432,7 +432,8 @@ function paramsWithNestedMembers(paramTags: JSDocTag[]): ComponentPropParam[] {
     const [param, member, ...deeper] = name.split(".");
     if (!member || deeper.length > 0) continue;
     const members = membersByParam.get(param) ?? [];
-    // `options.aria-label` is a member all the same, quoted as a key.
+    // Quoted as a key unless it's an identifier, since `options.aria-label` is
+    // a member all the same.
     const key = IDENTIFIER_REGEX.test(member) ? member : JSON.stringify(member);
     members.push(`${key}${optional ? "?" : ""}: ${aliasType(type) || "any"}`);
     membersByParam.set(param, members);

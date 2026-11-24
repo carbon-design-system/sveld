@@ -208,7 +208,7 @@ export function collectComponents(
   const isFile = lstatSync(input).isFile();
   const dir = isFile ? dirname(input) : input;
   const rootDir = resolve(dir);
-  // Memoized: the same `source` is resolved several times per run.
+  // Memoized, since the same `source` is resolved several times per run.
   const resolvedPaths = new Map<string, string>();
   const resolveComponentFilePath: ResolveComponentFilePath = (filePath) => {
     let resolved = resolvedPaths.get(filePath);

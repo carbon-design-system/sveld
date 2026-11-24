@@ -298,7 +298,7 @@ export function readFunctionDeclarationParts(
   for (const [index, rawParam] of funcDecl.params.entries()) {
     const inlineType = inlineJsDocType(ctx, previousEnd, rawParam.start);
     previousEnd = rawParam.end;
-    // `constructor(public x: T)`: the parameter is wrapped.
+    // Unwrapped, since in `constructor(public x: T)` the parameter is wrapped.
     const param = rawParam.type === "TSParameterProperty" ? rawParam.parameter : rawParam;
     if (param.type === "RestElement") {
       trackAdditionalTypeDependencyNode(ctx, param.typeAnnotation?.typeAnnotation);

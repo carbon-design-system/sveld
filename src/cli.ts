@@ -176,8 +176,8 @@ function parseCliFlag(
 function parseCliFlagValue(flag: string, value: string | boolean, arg: string): CliFlagResult {
   const option = (partial: Partial<SveldRuntimeOptions>): CliFlagResult => ({ kind: "option", option: partial });
   const isTrue = value === true || value === "true";
-  // Enum-valued flags are cast here and validated in `cli()`, where a bad
-  // value is reported as a usage error.
+  // Enum-valued flags are cast here only because `cli()` validates them, so
+  // a bad value is reported as a usage error.
   const stringValue = typeof value === "string" ? value : undefined;
 
   switch (flag) {

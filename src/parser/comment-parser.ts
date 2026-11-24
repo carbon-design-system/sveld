@@ -111,8 +111,8 @@ function tokenizeLine(text: string, isOpeningLine: boolean): { indent: string; c
   const trimmedEnd = rest.trimEnd();
   const content = trimmedEnd.endsWith(BLOCK_CLOSE) ? trimmedEnd.slice(0, -BLOCK_CLOSE.length).trimEnd() : rest;
 
-  // The gutter is "marker + one space"; any further whitespace is
-  // indentation.
+  // The gutter is only the marker and one space, so any further whitespace
+  // is indentation.
   const indent = hasMarker ? separator.slice(1) : separator;
   return { indent, content };
 }
@@ -284,8 +284,8 @@ function extractName(line: CommentLine): { name: string; optional: boolean; defa
 
   let depth = 0;
   let consumed = 0;
-  // A quoted name (`@event "my change"`) runs to its closing quote, spaces
-  // included.
+  // A quoted name (`@event "my change"`) runs to its closing quote, since it
+  // may contain spaces.
   const closingQuote = source[0] === '"' || source[0] === "'" ? source.indexOf(source[0], 1) : -1;
   if (closingQuote === -1) {
     for (const ch of source) {
@@ -332,7 +332,7 @@ function parseTagSection(sectionLines: CommentLine[]): JSDocTag {
   const tag = tagMatch ? tagMatch[1] : "";
   const afterTagPrefix = tagMatch ? first.content.slice(tagMatch[0].length) : first.content;
 
-  // Snapshot the body before extraction mutates it. A bare `@example` line
+  // Snapshot the body, since extraction mutates it. A bare `@example` line
   // contributes no line of its own.
   const firstBodyLine = afterTagPrefix.trimEnd();
   const proseLines = sectionLines.slice(1).map((line) => line.indent + line.content);

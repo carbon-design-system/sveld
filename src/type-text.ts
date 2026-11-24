@@ -181,8 +181,8 @@ export function isFunctionType(type: string | undefined): boolean {
  */
 export function normalizeTypeText(text: string): string {
   let result = "";
-  // A comment or whitespace run becomes one space, written before the next
-  // token.
+  // A comment or whitespace run becomes one space, written only before the
+  // next token.
   let pendingSpace = false;
   const emit = (token: string) => {
     if (pendingSpace && result !== "") result += " ";

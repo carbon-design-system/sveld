@@ -166,8 +166,8 @@ function enterCallExpression(
 
 /** The `value` of a `<slot>` attribute as a slot prop. */
 function slotPropValueFromAttribute(ctx: ParserContext, value: Exclude<AST.Attribute["value"], true>): SlotPropValue {
-  // Quoted or multi-chunk values are an array; `name={expr}` and `{name}`
-  // are a bare tag.
+  // Only quoted or multi-chunk values are an array; `name={expr}` and
+  // `{name}` are a bare tag.
   const first = Array.isArray(value) ? value[0] : value;
   if (first?.type === "Text") return { value: JSON.stringify(first.raw), replace: false };
   if (first?.type === "ExpressionTag") return slotPropValueFromExpression(ctx, first.expression);
@@ -217,7 +217,8 @@ function addSlotElement(ctx: ParserContext, node: AST.SlotElement) {
 function addRenderTagSlot(ctx: ParserContext, node: AST.RenderTag) {
   const renderInfo = extractRenderTagInfo(ctx, node.expression);
   if (!renderInfo) {
-    // `{@render props[name]()}` may render any snippet prop.
+    // Read so `{@render props[name]()}` counts, since it may render any
+    // snippet prop.
     const { callee } = renderTagCall(node.expression);
     if (isMemberExpression(callee) && isIdentifier(callee.object) && ctx.wholePropsLocals.has(callee.object.name)) {
       ctx.slotsUntracked = true;
@@ -225,8 +226,8 @@ function addRenderTagSlot(ctx: ParserContext, node: AST.RenderTag) {
     return;
   }
 
-  // Positional arguments (`{@render row(item, index)}`) aren't slot props:
-  // the snippet prop's own `Snippet<[...]>` type describes them.
+  // Positional arguments (`{@render row(item, index)}`) aren't slot props,
+  // since the snippet prop's own `Snippet<[...]>` type describes them.
   const slot_name = renderInfo.publicName === "children" ? undefined : renderInfo.publicName;
   const [first, ...rest] = renderInfo.arguments;
   let slot_props: SlotProps | undefined;
@@ -328,7 +329,7 @@ function recordBindDirective(
   ctx.reactive_vars.add(prop_name);
 
   // `bind:this={refs.foo}` or `{obj.a[i]}` mutates the prop but says nothing
-  // about its type.
+  // about its type, so it doesn't type it.
   const isMember = node.expression.type === "MemberExpression";
   if (node.name !== "this" || (isMember && !bound.indexed)) return;
   if (!("name" in parent) || typeof parent.name !== "string") return;
@@ -375,17 +376,17 @@ export function walkComponent(ctx: ParserContext): ComponentWalkResult {
   ctx.activeScopes.push(ctx.componentScope);
   const scopeWalkState = createScopeWalkState(ctx);
 
-  // An element's namespace, and the namespace its children are created in:
-  // `<svg>` and `<math>` switch to SVG and MathML, and `<foreignObject>`
-  // switches back to HTML for its children.
+  // An element's namespace, and its children's, since `<svg>` and `<math>`
+  // switch to SVG and MathML, and `<foreignObject>` switches back to HTML
+  // for its children.
   const elementNamespaces = new WeakMap<AST.SvelteNode, ElementNamespace>();
   const optionsNamespace = ctx.parsed?.options?.namespace;
   const childNamespaces: ElementNamespace[] = [
     optionsNamespace === "svg" || optionsNamespace === "mathml" ? optionsNamespace : "html",
   ];
 
-  // Read by template spreads; filled once the script walk has found the
-  // runes rest locals.
+  // Read by template spreads, so it's filled only once the script walk has
+  // found the runes rest locals.
   let restPropsObjectLocals = new Map<string, string>();
 
   const visitor: Visitor = {
@@ -394,7 +395,7 @@ export function walkComponent(ctx: ParserContext): ComponentWalkResult {
       // subtrees own no scopes.
       if (isTypeOnlySubtree(node.type)) return SKIP;
 
-      // Scope declaration is fused into this walk.
+      // Scopes are declared in this walk, so the template needs no second pass.
       const nodeScope = enterNestedScopeDeclarationNode(ctx, scopeWalkState, node);
       if (nodeScope) ctx.activeScopes.push(nodeScope);
 
@@ -420,8 +421,8 @@ export function walkComponent(ctx: ParserContext): ComponentWalkResult {
           break;
         case "SpreadAttribute": {
           const spreadName = node.expression.type === "Identifier" ? node.expression.name : undefined;
-          // `{...props}` where `props = { ...$$restProps, class }` spreads rest
-          // props too.
+          // Followed through locals, since `{...props}` where
+          // `props = { ...$$restProps, class }` spreads rest props too.
           const name =
             (spreadName !== undefined && !isBoundInNestedScope(ctx, spreadName)
               ? restPropsObjectLocals.get(spreadName)

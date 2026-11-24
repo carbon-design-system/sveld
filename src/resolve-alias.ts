@@ -50,8 +50,9 @@ function parseConfig(configPath: string, configCache: Map<string, ParsedTsConfig
 
   try {
     const content = readFileSync(configPath, "utf-8");
-    // Parse raw JSON first: naive comment stripping treats `/*` inside strings
-    // (e.g. tsconfig `"$lib/*"`) as a block comment and corrupts the file.
+    // Parse raw JSON first, since naive comment stripping treats `/*` inside
+    // strings (e.g. tsconfig `"$lib/*"`) as a block comment and corrupts the
+    // file.
     let parsed: unknown;
     try {
       parsed = JSON.parse(content);

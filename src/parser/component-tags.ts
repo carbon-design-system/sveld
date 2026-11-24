@@ -670,8 +670,8 @@ class CommentBlockReader {
     const { ctx, event } = this;
     if (event === undefined) return;
     this.event = undefined;
-    // Prefer explicit `@type` over `@property`-built objects; `{object}` falls
-    // through.
+    // An explicit `@type` wins over a `@property`-built object, unless it's
+    // only `{object}`.
     const explicitType = event.type && event.type !== "object" && event.type !== "Object" ? event.type : undefined;
     const detailType =
       explicitType ??
@@ -825,8 +825,8 @@ class CommentBlockReader {
 
   private readSlot(tagIndex: number, type: string) {
     const { tag, name: rawName, lines: tagSource } = this.tags[tagIndex];
-    // `@slot {Type} - description` describes the default slot, as does
-    // `@snippet {Type} children`.
+    // Unnamed, since `@slot {Type} - description` describes the default slot,
+    // as does `@snippet {Type} children`.
     const name = rawName === "-" || (tag === "snippet" && rawName === "children") ? undefined : rawName;
     let slotDesc = this.orCommentDescription(this.getTagDescription(tagSource, this.tags[tagIndex + 1]));
     if (!slotDesc && this.pendingTags.length === 0) {
@@ -867,8 +867,8 @@ class CommentBlockReader {
 
   private readEvent(tagIndex: number, type: string) {
     const { name, lines: tagSource } = this.tags[tagIndex];
-    // Claim the text above before the previous event takes it as its trailing
-    // description.
+    // Claim the text above first, so the previous event doesn't take it as its
+    // trailing description.
     const description = getInlineTagDescription(tagSource) || this.takePrecedingDescription(tagIndex);
     this.finalizeEvent();
 
@@ -1005,7 +1005,7 @@ class CommentBlockReader {
       passthroughTag.body = dropLastLines(text, droppedLineCount);
     });
     if (!IDE_PASSTHROUGH_TAGS.has(tag) && !OTHER_KNOWN_JSDOC_TAGS.has(tag)) {
-      // One edit for a short tag name, two for a longer one: tag names are
+      // One edit for a short tag name, two for a longer one, since tag names are
       // short.
       const suggestion = STANDARD_JSDOC_TAGS.has(tag)
         ? undefined

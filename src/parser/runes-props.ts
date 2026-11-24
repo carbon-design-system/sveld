@@ -119,8 +119,8 @@ function substituteTypeParameters(type: string, substitutions: Map<string, strin
   if (substitutions.size === 0) return type;
 
   let result = "";
-  // For each template literal whose `${` the scan is inside, innermost last:
-  // the `{` depth within it.
+  // One `{` depth per template literal whose `${` the scan is inside,
+  // innermost last, so a `}` closes only its own.
   const templateExpressionDepths: number[] = [];
   let index = 0;
   while (index < type.length) {
@@ -442,8 +442,8 @@ export function collectScriptTypeInfo(ctx: ParserContext, parsed: AST.Root) {
     for (const declarator of statement.declarations) {
       if (!isCallExpressionNamed(unwrapTypeCastExpression(declarator.init), "$props")) continue;
 
-      // `$props() as Props` / `satisfies Props` carry the type on the
-      // initializer, not the binding.
+      // Read from the initializer too, since `$props() as Props` and
+      // `satisfies Props` carry the type there, not on the binding.
       const annotation = "typeAnnotation" in declarator.id ? declarator.id.typeAnnotation : undefined;
       const castTypeNode = annotation ? undefined : getTypeCastAnnotation(declarator.init);
       const effectiveTypeNode = annotation?.typeAnnotation ?? castTypeNode;
@@ -569,8 +569,8 @@ export function parseRunesPropsDeclaration(ctx: ParserContext, node: VariableDec
         continue;
       }
 
-      // Svelte rejects computed keys and non-Identifier destructuring targets in
-      // `$props()`.
+      // Only plain keys are read, since Svelte rejects computed keys and
+      // non-Identifier destructuring targets in `$props()`.
       const propName = getPropertyName(property.key);
       if (!propName) continue;
 

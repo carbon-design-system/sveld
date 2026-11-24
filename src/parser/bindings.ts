@@ -25,7 +25,7 @@ export function extractPropertyType(typeStr: string, propName: string): string |
     const optional = rest.startsWith("?");
     if (optional) rest = rest.slice(1).trimStart();
     if (!rest.startsWith(":")) continue;
-    // Reading an optional member can give `undefined`.
+    // Reading an optional member can give `undefined`, so its type says so.
     const type = rest.slice(1).trim();
     return optional ? `${type} | undefined` : type;
   }

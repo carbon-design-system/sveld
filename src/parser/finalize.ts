@@ -237,7 +237,8 @@ function buildProps(ctx: ParserContext): ComponentProp[] {
       const binding = ctx.bindings.get(prop.name);
       // `refs[key]` into an object map (`= {}`) isn't an array.
       const isObjectMap = binding?.target === "indexed" && prop.type !== undefined && !prop.type.endsWith("[]");
-      // An explicit TypeScript or JSDoc type wins over the bound element's type.
+      // Only a prop without an explicit TypeScript or JSDoc type takes the bound
+      // element's type.
       const isDeclared = prop.typeSource === "typescript" || prop.typeSource === "jsdoc";
       if (!binding || binding.target === "mixed" || isObjectMap || isDeclared) return { ...prop, reactive };
       return { ...prop, type: boundPropType(binding), typeSource: "inferred" as const, reactive };
@@ -275,7 +276,8 @@ function buildSlots(ctx: ParserContext): ComponentSlot[] {
 
       const widenSuffix = slot_props_unresolved_spread ? " & Record<string, any>" : "";
 
-      // Force multiline when count > 1 (matches interface body formatting).
+      // Multiline only when there's more than one prop, so it matches an
+      // interface body's formatting.
       const formatted_slot_props =
         new_props.length === 0
           ? slot_props_unresolved_spread
@@ -518,7 +520,8 @@ function recordUnresolvedRestProps(ctx: ParserContext) {
   const restProps = ctx.rest_props;
   if (restProps?.type !== "InlineComponent") return;
   const spreadTarget = importedBindingByName(ctx, restProps.name);
-  // `extends.import` keeps the tag's quotes: `"./Link.svelte"`.
+  // Unquoted, since `extends.import` keeps the tag's quotes:
+  // `"./Link.svelte"`.
   const extendsSource = ctx.extends?.import.replace(SURROUNDING_QUOTES_REGEX, "");
   if (spreadTarget?.importedName === "default" && spreadTarget.source === extendsSource) return;
   recordDiagnostic(
@@ -691,7 +694,8 @@ function recordBindThisTypeMismatches(ctx: ParserContext, props: ComponentProp[]
     const elements = binding.elements.map(({ tag, tagLocal }) =>
       tag === "svelte:element" ? `<svelte:element this={${tagLocal}}>` : `<${tag}>`,
     );
-    // Keep `null`/`undefined` where the declaration put them.
+    // `null` and `undefined` stay where the declaration put them, so the
+    // suggestion reads like it.
     const suggested = (isNullish(declared[0] ?? "") ? [...nullish, ...bound] : [...bound, ...nullish]).join(" | ");
     recordDiagnostic(
       ctx,

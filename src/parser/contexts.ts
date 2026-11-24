@@ -55,7 +55,8 @@ function findContextVariableType(
 
   const inferredType = inferVariableInitializerType(ctx, name, true);
   if (!inferredType) return null;
-  // A function's `@param` tags are annotations, `any` included.
+  // Not inferred when the function has `@param` tags, since those are
+  // annotations, `any` included.
   const inferred = !resolveLocalVarJSDoc(ctx, name)?.params?.length;
   return { type: inferredType, ...findVariableJsDoc(ctx, name), inferred };
 }
@@ -217,7 +218,8 @@ function parseContextObjectProperties(
       !accessor && (prop.value.type === "ArrowFunctionExpression" || prop.value.type === "FunctionExpression")
         ? prop.value
         : undefined;
-    // A method's `@param`/`@returns`, as on a function declaration.
+    // A method's `@param` and `@returns` count, as they would on a function
+    // declaration.
     const jsdocSignature = !jsdoc?.type && fn ? jsdocFunctionValueType(jsdoc, fn) : undefined;
     const annotated = accessor
       ? prop.kind === "get"
@@ -282,8 +284,8 @@ function parseContextValue(ctx: ParserContext, node: Node, key: string): Compone
   const varName = node.name;
   const annotated = findContextVariableType(ctx, varName, false);
 
-  // An untyped `const` object literal describes itself, as it does when
-  // spread.
+  // Only an untyped `const` object literal is read, since it describes
+  // itself, as it does when spread.
   const initializer = annotated ? undefined : resolveConstInitializer(ctx, varName);
   if (isObjectExpression(initializer)) {
     const { internal } = findVariableJsDoc(ctx, varName);
@@ -391,7 +393,8 @@ function resolveContextKey(ctx: ParserContext, keyArg: unknown, depth = 0): Cont
       return resolveContextKey(ctx, init, depth + 1);
     }
 
-    // A parameter or nested declaration by the same name hides the import.
+    // Only an unshadowed name is the import, since a parameter or nested
+    // declaration by the same name hides it.
     const importBinding =
       depth === 0 && isBoundInNestedScope(ctx, node.name)
         ? undefined
@@ -400,8 +403,7 @@ function resolveContextKey(ctx: ParserContext, keyArg: unknown, depth = 0): Cont
   }
 
   if (node.type === "MemberExpression") {
-    // As for an identifier: a parameter or nested declaration named like the
-    // import hides it.
+    // As for an identifier, only an unshadowed name is the import.
     const importBinding =
       depth === 0 && isCalleeBoundInNestedScope(ctx, node) ? undefined : importedMemberBinding(ctx, node);
     if (importBinding) return pendingContextKey(importBinding);

@@ -82,8 +82,8 @@ export function resolvePropTypeAndDocs(input: ResolvePropTypeAndDocsInput): Reso
   const params = input.jsdocParams ?? input.resolvedParams;
   const returnType = input.jsdocReturnType ?? input.resolvedReturnType;
 
-  // A function's inferred signature gives way to one built from
-  // `@param`/`@returns`.
+  // A function's inferred signature gives way to one built from `@param` and
+  // `@returns`, since those say more.
   const hasPlaceholderSignature =
     (input.isFunctionDeclaration || input.initializerIsFunction) && type === input.typeSeed;
   if (hasPlaceholderSignature && (returnType || (input.isFunctionDeclaration && params?.length))) {
@@ -107,7 +107,8 @@ export function resolvePropTypeAndDocs(input: ResolvePropTypeAndDocsInput): Reso
     finalType: type,
   });
 
-  // A callback-looking declared type makes the prop a function too.
+  // A callback-looking declared type makes the prop a function too, even
+  // without a function value.
   const isFunction =
     input.initializerIsFunction ||
     input.isFunctionDeclaration ||

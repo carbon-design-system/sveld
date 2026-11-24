@@ -166,7 +166,8 @@ export function readClassDeclaration(
       continue;
     }
 
-    // A method's own `<U>` is on the method, not its function value.
+    // A method's own `<U>` is on the method, not its function value, so it's
+    // copied onto the value.
     const fn = member.typeParameters ? { ...member.value, typeParameters: member.typeParameters } : member.value;
 
     if (member.kind === "constructor") {

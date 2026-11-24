@@ -96,8 +96,8 @@ export function createExtendsTargetValidator(
       ];
     }
 
-    // A file outside the bundle (e.g. a hand-written .ts interface): existence
-    // is all that's verifiable.
+    // A file outside the bundle, such as a hand-written .ts interface, can
+    // only be checked to exist.
     const target = componentsByAbsolutePath.get(targetPath);
     if (!target) return [];
 
