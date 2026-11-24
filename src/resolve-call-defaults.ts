@@ -92,8 +92,8 @@ function applyCallDefaultResolutions(component: ComponentDocApi, resolutions: Ca
 }
 
 /**
- * Types a prop from the return type of the imported function its default
- * calls.
+ * Types a prop from the return type of the imported function its
+ * default calls.
  */
 export const callDefaultsPass: CrossFilePass<PendingCallDefaultCandidate, CallDefaultResolution> = {
   // A default calling a local function was settled at parse time.

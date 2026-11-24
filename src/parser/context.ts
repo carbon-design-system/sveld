@@ -73,8 +73,8 @@ export interface ParserContext {
 
   rest_props?: RestProps;
   /**
-   * The local a `<svelte:element this={tag}>` rest props target names as its
-   * tag.
+   * The local a `<svelte:element this={tag}>` rest props target names as
+   * its tag.
    */
   restPropsTagLocal?: string;
   /** Where the rest props target was spread, for diagnostics. */
@@ -105,8 +105,8 @@ export interface ParserContext {
   /** CallExpression defaults that still need a return type after AST parsing. */
   readonly pendingCallDefaultCandidates: PendingCallDefaultCandidate[];
   /**
-   * Identifier defaults bound to a named value import, resolved after AST
-   * parsing.
+   * Identifier defaults bound to a named value import, resolved after
+   * AST parsing.
    */
   readonly pendingConstDefaultCandidates: PendingConstDefaultCandidate[];
   /** Imported `setContext` keys that need a string value after AST parsing. */
@@ -114,8 +114,8 @@ export interface ParserContext {
   /** Dispatchers passed to imported functions, resolved after AST parsing. */
   readonly pendingDispatchEscapeCandidates: PendingDispatchEscapeCandidate[];
   /**
-   * `event-no-source` diagnostics that wait on {@link
-   * pendingDispatchEscapeCandidates}.
+   * `event-no-source` diagnostics that wait on
+   * {@link pendingDispatchEscapeCandidates}.
    */
   readonly deferredEventNoSourceDiagnostics: SveldDiagnostic[];
 
@@ -123,8 +123,8 @@ export interface ParserContext {
   readonly typedRunesPropsDeclarations: RunesPropsDeclarationMetadata[];
   readonly explicitVariableTypesByName: Map<string, string>;
   /**
-   * The annotation node behind each {@link explicitVariableTypesByName}
-   * entry.
+   * The annotation node behind each {@link
+   * explicitVariableTypesByName} entry.
    */
   readonly explicitVariableTypeNodesByName: Map<string, TSNode>;
   readonly typeImportBindingsByLocalName: Map<string, TypeImportBinding>;
@@ -148,15 +148,15 @@ export interface ParserContext {
   readonly slots: Map<string | null, InternalComponentSlot>;
   readonly snippetPropLocals: Set<string>;
   /**
-   * `@slot`/`@snippet` tags by slot key, for `slot-not-rendered`
-   * diagnostics.
+   * `@slot`/`@snippet` tags by slot key, for
+   * `slot-not-rendered` diagnostics.
    */
   readonly jsDocSlots: Map<string | null, { tag: string; source?: SourceRange }>;
   /** Slot keys the template renders with `<slot>` or `{@render}`. */
   readonly renderedSlots: Set<string | null>;
   /**
-   * Set when slots may be forwarded or rendered where sveld can't see
-   * (`<Child {...$$props} />`).
+   * Set when slots may be forwarded or rendered where sveld can't
+   * see (`<Child {...$$props} />`).
    */
   slotsUntracked: boolean;
 
@@ -208,8 +208,8 @@ export interface ParserContext {
   variableInfoCache: Map<string, { type?: string; description?: string; internal?: boolean }> | undefined;
 
   /**
-   * `@sveld-ignore` codes keyed by `"<kind>:<name>"`; see
-   * `recordSveldIgnore`.
+   * `@sveld-ignore` codes keyed by `"<kind>:<name>"`;
+   * see `recordSveldIgnore`.
    */
   readonly sveldIgnoreDirectives: Map<string, Set<string>>;
   /**
@@ -220,8 +220,8 @@ export interface ParserContext {
 }
 
 /**
- * Fresh {@link ParserContext}. Keep in sync with new fields on {@link
- * ParserContext}.
+ * Fresh {@link ParserContext}. Keep in sync with new fields on
+ * {@link ParserContext}.
  */
 export function createParserContext(): ParserContext {
   return {

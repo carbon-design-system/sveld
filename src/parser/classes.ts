@@ -55,8 +55,8 @@ function stripAngleBrackets(typeParameters: string | undefined): string | undefi
 }
 
 /**
- * The widened type of a param's literal default (`name = "store"` is
- * `string`).
+ * The widened type of a param's literal default (`name = "store"`
+ * is `string`).
  */
 function defaultValueType(rawParam: MethodDefinition["value"]["params"][number] | undefined): string | undefined {
   const param = rawParam?.type === "TSParameterProperty" ? rawParam.parameter : rawParam;
@@ -107,8 +107,8 @@ export function readClassDeclaration(
 ): { members: ComponentClassMember[]; typeParameters?: string; extends?: string; implements?: string[] } {
   const members: ComponentClassMember[] = [];
   /**
-   * Getter/setter pairs, keyed `static name` or `name`, merged into one
-   * property.
+   * Getter/setter pairs, keyed `static name` or `name`, merged into
+   * one property.
    */
   const accessors = new Map<string, ComponentClassMember>();
   /**

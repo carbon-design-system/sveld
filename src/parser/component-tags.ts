@@ -34,8 +34,8 @@ const UNQUOTED_SPECIFIER_REGEX = /^[^"'`\s]\S*$/;
 
 /**
  * `Name<Row=DataTableRow,Header=Foo>` to
- * `Name<Row = DataTableRow, Header = Foo>`, as sveld spaces other
- * generics.
+ * `Name<Row = DataTableRow, Header = Foo>`, as sveld spaces
+ * other generics.
  */
 function normalizeGenericNameSpacing(name: string): string {
   const openIndex = name.indexOf("<");
@@ -59,8 +59,8 @@ type BlockLines = JSDocTag["lines"];
 const PRECEDING_DESCRIPTION_TAGS = new Set(["restProps", "slot", "snippet", "event", "typedef", "callback"]);
 
 /**
- * Tags that stay inside the preceding `@event`'s scope instead of ending
- * it.
+ * Tags that stay inside the preceding `@event`'s scope instead of
+ * ending it.
  */
 const EVENT_SCOPE_TAGS = new Set(["property", "type"]);
 
@@ -207,8 +207,8 @@ function isSingleObjectLiteral(source: string): boolean {
 const IDENTIFIER_REGEX = /[\w$]+/g;
 
 /**
- * Tags whose types make up the body of the `@typedef`/`@callback` above
- * them.
+ * Tags whose types make up the body of the `@typedef`/`@callback`
+ * above them.
  */
 const TYPE_DECLARATION_BODY_TAGS = new Set(["property", "param", "returns", "return"]);
 
@@ -303,8 +303,8 @@ interface TagProperty {
 }
 
 /**
- * An `@event`, `@typedef`, or `@callback` still collecting the tags below
- * it.
+ * An `@event`, `@typedef`, or `@callback` still collecting the tags
+ * below it.
  */
 interface OpenDeclaration {
   name: string;
@@ -427,8 +427,8 @@ class CommentBlockReader {
   /** `@ignore`/`@internal` for the next structural tag in this block. */
   private pendingInternal = false;
   /**
-   * `@template` type parameters for the `@typedef`/`@callback` right below
-   * them.
+   * `@template` type parameters for the `@typedef`/`@callback` right
+   * below them.
    */
   private readonly pendingTypeParameters: string[] = [];
 
@@ -438,8 +438,8 @@ class CommentBlockReader {
   /**
    * Indented lines directly under a tag's line: that tag's wrapped
    * description, never the description of the tag after it. Unindented text
-   * between two tags stays ambiguous and keeps the description-above-the-tag
-   * reading.
+   * between two tags stays ambiguous and keeps the
+   * description-above-the-tag reading.
    */
   private readonly indentedContinuationLines = new Set<number>();
   /**
@@ -460,8 +460,8 @@ class CommentBlockReader {
   private readonly ctx: ParserContext;
   private readonly generics: GenericsTagState;
   /**
-   * The block documents an ordinary function, so its `@template`s are that
-   * function's.
+   * The block documents an ordinary function, so its `@template`s are
+   * that function's.
    */
   private readonly documentsFunction: boolean;
 
@@ -500,8 +500,8 @@ class CommentBlockReader {
       } else if (!line.content.trim()) {
         // A blank line between paragraphs doesn't end an indented continuation.
       } else if (inIndentedContinuation && (line.indent || inCodeFence)) {
-        // A code fence opened in an indented continuation runs to its closing
-        // line.
+        // A code fence opened in an indented continuation runs to its
+        // closing line.
         this.indentedContinuationLines.add(line.number);
       } else {
         inIndentedContinuation = false;
@@ -639,8 +639,8 @@ class CommentBlockReader {
   ) {
     const { event } = this;
     if (event === undefined || event.description) return;
-    // Indented lines under the `@event` are its description; they're merged in
-    // later.
+    // Indented lines under the `@event` are its description; they're merged
+    // in later.
     if (event.tagLine !== undefined && this.indentedContinuationLines.has(event.tagLine + 1)) return;
     if (previousTag?.tag !== "event" && !EVENT_SCOPE_TAGS.has(previousTag?.tag ?? "")) return;
     if (getInlineTagDescription(tagSource)) return;
@@ -656,8 +656,8 @@ class CommentBlockReader {
 
   /**
    * The text above `tags[tagIndex]`. Only a tag that uses it claims it:
-   * otherwise it stays with the tag above (e.g. an `@event`'s trailing
-   * text).
+   * otherwise it stays with the tag above (e.g. an `@event`'s
+   * trailing text).
    */
   private takePrecedingDescription(tagIndex: number): string | undefined {
     const { tag, name, lines: tagSource } = this.tags[tagIndex];
@@ -760,8 +760,8 @@ class CommentBlockReader {
 
   /**
    * Opens a `@typedef`/`@callback`: its name (with any `@template`s above
-   * it), description, and the tags queued for it. Tags after it attach to
-   * it.
+   * it), description, and the tags queued for it. Tags after it attach
+   * to it.
    */
   private openTypeDeclaration(tagIndex: number): OpenDeclaration {
     const { name, lines: tagSource } = this.tags[tagIndex];
@@ -1005,8 +1005,8 @@ class CommentBlockReader {
       passthroughTag.body = dropLastLines(text, droppedLineCount);
     });
     if (!IDE_PASSTHROUGH_TAGS.has(tag) && !OTHER_KNOWN_JSDOC_TAGS.has(tag)) {
-      // One edit for a short tag name, two for a longer one, since tag names are
-      // short.
+      // One edit for a short tag name, two for a longer one, since tag names
+      // are short.
       const suggestion = STANDARD_JSDOC_TAGS.has(tag)
         ? undefined
         : closestMatch(tag, SUGGESTED_JSDOC_TAGS, tag.length <= 4 ? 1 : 2);
@@ -1164,8 +1164,8 @@ export function parseCustomTypes(ctx: ParserContext, scanSource: string | undefi
   const functionDocStarts = scanSource.includes("@template") ? functionDocCommentStarts(ctx) : new Set<number>();
   ctx.functionDocCommentStarts = functionDocStarts;
   const blocks = parseComments(scanSource);
-  // Reused by leading-comment lookups in the main walk (see
-  // `parsedSourceBlock`).
+  // Reused by leading-comment lookups in the main walk
+  // (see `parsedSourceBlock`).
   for (const block of blocks) ctx.jsDocBlocksByStart.set(block.start, block);
   for (const block of blocks) {
     new CommentBlockReader(ctx, generics, block, functionDocStarts.has(block.start)).read();

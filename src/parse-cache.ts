@@ -26,8 +26,8 @@ interface ParseCacheEntry {
   hash: string;
   component: ParsedComponent;
   /**
-   * `component[PARSED_COMPONENT_TYPE_SCRIPT_METADATA]`: JSON drops symbol
-   * keys.
+   * `component[PARSED_COMPONENT_TYPE_SCRIPT_METADATA]`: JSON drops
+   * symbol keys.
    */
   typeScriptMetadata?: ParsedComponentTypeScriptMetadata;
   /** `component[PARSED_COMPONENT_PROP_IGNORES]`, for the same reason. */
@@ -44,8 +44,8 @@ interface ParseCacheFile {
 }
 
 /**
- * Replaced at build time (`scripts/build.ts`) with a fingerprint of
- * `src/`.
+ * Replaced at build time (`scripts/build.ts`) with a fingerprint
+ * of `src/`.
  */
 declare const __SVELD_BUILD_ID__: string | undefined;
 
@@ -58,8 +58,8 @@ function currentToolchainVersion(): string {
 
 /**
  * The nearest `package.json` directory at or above `dir`, else `dir`. The
- * input is often `src/`, and the cache belongs in the project's
- * `node_modules`.
+ * input is often `src/`, and the cache belongs in the
+ * project's `node_modules`.
  */
 function findProjectRoot(dir: string): string {
   const packageJson = findUp(dir, ["package.json"]);
@@ -166,8 +166,8 @@ export class ParseCache {
   }
 
   /**
-   * Reads this run's entry only, so the text is for the hash `get()`/`set()`
-   * verified.
+   * Reads this run's entry only, so the text is for the hash
+   * `get()`/`set()` verified.
    */
   getGeneratedText(resolvedPath: string, key: string): string | undefined {
     const entry = this.next.get(resolvedPath);

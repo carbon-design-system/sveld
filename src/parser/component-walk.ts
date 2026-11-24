@@ -67,8 +67,8 @@ const MAIN_WALK_NODE_TYPES = new Set([
 ]);
 
 /**
- * A call to a named function: a dispatch once the dispatcher's name is
- * known.
+ * A call to a named function: a dispatch once the dispatcher's name
+ * is known.
  */
 interface NamedCall {
   name: string;
@@ -431,8 +431,8 @@ export function walkComponent(ctx: ParserContext): ComponentWalkResult {
           if (name === "$$restProps" || isRestLocal) {
             maybeSetRestProps(ctx, parent, node);
           }
-          // `$$props` carries legacy slots, and a runes rest object carries snippet
-          // props.
+          // `$$props` carries legacy slots, and a runes rest object carries
+          // snippet props.
           if ((name === "$$props" || isRestLocal) && parent && isComponentLikeType(parent.type)) {
             ctx.slotsUntracked = true;
           }

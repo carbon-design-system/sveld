@@ -25,8 +25,8 @@ export interface EntryExport {
   /** `@since` / `@example` / `@see` tags in source order. */
   tags?: JsDocPassthroughTag[];
   /**
-   * True from `@ignore`/`@internal` JSDoc; excluded from every output by
-   * `buildComponentApiDocument`.
+   * True from `@ignore`/`@internal` JSDoc; excluded from every output
+   * by `buildComponentApiDocument`.
    */
   internal?: boolean;
   /** Declaring module, relative to the entry file. */
@@ -99,8 +99,8 @@ export async function parseEntryExports(
       ...rest
     } = entry;
     const source = relativeSource(declFile);
-    // No declaration to copy type text from; `kind` stays "const" (a namespace
-    // object).
+    // No declaration to copy type text from; `kind` stays "const" (a
+    // namespace object).
     if (namespaceFile !== undefined) rest.type = `typeof import(${JSON.stringify(relativeSource(namespaceFile))})`;
     byName.set(entry.name, { ...rest, source });
   }

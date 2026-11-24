@@ -12,8 +12,8 @@ import { findVariableTypeAndDescription } from "./variable-jsdoc";
 export const DEFAULT_SLOT_NAME = null;
 
 /**
- * `ctx.slots` key for a slot name; `default` is the default slot, as in
- * Svelte.
+ * `ctx.slots` key for a slot name; `default` is the default slot, as
+ * in Svelte.
  */
 export function slotKey(slot_name: string | undefined) {
   return !slot_name || slot_name === "default" ? DEFAULT_SLOT_NAME : slot_name;

@@ -21,8 +21,8 @@ interface DirectoryListing {
   /** On-disk name -> entry; built on first use. */
   byName?: Map<string, Dirent>;
   /**
-   * Case-folded, NFC-normalized name -> on-disk name; built on first fuzzy
-   * lookup.
+   * Case-folded, NFC-normalized name -> on-disk name; built on first
+   * fuzzy lookup.
    */
   folded?: Map<string, string>;
 }

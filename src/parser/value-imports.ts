@@ -4,16 +4,16 @@ import type { ComponentPropReExport } from "../model";
 import type { ParserContext } from "./context";
 
 /**
- * The export an `import { x as y }` specifier names: `x`, or `"x-y"`'s
- * string.
+ * The export an `import { x as y }` specifier names: `x`, or
+ * `"x-y"`'s string.
  */
 export function importSpecifierImportedName({ imported }: ImportSpecifier): string {
   return imported.type === "Identifier" ? imported.name : imported.value;
 }
 
 /**
- * Named value imports by local name, for cross-file call-default
- * resolution.
+ * Named value imports by local name, for cross-file
+ * call-default resolution.
  */
 export function collectValueImportBindings(ctx: ParserContext, node: ImportDeclaration): void {
   const source = node.source.value;
@@ -31,8 +31,8 @@ export function collectValueImportBindings(ctx: ParserContext, node: ImportDecla
 type ImportedBinding = { source: string; importedName: string; members?: string[] };
 
 /**
- * The export an import names, read through namespace exports:
- * `keys.THEME`.
+ * The export an import names, read through
+ * namespace exports: `keys.THEME`.
  */
 export function importPath(binding: { importedName: string; members?: string[] }): string {
   return [binding.importedName, ...(binding.members ?? [])].join(".");
@@ -47,8 +47,8 @@ export function importPath(binding: { importedName: string; members?: string[] }
  * record, are found by searching the component's scripts.
  */
 export function importedCalleeBinding(ctx: ParserContext, callee: unknown): ImportedBinding | undefined {
-  // Only a chain of plain names resolves: `a.b.c` gives `a`, with members
-  // `["b", "c"]`.
+  // Only a chain of plain names resolves: `a.b.c` gives `a`, with
+  // members `["b", "c"]`.
   const members: string[] = [];
   let node = callee;
   while (isMemberExpression(node)) {
@@ -61,8 +61,8 @@ export function importedCalleeBinding(ctx: ParserContext, callee: unknown): Impo
 }
 
 /**
- * The import `localName` names, with `members` read off it (`["b"]` for
- * `a.b`).
+ * The import `localName` names, with `members` read off it (`["b"]`
+ * for `a.b`).
  */
 export function importedBindingByName(
   ctx: ParserContext,

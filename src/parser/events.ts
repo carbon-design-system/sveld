@@ -39,8 +39,8 @@ export function componentDetailTypeSource(
 /**
  * Names in a detail argument (`count`, `{ count }`, `[count]`) shadowed by
  * a nested scope at the dispatch. Must run during the walk, while those
- * scopes are live. `undefined` when there are none, which is almost
- * always.
+ * scopes are live. `undefined` when there are none, which is
+ * almost always.
  */
 export function detailNamesBoundInNestedScope(
   ctx: ParserContext,
@@ -161,8 +161,8 @@ export function findDispatcherArgument(
     for (const property of argument.properties) {
       if (property.type !== "Property" || !isIdentifier(property.value)) continue;
       if (property.value.name !== dispatcherName) continue;
-      // A computed key can't be matched to the helper's parameter, so it stays
-      // unnamed.
+      // A computed key can't be matched to the helper's parameter, so it
+      // stays unnamed.
       const key = !property.computed && isIdentifier(property.key) ? property.key.name : undefined;
       return { argumentIndex, property: key ?? "" };
     }
@@ -198,8 +198,8 @@ export function addDispatchedEvent(
   const existing_event = ctx.events.get(name);
   if (existing_event?.type === "forwarded") {
     // Dispatched beats forwarded regardless of detection order (forwards are
-    // seen mid-walk, dispatches resolve after it); the forward's metadata is a
-    // fallback.
+    // seen mid-walk, dispatches resolve after it); the forward's metadata is
+    // a fallback.
     ctx.events.set(name, {
       type: "dispatched",
       name,

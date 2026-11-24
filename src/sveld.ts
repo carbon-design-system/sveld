@@ -30,8 +30,8 @@ export interface SveldResult {
   /** Diagnostics from this run. */
   diagnostics: SveldDiagnostic[];
   /**
-   * Populated when `check` is enabled: the API diff against the committed
-   * snapshot.
+   * Populated when `check` is enabled: the API diff against the
+   * committed snapshot.
    */
   check?: CheckResult;
   /**
@@ -117,8 +117,8 @@ function githubFileResolver(input: string): (component: string) => string {
  * Prints the run's diagnostics summary to stderr when `reportDiagnostics`
  * or `strict` asks for it, and resolves the exit code. Shared by the CLI
  * and `sveld()` so their reporting and exit codes can't drift apart.
- * `input` is the resolved entry, which `format: "github"` needs to place
- * annotations.
+ * `input` is the resolved entry, which `format: "github"` needs to
+ * place annotations.
  */
 export function reportRun(
   result: GenerateBundleResult,

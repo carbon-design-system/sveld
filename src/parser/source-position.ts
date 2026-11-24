@@ -41,8 +41,8 @@ export function sourceRangeFromNode(ctx: ParserContext, node: unknown) {
 }
 
 /**
- * A JSDoc tag's range, from its comment lines (each carrying its absolute
- * offset).
+ * A JSDoc tag's range, from its comment lines (each carrying its
+ * absolute offset).
  */
 export function sourceRangeFromCommentTag(
   ctx: ParserContext,
@@ -50,8 +50,8 @@ export function sourceRangeFromCommentTag(
 ): SourceRange | undefined {
   if (!tagLines || tagLines.length === 0) return undefined;
 
-  // A trailing line that's just the block's closing `*/` isn't part of the
-  // tag.
+  // A trailing line that's just the block's closing `*/` isn't part of
+  // the tag.
   const relevantLines = [...tagLines];
   while (relevantLines.length > 1) {
     const lastLine = relevantLines[relevantLines.length - 1];

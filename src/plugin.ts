@@ -41,8 +41,8 @@ export interface PluginSveldOptions extends Pick<GenerateBundleOptions, "cache" 
   /** Suppress writer progress logs (`created "..."` / `unchanged "..."`). */
   quiet?: boolean;
   /**
-   * Record consts, functions, and types from the entry barrel. Off by
-   * default.
+   * Record consts, functions, and types from the entry barrel. Off
+   * by default.
    */
   documentExports?: boolean;
   types?: boolean;
@@ -122,8 +122,8 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
   const watch = opts?.watch === true;
   let result: GenerateBundleResult;
   let input: string | null;
-  // Hooks read this, not `opts`, so a config file loaded in `buildStart`
-  // applies.
+  // Hooks read this, not `opts`, so a config file loaded in
+  // `buildStart` applies.
   let mergedOpts: PluginSveldOptions = opts ?? {};
   let root: string | undefined;
 

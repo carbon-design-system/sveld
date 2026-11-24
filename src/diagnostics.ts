@@ -116,8 +116,8 @@ export type SveldDiagnosticKind =
   | "export-ambiguous";
 
 /**
- * `"error"` fails `--strict=errors`; `"warning"` only fails plain
- * `--strict`.
+ * `"error"` fails `--strict=errors`; `"warning"` only fails
+ * plain `--strict`.
  */
 export type SveldDiagnosticSeverity = "error" | "warning";
 
@@ -177,8 +177,8 @@ export interface SveldDiagnostic {
   component: string;
   kind: SveldDiagnosticKind;
   /**
-   * Stable, namespaced identifier for `kind` (e.g.
-   * `"sveld/prop-unknown-type"`).
+   * Stable, namespaced identifier for `kind`
+   * (e.g. `"sveld/prop-unknown-type"`).
    */
   code: string;
   severity: SveldDiagnosticSeverity;
@@ -232,8 +232,8 @@ export function filterSpeculativeDiagnostics(
  * Diagnostics that should fail `--strict` (`strict: true`) or
  * `--strict=errors` (`strict: "errors"`): never an `ignored` one, and only
  * `severity: "error"` ones under `"errors"`. Shared by the CLI and the
- * programmatic `sveld()` API so their exit-code contracts can't drift
- * apart.
+ * programmatic `sveld()` API so their exit-code contracts can't
+ * drift apart.
  */
 export function failingDiagnostics(
   diagnostics: SveldDiagnostic[],
@@ -286,8 +286,8 @@ const KIND_ORDER = Object.keys(DIAGNOSTIC_KINDS) as SveldDiagnosticKind[];
 /**
  * Stable, namespaced identifier for a {@link SveldDiagnosticKind}, e.g.
  * `"sveld/prop-unknown-type"`. Safe to match on in CI config or an
- * `ignore` matcher; `kind` is kept as the bare, un-namespaced form for
- * compatibility.
+ * `ignore` matcher; `kind` is kept as the bare, un-namespaced form
+ * for compatibility.
  */
 export const DIAGNOSTIC_CODES = Object.fromEntries(KIND_ORDER.map((kind) => [kind, `sveld/${kind}`])) as Record<
   SveldDiagnosticKind,
@@ -440,8 +440,8 @@ export function formatDiagnosticsGithub(
 export const DIAGNOSTICS_SCHEMA_VERSION = 1;
 
 /**
- * `SveldDiagnostic[]`, serialized for stream consumers with a `kind`
- * discriminator.
+ * `SveldDiagnostic[]`, serialized for stream consumers with a
+ * `kind` discriminator.
  */
 export interface DiagnosticsJson {
   kind: "diagnostics";

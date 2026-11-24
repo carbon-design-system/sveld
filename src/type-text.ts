@@ -126,16 +126,16 @@ export function indexOfTopLevelArrow(text: string): number {
 }
 
 /**
- * Index of the bracket closing the one at `openIndex`, or -1 when it never
- * closes.
+ * Index of the bracket closing the one at `openIndex`, or -1 when it
+ * never closes.
  */
 export function indexOfClosingBracket(text: string, openIndex: number): number {
   return findIndex(text, (_index, depth) => depth === 0, openIndex);
 }
 
 /**
- * Whether `text` is a tuple type (`[A, B]`), not an array of one
- * (`[A, B][]`).
+ * Whether `text` is a tuple type (`[A, B]`), not an array of
+ * one (`[A, B][]`).
  */
 export function isTupleType(text: string): boolean {
   const trimmed = text.trim();

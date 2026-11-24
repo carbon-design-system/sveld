@@ -12,8 +12,8 @@ export interface ObjectTypeLiteralMember {
   type: string;
   optional: boolean;
   /**
-   * Set only with `withReadonly`: whether the member has the `readonly`
-   * modifier.
+   * Set only with `withReadonly`: whether the member has the
+   * `readonly` modifier.
    */
   readonly?: boolean;
 }

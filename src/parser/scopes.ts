@@ -35,8 +35,8 @@ export function resolveIdentifierToReactiveProp(ctx: ParserContext, name: string
 /**
  * True when `name` is bound by a function, block, or template scope around
  * the current walk position, so it isn't the script's top-level binding of
- * that name (an import, say):
- * `function register(KEY) { setContext(KEY, ...) }`.
+ * that name (an import,
+ * say): `function register(KEY) { setContext(KEY, ...) }`.
  */
 export function isBoundInNestedScope(ctx: ParserContext, name: string): boolean {
   for (let i = ctx.activeScopes.length - 1; i >= 0; i -= 1) {
@@ -81,8 +81,8 @@ export function markReactivePropsFromMutationTarget(
 ) {
   if (!target || typeof target !== "object" || !("type" in target)) return;
 
-  // `x = ...` / `x++`: by far the most common target; skip the Set
-  // allocation.
+  // `x = ...` / `x++`: by far the most common target; skip the
+  // Set allocation.
   if (target.type === "Identifier") {
     const publicPropName = resolveIdentifierToReactiveProp(ctx, target.name);
     if (publicPropName) {
@@ -218,8 +218,8 @@ function declareLocals(scope: LexicalScope, ...patterns: Array<Parameters<typeof
 }
 
 /**
- * Declares the bindings a variable, `function`, or `class` statement
- * makes.
+ * Declares the bindings a variable, `function`, or `class`
+ * statement makes.
  */
 function declareStatement(
   statement: Program["body"][number],

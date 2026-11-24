@@ -4,8 +4,8 @@ const INDENT_UNIT = "  ";
 // A conservative width for collapsing `{...}` onto one line, since it
 // ignores the surrounding indent.
 const INLINE_WIDTH_BUDGET = 120;
-// Matched so `interface` bodies always expand, unlike plain `{...}` type
-// literals.
+// Matched so `interface` bodies always expand, unlike plain `{...}`
+// type literals.
 const INTERFACE_HEADER_REGEX = /\binterface\s+[A-Za-z_$][\w$]*(\s*<[^{};]*>)?\s*$/;
 const INTERFACE_HEADER_TAIL_LENGTH = 200;
 const WHITESPACE_CHAR_REGEX = /\s/;
@@ -20,8 +20,8 @@ const NEEDS_FLATTEN_REGEX = /\s{2}|[^\S ]/;
 const BRACE_SCAN_REGEX = /["'`{}/]/g;
 const STATEMENT_SCAN_REGEX = /["'`{};/]/g;
 
-// Char codes, so hot loops compare numbers instead of allocating one-char
-// strings.
+// Char codes, so hot loops compare numbers instead of allocating
+// one-char strings.
 const CH_TAB = 9;
 const CH_LF = 10;
 const CH_CR = 13;
@@ -59,8 +59,8 @@ function indentString(depth: number): string {
   return indent;
 }
 
-// Reads only the tail, so it never joins the whole (potentially huge)
-// buffer.
+// Reads only the tail, so it never joins the whole (potentially
+// huge) buffer.
 function tailString(out: string[], maxLen: number): string {
   let result = "";
   for (let i = out.length - 1; i >= 0 && result.length < maxLen; i--) {
@@ -142,8 +142,8 @@ function hasMultipleFlatStatements(content: string): boolean {
 }
 
 /**
- * Collapses whitespace runs outside quotes to a single space and trims the
- * end.
+ * Collapses whitespace runs outside quotes to a single space and trims
+ * the end.
  */
 function flattenToOneLine(content: string): string {
   if (!NEEDS_FLATTEN_REGEX.test(content)) return content.trimEnd();
@@ -205,8 +205,8 @@ function findStringClose(raw: string, open: number): number {
 }
 
 /**
- * Index of the closing `/`, or -1. `/*` followed straight by `/` closes
- * immediately.
+ * Index of the closing `/`, or -1. `/*` followed straight by `/`
+ * closes immediately.
  */
 function findBlockCommentClose(raw: string, open: number): number {
   const at = raw.indexOf("*/", open + 1);
@@ -522,8 +522,8 @@ function reindentAndTidy(text: string): string {
 
     const closer = isCloserCode(text.charCodeAt(start));
     const indent = Math.max(0, depth - (closer ? 1 : 0)) + (continuesExpression(text, start, end) ? 1 : 0);
-    // Only top-level closers drop a preceding blank line (historical
-    // behavior).
+    // Only top-level closers drop a preceding blank line
+    // (historical behavior).
     if (closer && indent === 0 && outContent.length > 0 && outContent[outContent.length - 1] === "") {
       outIndent.pop();
       outContent.pop();

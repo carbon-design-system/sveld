@@ -117,8 +117,8 @@ export function buildJsonDocument(
   const document = buildComponentApiDocument(components, { entryExports: options.entryExports });
   const output: ComponentApiDocument = {
     ...document,
-    // Resolvable from `cwd`. JSON-only: the other writers need the relative
-    // `filePath`.
+    // Resolvable from `cwd`. JSON-only: the other writers need the
+    // relative `filePath`.
     components: document.components.map((component) => ({
       ...component,
       filePath: normalizeComponentFilePath(component.filePath, options.inputDir),

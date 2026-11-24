@@ -20,15 +20,15 @@ const COMPONENT_NAME_REGEX = /^[A-Z]/;
 const NEWLINE_REGEX = /\n/;
 const FUNCTION_TYPE_REGEX = /=>/;
 /**
- * A type that can open a function type: its parameter list or type
- * parameters.
+ * A type that can open a function type: its parameter list or
+ * type parameters.
  */
 const FUNCTION_TYPE_START_REGEX = /^\s*[(<]/;
 /** An `@default` tag line in a description. */
 const DESCRIPTION_DEFAULT_TAG_REGEX = /(?:^|\n)@default\b/;
 /**
- * A comment line of only `*` plus trailing spaces, capturing all but the
- * spaces.
+ * A comment line of only `*` plus trailing spaces, capturing all but
+ * the spaces.
  */
 const BLANK_COMMENT_LINE_REGEX = /^([ \t]*\*) +$/gm;
 /**
@@ -58,8 +58,8 @@ function stripConstModifierForTypeAlias(constraint: string): string {
 type JsDocTags = Array<{ name: string; body: string }> | undefined;
 
 /**
- * A `/** ... *\/` block with one ` * ` line per entry, or `""` without
- * lines.
+ * A `/** ... *\/` block with one ` * ` line per entry, or `""`
+ * without lines.
  */
 function formatJsDocBlock(lines: string[]): string {
   if (lines.length === 0) return "";
@@ -163,8 +163,8 @@ function splitTopLevelCommasMemo(input: string): string[] {
 
 /**
  * Pairs each generic name with its constraint (`Row extends Foo = Foo`).
- * Names drive the pairing; constraints split only at top-level commas
- * (`Record<string, any>`).
+ * Names drive the pairing; constraints split only at top-level
+ * commas (`Record<string, any>`).
  */
 function getGenericParams(generics: ComponentDocApi["generics"]): Array<{ name: string; constraint: string }> {
   if (generics === null) return [];
@@ -176,8 +176,8 @@ function getGenericParams(generics: ComponentDocApi["generics"]): Array<{ name: 
 
 /**
  * Only the generics `text` references, in declaration order: `declSuffix`
- * with constraints (`<Row extends Foo = Bar>`), `refSuffix` names only
- * (`<Row>`).
+ * with constraints (`<Row extends Foo = Bar>`), `refSuffix` names
+ * only (`<Row>`).
  */
 function computeReferencedGenerics(generics: ComponentDocApi["generics"], text: string) {
   const referenced = getGenericParams(generics).filter(({ name }) => referencesGeneric(text, name));
@@ -192,8 +192,8 @@ function computeReferencedGenerics(generics: ComponentDocApi["generics"], text: 
 
 /**
  * Exported context type definitions for a component, each parameterized
- * with only the generics it references, or an empty string if there are no
- * contexts.
+ * with only the generics it references, or an empty string if there are
+ * no contexts.
  *
  * @example
  * ```ts
@@ -383,8 +383,8 @@ function genPropDef(
 
   const restPropsComment = description ? `${formatComment(description)}\n` : "";
   const canonicalPrefix = def.canonicalPropsType ? `(${def.canonicalPropsType}) & ` : "";
-  // A tag typed by a type parameter needs the component's type parameters in
-  // scope.
+  // A tag typed by a type parameter needs the component's type parameters
+  // in scope.
   const restPropsGenerics = thisType ? { name: genericsName, ref: genericsNameRef } : { name: "", ref: "" };
   const omittedKeys =
     def.extends === undefined
@@ -570,8 +570,8 @@ function createDispatchedEventType(detail: string = ANY_TYPE) {
 }
 
 /**
- * The event type a consumer's listener receives, as written to the
- * `.d.ts`.
+ * The event type a consumer's listener receives, as written to
+ * the `.d.ts`.
  */
 export function computeEventTypeString(event: ComponentDocApi["events"][number]): string {
   switch (event.type) {
@@ -619,8 +619,8 @@ function genEventDef(def: Pick<ComponentDocApi, "events">) {
 }
 
 /**
- * Priority: a `@type` function type, then `@param`/`@returns`, then
- * `prop.type`.
+ * Priority: a `@type` function type, then `@param`/`@returns`,
+ * then `prop.type`.
  */
 function generateFunctionType(prop: {
   type?: string;
@@ -658,8 +658,8 @@ function genAccessors(def: Pick<ComponentDocApi, "props">) {
 
 /**
  * `"component"` format's `Exports` type: the accessors `"class"` format
- * renders as class members, parameterized with only the generics they
- * reference.
+ * renders as class members, parameterized with only the generics
+ * they reference.
  */
 function genExportsDef(def: Pick<ComponentDocApi, "props" | "moduleName" | "generics">) {
   const exports_name = exportsTypeName(def.moduleName);
@@ -782,8 +782,8 @@ function genComponentComment(def: Pick<ComponentDocApi, "componentComment">) {
 /**
  * Module-script re-exports, written as-is with their original specifier so
  * TypeScript resolves each name through that module's own types. Named
- * re-exports from one source (with the same doc comment) share one
- * statement.
+ * re-exports from one source (with the same doc comment) share
+ * one statement.
  */
 function genModuleReExports(def: Pick<ComponentDocApi, "moduleExports">) {
   const statements: string[] = [];
@@ -845,8 +845,8 @@ export function formatClassMemberSignature(member: ComponentClassMember): string
  * A module-script class as `export declare class`. A class exported under
  * another name (`export { Store as Alias }`, or a string name) is declared
  * under its own name, which its members may refer to, then exported by the
- * public one; `declared` keeps a class exported twice from being declared
- * twice.
+ * public one; `declared` keeps a class exported twice from being
+ * declared twice.
  */
 function genModuleClassExport(prop: ComponentProp, declared: Set<string>): string {
   const localName = prop.localName ?? prop.name;
@@ -922,8 +922,8 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
 }
 
 /**
- * A module-private identifier for a string-named export (`"some-name"` ->
- * `__export_some_name`).
+ * A module-private identifier for a string-named export (`"some-name"`
+ * -> `__export_some_name`).
  */
 function privateExportName(name: string): string {
   return `__export_${name.replace(NON_IDENTIFIER_CHAR_REGEX, "_")}`;

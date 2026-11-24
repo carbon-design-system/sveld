@@ -11,8 +11,8 @@ const CONFIG_FILE_NAMES = ["tsconfig.json", "jsconfig.json"];
 const pathPatternRegexCache = new Map<string, RegExp>();
 
 /**
- * A block or line comment, stripped before parsing a tsconfig/jsconfig as
- * JSON.
+ * A block or line comment, stripped before parsing a tsconfig/jsconfig
+ * as JSON.
  */
 const COMMENT_PATTERN = /\/\*[\s\S]*?\*\/|\/\/.*/g;
 
@@ -51,8 +51,8 @@ function parseConfig(configPath: string, configCache: Map<string, ParsedTsConfig
   try {
     const content = readFileSync(configPath, "utf-8");
     // Parse raw JSON first, since naive comment stripping treats `/*` inside
-    // strings (e.g. tsconfig `"$lib/*"`) as a block comment and corrupts the
-    // file.
+    // strings (e.g. tsconfig `"$lib/*"`) as a block comment and corrupts
+    // the file.
     let parsed: unknown;
     try {
       parsed = JSON.parse(content);
@@ -91,13 +91,13 @@ function parseConfig(configPath: string, configCache: Map<string, ParsedTsConfig
 
 interface AliasLookup {
   /**
-   * Absolute path when resolved via an alias mapping; `importPath` unchanged
-   * otherwise.
+   * Absolute path when resolved via an alias mapping; `importPath`
+   * unchanged otherwise.
    */
   resolved: string;
   /**
-   * True when `importPath` is a non-relative specifier that no `paths` entry
-   * matched.
+   * True when `importPath` is a non-relative specifier that no `paths`
+   * entry matched.
    */
   unresolved: boolean;
   /** What was searched, for error messages. */

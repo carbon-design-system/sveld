@@ -123,8 +123,8 @@ export function deprecatedValueFromBody(body: string): DeprecatedValue {
 }
 
 /**
- * Wraps a parser comment value (`* doc `) back into `/** doc *\/` form for
- * `parseComments`.
+ * Wraps a parser comment value (`* doc `) back into `/** doc *\/` form
+ * for `parseComments`.
  */
 function formatComment(comment: string) {
   const opened = comment.startsWith("/*") ? comment : `/*${comment}`;
@@ -201,8 +201,8 @@ const EXCLUDED_TAGS = new Set([
 
 /**
  * `parseComments` memoized per component: the leading-comment pass and the
- * variable JSDoc table both parse the same blocks. Results are never
- * mutated.
+ * variable JSDoc table both parse the same blocks. Results are
+ * never mutated.
  */
 export function parseCommentText(ctx: ParserContext, text: string): JSDocComment[] {
   let parsed = ctx.parsedJsDocByText.get(text);
@@ -314,8 +314,8 @@ const FUNCTION_EXPRESSION_TYPES = new Set(["ArrowFunctionExpression", "FunctionE
  * arrow or function expression, or a module-script class or one of its
  * methods. A `@template` in one of these types that function's own generic
  * parameter, not the component's. The exception is an instance-script
- * `export let`: it's a prop, so its `@template` still declares a component
- * generic.
+ * `export let`: it's a prop, so its `@template` still declares a
+ * component generic.
  */
 export function functionDocCommentStarts(ctx: ParserContext): Set<number> {
   const starts = new Set<number>();
@@ -358,8 +358,8 @@ export function functionDocCommentStarts(ctx: ParserContext): Set<number> {
 }
 
 /**
- * Tags that declare part of the component's API rather than document a
- * declaration.
+ * Tags that declare part of the component's API rather than document
+ * a declaration.
  */
 const COMPONENT_LEVEL_TAGS = new Set([
   "slot",
@@ -384,8 +384,8 @@ export function processNodeJSDoc(
 }
 
 /**
- * One `@template` tag as a type parameter: `T`, `T extends Foo`, or
- * `T extends Foo = Bar`.
+ * One `@template` tag as a type parameter: `T`, `T extends Foo`,
+ * or `T extends Foo = Bar`.
  */
 function templateTagConstraint(name: string, type: string, defaultValue: string | undefined): string {
   let constraint = name;

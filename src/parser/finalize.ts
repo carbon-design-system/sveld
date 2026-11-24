@@ -49,8 +49,8 @@ import { resolveLocalVarJSDoc } from "./variable-jsdoc";
 
 const SURROUNDING_QUOTES_REGEX = /^["']|["']$/g;
 /**
- * A constrained type parameter declaration, capturing its name: `Tag` in
- * `Tag extends ...`.
+ * A constrained type parameter declaration, capturing its name: `Tag`
+ * in `Tag extends ...`.
  */
 const CONSTRAINED_TYPE_PARAMETER_REGEX = /^([\w$]+)\s+extends\s/;
 
@@ -64,8 +64,8 @@ function mapToArray<T>(map: Map<string, T> | Map<string | null, T>) {
 /** What a dispatcher call's event-name argument can evaluate to. */
 interface DispatchEventNames {
   /**
-   * Names read off string literals, including each branch of
-   * `open ? "open" : "close"`.
+   * Names read off string literals, including each branch
+   * of `open ? "open" : "close"`.
    */
   names: string[];
   /** Names built from a template, like `${name}:trigger`. */
@@ -332,8 +332,8 @@ function resolveGenerics(ctx: ParserContext, props: ComponentProp[], slots: Comp
 }
 
 /**
- * Events in output form, sorted: forwarded events name their element as a
- * string.
+ * Events in output form, sorted: forwarded events name their element as
+ * a string.
  */
 function serializeEvents(ctx: ParserContext): SerializedComponentEvent[] {
   return mapToArray(ctx.events)
@@ -520,8 +520,8 @@ function recordUnresolvedRestProps(ctx: ParserContext) {
   const restProps = ctx.rest_props;
   if (restProps?.type !== "InlineComponent") return;
   const spreadTarget = importedBindingByName(ctx, restProps.name);
-  // Unquoted, since `extends.import` keeps the tag's quotes:
-  // `"./Link.svelte"`.
+  // Unquoted, since `extends.import` keeps the
+  // tag's quotes: `"./Link.svelte"`.
   const extendsSource = ctx.extends?.import.replace(SURROUNDING_QUOTES_REGEX, "");
   if (spreadTarget?.importedName === "default" && spreadTarget.source === extendsSource) return;
   recordDiagnostic(
@@ -602,8 +602,8 @@ function recordInternalTypedefReferences(
 }
 
 /**
- * Type parameters declared with a constraint
- * (`Tag extends keyof HTMLElementTagNameMap`).
+ * Type parameters declared with a
+ * constraint (`Tag extends keyof HTMLElementTagNameMap`).
  */
 function constrainedTypeParameters(generics: ComponentGenerics): Set<string> {
   const names = new Set<string>();
@@ -656,8 +656,8 @@ function typeFromTagTypeParameters(ctx: ParserContext, props: ComponentProp[], t
 }
 
 /**
- * A DOM element type: `HTMLElement`, `SVGCircleElement`,
- * `HTMLElementTagNameMap[Tag]`.
+ * A DOM element type: `HTMLElement`,
+ * `SVGCircleElement`, `HTMLElementTagNameMap[Tag]`.
  */
 const DOM_ELEMENT_TYPE_REGEX = /^(?:(?:HTML|SVG|MathML)\w*)?Element$|^HTMLElementTagNameMap\[[\w$]+\]$/;
 
@@ -713,8 +713,8 @@ function formatList(items: string[]): string {
 }
 
 /**
- * Builds the parse result from `ctx` and what {@link walkComponent}
- * collected.
+ * Builds the parse result from `ctx` and what {@link
+ * walkComponent} collected.
  */
 export function finalizeComponent(ctx: ParserContext, walk: ComponentWalkResult): ComponentParseResult {
   const dispatchedEvents = resolveDispatchedEvents(ctx, walk);

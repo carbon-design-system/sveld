@@ -39,8 +39,8 @@ type DispatcherBinding = { name: string } | { object: string; property: string }
  * Collects the events each candidate's helper dispatches. Every call
  * through the receiving parameter must name its event with a string
  * literal (or a conditional between them); a dispatcher passed on, or a
- * runtime-computed name, leaves the candidate unresolved. AST only, no
- * `tsc`.
+ * runtime-computed name, leaves the candidate unresolved. AST only,
+ * no `tsc`.
  */
 function resolveDispatchEscapeCandidates(
   fromDir: string,
@@ -169,11 +169,11 @@ function collectDispatchedEvents(
       if (isCallee) return;
       // `options.anything`: `options.dispatch` itself was checked above.
       if (!("name" in binding) && parent?.type === "MemberExpression" && prop === "object") return;
-      // `x.dispatch`, `{ dispatch: ... }` or a `dispatch:` label names something
-      // else.
+      // `x.dispatch`, `{ dispatch: ... }` or a `dispatch:` label names
+      // something else.
       if (!isReference(node, parent)) return;
-      // Any other use (an argument, a stored reference) may dispatch out of
-      // sight.
+      // Any other use (an argument, a stored reference) may dispatch out
+      // of sight.
       failureReason = "passed-on";
       return STOP;
     },

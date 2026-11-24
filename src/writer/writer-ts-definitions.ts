@@ -51,8 +51,8 @@ function collectIndexTypeExports(
 }
 
 /**
- * The context `typesOptions.transform` receives alongside the generated
- * text.
+ * The context `typesOptions.transform` receives alongside the
+ * generated text.
  */
 export type TransformContext =
   { kind: "component"; component: ComponentDocApi; filePath: string } | { kind: "index"; filePath: string };
@@ -84,14 +84,14 @@ export { formatTsProps, getContextDefs, getTypeDefs, writeTsDefinition } from ".
 /** User-settable `typesOptions`. */
 export interface TypesOptions extends WriteTsDefinitionOptions {
   /**
-   * Output directory for generated `.d.ts` files, relative to the project
-   * root.
+   * Output directory for generated `.d.ts` files, relative to the
+   * project root.
    * @default "types"
    */
   outDir?: string;
   /**
-   * Raw text prepended to the generated `index.d.ts` barrel, e.g. a license
-   * header.
+   * Raw text prepended to the generated `index.d.ts` barrel, e.g. a
+   * license header.
    * @default ""
    */
   preamble?: string;
@@ -119,8 +119,8 @@ export interface WriteTsDefinitionsOptions extends TypesOptions {
   /**
    * Reuses generated `.d.ts` text across runs for components whose source
    * (and every emit option from `serializeEmitOptions`) hasn't changed.
-   * Requires `resolvedPathByFilePath` to key lookups; both come from
-   * `GenerateBundleResult`.
+   * Requires `resolvedPathByFilePath` to key lookups; both come
+   * from `GenerateBundleResult`.
    */
   cache?: ParseCache;
   /** See `cache`. Lookups use `component.filePath`. */
@@ -157,8 +157,8 @@ export default async function writeTsDefinitions(components: ComponentDocs, opti
     const crossFilePath = ownPath ? undefined : options.crossFileResolvedPathByFilePath?.get(component.filePath);
     const resolvedPath = ownPath ?? crossFilePath;
     // A cross-file component's source is fixed by its cache entry, but not
-    // what it read from other files, so the key includes its serialized
-    // content.
+    // what it read from other files, so the key includes its
+    // serialized content.
     const optionsKey = generatedTextCacheKey(component.moduleName, emitOptions);
     const cacheKey = crossFilePath ? `${optionsKey}\n${hashSource(JSON.stringify(component))}` : optionsKey;
     let text = resolvedPath ? options.cache?.getGeneratedText(resolvedPath, cacheKey) : undefined;

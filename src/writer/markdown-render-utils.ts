@@ -123,8 +123,8 @@ function renderSectionIfNotEmpty(document: MarkdownRenderTarget, items: readonly
 export function renderComponentToMarkdown(document: MarkdownRenderTarget, component: ComponentDocApi) {
   document.append("h2", `\`${component.moduleName}\``);
 
-  // Without this, generic names like `Row` would appear in the tables
-  // undefined.
+  // Without this, generic names like `Row` would appear in the
+  // tables undefined.
   if (component.generics) {
     document.append("p", `**Type parameters:** ${formatPropType(`<${component.generics[1]}>`)}`);
   }

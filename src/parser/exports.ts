@@ -1,7 +1,7 @@
 /**
  * `export` declarations and specifiers, shared by the module script (whose
- * exports are module exports) and the instance script (whose exports are
- * props).
+ * exports are module exports) and the instance script (whose exports
+ * are props).
  */
 import type {
   ClassDeclaration,
@@ -105,8 +105,8 @@ function findReactiveDeclaration(
     if (node.body.type !== "ExpressionStatement") continue;
     const assignment = node.body.expression;
     if (assignment.type !== "AssignmentExpression" || assignment.operator !== "=") continue;
-    // `$: (x as T) = value` assigns through a TS cast, which no `let` can
-    // declare.
+    // `$: (x as T) = value` assigns through a TS cast, which no `let`
+    // can declare.
     if (assignment.left.type.startsWith("TS")) continue;
     if (!collectPatternIdentifiers(assignment.left).has(localName)) continue;
     const declarator: VariableDeclarator = {
@@ -148,8 +148,8 @@ function variableDeclarationKindToComponentPropKind(kind: VariableDeclaration["k
  * `program` is the script the export sits in: only its top-level
  * declarations count, not a same-named variable inside a function. An
  * instance-script export can also name a module-script declaration, or a
- * variable that a `$: local = ...` reactive declaration declares
- * implicitly.
+ * variable that a `$: local = ...` reactive declaration
+ * declares implicitly.
  */
 export function resolveExportSpecifier(
   ctx: ParserContext,
@@ -161,8 +161,8 @@ export function resolveExportSpecifier(
   const localName = moduleExportName(specifier.local);
   const exportedName = moduleExportName(specifier.exported);
   if (!localName || !exportedName) return undefined;
-  // `export { x } from "..."` names the other module's `x`, never a local
-  // one.
+  // `export { x } from "..."` names the other module's `x`, never a
+  // local one.
   if (node.source != null) return { localName, exportedName };
 
   let binding = findTopLevelBinding(program, localName);
@@ -450,8 +450,8 @@ function addInstanceDeclarationExports(
 }
 
 /**
- * An instance-script `export` statement: its declaration's props, or each
- * specifier's.
+ * An instance-script `export` statement: its declaration's props, or
+ * each specifier's.
  */
 export function addInstanceExports(ctx: ParserContext, node: ExportNamedDeclaration, program: Program | null) {
   if (node.declaration != null) {

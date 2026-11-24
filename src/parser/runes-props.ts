@@ -305,8 +305,8 @@ function localTypeDeclarationNodes(ctx: ParserContext): Map<string, TSNode> {
 }
 
 /**
- * JSON-safe copy of the raw `customElement.props` config read off
- * `parsed.options`.
+ * JSON-safe copy of the raw `customElement.props` config read
+ * off `parsed.options`.
  */
 function buildCustomElementPropConfigs(
   props: Record<string, CustomElementPropConfig>,
@@ -369,8 +369,8 @@ function collectScriptTypeDeclaration(
  * explicit `export let` annotations, and `$props()` metadata off `parsed`
  * (the tree the caller then assigns to `ctx.parsed`), before any walk.
  * `localTypeDeclarationsByName` holds a live `node` from this tree, read
- * only during this call. After that, only the extracted `.code` string is
- * used.
+ * only during this call. After that, only the extracted `.code` string
+ * is used.
  */
 export function collectScriptTypeInfo(ctx: ParserContext, parsed: AST.Root) {
   ctx.runesPropsDeclarationMetadataByDeclaratorStart.clear();
@@ -423,8 +423,8 @@ export function collectScriptTypeInfo(ctx: ParserContext, parsed: AST.Root) {
   for (const statement of body) {
     collectScriptTypeDeclaration(ctx, statement, false);
 
-    // An exported variable's annotation is read with the export
-    // (`collectExportDeclarators`).
+    // An exported variable's annotation is read with the
+    // export (`collectExportDeclarators`).
     if (statement.type !== "VariableDeclaration") continue;
     for (const { id } of statement.declarations) {
       if (id.type !== "Identifier") continue;
@@ -485,8 +485,8 @@ function getJsDocPropsMembers(
 }
 
 /**
- * Unwraps `$bindable(...)` so the default is documented as its underlying
- * value.
+ * Unwraps `$bindable(...)` so the default is documented as its
+ * underlying value.
  */
 function unwrapBindableInitializer(init: unknown): { init?: unknown; bindable: boolean } {
   return isCallExpressionNamed(init, "$bindable")
@@ -734,8 +734,8 @@ export function registerTypedDispatcherEvents(
 
 /**
  * Runes-only: fold phantom `@event` entries into matching `on<Event>`
- * callback props when nothing in the component actually dispatches that
- * event.
+ * callback props when nothing in the component actually dispatches
+ * that event.
  */
 export function normalizeRunesCallbackProps(ctx: ParserContext, actuallyDispatchedEvents: Set<string>) {
   if (ctx.syntaxMode !== "runes") return;

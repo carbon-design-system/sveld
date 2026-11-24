@@ -12,14 +12,14 @@ import { MODULE_EXTENSIONS } from "./path";
 import { exportsTypeName, extendsTypeName, propsTypeName } from "./writer/writer-ts-definitions-core";
 
 /**
- * An import's extensions, and a component's: `"./Base"` may name
- * `Base.svelte`.
+ * An import's extensions, and a component's: `"./Base"` may
+ * name `Base.svelte`.
  */
 const EXTENDS_TARGET_EXTENSIONS = [...MODULE_EXTENSIONS, ".svelte"];
 
 /**
- * `@extends`/`@extendProps` import specifiers are stored with their
- * quotes.
+ * `@extends`/`@extendProps` import specifiers are stored with
+ * their quotes.
  */
 function stripQuotes(text: string): string | undefined {
   const trimmed = text.trim();
@@ -102,8 +102,8 @@ export function createExtendsTargetValidator(
     if (!target) return [];
 
     const expectedInterface = propsTypeName(target.moduleName);
-    // `ChartProps<T>` names `ChartProps`; the arguments are the extender's to
-    // pass.
+    // `ChartProps<T>` names `ChartProps`; the arguments are the extender's
+    // to pass.
     if (extendsTypeName(extendsInfo.interface) !== expectedInterface) {
       return [
         createDiagnostic({

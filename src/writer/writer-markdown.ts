@@ -21,8 +21,8 @@ export interface MarkdownOptions {
   /**
    * Emit one `<ModuleName>.md` file per component into this directory,
    * plus an index `README.md` linking to each, instead of the single
-   * combined `outFile`. See `jsonOptions.outDir` for the equivalent JSON
-   * option.
+   * combined `outFile`. See `jsonOptions.outDir` for the equivalent
+   * JSON option.
    */
   outDir?: string;
   /**
@@ -33,8 +33,8 @@ export interface MarkdownOptions {
 }
 
 /**
- * `MarkdownOptions` plus the fields the caller (`plugin.ts`) always
- * injects.
+ * `MarkdownOptions` plus the fields the caller (`plugin.ts`)
+ * always injects.
  */
 export interface WriteMarkdownOptions extends MarkdownOptions {
   outFile: string;

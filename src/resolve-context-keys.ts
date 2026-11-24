@@ -72,8 +72,8 @@ function applyContextKeyResolutions(component: ComponentDocApi, resolutions: Con
       contexts.splice(duplicateIndex, 1);
     }
 
-    // Keep source order, as a same-file key would: go before the first later
-    // `setContext`.
+    // Keep source order, as a same-file key would: go before the first
+    // later `setContext`.
     const laterIndex = contexts.findIndex((existing) => startsAfter(existing.source, candidate.source));
     contexts.splice(laterIndex === -1 ? contexts.length : laterIndex, 0, {
       key,

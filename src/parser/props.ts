@@ -37,8 +37,8 @@ export function addProp(ctx: ParserContext, prop_name: string, data: ComponentPr
 }
 
 /**
- * Queue an initializer's unresolved cross-file default for
- * `generateBundle`.
+ * Queue an initializer's unresolved cross-file default
+ * for `generateBundle`.
  */
 export function queuePendingCrossFileDefault(
   ctx: ParserContext,
@@ -167,8 +167,8 @@ function processInitializerWithoutAssertion(ctx: ParserContext, init: unknown, d
           };
         }
 
-        // JSDoc is read off the declaration, since `function defaultX() {}` has no
-        // initializer.
+        // JSDoc is read off the declaration, since `function defaultX() {}` has
+        // no initializer.
         const funcNode = ctx.funcDecls.get(name);
         if (funcNode) {
           const resolvedJSDoc = resolveLocalVarJSDoc(ctx, name);
@@ -185,8 +185,8 @@ function processInitializerWithoutAssertion(ctx: ParserContext, init: unknown, d
         }
       }
 
-      // Named value import. The cross-file pass may swap in the imported
-      // literal.
+      // Named value import. The cross-file pass may swap in the
+      // imported literal.
       return withPendingConstDefault(result(nodeSourceText(ctx, node)), ctx.valueImportBindingsByLocalName.get(name));
     }
     case "MemberExpression":
@@ -244,8 +244,8 @@ function processCallInitializer(
     // prop's `returnType` even though it isn't a function.
     const sameFileReturnType = resolveSameFileCallReturnType(ctx, calleeName);
     if (sameFileReturnType?.declared) return { ...result, resolvedType: sameFileReturnType.type };
-    // Read off the function's `return`s, so it's as inferred as a literal
-    // default.
+    // Read off the function's `return`s, so it's as inferred as a
+    // literal default.
     if (sameFileReturnType) return { ...result, type: sameFileReturnType.type };
 
     if (ctx.funcDecls.has(calleeName) || localFunctionValuedInitializer(ctx, calleeName)) {
@@ -476,16 +476,16 @@ export function inferVariableInitializerType(ctx: ParserContext, name: string, e
     }
   }
 
-  // Processed so a call's declared return type (`@returns`) lands in
-  // `resolvedType`.
+  // Processed so a call's declared return type (`@returns`) lands
+  // in `resolvedType`.
   const processed = processInitializer(ctx, init);
   return processed.type ?? processed.resolvedType;
 }
 
 /**
  * Type of the function `node` declared as `name`: its TS annotations, else
- * its JSDoc, else what {@link inferFunctionTypeFromNode} reads off the
- * node.
+ * its JSDoc, else what {@link inferFunctionTypeFromNode} reads off
+ * the node.
  */
 function localFunctionType(ctx: ParserContext, name: string, node: FunctionNode, exactArity: boolean): string {
   const returnType = exactArity ? inferFunctionValueReturnType(node) : inferReturnTypeFromNode(node);
@@ -506,8 +506,8 @@ const SVELTE_STORE_TYPES = new Map([
 ]);
 
 /**
- * `T` from a store type: `Writable<T>`, `Readable<T>`, with or without the
- * `import("svelte/store")`.
+ * `T` from a store type: `Writable<T>`, `Readable<T>`, with or without
+ * the `import("svelte/store")`.
  */
 const STORE_VALUE_TYPE_REGEX = /^(?:import\("svelte\/store"\)\.)?(?:Writable|Readable)<([\s\S]*)>$/;
 
@@ -529,8 +529,8 @@ export function svelteStoreType(ctx: ParserContext, call: CallExpression): strin
     trackAdditionalTypeDependencyNode(ctx, typeArgument);
     valueType = sourceForExpression(ctx, typeArgument);
   } else if (binding?.importedName === "readonly") {
-    // Only the wrapped store is read, since `readonly(store)` has its value
-    // type.
+    // Only the wrapped store is read, since `readonly(store)` has its
+    // value type.
     const [wrapped] = call.arguments;
     const wrappedType = isIdentifier(wrapped)
       ? (findTrackedVariableType(ctx, wrapped.name)?.type ?? inferVariableInitializerType(ctx, wrapped.name))
@@ -627,8 +627,8 @@ function localFunctionValuedInitializer(
 }
 
 /**
- * Return type from `const f: () => string = ...` when the arrow omits
- * `): string`.
+ * Return type from `const f: () => string = ...` when the arrow
+ * omits `): string`.
  */
 function bindingCallableReturnTypeText(ctx: ParserContext, name: string): string | undefined {
   for (const decl of ctx.vars) {
@@ -740,16 +740,16 @@ export function jsdocFunctionValueType(
 
 /**
  * What calling a function value gives, read off its body: `void`
- * (`Promise<void>` when async) when it returns no value, else {@link
- * inferReturnTypeFromNode}.
+ * (`Promise<void>` when async) when it returns no value, else
+ * {@link inferReturnTypeFromNode}.
  */
 export function inferFunctionValueReturnType(node: FunctionNode): string {
   return returnsNothing(node) ? (node.async ? "Promise<void>" : "void") : inferReturnTypeFromNode(node);
 }
 
 /**
- * A block-bodied function with no `return` of a value: calling it gives
- * `undefined`.
+ * A block-bodied function with no `return` of a value: calling it
+ * gives `undefined`.
  */
 function returnsNothing(node: FunctionNode): boolean {
   return (
@@ -775,8 +775,8 @@ function inferReturnTypeFromNode(node: FunctionNode): string {
 
 /**
  * Map one return expression to `string`, `number`, or `boolean`, or `null`
- * if it isn't a literal, template literal, or `String`/`Number`/`Boolean`
- * call.
+ * if it isn't a literal, template literal, or
+ * `String`/`Number`/`Boolean` call.
  */
 function inferReturnPrimitive(node: unknown): "string" | "number" | "boolean" | null {
   const expr = asExpression(node);

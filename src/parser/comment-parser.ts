@@ -20,8 +20,8 @@ interface CommentLine {
   /** Whitespace after the gutter, minus its one separator space. */
   indent: string;
   /**
-   * Text after the gutter, minus whatever tag/type/name parsing has
-   * consumed.
+   * Text after the gutter, minus whatever tag/type/name parsing
+   * has consumed.
    */
   content: string;
   /** Set on a tag section's first line. */
@@ -215,8 +215,8 @@ export function togglesCodeFence(text: string): boolean {
 }
 
 /**
- * Non-overlapping `needle` occurrences in `text`, without a `split`
- * allocation.
+ * Non-overlapping `needle` occurrences in `text`, without a
+ * `split` allocation.
  */
 function countOccurrences(text: string, needle: string): number {
   let count = 0;
@@ -308,8 +308,8 @@ function extractName(line: CommentLine): { name: string; optional: boolean; defa
   if (token.startsWith("[") && token.endsWith("]")) {
     optional = true;
     const inner = token.slice(1, -1);
-    // Rejoin past the first "=" so a default containing "=" (`[cb=() => 1]`)
-    // survives.
+    // Rejoin past the first "=" so a default containing "="
+    // (`[cb=() => 1]`) survives.
     const parts = inner.split("=");
     name = parts[0].trim();
     if (parts.length > 1) defaultValue = parts.slice(1).join("=").trim();

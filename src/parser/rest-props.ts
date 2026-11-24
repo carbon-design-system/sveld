@@ -24,8 +24,8 @@ function createRestPropsFromParent(parent: unknown): RestProps {
   if (isComponentLike) return { type: "InlineComponent", name: parentName };
 
   const restProps: ComponentElement = { type: "Element", name: parentName };
-  // `<svelte:element this="div">` has a static `Literal` tag; `this={expr}`
-  // doesn't.
+  // `<svelte:element this="div">` has a static `Literal` tag;
+  // `this={expr}` doesn't.
   if (parentName === "svelte:element" && "tag" in parent && parent.tag && typeof parent.tag === "object") {
     const tag = parent.tag as { type?: string; value?: unknown };
     if (tag.type === "Literal" && typeof tag.value === "string") restProps.thisValue = tag.value;

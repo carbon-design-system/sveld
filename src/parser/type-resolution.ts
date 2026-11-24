@@ -24,8 +24,8 @@ export function getTypeReferenceName(typeName: EntityName): string {
 }
 
 /**
- * The leftmost name, which is what's imported or declared (`ns` in
- * `ns.Type`).
+ * The leftmost name, which is what's imported or declared (`ns`
+ * in `ns.Type`).
  */
 function getTypeDependencyName(typeName: EntityName): string {
   return typeName.type === "Identifier" ? typeName.name : getTypeDependencyName(typeName.left);
@@ -62,8 +62,8 @@ export function collectReferencedTypeDependencies(
   const collect = (node: TSNode | undefined) =>
     collectReferencedTypeDependencies(ctx, node, referencedImportedTypes, referencedLocalTypes, visitedLocalTypes);
 
-  // Cases pick the parts of a node that name types; other nodes are walked
-  // as-is.
+  // Cases pick the parts of a node that name types; other nodes are
+  // walked as-is.
   walk(typeNode, {
     enter(node) {
       switch (node.type) {
@@ -158,8 +158,8 @@ function buildTypeImportStatements(ctx: ParserContext, referencedImportedTypes: 
 }
 
 /**
- * A type reference's dependencies: `Name<Args>`, or an interface's
- * `extends Name<Args>`.
+ * A type reference's dependencies: `Name<Args>`, or an
+ * interface's `extends Name<Args>`.
  */
 function collectTypeReferenceDependencies(
   ctx: ParserContext,
@@ -212,8 +212,8 @@ export function trackAdditionalTypeDependencyNode(ctx: ParserContext, typeNode: 
 
 /**
  * Many bundlers reject `const enum` under `isolatedModules`, so one whose
- * members all have literal initializers is emitted as a literal union
- * instead.
+ * members all have literal initializers is emitted as a literal
+ * union instead.
  */
 function buildConstEnumUnionTypeCode(enumStatement: TSEnumDeclaration): string | undefined {
   if (!enumStatement.const) return undefined;
@@ -256,8 +256,8 @@ interface FunctionDeclarationParam {
 }
 
 /**
- * A function's own TS annotations, as text; unset fields had no
- * annotation.
+ * A function's own TS annotations, as text; unset fields had
+ * no annotation.
  */
 export interface FunctionDeclarationParts {
   params: FunctionDeclarationParam[];

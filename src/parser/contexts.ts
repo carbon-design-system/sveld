@@ -35,8 +35,8 @@ import { importedMemberBinding, importPath } from "./value-imports";
 import { findTrackedVariableType, findVariableJsDoc, resolveLocalVarJSDoc } from "./variable-jsdoc";
 
 /**
- * `inferred` when sveld read the type off the code rather than an
- * annotation.
+ * `inferred` when sveld read the type off the code rather than
+ * an annotation.
  */
 type VariableTypeInfo = NonNullable<ReturnType<typeof findTrackedVariableType>> & { inferred?: boolean };
 
@@ -66,8 +66,8 @@ const ANY_REGEX = /\bany\b/;
 /**
  * `context-any-type` for a type sveld inferred with `any` inside it, such
  * as `Writable<any>` from `writable(undefined)` or `(id: any) => void`
- * from an unannotated param. A bare `any` is reported where it's
- * defaulted.
+ * from an unannotated param. A bare `any` is reported where
+ * it's defaulted.
  */
 function reportInferredAny(
   ctx: ParserContext,
@@ -218,8 +218,8 @@ function parseContextObjectProperties(
       !accessor && (prop.value.type === "ArrowFunctionExpression" || prop.value.type === "FunctionExpression")
         ? prop.value
         : undefined;
-    // A method's `@param` and `@returns` count, as they would on a function
-    // declaration.
+    // A method's `@param` and `@returns` count, as they would on a
+    // function declaration.
     const jsdocSignature = !jsdoc?.type && fn ? jsdocFunctionValueType(jsdoc, fn) : undefined;
     const annotated = accessor
       ? prop.kind === "get"
@@ -382,8 +382,8 @@ function resolveContextKey(ctx: ParserContext, keyArg: unknown, depth = 0): Cont
     const resolvedInit = resolveConstInitializer(ctx, node.name);
     if (resolvedInit && typeof resolvedInit === "object" && "type" in resolvedInit) {
       const init = resolvedInit as Expression;
-      // `const KEY = Symbol()` has no description, so the binding name is the
-      // key.
+      // `const KEY = Symbol()` has no description, so the binding name is
+      // the key.
       if (
         (init.type === "CallExpression" || init.type === "NewExpression") &&
         resolveSymbolKeyDescription(init) === ""

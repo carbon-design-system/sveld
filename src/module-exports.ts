@@ -45,8 +45,8 @@ export interface InternalExport extends Omit<EntryExport, "source"> {
   literalValue?: string;
   /**
    * `export const` primitive literal (string, number, boolean, or a static
-   * template). `resolve-const-defaults.ts` writes it as an imported prop
-   * default.
+   * template). `resolve-const-defaults.ts` writes it as an imported
+   * prop default.
    */
   primitiveLiteral?: PrimitiveLiteral;
   /**
@@ -185,8 +185,8 @@ function inferLiteralType(init: Expression): string | undefined {
     if (typeof value === "boolean") return "boolean";
   }
   if (init.type === "TemplateLiteral") return "string";
-  // Negative numeric literals parse as `UnaryExpression` (`-1`), not
-  // `Literal`.
+  // Negative numeric literals parse as `UnaryExpression` (`-1`),
+  // not `Literal`.
   if (init.type === "UnaryExpression" && (init.operator === "-" || init.operator === "+")) {
     return init.argument.type === "Literal" && typeof init.argument.value === "number" ? "number" : undefined;
   }
@@ -209,8 +209,8 @@ function staticPrimitiveValue(node: Expression): PrimitiveLiteral["value"] | und
     const value = node.value;
     return typeof value === "string" || typeof value === "number" || typeof value === "boolean" ? value : undefined;
   }
-  // Negative numeric literals parse as `UnaryExpression` (`-1`), not
-  // `Literal`.
+  // Negative numeric literals parse as `UnaryExpression` (`-1`),
+  // not `Literal`.
   if (node.type === "UnaryExpression" && node.operator === "-") {
     const argument = node.argument;
     return argument.type === "Literal" && typeof argument.value === "number" ? -argument.value : undefined;
@@ -316,8 +316,8 @@ function inferAstLiteralReturnType(fn: FunctionLike): string | undefined {
 }
 
 /**
- * A string or (possibly negative) number literal; a template counts as
- * computed.
+ * A string or (possibly negative) number literal; a template counts
+ * as computed.
  */
 function enumMemberLiteralValue(initializer: Expression): string | number | undefined {
   if (initializer.type === "TemplateLiteral") return undefined;
@@ -431,8 +431,8 @@ function describeDeclaration(
     });
   }
 
-  // Ambient signature in a `.d.ts`:
-  // `export function uniqueId(prefix?: string): string;`
+  // Ambient signature in a
+  // `.d.ts`: `export function uniqueId(prefix?: string): string;`
   if (declaration.type === "FunctionDeclaration" || declaration.type === "TSDeclareFunction") {
     const returnType = returnTypeOf(declaration);
     return entry(identifierName(declaration.id) ?? anonymousName, {
@@ -538,8 +538,8 @@ function findImportSource(
 }
 
 /**
- * The entry for the namespace object of `namespaceFile`, exported as
- * `name`.
+ * The entry for the namespace object of `namespaceFile`, exported
+ * as `name`.
  */
 function namespaceExport(name: string, namespaceFile: string, isTypeOnly: boolean): InternalExport {
   return { name, kind: "const", declFile: namespaceFile, namespaceFile, isTypeOnly };

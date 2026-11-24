@@ -46,8 +46,8 @@ export interface GenerateBundleResult {
    */
   errors: ComponentParseError[];
   /**
-   * Unknown props, `any` contexts, and orphan `@event` tags across the
-   * bundle.
+   * Unknown props, `any` contexts, and orphan `@event` tags across
+   * the bundle.
    */
   diagnostics: SveldDiagnostic[];
   /**
@@ -59,8 +59,8 @@ export interface GenerateBundleResult {
    * @internal filePath -> resolved source path (the `cache` entry key), so
    * the write phase skips path-alias resolution. Keyed by filePath since
    * moduleName isn't unique. Undefined when caching is off. Omits components
-   * resolved from another file's contents; see
-   * `crossFileResolvedPathByFilePath`.
+   * resolved from another file's contents;
+   * see `crossFileResolvedPathByFilePath`.
    */
   resolvedPathByFilePath?: Map<string, string>;
   /**
@@ -78,8 +78,8 @@ export interface GenerateBundleOptions {
    */
   failFast?: boolean;
   /**
-   * Record consts, functions, and types from the entry barrel. Off by
-   * default.
+   * Record consts, functions, and types from the entry barrel. Off
+   * by default.
    */
   documentExports?: boolean;
   /**
@@ -125,8 +125,8 @@ export type ResolveComponentFilePath = (filePath: string) => string;
 /**
  * Parses the entry's exported components (for JSON/Markdown) and, with
  * `glob`, every `.svelte` file beside it (for TypeScript definitions). A
- * component that fails to parse lands in `errors` unless `failFast` is
- * set.
+ * component that fails to parse lands in `errors` unless `failFast`
+ * is set.
  */
 export async function generateBundle(
   input: string,

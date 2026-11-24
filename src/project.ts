@@ -112,8 +112,8 @@ export class Project {
   private readonly parseErrors = new Map<string, ComponentParseError>();
   private canonicalEntries = new Map<string, CanonicalEntry>();
   /**
-   * Module names already warned about, so a rebuild doesn't repeat the
-   * warning.
+   * Module names already warned about, so a rebuild doesn't repeat
+   * the warning.
    */
   private readonly warnedModuleNames = new Set<string>();
 
@@ -426,8 +426,8 @@ export class Project {
       appendDiagnostics(component, [...validateExtendsTarget(component), ...validateModuleReExportNames(component)]);
     }
 
-    // Keyed by moduleName, which is unique here since it's the barrel's export
-    // name.
+    // Keyed by moduleName, which is unique here since it's the barrel's
+    // export name.
     const components: ComponentDocs = new Map();
     const exportEntries = Object.entries(exports);
     for (const entry of exportEntries) {

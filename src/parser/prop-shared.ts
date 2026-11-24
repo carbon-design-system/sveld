@@ -27,8 +27,8 @@ export function resolveTypeSource({
 
 export interface ResolvePropTypeAndDocsInput {
   /**
-   * A legacy `: T` annotation, or the matching `$props()` type-literal
-   * member.
+   * A legacy `: T` annotation, or the matching `$props()`
+   * type-literal member.
    */
   explicitType?: string;
   /**
@@ -57,8 +57,8 @@ export interface ResolvePropTypeAndDocsInput {
   initializerIsFunction: boolean;
   isFunctionDeclaration: boolean;
   /**
-   * A prop typed as a `@typedef` with no description of its own takes the
-   * typedef's.
+   * A prop typed as a `@typedef` with no description of its own takes
+   * the typedef's.
    */
   typedefs?: Map<string, { description?: string }>;
 }
@@ -135,8 +135,8 @@ export function withExplicitDefault(ctx: ParserContext, propName: string, jsdoc:
 }
 
 /**
- * The fields a prop copies verbatim from its own JSDoc block, in prop key
- * order.
+ * The fields a prop copies verbatim from its own JSDoc block, in prop
+ * key order.
  */
 export function propJsDocFields(jsdoc: NodeJsDoc | undefined) {
   return {

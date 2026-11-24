@@ -15,8 +15,8 @@ const LEADING_DIGIT_REGEX = /^[0-9]/;
 /**
  * Makes a file-derived name a valid `.d.ts` identifier: strips invalid
  * characters (`my.component.svelte`) and prefixes `_` before a leading
- * digit (`3d-model.svelte`). Warns on rename, once per name when given
- * `warned`.
+ * digit (`3d-model.svelte`). Warns on rename, once per name when
+ * given `warned`.
  */
 function sanitizeModuleName(rawModuleName: string, warned?: Set<string>): string {
   const stripped = rawModuleName.replace(INVALID_MODULE_NAME_CHAR_REGEX, "");
@@ -38,8 +38,8 @@ export type ComponentEntry = [string, ParsedExports[string]];
 /**
  * `exports` holds the barrel's exported components (JSON/Markdown);
  * `allComponentEntries` adds glob-discovered ones (`.d.ts`). It's a list,
- * not a map keyed by `moduleName`, so two files sharing a basename both
- * survive.
+ * not a map keyed by `moduleName`, so two files sharing a basename
+ * both survive.
  */
 export interface CollectedComponents {
   exports: ParsedExports;
@@ -105,8 +105,8 @@ function globComponentSources(graph: ModuleGraph, rootDir: string): GlobbedCompo
 }
 
 /**
- * True when an export `source` still needs glob resolution, like
- * `export { X } from "./dir"`.
+ * True when an export `source` still needs glob resolution,
+ * like `export { X } from "./dir"`.
  */
 function isUnresolvedBarrelSource(source: string): boolean {
   return !hasSvelteExtension(source);

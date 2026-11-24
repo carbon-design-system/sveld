@@ -7,8 +7,8 @@ const SLUG_SPACE_REGEX = /\s+/g;
 const TOC_PLACEHOLDER = "<!-- __TOC__ -->";
 
 /**
- * Mirrors GitHub's heading slugger, including `-1`, `-2`, ... suffixes for
- * duplicates.
+ * Mirrors GitHub's heading slugger, including `-1`, `-2`, ... suffixes
+ * for duplicates.
  */
 function slugifyHeading(raw: string, seen: Map<string, number>): string {
   const slug = raw
@@ -129,8 +129,8 @@ export class MarkdownDocument {
     const toc = this.toc
       .map(({ indent, raw }) => `${" ".repeat(indent)}- [${raw}](#${slugifyHeading(raw, seenAnchors)})`)
       .join("\n");
-    // Not `String#replace`: a heading containing `$&` must be inserted
-    // verbatim.
+    // Not `String#replace`: a heading containing `$&` must be
+    // inserted verbatim.
     return source.slice(0, at) + toc + source.slice(at + TOC_PLACEHOLDER.length);
   }
 }

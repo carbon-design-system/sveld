@@ -29,8 +29,8 @@ const LINE_BREAK_REGEX = /\s*\n\s*/g;
 // word-edge `_`.
 const CODE_ESCAPE_REGEX = /&(?=#?\w+;)|<(?=[A-Za-z/!?])|[|`*]|\\(?=[!-/:-@[-`{-~])|(?<![A-Za-z0-9])_|_(?![A-Za-z0-9])/g;
 /**
- * Any character {@link CODE_ESCAPE_REGEX} may encode, for a fast no-op
- * check.
+ * Any character {@link CODE_ESCAPE_REGEX} may encode, for a fast
+ * no-op check.
  */
 const CODE_ESCAPE_CHAR_REGEX = /[&<|`*\\_]/;
 
@@ -58,8 +58,8 @@ function codeCell(text: string): string {
 const JSDOC_LINK_REGEX = /\{@link\s+([^{}\s|]+)(?:\|([^{}]+))?\}/g;
 
 /**
- * `{@link target|text}` to `[text](target)`. JSON and `.d.ts` keep the tag
- * verbatim.
+ * `{@link target|text}` to `[text](target)`. JSON and `.d.ts` keep the
+ * tag verbatim.
  */
 function rewriteJsDocLinks(text: string): string {
   if (!text.includes("{@link")) return text;
@@ -85,8 +85,8 @@ function proseText(text: string): string {
 }
 
 /**
- * A code fence opening line, capturing its indent, marker, and info
- * string.
+ * A code fence opening line, capturing its indent, marker, and
+ * info string.
  */
 const FENCE_OPEN_REGEX = /^([ \t]*)(`{3,}|~{3,})(.*)$/;
 const LEADING_NEWLINE_REGEX = /^\n/;
@@ -163,8 +163,8 @@ export function formatPropType(type?: string) {
 }
 
 /**
- * A re-export has no `type` of its own, so it shows `typeof import(...)`
- * instead.
+ * A re-export has no `type` of its own, so it shows
+ * `typeof import(...)` instead.
  */
 export function formatExportType(prop: Pick<ComponentProp, "type" | "reExport">) {
   if (!prop.reExport) return formatPropType(prop.type);
@@ -204,8 +204,8 @@ export function formatSlotFallback(fallback?: string) {
 }
 
 /**
- * The description, then one line per tag (`@since 1.2.0`), as one table
- * cell.
+ * The description, then one line per tag (`@since 1.2.0`), as one
+ * table cell.
  */
 export function formatDescriptionWithTags(description?: string, tags?: Array<{ name: string; body: string }>) {
   const parts: CellPart[] = [];

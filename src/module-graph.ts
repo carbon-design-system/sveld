@@ -51,8 +51,8 @@ function isPathSpecifier(specifier: string): boolean {
  * The files one project reads besides its components: specifier resolution
  * and parses, cached for one build or watch session so nothing leaks into
  * the next. Export lookups (`module-exports.ts`) are cached per lookup
- * instead, since an import cycle leaves one lookup's view of a module
- * incomplete.
+ * instead, since an import cycle leaves one lookup's view of a
+ * module incomplete.
  */
 export class ModuleGraph {
   readonly aliases = new PathAliases();
@@ -60,8 +60,8 @@ export class ModuleGraph {
   /** From the TypeScript-aware parser. */
   private readonly modules = new Map<string, ParsedModule>();
   /**
-   * The last plain-JavaScript AST per file, reused while its source is
-   * unchanged.
+   * The last plain-JavaScript AST per file, reused while its source
+   * is unchanged.
    */
   private readonly programs = new Map<string, { source: string; ast: Program }>();
 
@@ -120,8 +120,8 @@ export class ModuleGraph {
   }
 
   /**
-   * Plain JavaScript, as a component barrel is read (TypeScript syntax
-   * throws).
+   * Plain JavaScript, as a component barrel is read (TypeScript
+   * syntax throws).
    */
   parseJavaScript(filePath: string, source: string): Program {
     const cached = this.programs.get(filePath);
@@ -137,8 +137,8 @@ export class ModuleGraph {
   }
 
   /**
-   * Also forgets every directory listing: an edit can add or remove files
-   * anywhere.
+   * Also forgets every directory listing: an edit can add or remove
+   * files anywhere.
    */
   invalidate(...filePaths: string[]): void {
     this.listings.clear();

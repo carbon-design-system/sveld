@@ -81,8 +81,8 @@ async function defaultImportTs(cwd: string): Promise<TypeScriptLoadResult> {
  * Loaded only when `checkExamples` has plain TS/JS examples to check.
  */
 export class TypeResolver {
-  // Assigned in `create()`, after `createFileSystem()` can close over
-  // `this`.
+  // Assigned in `create()`, after `createFileSystem()` can close
+  // over `this`.
   private api: TS = null;
   private usesFileSystemLayer = false;
   private readonly tsconfigPath: string;

@@ -17,8 +17,8 @@ export interface ExampleCheckSource {
    */
   id: string;
   /**
-   * Human-readable name shown in diagnostics, e.g. `"variant"` or
-   * `"variant (example 2)"`.
+   * Human-readable name shown in diagnostics, e.g. `"variant"`
+   * or `"variant (example 2)"`.
    */
   name: string;
   /**
@@ -60,8 +60,8 @@ function extractCheckableCode(body: string): Pick<ExampleCheckSource, "kind" | "
 }
 
 /**
- * The type sveld declares the documented symbol as before running its
- * examples.
+ * The type sveld declares the documented symbol as before running
+ * its examples.
  */
 function typeForProp(prop: ComponentProp): string {
   if (!prop.isFunction) return "any";

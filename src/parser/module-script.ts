@@ -42,8 +42,8 @@ function addModuleExport(ctx: ParserContext, prop_name: string, data: ComponentP
  */
 function addModuleReExport(ctx: ParserContext, node: Node, name: string, reExport: ComponentPropReExport) {
   const jsdocInfo = processNodeJSDoc(ctx, node);
-  // Each `export * from` shares the name "*", so key those by source
-  // instead.
+  // Each `export * from` shares the name "*", so key those by
+  // source instead.
   addModuleExport(ctx, name === "*" ? `* from ${reExport.from}` : name, {
     name,
     kind: "re-export",
@@ -166,8 +166,8 @@ function addModuleDeclarationExports(
 }
 
 /**
- * The top-level `{#snippet name(...)}`, the only kind a module script can
- * export.
+ * The top-level `{#snippet name(...)}`, the only kind a module script
+ * can export.
  */
 function findTopLevelSnippet(ctx: ParserContext, name: string): AST.SnippetBlock | undefined {
   return ctx.parsed?.fragment.nodes.find(

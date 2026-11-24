@@ -22,8 +22,8 @@ const TS_DIRECTIVE_REGEX = /\/\/(?<!^[ \t]*\*.*\/\/)\s*@ts-[^\n\r]*/gm;
 function stripTypeScriptDirectivesFromScripts(source: string): string {
   if (!source.includes("@ts-")) return source;
 
-  // lexComponent's offsets, like parse's, don't count a leading byte order
-  // mark.
+  // lexComponent's offsets, like parse's, don't count a leading byte
+  // order mark.
   const bom = source.charCodeAt(0) === 0xfeff ? 1 : 0;
   const { instance, module } = lexComponent(source);
   const scripts = [instance, module]
@@ -41,8 +41,8 @@ function stripTypeScriptDirectivesFromScripts(source: string): string {
 }
 
 /**
- * Parses `source` into a fresh `ctx` and collects what the walks read up
- * front.
+ * Parses `source` into a fresh `ctx` and collects what the walks read
+ * up front.
  */
 export function prepareComponent(ctx: ParserContext, source: string, filePath: string): void {
   ctx.componentFilePath = filePath;

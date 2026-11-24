@@ -202,8 +202,8 @@ const svg_tag_map = {
 } satisfies Record<string, string>;
 
 /**
- * MathML tags from TypeScript's `lib.dom.d.ts`; each one's DOM type is
- * `MathMLElement`.
+ * MathML tags from TypeScript's `lib.dom.d.ts`; each one's DOM type
+ * is `MathMLElement`.
  */
 const MATHML_TAGS = new Set([
   "a",
@@ -253,8 +253,8 @@ function lookup(map: Record<string, string>, tag: string): string | undefined {
  * The DOM type of an element. A tag more than one namespace defines (`a`,
  * `title`) reads from `namespace`; an SVG- or MathML-only tag (`path`,
  * `mfrac`) keeps its namespace even outside `<svg>` or `<math>`, since
- * Svelte creates it there. HTML inside MathML (`<mtext><span>`) is still
- * HTML.
+ * Svelte creates it there. HTML inside MathML (`<mtext><span>`) is
+ * still HTML.
  */
 export function getElementByTag(element: string, namespace: ElementNamespace = "html"): string {
   if (namespace === "svg") return lookup(svg_tag_map, element) ?? "SVGElement";

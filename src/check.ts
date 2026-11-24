@@ -31,8 +31,8 @@ const HTML_ELEMENT_SUBTYPE_REGEX = /^HTML\w+Element$|^HTMLElementTagNameMap\[[\w
 /** An `SVGElement` subtype: `SVGCircleElement`. */
 const SVG_ELEMENT_SUBTYPE_REGEX = /^SVG\w+Element$/;
 /**
- * Runs of word characters: the same boundary a typedef name needs in a
- * type.
+ * Runs of word characters: the same boundary a typedef name needs in
+ * a type.
  */
 const IDENTIFIER_REGEX = /[\w$]+/g;
 
@@ -59,8 +59,8 @@ export interface ApiChange {
   component: string;
   kind: "component" | "prop" | "moduleExport" | "event" | "slot" | "context" | "typedef" | "shape" | "schema";
   /**
-   * Prop, event, slot, context key, typedef, or shape-field name, when
-   * applicable.
+   * Prop, event, slot, context key, typedef, or shape-field name,
+   * when applicable.
    */
   name?: string;
   /**
@@ -204,8 +204,8 @@ function paramType(param: string): string | undefined {
  * it writes the params and reads the return. Otherwise the consumer writes
  * the function (a callback prop): it reads the params and writes the
  * return. Removing a param is breaking either way. A new param is additive
- * for a callback, which can ignore it, and for a call only when it's
- * optional.
+ * for a callback, which can ignore it, and for a call only when
+ * it's optional.
  */
 function classifyFunctionTypeChange(
   oldFn: ParsedFunctionType,
@@ -274,8 +274,8 @@ function parseArrayType(type: string): ParsedArrayType | undefined {
     return { readonly: isReadonly, elements, tuple: true };
   }
 
-  // `A | B[]` is `A | (B[])`, so the element can't have a top-level space or
-  // operator.
+  // `A | B[]` is `A | (B[])`, so the element can't have a top-level space
+  // or operator.
   if (!text.endsWith("[]")) return undefined;
   const element = text.slice(0, -2);
   if (element === "" || indexOfTopLevel(element, " |&") !== -1) return undefined;
@@ -329,8 +329,8 @@ function classifyObjectChange(oldType: string, newType: string, readOnly: boolea
       bump = maxBump(bump, newMember.optional === readOnly ? "major" : "minor");
     }
     // Code that assigns to a member it read breaks when the member becomes
-    // readonly. Assignability ignores `readonly`, so a written type doesn't
-    // care.
+    // readonly. Assignability ignores `readonly`, so a written type
+    // doesn't care.
     if (readOnly && oldMember.readonly !== newMember.readonly) {
       bump = maxBump(bump, newMember.readonly ? "major" : "minor");
     }
@@ -367,22 +367,22 @@ function classifyTypeChange(
   if (wholeBump !== undefined) return wholeBump;
 
   // A DOM element subtype next to its supertype adds nothing, so dropping
-  // `HTMLTableElement` from `HTMLElement | HTMLTableElement` isn't a
-  // narrowing.
+  // `HTMLTableElement` from `HTMLElement | HTMLTableElement` isn't
+  // a narrowing.
   return classifyMemberSetChange(splitUnionMembers(oldType), splitUnionMembers(newType), readOnly);
 }
 
 /**
  * A union that gains a member is additive where the consumer writes the
- * type, and breaking where the consumer reads it. A lost member is the
- * reverse.
+ * type, and breaking where the consumer reads it. A lost member is
+ * the reverse.
  */
 function classifyMemberSetChange(oldMembers: Set<string>, newMembers: Set<string>, readOnly: boolean): SemverBump {
   const gained = [...newMembers].filter((member) => !oldMembers.has(member) && !isCoveredBy(member, oldMembers));
   const lost = [...oldMembers].filter((member) => !newMembers.has(member) && !isCoveredBy(member, newMembers));
 
-  // One member changed in place, such as the object in
-  // `boolean | { a?: number }`.
+  // One member changed in place, such as the object
+  // in `boolean | { a?: number }`.
   if (gained.length === 1 && lost.length === 1) {
     const pairBump = classifyCoreChange(lost[0], gained[0], readOnly);
     if (pairBump !== undefined) return pairBump;
@@ -430,8 +430,8 @@ function matchByKey<T>(oldItems: T[], newItems: T[], key: (item: T) => string) {
 }
 
 /**
- * Records a change to one named item of `component`, as
- * `` `${label} "${name}" ${change}` ``.
+ * Records a change to one named item of `component`,
+ * as `` `${label} "${name}" ${change}` ``.
  */
 function changeRecorder(changes: ApiChange[], component: string, kind: ApiChange["kind"], label: string) {
   return (name: string, bump: SemverBump, change: string) =>
@@ -587,8 +587,8 @@ function describeContextType(context: Context): string {
 /**
  * A context is read by `getContext`, so removing a property or changing
  * its type is breaking and adding one is not. A type change is classified
- * the same way as an event's `detail`: a union that gains a member is
- * breaking.
+ * the same way as an event's `detail`: a union that gains a member
+ * is breaking.
  */
 function diffContexts(component: string, oldContexts: Context[] = [], newContexts: Context[] = []): ApiChange[] {
   const changes: ApiChange[] = [];
@@ -673,8 +673,8 @@ function stripNonSemanticFields(value: unknown): unknown {
 /**
  * Fields not covered by
  * `diffPropList`/`diffEvents`/`diffSlots`/`diffContexts`/`diffTypedefs`.
- * Any change is breaking, except new `rest_props` on a component that had
- * none.
+ * Any change is breaking, except new `rest_props` on a component that
+ * had none.
  */
 const SHAPE_FIELDS = ["generics", "rest_props", "extends"] as const;
 
@@ -685,8 +685,8 @@ function diffShape(component: string, oldComponent: ComponentDocApi, newComponen
     const oldJson = JSON.stringify(stripNonSemanticFields(oldComponent[field]));
     const newJson = JSON.stringify(stripNonSemanticFields(newComponent[field]));
     if (oldJson === newJson) continue;
-    // Rest props only add attributes a caller may pass; own props keep their
-    // types.
+    // Rest props only add attributes a caller may pass; own props keep
+    // their types.
     if (field === "rest_props" && oldComponent.rest_props === undefined) {
       changes.push({ component, kind: "shape", name: field, bump: "minor", message: `"${field}" added` });
       continue;
@@ -904,8 +904,8 @@ export interface RunCheckOptions {
 
 /**
  * Resolves the snapshot path for `check`: an explicit string wins,
- * otherwise it falls back to the `json` writer's `outFile`, or
- * `COMPONENT_API.json`.
+ * otherwise it falls back to the `json` writer's `outFile`,
+ * or `COMPONENT_API.json`.
  */
 export function resolveCheckSnapshotFile(options: Pick<SveldRuntimeOptions, "check" | "jsonOptions">): string {
   if (typeof options.check === "string") return options.check;
@@ -1014,8 +1014,8 @@ export function formatCheckReport(result: CheckResult): string {
 export const CHECK_REPORT_SCHEMA_VERSION = 1;
 
 /**
- * `CheckResult`, serialized for stream consumers with a `kind`
- * discriminator.
+ * `CheckResult`, serialized for stream consumers with a
+ * `kind` discriminator.
  */
 export type CheckReportJson = CheckResult & { kind: "check-report"; schemaVersion: typeof CHECK_REPORT_SCHEMA_VERSION };
 

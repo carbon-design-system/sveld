@@ -48,8 +48,8 @@ export interface SveldRuntimeOptions extends PluginSveldOptions {
    * `"github"` prints the text report and summary, preceded by one GitHub
    * Actions annotation per diagnostic (`::warning file=...::message`), so
    * findings appear on the pull request's diff. Annotation paths are
-   * relative to `GITHUB_WORKSPACE`, or the working directory when it isn't
-   * set.
+   * relative to `GITHUB_WORKSPACE`, or the working directory when it
+   * isn't set.
    */
   format?: "text" | "json" | "github";
 }

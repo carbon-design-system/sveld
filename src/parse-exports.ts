@@ -14,8 +14,8 @@ export type ParsedExports = Record<
     mixed?: boolean;
     /**
      * The export's name in `source` when it differs from its key, as in
-     * `export { add as addTab } from "./model.js"`. Absent for a default
-     * export.
+     * `export { add as addTab } from "./model.js"`. Absent for a
+     * default export.
      */
     imported?: string;
     /**
@@ -36,8 +36,8 @@ function moduleExportName(node: Identifier | StringLiteral): string {
  * Parses the exports of the module a non-`.svelte` re-export
  * (`export { X } from "./barrel"`) resolves to. `null` when it resolves to
  * no file, so callers warn. Empty (callers record the literal specifier)
- * on an import cycle or when the module isn't plain JS, e.g.
- * TypeScript-only.
+ * on an import cycle or when the module isn't plain JS,
+ * e.g. TypeScript-only.
  */
 function resolveBarrelExports(
   graph: ModuleGraph,
@@ -196,8 +196,8 @@ function readExports(
         }
       }
     } else if (node.type === "ImportDeclaration") {
-      // Only the first specifier is read, since `import "./styles.css"` binds
-      // nothing.
+      // Only the first specifier is read, since `import "./styles.css"`
+      // binds nothing.
       const first = node.specifiers[0];
       if (!first) continue;
       const id = first.local.name;
