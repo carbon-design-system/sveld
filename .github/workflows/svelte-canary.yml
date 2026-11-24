@@ -1,4 +1,4 @@
-name: svelte canary
+name: Svelte canary
 
 # Early warning for sveld's analysis: svelte ships new template syntax in
 # minor releases (<svelte:boundary> in 5.3, {@attach} in 5.29), so this runs
@@ -16,6 +16,7 @@ on:
 jobs:
   canary:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     permissions:
       contents: read
@@ -31,15 +32,15 @@ jobs:
         run: bun ci
 
       - name: Upgrade to the newest svelte
-        run: |
-          bun add --dev svelte@latest
-          echo "svelte version:"
-          grep '"version"' node_modules/svelte/package.json
+        run: bun add --dev svelte@latest
 
-      - name: Full unit tests
+      - name: Print the svelte version
+        run: grep '"version"' node_modules/svelte/package.json
+
+      - name: Run the unit tests
         run: bun run test
 
-      - name: Open or update issue on failure
+      - name: Open or update an issue on failure
         if: failure()
         env:
           GH_TOKEN: ${{ github.token }}

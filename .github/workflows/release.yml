@@ -2,7 +2,7 @@
 # Currently, only npm supports publishing packages with provenance
 # https://docs.npmjs.com/generating-provenance-statements
 
-name: Publish to NPM
+name: Publish to npm
 
 on:
   push:
@@ -12,6 +12,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
       id-token: write
@@ -32,7 +33,7 @@ jobs:
       - name: Build package
         run: bun run build
 
-      - name: Publish package
+      - name: Publish to npm
         working-directory: dist
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
