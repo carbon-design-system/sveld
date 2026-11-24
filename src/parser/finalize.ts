@@ -37,7 +37,7 @@ import { normalizeRunesCallbackProps, registerTypedDispatcherEvents } from "./ru
 import { DEFAULT_SLOT_NAME } from "./slots";
 import { sourceForExpression, sourceRangeFromNode, sourceRangeFromOffsets } from "./source-position";
 import { buildPendingCrossFileCandidates, buildTypeScriptMetadata } from "./type-resolution";
-import { escapeRegExp } from "./utils";
+import { containsWord, escapeRegExp } from "./utils";
 import { importedBindingByName, importedCalleeBinding } from "./value-imports";
 import { resolveLocalVarJSDoc } from "./variable-jsdoc";
 
@@ -277,7 +277,7 @@ function resolveGenerics(ctx: ParserContext, props: ComponentProp[], slots: Comp
       ...slots.map((slot) => slot.slot_props ?? ""),
     ].join("\n");
     for (const { name, constraint } of ctx.deferredSlotBlockGenerics) {
-      if (!new RegExp(`\\b${escapeRegExp(name)}\\b`).test(referencedTypeText)) continue;
+      if (!containsWord(referencedTypeText, name)) continue;
       accumulateGeneric(ctx, name, constraint);
     }
   }
