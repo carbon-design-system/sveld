@@ -2,7 +2,7 @@ import type { AST, Program } from "svelte-ast";
 import { isReference, SKIP, STOP, walk } from "svelte-ast/walk";
 import type { SyntaxMode } from "../model";
 import type { ParserContext } from "./context";
-import { collectPatternIdentifiers, isScopeOwner } from "./scopes";
+import { collectPatternIdentifiers, isScopeOwner, type ScopeOwnerNode } from "./scopes";
 import { isTypeOnlySubtree } from "./walk";
 
 // A dotted form (`$state.raw`) is a `MemberExpression` whose object is
@@ -53,7 +53,7 @@ function isShadowed(name: string, scopeStack: ScopeStack): boolean {
   return false;
 }
 
-function collectScopeOwnerNames(node: AST.SvelteNode): Set<string> {
+function collectScopeOwnerNames(node: ScopeOwnerNode): Set<string> {
   const names = new Set<string>();
   switch (node.type) {
     case "FunctionDeclaration":
@@ -95,6 +95,36 @@ function collectDirectBlockNames(body: Program["body"] | undefined, names: Set<s
         break;
       case "ExportNamedDeclaration":
         if (statement.declaration) collectDirectBlockNames([statement.declaration], names);
+        break;
+      case "BlockStatement":
+      case "BreakStatement":
+      case "ContinueStatement":
+      case "DebuggerStatement":
+      case "DoWhileStatement":
+      case "EmptyStatement":
+      case "ExportAllDeclaration":
+      case "ExportDefaultDeclaration":
+      case "ExpressionStatement":
+      case "ForInStatement":
+      case "ForOfStatement":
+      case "ForStatement":
+      case "IfStatement":
+      case "LabeledStatement":
+      case "ReturnStatement":
+      case "StaticBlock":
+      case "SwitchStatement":
+      case "ThrowStatement":
+      case "TryStatement":
+      case "TSDeclareFunction":
+      case "TSEnumDeclaration":
+      case "TSExportAssignment":
+      case "TSImportEqualsDeclaration":
+      case "TSInterfaceDeclaration":
+      case "TSModuleDeclaration":
+      case "TSNamespaceExportDeclaration":
+      case "TSTypeAliasDeclaration":
+      case "WhileStatement":
+      case "WithStatement":
         break;
     }
   }

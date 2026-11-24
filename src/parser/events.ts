@@ -1,5 +1,12 @@
-import type { ArrayExpression, CallExpression, ObjectExpression, Property } from "svelte-ast";
-import { getPropertyName, isIdentifier, isLiteral, isNewExpressionNamed, isObjectExpression } from "../ast-guards";
+import type { ArrayExpression, CallExpression, ObjectExpression } from "svelte-ast";
+import {
+  getPropertyName,
+  isIdentifier,
+  isLiteral,
+  isNewExpressionNamed,
+  isObject,
+  isObjectExpression,
+} from "../ast-guards";
 import type { DispatchedEvent } from "../model";
 import type { ParserContext } from "./context";
 import { inferVariableInitializerType, literalValueType } from "./props";
@@ -10,6 +17,10 @@ import { findTrackedVariableType } from "./variable-jsdoc";
 
 const NEWLINES_REGEX = /\n/g;
 const IDENTIFIER_REGEX = /^[A-Za-z_$][\w$]*$/;
+
+function isArrayExpression(node: unknown): node is ArrayExpression {
+  return isObject(node) && node.type === "ArrayExpression" && Array.isArray(node.elements);
+}
 
 /**
  * How {@link deriveLiteralDetailType} types identifiers: via the
@@ -53,8 +64,8 @@ export function detailNamesBoundInNestedScope(
     for (const property of node.properties) {
       if (property.type === "Property") found = detailNamesBoundInNestedScope(ctx, property.value, found);
     }
-  } else if (node.type === "ArrayExpression") {
-    for (const element of (node as ArrayExpression).elements) {
+  } else if (isArrayExpression(node)) {
+    for (const element of node.elements) {
       found = detailNamesBoundInNestedScope(ctx, element, found);
     }
   }
@@ -74,7 +85,7 @@ function deriveDetailType(source: DetailTypeSource, node: unknown): string | und
 export function deriveLiteralDetailType(source: DetailTypeSource, node: unknown): string | undefined {
   if (!node || typeof node !== "object" || !("type" in node)) return undefined;
   if (isObjectExpression(node)) return buildObjectLiteralDetailType(source, node);
-  if (node.type === "ArrayExpression") return buildArrayLiteralDetailType(source, node as ArrayExpression);
+  if (isArrayExpression(node)) return buildArrayLiteralDetailType(source, node);
   return undefined;
 }
 
@@ -104,8 +115,7 @@ function buildObjectLiteralDetailType(source: DetailTypeSource, node: ObjectExpr
   const properties: Array<{ name: string; type: string }> = [];
   let hasUnknownMembers = false;
   for (const property of node.properties) {
-    const name =
-      property.type === "Property" && !property.computed ? getPropertyName(property.key as Property["key"]) : undefined;
+    const name = property.type === "Property" && !property.computed ? getPropertyName(property.key) : undefined;
     if (property.type !== "Property" || !name) {
       hasUnknownMembers = true;
       continue;

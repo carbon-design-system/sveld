@@ -3,13 +3,7 @@
  * events, slot prop types, generics), record the diagnostics that need
  * the whole component, and build the {@link ParsedComponent}.
  */
-import {
-  type CallExpression,
-  type ConditionalExpression,
-  isValidType as isOneType,
-  type Literal,
-  type TemplateLiteral,
-} from "svelte-ast";
+import { type CallExpression, isValidType as isOneType } from "svelte-ast";
 import { getElementByTag } from "../element-tag-map";
 import type {
   ComponentContext,
@@ -69,21 +63,20 @@ interface DispatchEventNames {
   dynamic: boolean;
 }
 
-function collectDispatchEventNames(node: unknown, out: DispatchEventNames) {
-  if (!node || typeof node !== "object" || !("type" in node)) {
+function collectDispatchEventNames(node: CallExpression["arguments"][number] | undefined, out: DispatchEventNames) {
+  if (!node) {
     out.dynamic = true;
     return;
   }
   if (node.type === "Literal") {
-    const { value } = node as Literal;
+    const { value } = node;
     if (typeof value === "string" || typeof value === "number") out.names.push(String(value));
     else out.dynamic = true;
   } else if (node.type === "ConditionalExpression") {
-    const conditional = node as ConditionalExpression;
-    collectDispatchEventNames(conditional.consequent, out);
-    collectDispatchEventNames(conditional.alternate, out);
+    collectDispatchEventNames(node.consequent, out);
+    collectDispatchEventNames(node.alternate, out);
   } else if (node.type === "TemplateLiteral") {
-    const quasis = (node as TemplateLiteral).quasis.map((quasi) => quasi.value.cooked ?? quasi.value.raw);
+    const quasis = node.quasis.map((quasi) => quasi.value.cooked ?? quasi.value.raw);
     if (quasis.length === 1) out.names.push(quasis[0]);
     else out.patterns.push(new RegExp(`^${quasis.map(escapeRegExp).join("[^]*")}$`));
   } else {
@@ -228,20 +221,22 @@ function buildSlots(ctx: ParserContext): ComponentSlot[] {
   return mapToArray(ctx.slots)
     .map((slot) => {
       const { slot_props_unresolved_spread, ...publicSlot } = slot;
+      const { slot_props } = slot;
 
       // JSDoc `@slot`/`@snippet` tags are already TS type text; template parsing
       // yields a SlotProps map.
-      if (!slot.slot_props) {
-        return publicSlot as ComponentSlot;
+      if (!slot_props) {
+        return { ...publicSlot, slot_props };
       }
-      if (typeof slot.slot_props === "string") {
-        return EMPTY_OBJECT_TYPE_REGEX.test(slot.slot_props)
-          ? { ...publicSlot, slot_props: "Record<string, never>" }
-          : (publicSlot as ComponentSlot);
+      if (typeof slot_props === "string") {
+        return {
+          ...publicSlot,
+          slot_props: EMPTY_OBJECT_TYPE_REGEX.test(slot_props) ? "Record<string, never>" : slot_props,
+        };
       }
 
       const new_props: string[] = [];
-      for (const [key, slotProp] of Object.entries(slot.slot_props)) {
+      for (const [key, slotProp] of Object.entries(slot_props)) {
         if (slotProp.replace && slotProp.value !== undefined) {
           slotProp.value = getPropTypeByLocalOrPublic(ctx, slotProp.value);
         }

@@ -1,3 +1,4 @@
+import { isObject } from "../ast-guards";
 import type {
   ComponentPropBinding,
   ComponentPropParam,
@@ -248,13 +249,14 @@ function findAdjacentJSDocComment(
 
   for (let index = leadingComments.length - 1; index >= 0; index--) {
     const comment = leadingComments[index];
-    if (!comment || typeof comment !== "object" || !("value" in comment) || !("end" in comment)) continue;
-    if (typeof comment.end !== "number" || !("start" in comment) || typeof comment.start !== "number") continue;
+    if (!isObject(comment) || typeof comment.value !== "string") continue;
+    const { value, start, end } = comment;
+    if (typeof start !== "number" || typeof end !== "number") continue;
     // A `//` line or plain `/* *\/` block (e.g. a lint suppression) isn't the
     // doc comment.
-    if (("type" in comment && comment.type === "Line") || !String(comment.value).startsWith("*")) continue;
+    if (comment.type === "Line" || !value.startsWith("*")) continue;
 
-    if (isJsDocGap(ctx.source, comment.end, nodeStart)) return comment as LeadingJSDocComment;
+    if (isJsDocGap(ctx.source, end, nodeStart)) return { value, start, end };
   }
 
   return undefined;
@@ -267,8 +269,7 @@ const FUNCTION_EXPRESSION_TYPES = new Set(["ArrowFunctionExpression", "FunctionE
 // that's a prop, so its `@template` still declares a component generic.
 export function functionDocCommentStarts(ctx: ParserContext): Set<number> {
   const starts = new Set<number>();
-  const addDocumented = (node: unknown) => {
-    const { leadingComments, start } = node as { leadingComments?: unknown[]; start?: number };
+  const addDocumented = ({ leadingComments, start }: { leadingComments?: unknown[]; start?: number }) => {
     const comment = findAdjacentJSDocComment(ctx, leadingComments, start);
     if (comment) starts.add(comment.start);
   };

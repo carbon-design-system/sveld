@@ -4,6 +4,7 @@ import {
   isComponentLikeType,
   isElementLikeType,
   isIdentifier,
+  isObject,
   isObjectExpression,
   unwrapTypeCastExpression,
 } from "../ast-guards";
@@ -26,8 +27,8 @@ function createRestPropsFromParent(parent: unknown): RestProps {
   const restProps: ComponentElement = { type: "Element", name: parentName };
   // `<svelte:element this="div">` has a static `Literal` tag;
   // `this={expr}` doesn't.
-  if (parentName === "svelte:element" && "tag" in parent && parent.tag && typeof parent.tag === "object") {
-    const tag = parent.tag as { type?: string; value?: unknown };
+  if (parentName === "svelte:element" && "tag" in parent && isObject(parent.tag)) {
+    const { tag } = parent;
     if (tag.type === "Literal" && typeof tag.value === "string") restProps.thisValue = tag.value;
   }
   return restProps;
@@ -52,7 +53,11 @@ export function maybeSetRestProps(ctx: ParserContext, parent: unknown, spread: A
 
 function restPropsSpreadIn(ctx: ParserContext, init: Expression | null | undefined): string | undefined {
   let value = unwrapTypeCastExpression(init);
-  if (isCallExpressionNamed(value, "$derived")) value = unwrapTypeCastExpression(value.arguments[0] as Expression);
+  if (isCallExpressionNamed(value, "$derived")) {
+    const [argument] = value.arguments;
+    // A spread argument (`$derived(...args)`) can't be an object literal.
+    value = argument?.type === "SpreadElement" ? undefined : unwrapTypeCastExpression(argument);
+  }
   if (!isObjectExpression(value)) return undefined;
 
   for (const property of value.properties) {

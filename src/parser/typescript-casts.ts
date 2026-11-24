@@ -50,7 +50,7 @@ export function stripTypeCastWrappers(root: AST.SvelteNode | undefined, casts: T
       } else if (outer !== undefined) {
         casts.typeAssertions.set(expression, outer);
       } else if ((node.type === "TSAsExpression" || node.type === "TSTypeAssertion") && "typeAnnotation" in node) {
-        casts.typeAssertions.set(expression, node.typeAnnotation as TSNode);
+        casts.typeAssertions.set(expression, node.typeAnnotation);
       }
       return expression;
     },

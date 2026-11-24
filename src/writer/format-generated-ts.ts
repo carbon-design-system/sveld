@@ -229,8 +229,9 @@ function computeBraceMatches(raw: string): Map<number, number> {
       i = close;
     } else if (c === CH_OPEN_BRACE) {
       stack.push(i);
-    } else if (c === CH_CLOSE_BRACE && stack.length > 0) {
-      matches.set(stack.pop() as number, i);
+    } else if (c === CH_CLOSE_BRACE) {
+      const open = stack.pop();
+      if (open !== undefined) matches.set(open, i);
     }
 
     i++;

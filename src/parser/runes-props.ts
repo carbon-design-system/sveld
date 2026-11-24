@@ -38,6 +38,7 @@ import {
 } from "./type-resolution";
 import { importSpecifierImportedName } from "./value-imports";
 import { resolveLocalVarJSDoc } from "./variable-jsdoc";
+import { nodeTypeGuard } from "./walk";
 
 const IDENTIFIER_AT_REGEX = /[A-Za-z_$][\w$]*/y;
 const IDENTIFIER_CHAR_REGEX = /[\w$]/;
@@ -51,6 +52,16 @@ const UNION_OR_EXTENDS_BEFORE_REGEX = /(?:\||\bextends)\s*$/;
 const UNION_OR_EXTENDS_AFTER_REGEX = /^\s*(?:\||extends\b)/;
 const TYPE_OPERATOR_PREFIX_REGEX = /^(?:keyof|readonly|unique|typeof|infer)\s/;
 const CONSTRUCTOR_TYPE_REGEX = /^(?:abstract\s+)?new\b/;
+
+// Only these type nodes can name props; any other type adds none.
+const isPropsShapeTypeNode = nodeTypeGuard([
+  "TSTypeLiteral",
+  "TSInterfaceDeclaration",
+  "TSTypeAliasDeclaration",
+  "TSParenthesizedType",
+  "TSTypeReference",
+  "TSIntersectionType",
+]);
 
 function typePrecedenceRank(type: string): number {
   const trimmed = type.trim();
@@ -218,6 +229,7 @@ function buildRunesPropTypeMetadataMap(
     for (const [propName, memberMetadata] of nested) metadata.set(propName, memberMetadata);
   };
 
+  if (!isPropsShapeTypeNode(typeNode)) return metadata;
   switch (typeNode.type) {
     case "TSTypeLiteral":
       mergeMembers(typeNode.members ?? []);
@@ -225,13 +237,13 @@ function buildRunesPropTypeMetadataMap(
     case "TSInterfaceDeclaration":
       // Inherited members first, so the interface's own members override them.
       for (const heritage of typeNode.extends ?? []) {
-        const reference = {
+        const reference: TSTypeReference = {
           type: "TSTypeReference",
           typeName: heritage.expression,
           typeArguments: heritage.typeParameters,
           start: heritage.start,
           end: heritage.end,
-        } as TSTypeReference;
+        };
         mergeNested(reference);
       }
       mergeMembers(typeNode.body?.body ?? []);
@@ -529,6 +541,7 @@ export function parseRunesPropsDeclaration(ctx: ParserContext, node: VariableDec
       if (property.value.type === "Identifier") {
         localName = property.value.name;
       } else {
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- narrowing would skip a nested pattern (`{ a: { b } }`) that now throws
         const assignmentPattern = property.value as AssignmentPattern & { left: Identifier };
         localName = assignmentPattern.left.name;
         init = assignmentPattern.right;

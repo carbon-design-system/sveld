@@ -4,7 +4,7 @@
  * props, and collects the calls that phase 4 ({@link finalizeComponent})
  * turns into dispatched events once the dispatcher's name is known.
  */
-import type { AST, CallExpression, Expression, SimpleCallExpression, TSNode } from "svelte-ast";
+import type { AST, CallExpression, Expression, SimpleCallExpression, Super, TSNode } from "svelte-ast";
 import { SKIP, type Visitor, walk as walkTree } from "svelte-ast/walk";
 import {
   isCallExpressionNamed,
@@ -44,13 +44,14 @@ import {
 } from "./slots";
 import { sourceAtPos, sourceRangeFromNode } from "./source-position";
 import { collectValueImportBindings, importedBindingByName } from "./value-imports";
-import { isTypeOnlySubtree } from "./walk";
+import { isTypeOnlySubtree, nodeTypeGuard } from "./walk";
 
 const COMPONENT_COMMENT_REGEX = /^@component/;
 const CARRIAGE_RETURN_REGEX = /\r/g;
 
-// invariant: must match the cases in `walkComponent`'s `enter`.
-const MAIN_WALK_NODE_TYPES = new Set([
+// The node types `walkComponent`'s `enter` acts on; its `switch` must
+// handle each.
+const isMainWalkNode = nodeTypeGuard([
   "AssignmentExpression",
   "UpdateExpression",
   "CallExpression",
@@ -72,7 +73,7 @@ const MAIN_WALK_NODE_TYPES = new Set([
  */
 interface NamedCall {
   name: string;
-  arguments: Array<Expression | unknown>;
+  arguments: CallExpression["arguments"];
   node: CallExpression;
   /** Detail names a nested scope binds here, read while the scopes are live. */
   nestedBoundDetailNames: Set<string> | undefined;
@@ -291,8 +292,8 @@ function bindTarget(node: AST.BindDirective): { name: string; indexed: boolean }
   if (expression.type === "Identifier") return { name: expression.name, indexed: false };
   if (expression.type !== "MemberExpression") return undefined;
 
-  let root: Expression = expression;
-  while (root.type === "MemberExpression") root = root.object as Expression;
+  let root: Expression | Super = expression;
+  while (root.type === "MemberExpression") root = root.object;
   if (root.type !== "Identifier") return undefined;
   const indexed = node.name === "this" && expression.computed && expression.object.type === "Identifier";
   return { name: root.name, indexed };
@@ -387,7 +388,7 @@ export function walkComponent(ctx: ParserContext): ComponentWalkResult {
         childNamespaces.push(name === "foreignObject" ? "html" : namespace);
       }
 
-      if (!MAIN_WALK_NODE_TYPES.has(node.type)) return;
+      if (!isMainWalkNode(node)) return;
 
       switch (node.type) {
         case "AssignmentExpression":

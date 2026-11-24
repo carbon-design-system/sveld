@@ -13,6 +13,14 @@ export function isTypeOnlySubtree(type: string): boolean {
   );
 }
 
+// A guard for the nodes whose `type` is one of `types`, so a `switch` on
+// the narrowed node must handle each of them, and only them, when the
+// full node union is too wide to list.
+export function nodeTypeGuard<const T extends string>(types: readonly T[]) {
+  const typeSet: ReadonlySet<string> = new Set(types);
+  return <N extends { type: string }>(node: N): node is Extract<N, { type: T }> => typeSet.has(node.type);
+}
+
 // `null` for a bare `return;`. Nested functions have their own
 // returns, so the walk doesn't enter them.
 export function collectReturnArguments(body: BlockStatement): Array<Expression | null> {

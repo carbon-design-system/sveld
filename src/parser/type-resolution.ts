@@ -18,6 +18,17 @@ import type { ParserContext } from "./context";
 import { extractJsDocType } from "./jsdoc";
 import { sourceAtPos } from "./source-position";
 import { compareText } from "./utils";
+import { nodeTypeGuard } from "./walk";
+
+// Only these type nodes have names `collectReferencedTypeDependencies`
+// reads off directly; it walks into any other node.
+const isTypeDependencyNode = nodeTypeGuard([
+  "TSInterfaceDeclaration",
+  "TSTypeAliasDeclaration",
+  "TSTypeAnnotation",
+  "TSTypeLiteral",
+  "TSTypeReference",
+]);
 
 export function getTypeReferenceName(typeName: EntityName): string {
   return typeName.type === "Identifier" ? typeName.name : typeName.right.name;
@@ -62,6 +73,7 @@ export function collectReferencedTypeDependencies(
   // walked as-is.
   walk(typeNode, {
     enter(node) {
+      if (!isTypeDependencyNode(node)) return;
       switch (node.type) {
         case "TSInterfaceDeclaration":
           // Each `extends B<C>` clause names a type like a reference does.

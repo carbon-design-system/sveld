@@ -47,9 +47,9 @@ function isSourceRange(value: unknown): value is { start: unknown; end: unknown 
   return isObject(value) && !Array.isArray(value) && "start" in value && "end" in value;
 }
 
-function stripSourceRanges<T>(value: T): T {
+function stripSourceRanges(value: unknown): unknown {
   if (Array.isArray(value)) {
-    return value.map((item) => stripSourceRanges(item)) as T;
+    return value.map((item) => stripSourceRanges(item));
   }
   if (isObject(value)) {
     const result: Record<string, unknown> = {};
@@ -57,7 +57,7 @@ function stripSourceRanges<T>(value: T): T {
       if ((key === "source" || key === "componentCommentSource") && isSourceRange(item)) continue;
       result[key] = stripSourceRanges(item);
     }
-    return result as T;
+    return result;
   }
   return value;
 }
@@ -116,7 +116,9 @@ export function buildJsonDocument(
       filePath: normalizeComponentFilePath(component.filePath, options.inputDir),
     })),
   };
-  return options.source === false ? stripSourceRanges(output) : output;
+  if (options.source !== false) return output;
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- the copy drops only optional source-range fields, so it keeps the document shape
+  return stripSourceRanges(output) as ComponentApiDocument;
 }
 
 export function renderJsonDocument(
