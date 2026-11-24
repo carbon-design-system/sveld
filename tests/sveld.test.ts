@@ -142,20 +142,21 @@ describe("sveld() exitCode and errors", () => {
     const result = await sveld({ entry, types: false, strict: true });
 
     expect(process.exitCode).toBe(0);
-    expect(result.exitCode).toBe(4);
+    expect(result.exitCode).toBe(1);
   });
 
-  test("result.exitCode is 2 when a component fails to parse", async () => {
+  test("result.exitCode is 1 when a component fails to parse", async () => {
     writeFileSync(join(absoluteDir, "Broken.svelte"), "<script>\n  export let label = ;\n</script>\n");
     writeFileSync(join(absoluteDir, "index.js"), 'export { default as Broken } from "./Broken.svelte";\n');
 
     const result = await sveld({ entry, types: false });
 
     expect(result.errors).toHaveLength(1);
-    expect(result.exitCode).toBe(2);
+    expect(result.exitCode).toBe(1);
+    expect(result.failures).toEqual(["parse-error"]);
   });
 
-  test("result.exitCode is 3 when --check finds a breaking change", async () => {
+  test("result.exitCode is 1 when --check finds a breaking change", async () => {
     writeFileSync(join(absoluteDir, "Button.svelte"), "<script></script>\n<button>Click</button>\n");
     writeFileSync(join(absoluteDir, "index.js"), 'export { default as Button } from "./Button.svelte";\n');
     const snapshotFile = join(relativeDir, "COMPONENT_API.json");
@@ -170,7 +171,8 @@ describe("sveld() exitCode and errors", () => {
 
     const result = await sveld({ entry, types: false, check: snapshotFile });
 
-    expect(result.exitCode).toBe(3);
+    expect(result.exitCode).toBe(1);
+    expect(result.failures).toEqual(["breaking-change"]);
   });
 
   test("result.exitCode honors checkLevel, like the CLI", async () => {
@@ -184,10 +186,10 @@ describe("sveld() exitCode and errors", () => {
 
     // An optional prop added is a minor bump: passes by default, fails at checkLevel "minor".
     expect((await sveld({ entry, types: false, check: snapshotFile })).exitCode).toBe(0);
-    expect((await sveld({ entry, types: false, check: snapshotFile, checkLevel: "minor" })).exitCode).toBe(3);
+    expect((await sveld({ entry, types: false, check: snapshotFile, checkLevel: "minor" })).exitCode).toBe(1);
   });
 
-  test("result.exitCode is 3 (not 4) when a breaking check and strict diagnostics both apply", async () => {
+  test("result.exitCode is 1, with both failures, when a breaking check and strict diagnostics both apply", async () => {
     writeFileSync(
       join(absoluteDir, "Phantom.svelte"),
       "<script>\n  /** @event {CustomEvent<null>} phantom */\n  export let label;\n</script>\n<button>{label}</button>\n",
@@ -202,7 +204,8 @@ describe("sveld() exitCode and errors", () => {
     const result = await sveld({ entry, types: false, check: snapshotFile, strict: true });
 
     expect(result.check?.bump).toBe("major");
-    expect(result.exitCode).toBe(3);
+    expect(result.exitCode).toBe(1);
+    expect(result.failures).toEqual(["breaking-change", "diagnostics"]);
   });
 
   test("result.errors is populated for a component that fails to parse", async () => {

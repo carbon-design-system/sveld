@@ -13,19 +13,27 @@ sveld has two CI gates: `--check` fails on API changes against a committed snaps
 
 ## Exit codes
 
-| Code | Meaning                                                                                                                                                    |
-| ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `0`  | Success                                                                                                                                                    |
-| `1`  | Usage or configuration error: unknown flag, bad flag value, unresolvable entry, unresolved re-export or path alias, missing or outdated `--check` snapshot |
-| `2`  | Generation failure: a component failed to parse, or an unrecoverable error. Without `--fail-fast`, the other components' output is still written.          |
-| `3`  | Breaking API change found by `--check`                                                                                                                     |
-| `4`  | Diagnostics present under `--strict`                                                                                                                       |
+| Code | Meaning |
+| ---- | ------- |
+| `0`  | Done. |
+| `1`  | Problems found: a component failed to parse (without `--fail-fast`, the other components' output is still written), a breaking API change under `--check`, diagnostics under `--strict`, or a `--check` snapshot from another `schemaVersion`. |
+| `2`  | Called wrong, or the run couldn't finish: an unknown flag or bad flag value, a missing entry, config file or `--check` snapshot, an unresolvable re-export or path alias, or an unrecoverable error. |
 
-When more than one applies, each failure is still reported and the process exits with the lowest code. `sveld()` returns the same code as `exitCode` without setting `process.exitCode`.
+Every failure that applies is reported, and `2` wins over `1`. `sveld()` returns the same code as `exitCode`, and each reason that applied as `failures` (`"parse-error"`, `"breaking-change"`, `"diagnostics"`, `"outdated-snapshot"`, `"missing-snapshot"`), without setting `process.exitCode`.
+
+With `--format=json`, an exit `2` prints one object on stdout instead of a message on stderr:
+
+```json
+{ "schemaVersion": 1, "ok": false, "error": { "kind": "usage", "message": "sveld: unknown flag \"--markdwon\". Did you mean \"--markdown\"? Run sveld --help for a list of available flags." } }
+```
+
+`kind` is `usage`, `config`, `entry`, `unresolved-module` or `failure`.
+
+Before 0.41.0, sveld exited `1` for a usage error, `2` for a generation failure, `3` for a breaking change and `4` for `--strict` diagnostics.
 
 ## API drift checks (`--check`)
 
-`--check` diffs the parsed API against a committed `COMPONENT_API.json`, assigns a semver bump to each change, and exits `3` on a breaking one.
+`--check` diffs the parsed API against a committed `COMPONENT_API.json`, assigns a semver bump to each change, and exits `1` on a breaking one.
 
 1. Generate and commit the snapshot: `npx sveld --json`, then commit `COMPONENT_API.json`.
 2. Run `npx sveld --check` in CI.
@@ -116,7 +124,7 @@ A context change names the context key and the property, one line per property:
 Marking a public member [`@internal`](jsdoc-tags.md#ignore--internal) counts as removing it. A context that is an implementation detail, like one only the library's own components read, should be tagged `@internal` on its [`setContext` call](jsdoc-tags.md#ignore--internal) so `--check` never sees it.
 
 - `--check` never writes the snapshot. To update it, run `sveld --json` (or `sveld --json --check`) and commit the file.
-- A missing snapshot exits `1`, so a mistyped path can't pass CI. The exception is `sveld --json --check`, which writes it in the same run, prints a notice, and exits `0`.
+- A missing snapshot exits `2`, so a mistyped path can't pass CI. The exception is `sveld --json --check`, which writes it in the same run, prints a notice, and exits `0`.
 - `--check=<path>` diffs against another file. The default is `jsonOptions.outFile`, or `COMPONENT_API.json`.
 - Only `major` changes fail by default. `--check-level=minor` or `--check-level=patch` lowers the threshold; lower changes are always reported.
 - A snapshot with a different `schemaVersion` isn't diffed. `--check` reports a `kind: "schema"` change and exits `1`; regenerate the snapshot with `sveld --json`.
@@ -158,7 +166,7 @@ Props without inferred types (1):
     - @event "save" has no matching dispatch or callback prop. (./Button.svelte:9:5) [sveld/event-no-source]
 ```
 
-`--strict` (`strict: true`) prints the same summary and exits `4` when any diagnostic remains. `--strict=errors` (`strict: "errors"`) fails only on `error`-severity diagnostics and lets warnings through.
+`--strict` (`strict: true`) prints the same summary and exits `1` when any diagnostic remains. `--strict=errors` (`strict: "errors"`) fails only on `error`-severity diagnostics and lets warnings through.
 
 ```sh
 npx sveld --json --strict

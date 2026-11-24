@@ -32,7 +32,7 @@ With no options, sveld generates TypeScript definitions only, for the entry name
 | `cache`              | `boolean \| string`                   | `true`                               | `--cache[=<path>]`          | Persistent parse cache. See [Parse cache](#parse-cache).                                                                                                    |
 | `checkExamples`      | `boolean \| "syntax"`                 | `false`                              | `--check-examples[=syntax]` | Compile-check `@example` blocks. See [CI](ci.md#checking-example-blocks).                                                                                   |
 | `reportDiagnostics`  | `boolean`                             | `false`                              | `--report-diagnostics`      | Print diagnostics. See [CI](ci.md#diagnostics).                                                                                                             |
-| `strict`             | `boolean \| "errors"`                 | `false`                              | `--strict[=errors]`         | Exit `4` when diagnostics exist. Implies `reportDiagnostics`.                                                                                               |
+| `strict`             | `boolean \| "errors"`                 | `false`                              | `--strict[=errors]`         | Exit `1` when diagnostics exist. Implies `reportDiagnostics`.                                                                                               |
 | `diagnostics.ignore` | `Array<{ code?, component?, name? }>` |                                      |                             | Mark matching diagnostics ignored. See [Ignoring diagnostics](ci.md#ignoring-diagnostics).                                                                  |
 | `check`              | `boolean \| string`                   | `false`                              | `--check[=<path>]`          | Diff the API against a committed snapshot. See [`--check`](ci.md#api-drift-checks---check).                                                                 |
 | `checkLevel`         | `"major" \| "minor" \| "patch"`       | `"major"`                            | `--check-level`             | Minimum bump that fails `--check`.                                                                                                                          |
@@ -167,15 +167,15 @@ npx sveld --json --markdown   # plus COMPONENT_API.json and COMPONENT_INDEX.md
 npx sveld --help              # every flag
 ```
 
-- Flags are kebab-case. Unknown flags, camelCase spellings (`--checkExamples`), and positional arguments exit `1` with a suggestion when one is close: `sveld: unknown flag "--markdwon". Did you mean "--markdown"?`.
+- Flags are kebab-case. Unknown flags, camelCase spellings (`--checkExamples`), and positional arguments exit `2` with a suggestion when one is close: `sveld: unknown flag "--markdwon". Did you mean "--markdown"?`.
 - `--entry`, `--config`, `--cache`, `--check`, and `--types-format` take a value as `--flag=value` or `--flag value`. If the next argument is another flag, it isn't taken as a value. Boolean flags never take the next argument.
 - Progress lines (`created ...`, `unchanged ...`) go to `stderr`, keeping `stdout` for data. `--quiet` hides them but not errors, diagnostics, or the `--check` report.
-- `--stdout` with exactly one of `--json` or `--markdown` prints that document instead of writing files, and skips `.d.ts` generation: `sveld --json --stdout | jq '.components[].moduleName'`. Combining it with `--types` or `--check`, or with neither or both of `--json`/`--markdown`, exits `1`.
+- `--stdout` with exactly one of `--json` or `--markdown` prints that document instead of writing files, and skips `.d.ts` generation: `sveld --json --stdout | jq '.components[].moduleName'`. Combining it with `--types` or `--check`, or with neither or both of `--json`/`--markdown`, exits `2`.
 - `--format=json` prints the `--check` report (to `stdout`) and the diagnostics summary (to `stderr`) as JSON. See [CI](ci.md#machine-readable-output).
 - `--format=github` also prints each diagnostic as a GitHub Actions annotation. See [CI](ci.md#github-actions-annotations).
 - `--glob` with a directory as `--entry` documents every `.svelte` file under it in all outputs, with no barrel file. Each file name becomes the component's module name. With a file entry, `--glob` adds `.d.ts` files for unexported components, but JSON and Markdown still cover only the entry's exports.
 
-If no entry is configured, the CLI uses `src/index.js` when it exists, with a note asking you to set `package.json#svelte` or `--entry`. Otherwise it exits `1`. An `--entry` or `package.json#svelte` path that doesn't exist also exits `1`. See [Exit codes](ci.md#exit-codes).
+If no entry is configured, the CLI uses `src/index.js` when it exists, with a note asking you to set `package.json#svelte` or `--entry`. Otherwise it exits `2`. An `--entry` or `package.json#svelte` path that doesn't exist also exits `2`. See [Exit codes](ci.md#exit-codes).
 
 ## Config file
 
@@ -194,7 +194,7 @@ export default defineConfig({
 });
 ```
 
-`--config <path>` loads a different file (relative to the working directory) instead of discovering one. A missing path exits `1`. `sveld({ config: false })` skips the config file. A file that fails to load, or doesn't default-export an object, fails with an error naming the file.
+`--config <path>` loads a different file (relative to the working directory) instead of discovering one. A missing path exits `2`. `sveld({ config: false })` skips the config file. A file that fails to load, or doesn't default-export an object, fails with an error naming the file.
 
 Precedence, highest first: CLI flags or `sveld()` options, then the config file, then `package.json#svelte` and defaults. Object options (`typesOptions`, `jsonOptions`, `markdownOptions`) merge one level deep, so `npx sveld --types-format=component` keeps `outDir` and `preamble` from the file. Arrays and functions are replaced, not merged.
 
@@ -242,7 +242,8 @@ const { document, diagnostics, errors, check, exitCode } = await sveld({
 | `diagnostics` | Every diagnostic from the run, whether or not they were printed. See [Diagnostics](ci.md#diagnostics).                           |
 | `errors`      | Components that failed to parse.                                                                                                 |
 | `check`       | The `check` result, when `check` is set.                                                                                         |
-| `exitCode`    | The exit code the CLI would use (`0`-`4`, lowest applicable wins). `sveld()` never sets `process.exitCode` itself.               |
+| `exitCode`    | The exit code the CLI would use (`0`, `1` or `2`). `sveld()` never sets `process.exitCode` itself.               |
+| `failures`    | Why `exitCode` isn't `0`: each of `"parse-error"`, `"breaking-change"`, `"diagnostics"`, `"outdated-snapshot"`, `"missing-snapshot"` that applied. |
 
 ```js
 import { formatCheckReport, sveld } from "sveld";

@@ -14,8 +14,8 @@
     "scripts": [
       { "script": "gen" },
       { "script": "check-minor", "expectStdout": "json" },
-      { "script": "check-removed", "expectExitCode": 3 },
-      { "script": "strict", "expectExitCode": 4 }
+      { "script": "check-removed", "expectExitCode": 1 },
+      { "script": "strict", "expectExitCode": 1 }
     ]
   }
 }

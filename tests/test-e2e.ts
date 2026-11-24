@@ -204,7 +204,7 @@ const crashResult = Bun.spawnSync(["node", cliPath], {
 });
 const crashStderr = crashResult.stderr.toString();
 
-if (crashResult.exitCode !== 1 || !crashStderr.includes("sveld.config.js")) {
+if (crashResult.exitCode !== 2 || !crashStderr.includes("sveld.config.js")) {
   console.error("CLI crash smoke test failed. exitCode:", crashResult.exitCode, "stderr:", crashStderr);
   hasError = true;
 }

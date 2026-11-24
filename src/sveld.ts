@@ -46,21 +46,25 @@ export interface SveldResult {
    */
   document: ComponentApiDocument;
   /**
-   * Suggested process exit code for this run, using the same mapping as the
-   * CLI (see {@link resolveExitCode}). `sveld()` never mutates
-   * `process.exitCode` itself; assign this value yourself if you want the
-   * process to exit non-zero.
+   * Suggested process exit code for this run, as the CLI exits: `0` done,
+   * `1` problems found, `2` the run couldn't do what it was asked.
+   * `sveld()` never mutates `process.exitCode` itself; assign this value
+   * yourself if you want the process to exit non-zero.
    */
-  exitCode: ExitCode;
+  exitCode: 0 | 1 | 2;
+  /** Why `exitCode` isn't `0`, each reason that applied, in this order. */
+  failures: SveldFailure[];
 }
 
-type ExitCode = 0 | 1 | 2 | 3 | 4;
+/**
+ * A reason a run doesn't exit `0`. `"missing-snapshot"` exits `2`; the
+ * others exit `1`.
+ */
+export type SveldFailure = "missing-snapshot" | "outdated-snapshot" | "parse-error" | "breaking-change" | "diagnostics";
 
-// Shared by the CLI and `sveld()`. The lowest applicable code wins: `1`
-// for a `check` snapshot that's missing (unless this run writes it) or
-// whose `schemaVersion` doesn't match, `2` when a component failed to
-// parse, `3` when `check` finds a change at or above `checkLevel`, `4`
-// when `strict` diagnostics exist.
+// Shared by the CLI and `sveld()`, so their codes can't drift. A missing
+// snapshot (unless this run writes it) exits `2`, since a mistyped path
+// mustn't pass; every other failure is a problem found, so `1`.
 function resolveExitCode(run: {
   errors: readonly unknown[];
   check?: CheckResult;
@@ -69,13 +73,15 @@ function resolveExitCode(run: {
   checkLevel?: CheckLevel;
   diagnostics: SveldDiagnostic[];
   strict?: boolean | "errors";
-}): ExitCode {
-  if (run.check && !run.check.snapshotExists && !run.writesSnapshot) return 1;
-  if (run.check?.changes.some((change) => change.kind === "schema")) return 1;
-  if (run.errors.length > 0) return 2;
-  if (run.check && bumpMeetsLevel(run.check.bump, run.checkLevel ?? "major")) return 3;
-  if (failingDiagnostics(run.diagnostics, run.strict).length > 0) return 4;
-  return 0;
+}): { exitCode: 0 | 1 | 2; failures: SveldFailure[] } {
+  const failures: SveldFailure[] = [];
+  if (run.check && !run.check.snapshotExists && !run.writesSnapshot) failures.push("missing-snapshot");
+  if (run.check?.changes.some((change) => change.kind === "schema")) failures.push("outdated-snapshot");
+  if (run.errors.length > 0) failures.push("parse-error");
+  if (run.check && bumpMeetsLevel(run.check.bump, run.checkLevel ?? "major")) failures.push("breaking-change");
+  if (failingDiagnostics(run.diagnostics, run.strict).length > 0) failures.push("diagnostics");
+  const exitCode = failures.includes("missing-snapshot") ? 2 : failures.length > 0 ? 1 : 0;
+  return { exitCode, failures };
 }
 
 // With `check`, the committed snapshot is diffed first, since
@@ -114,7 +120,7 @@ export function reportRun(
   check: CheckResult | undefined,
   options: SveldRuntimeOptions,
   input: string,
-): { diagnostics: SveldDiagnostic[]; exitCode: ExitCode } {
+): { diagnostics: SveldDiagnostic[]; exitCode: 0 | 1 | 2; failures: SveldFailure[] } {
   const shouldReport = options.reportDiagnostics || options.strict;
   const diagnostics = filterSpeculativeDiagnostics(result.diagnostics, shouldReport);
 
@@ -132,7 +138,7 @@ export function reportRun(
     }
   }
 
-  const exitCode = resolveExitCode({
+  const { exitCode, failures } = resolveExitCode({
     errors: result.errors,
     check,
     writesSnapshot: check ? writesCheckSnapshot(options, check.snapshotFile) : false,
@@ -140,7 +146,7 @@ export function reportRun(
     diagnostics,
     strict: options.strict,
   });
-  return { diagnostics, exitCode };
+  return { diagnostics, exitCode, failures };
 }
 
 export interface SveldOptions extends Omit<SveldRuntimeOptions, "config"> {
@@ -189,7 +195,7 @@ export async function sveld(opts?: SveldOptions): Promise<SveldResult> {
   validateOptions(merged);
   setQuiet(merged.quiet === true);
   const { result, check: checkResult } = await buildAndWrite(input, merged);
-  const { diagnostics, exitCode } = reportRun(result, checkResult, merged, input);
+  const { diagnostics, exitCode, failures } = reportRun(result, checkResult, merged, input);
 
   const document = buildJsonDocument(result.components, {
     inputDir: dirname(input),
@@ -197,5 +203,5 @@ export async function sveld(opts?: SveldOptions): Promise<SveldResult> {
     source: merged.jsonOptions?.source,
   });
 
-  return { diagnostics, check: checkResult, errors: result.errors, document, exitCode };
+  return { diagnostics, check: checkResult, errors: result.errors, document, exitCode, failures };
 }
