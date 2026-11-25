@@ -6,7 +6,7 @@
       "devDependencies": {
         "bun-plugin-page": "^0.1.0",
         "carbon-components-svelte": "^0.114.4",
-        "carbon-preprocess-svelte": "^0.12.8",
+        "carbon-preprocess-svelte": "^0.14.0",
         "deserved": "^0.6.1",
         "svelte": "^5.59.1",
         "svelte-bun": "^0.2.1",
@@ -41,7 +41,7 @@
 
     "carbon-components-svelte": ["carbon-components-svelte@0.114.4", "", { "dependencies": { "@ibm/telemetry-js": "^1.10.2" }, "hasInstallScript": true }, "sha512-pAeoNK0RBEsX5A+Rh5XIIXrQKDUNB8AC+pA4JbFp/jYpCQkFBJhc3lsyvII/yfDaco/CI+kK9bGCqVakI8yhxg=="],
 
-    "carbon-preprocess-svelte": ["carbon-preprocess-svelte@0.12.8", "", { "bin": { "carbon-preprocess-svelte": "cli.js" } }, "sha512-ra5l0PAXxgGoO38gOAZeztsKEsNe4J5O5UWrYZ/cmEqdxL/OAGZbgHYJaH812DJAcSlZlsx6bkkVukLblzKInw=="],
+    "carbon-preprocess-svelte": ["carbon-preprocess-svelte@0.14.0", "", { "bin": { "carbon-preprocess-svelte": "cli.js" } }, "sha512-J/ejHPDzpOBUJieiqHJ8lP6IPePAkd5IFkgA3feEwWV1QD9S/5YonDKiSlxUkqUmuq0k2CH2/G+wJhwKCe8aXA=="],
 
     "clsx": ["clsx@2.1.1", "", {}, "sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA=="],
 
