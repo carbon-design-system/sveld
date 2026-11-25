@@ -7,7 +7,7 @@
     HeaderUtilities,
     SkipToContent,
   } from "carbon-components-svelte";
-  import { homepage, name, version } from "../../package.json";
+  import { name, version } from "../../package.json";
   import LogoGithub20 from "./LogoGithub20.svelte";
   import { toggleTheme } from "./theme";
   import ThemeIcon from "./ThemeIcon.svelte";
@@ -23,7 +23,7 @@
   </span>
   <HeaderUtilities>
     <HeaderGlobalAction icon={ThemeIcon} iconDescription="Toggle theme" on:click={toggleTheme} />
-    <HeaderActionLink icon={LogoGithub20} href={homepage} target="_blank" />
+    <HeaderActionLink icon={LogoGithub20} href="https://github.com/carbon-design-system/sveld" target="_blank" />
   </HeaderUtilities>
 </Header>
 
