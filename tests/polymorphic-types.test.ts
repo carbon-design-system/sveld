@@ -12,6 +12,35 @@ const POLYMORPHIC = readFileSync(
   "utf8",
 );
 
+const OPTIONS: ts.CompilerOptions = {
+  strict: true,
+  noEmit: true,
+  module: ts.ModuleKind.ESNext,
+  moduleResolution: ts.ModuleResolutionKind.Bundler,
+  target: ts.ScriptTarget.ESNext,
+  lib: ["lib.esnext.d.ts", "lib.dom.d.ts"],
+  types: [],
+  skipLibCheck: true,
+};
+
+// perf: every check reads the same lib and `svelte` declarations, and
+// parsing `lib.dom.d.ts` was most of each program's time. Shared, parsed
+// once; each program still checks, and counts its types, on its own.
+const parsed = new Map<string, ts.SourceFile>();
+const host = ts.createCompilerHost(OPTIONS);
+const readSourceFile = host.getSourceFile.bind(host);
+host.getSourceFile = (fileName, languageVersion, onError, shouldCreate) => {
+  if (fileName.includes(".tmp-sveld-polymorphic-")) {
+    return readSourceFile(fileName, languageVersion, onError, shouldCreate);
+  }
+  let file = parsed.get(fileName);
+  if (!file) {
+    file = readSourceFile(fileName, languageVersion, onError, shouldCreate);
+    if (file) parsed.set(fileName, file);
+  }
+  return file;
+};
+
 /** Type-checks `source` beside the component as `Box`, and as `Stack` with one more prop. */
 function check(source: string) {
   // In the repo, so `svelte` resolves.
@@ -21,16 +50,7 @@ function check(source: string) {
     // A prop of its own, so the union's members differ, as two components' do.
     writeFileSync(join(dir, "Stack.d.ts"), POLYMORPHIC.replace("  tag?: Tag;", "  tag?: Tag;\n  gap?: number;"));
     writeFileSync(join(dir, "test.ts"), `import Box from "./Box";\nimport Stack from "./Stack";\n${source}`);
-    const program = ts.createProgram([join(dir, "test.ts")], {
-      strict: true,
-      noEmit: true,
-      module: ts.ModuleKind.ESNext,
-      moduleResolution: ts.ModuleResolutionKind.Bundler,
-      target: ts.ScriptTarget.ESNext,
-      lib: ["lib.esnext.d.ts", "lib.dom.d.ts"],
-      types: [],
-      skipLibCheck: true,
-    });
+    const program = ts.createProgram([join(dir, "test.ts")], OPTIONS, host);
     const errors = ts
       .getPreEmitDiagnostics(program)
       .map((d) => `TS${d.code}`)
@@ -50,9 +70,7 @@ test("infers the tag from `tag`, so its attributes follow it", () => {
   expect(check(options('{ tag: "a", href: "/docs" }')).errors).toEqual([]);
   expect(check(`declare const tag: "div" | "section";\n${options('{ tag, id: "x" }')}`).errors).toEqual([]);
   expect(check(options('{ tag: "div", href: "/docs" }')).errors).toEqual([expect.stringMatching(EXCESS_PROPERTY)]);
-  // Four TypeScript programs: about 0.7 s alone, over 5 s under the
-  // parallel suite on a CI runner.
-}, 60_000);
+});
 
 test("builds each element type only as a use needs it", () => {
   // As a conditional on `Tag`, every tag's type was built: ~6.7K types for
@@ -63,4 +81,4 @@ test("builds each element type only as a use needs it", () => {
   );
   expect(union.errors).toEqual([]);
   expect(union.types).toBeLessThan(20_000);
-}, 60_000);
+});
