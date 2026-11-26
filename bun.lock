@@ -13,7 +13,7 @@
         "ostia": "^0.2.12",
         "svelte": "^5.59.1",
         "svelte-ast": "^0.12.1",
-        "svelte-lint": "^0.2.0",
+        "svelte-lint": "^0.3.0",
         "typescript": "^7.0.2",
       },
     },
@@ -235,7 +235,7 @@
 
     "svelte-ast": ["svelte-ast@0.12.1", "", {}, "sha512-PDJVtqn+b7hH/vrfgbiUhDQPHxGzBy261qwVzORb92ta8N7940CWb0gPf9ieCkVIr3OPj7ICWcl8BAO2eEZ/gQ=="],
 
-    "svelte-lint": ["svelte-lint@0.2.0", "", { "bin": { "svelte-lint": "cli.js" } }, "sha512-nMT/B5TIwd4VWPWwgwx4jx9/bt0nfiqIlgIzTaxXhkr8qtC/yi2QmiajLu18aIqpcqOA7SCrrKPLKQMVRNyfXw=="],
+    "svelte-lint": ["svelte-lint@0.3.0", "", { "bin": { "svelte-lint": "cli.js" } }, "sha512-XkG2idJkMi/K3GuiZVJTSOfkzYwd1NOShMhtwp0STC/kao1KEHNvCo2phaExHKBOuuWhmvmDdCTfyfUaf/Lk9w=="],
 
     "tinyglobby": ["tinyglobby@0.2.17", "", { "dependencies": { "fdir": "^6.5.0", "picomatch": "^4.0.4" } }, "sha512-wXR/dYpcqKmfWpEdZjiKJOwCNFndD0DMnrW/cYjVGttEkBfVgcLFHoNrlj47mjOVic9yyNu65alsgF4NQyTa2g=="],
 
