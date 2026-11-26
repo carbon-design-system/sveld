@@ -9,7 +9,7 @@
   "devDependencies": {
     "bun-plugin-page": "^0.1.0",
     "carbon-components-svelte": "^0.114.4",
-    "carbon-preprocess-svelte": "^0.14.3",
+    "carbon-preprocess-svelte": "^0.14.4",
     "deserved": "^0.6.1",
     "svelte": "^5.59.1",
     "svelte-bun": "^0.2.1",
