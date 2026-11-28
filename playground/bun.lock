@@ -4,7 +4,7 @@
   "workspaces": {
     "": {
       "devDependencies": {
-        "bun-plugin-page": "^0.3.0",
+        "bun-plugin-page": "^0.3.1",
         "carbon-components-svelte": "^0.114.4",
         "carbon-preprocess-svelte": "^0.14.4",
         "deserved": "^0.6.1",
@@ -37,7 +37,7 @@
 
     "axobject-query": ["axobject-query@4.1.0", "", {}, "sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ=="],
 
-    "bun-plugin-page": ["bun-plugin-page@0.3.0", "", {}, "sha512-KP7A+FTkKpuJajWPxPDSSdGFDCNi0iG1i4nqv47hgy9PQsi+drepGuB6dj2hGFt07tVo1wKJjPvaF08oRr/K8g=="],
+    "bun-plugin-page": ["bun-plugin-page@0.3.1", "", {}, "sha512-FJUhamQ1a/MR5QLLwVH2Q06op8m2caW6HGKU2q6sGjpdEZRhkVmbGIztyy8zbZs6XrAA1K56Pz5JGt05zJxA3w=="],
 
     "carbon-components-svelte": ["carbon-components-svelte@0.114.4", "", { "dependencies": { "@ibm/telemetry-js": "^1.10.2" }, "hasInstallScript": true }, "sha512-pAeoNK0RBEsX5A+Rh5XIIXrQKDUNB8AC+pA4JbFp/jYpCQkFBJhc3lsyvII/yfDaco/CI+kK9bGCqVakI8yhxg=="],
 

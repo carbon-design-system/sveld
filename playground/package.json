@@ -7,7 +7,7 @@
     "preview": "deserved dist --spa"
   },
   "devDependencies": {
-    "bun-plugin-page": "^0.3.0",
+    "bun-plugin-page": "^0.3.1",
     "carbon-components-svelte": "^0.114.4",
     "carbon-preprocess-svelte": "^0.14.4",
     "deserved": "^0.6.1",
